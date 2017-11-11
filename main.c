@@ -644,7 +644,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "; use letter- or windowboxing to make a best fit (GDI only!)\n"
             "boxing=false\n"
             "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
-            "maxfps=0\n"
+            "max_fps=0\n"
             "; vertical synchronization, enable if you get tearing (OpenGL only)\n"
             "vsync=false\n"
             "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
@@ -695,7 +695,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->boxing = TRUE;
     }
 
-    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 60, ini_path);
+    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, ini_path);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, ini_path);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, ini_path);
 
