@@ -97,7 +97,7 @@ DWORD WINAPI render_soft_main(void)
         frame_len = 1000.0f / ddraw->render.maxfps;
     }
 
-    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while (ddraw->render.thread)
     {
         if(ddraw->render.maxfps > 0)
         {
@@ -162,7 +162,6 @@ DWORD WINAPI render_soft_main(void)
                Sleep( frame_len - (tick_end - tick_start) + 1);
             }
         }
-        SetEvent(ddraw->render.ev);
     }
 	timeEndPeriod(1);
 

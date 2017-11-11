@@ -120,13 +120,6 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         } 
     }
 
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
-    {
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        WaitForSingleObject(ddraw->render.ev, INFINITE);
-        ResetEvent(ddraw->render.ev);
-    }
-
     return DD_OK;
 }
 
@@ -200,13 +193,6 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 #if _DEBUG
     printf("IDirectDrawSurface::Flip(This=%p, ...)\n", This);
 #endif
-
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
-    {
-        ResetEvent(ddraw->render.ev);
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        WaitForSingleObject(ddraw->render.ev, INFINITE);
-    }
 
     return DD_OK;
 }
@@ -316,7 +302,11 @@ HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDest
     }
 #endif
 
-    return ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    HRESULT ret = ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    
+    EnterCriticalSection(&ddraw->cs);
+
+    return ret;
 }
 
 HRESULT __stdcall ddraw_surface_ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
@@ -370,11 +360,8 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
 #if _DEBUG
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
-
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
-    {
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-    }
+    
+    LeaveCriticalSection(&ddraw->cs);
 
     return DD_OK;
 }
@@ -486,6 +473,12 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
     Surface->Ref = 0;
     ddraw_surface_AddRef(Surface);
+    
+    if(lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
+    {
+        This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
+        SetThreadPriority(This->render.thread, THREAD_PRIORITY_ABOVE_NORMAL);
+    }
 
     return DD_OK;
 }

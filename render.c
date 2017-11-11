@@ -92,7 +92,7 @@ DWORD WINAPI render_main(void)
 	
 
 
-    while(ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while(ddraw->render.thread)
     {
 		scale_w = (float)ddraw->width/tex_width;
 		scale_h = (float)ddraw->height/tex_height;
@@ -159,10 +159,8 @@ DWORD WINAPI render_main(void)
            if(tick_end - tick_start < frame_len)
            {
 				Sleep( frame_len - (tick_end - tick_start));
-            }
+           }
         }
-
-        SetEvent(ddraw->render.ev);
     }
 	timeEndPeriod(1);
 		

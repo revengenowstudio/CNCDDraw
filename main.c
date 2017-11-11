@@ -156,18 +156,6 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
         return DD_OK;
     }
 
-    /* only stop drawing in GL mode when minimized */
-    if (This->renderer == render_main)
-    {
-        EnterCriticalSection(&This->cs);
-        This->render.run = FALSE;
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        LeaveCriticalSection(&This->cs);
-
-        WaitForSingleObject(This->render.thread, INFINITE);
-        This->render.thread = NULL;
-    }
-
     if(!ddraw->windowed)
     {
         ChangeDisplaySettings(&This->mode, 0);
@@ -208,15 +196,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     }
 
     This->render.run = TRUE;
-
-    if (This->renderer == render_dummy_main)
-    {
-        if(This->render.thread == NULL)
-        {
-            This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-        }
-        return DD_OK;
-    }
 
     mouse_unlock();
 	
@@ -273,11 +252,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             This->render.run = FALSE;
             return DDERR_INVALIDMODE;
         }
-    }
-
-    if(This->render.thread == NULL)
-    {
-        This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
     }
 
     return DD_OK;
@@ -429,17 +403,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-        /* make sure we redraw when WM_PAINT is requested */
-        case WM_PAINT:
-            EnterCriticalSection(&ddraw->cs);
-            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-            LeaveCriticalSection(&ddraw->cs);
-            break;
-
         case WM_ERASEBKGND:
             EnterCriticalSection(&ddraw->cs);
             FillRect(ddraw->render.hDC, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
-            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             LeaveCriticalSection(&ddraw->cs);
             break;
     }
@@ -545,27 +511,17 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             PostMessage(This->hWnd, WM_USER, 0, 0);
         }
 
-        if(This->render.run)
+        if (This->render.thread)
         {
-            EnterCriticalSection(&This->cs);
-            This->render.run = FALSE;
-            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-            LeaveCriticalSection(&This->cs);
-
-            WaitForSingleObject(This->render.thread, INFINITE);
+            HANDLE thread = This->render.thread;
             This->render.thread = NULL;
+            WaitForSingleObject(thread, INFINITE);
         }
 
         if(This->render.hDC)
         {
             ReleaseDC(This->hWnd, This->render.hDC);
             This->render.hDC = NULL;
-        }
-
-        if(This->render.ev)
-        {
-            CloseHandle(This->render.ev);
-            ddraw->render.ev = NULL;
         }
 
         if(This->real_dll)
@@ -664,8 +620,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
 
     InitializeCriticalSection(&This->cs);
-    This->render.ev = CreateEvent(NULL, TRUE, FALSE, NULL);
-    This->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
 
     /* load configuration options from ddraw.ini */
     char cwd[MAX_PATH];
@@ -741,7 +695,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->boxing = TRUE;
     }
 
-    This->render.maxfps = GetPrivateProfileIntA("ddraw", "maxfps", 0, ini_path);
+    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 60, ini_path);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, ini_path);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, ini_path);
 
