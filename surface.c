@@ -484,7 +484,7 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
     if(lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
     {
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-        SetThreadPriority(This->render.thread, THREAD_PRIORITY_ABOVE_NORMAL);
+        SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
     }
 
     return DD_OK;
