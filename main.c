@@ -544,13 +544,6 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             PostMessage(This->hWnd, WM_USER, 0, 0);
         }
 
-        if (This->render.thread)
-        {
-            HANDLE thread = This->render.thread;
-            This->render.thread = NULL;
-            WaitForSingleObject(thread, INFINITE);
-        }
-
         if(This->render.hDC)
         {
             ReleaseDC(This->hWnd, This->render.hDC);
@@ -738,7 +731,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
 
     GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), This->ini_path);
-    ddraw->screenshotKey = tmp[0];
+    ddraw->screenshotKey = toupper(tmp[0]);
     
     This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, This->ini_path);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, This->ini_path);

@@ -44,6 +44,13 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
 
     if(This->Ref == 0)
     {
+        if (ddraw->render.thread)
+        {
+            HANDLE thread = ddraw->render.thread;
+            ddraw->render.thread = NULL;
+            WaitForSingleObject(thread, INFINITE);
+        }
+        
         if(This->caps == DDSCAPS_PRIMARYSURFACE)
         {
             EnterCriticalSection(&ddraw->cs);
