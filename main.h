@@ -83,7 +83,10 @@ typedef struct IDirectDrawImpl
     BOOL vhack;
 	BOOL isredalert;
     DWORD WINAPI (*renderer)(void);
-
+    int posX;
+    int posY;
+    char ini_path[MAX_PATH];
+    
 } IDirectDrawImpl;
 
 typedef struct IDirectDrawImplVtbl IDirectDrawImplVtbl;
