@@ -86,6 +86,7 @@ typedef struct IDirectDrawImpl
     int posX;
     int posY;
     char ini_path[MAX_PATH];
+    char screenshotKey;
     
 } IDirectDrawImpl;
 

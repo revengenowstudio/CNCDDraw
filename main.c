@@ -388,9 +388,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
 #ifdef HAVE_LIBPNG
-            if(wParam == VK_CONTROL || wParam == 0x53 /* S */)
+            if(wParam == VK_CONTROL || wParam == ddraw->screenshotKey)
             {
-                if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(0x53) & 0x8000)
+                if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(ddraw->screenshotKey) & 0x8000)
                 {
                     screenshot(ddraw->primary);
                     return 0;
@@ -701,6 +701,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "; Windows position, -1 = center to screen\n"
             "posX=-1\n"
             "posY=-1\n"
+            "; Screenshot Hotkey, default = CTRL + G\n"
+            "screenshotKey=G\n"
         , fh);
         fclose(fh);
     }
@@ -735,6 +737,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->boxing = TRUE;
     }
 
+    GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), This->ini_path);
+    ddraw->screenshotKey = tmp[0];
+    
     This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, This->ini_path);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, This->ini_path);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, This->ini_path);
