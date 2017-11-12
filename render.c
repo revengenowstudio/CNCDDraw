@@ -99,7 +99,7 @@ DWORD WINAPI render_main(void)
 	
         if(ddraw->render.maxfps > 0)
         {
-            tick_start = GetTickCount();
+            tick_start = timeGetTime();
         }
 
         /* convert ddraw surface to opengl texture */
@@ -154,7 +154,7 @@ DWORD WINAPI render_main(void)
 
         if((ddraw->render.maxfps > 0))
         {        
-			tick_end = GetTickCount();
+			tick_end = timeGetTime();
 			
            if(tick_end - tick_start < frame_len)
            {

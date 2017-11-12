@@ -101,7 +101,7 @@ DWORD WINAPI render_soft_main(void)
     {
         if(ddraw->render.maxfps > 0)
         {
-            tick_start = GetTickCount();
+            tick_start = timeGetTime();
         }
 		
 		 EnterCriticalSection(&ddraw->cs);
@@ -155,7 +155,7 @@ DWORD WINAPI render_soft_main(void)
 
         if((ddraw->render.maxfps > 0) && !detect_cutscene())
         {
-            tick_end = GetTickCount();
+            tick_end = timeGetTime();
 
             if(tick_end - tick_start < frame_len)
             {
