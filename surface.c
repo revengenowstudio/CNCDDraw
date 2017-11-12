@@ -311,7 +311,7 @@ HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDest
 
     HRESULT ret = ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
     
-    EnterCriticalSection(&ddraw->cs);
+    //EnterCriticalSection(&ddraw->cs);
 
     return ret;
 }
@@ -368,7 +368,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
-    LeaveCriticalSection(&ddraw->cs);
+    //LeaveCriticalSection(&ddraw->cs);
 
     return DD_OK;
 }
