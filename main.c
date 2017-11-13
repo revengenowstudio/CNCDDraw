@@ -44,17 +44,39 @@ DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 DWORD WINAPI render_dummy_main(void);
 
-void SaveWindowPosition()
+int WindowPosX;
+int WindowPosY;
+char SettingsIniPath[MAX_PATH];
+
+BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 {
-    if (ddraw->windowed)
+    switch (dwReason)
     {
-        char buf[16];
-        sprintf(buf, "%d", ddraw->posX);
-        WritePrivateProfileString("ddraw", "posX", buf, ddraw->ini_path); 
-        
-        sprintf(buf, "%d", ddraw->posY);
-        WritePrivateProfileString("ddraw", "posY", buf, ddraw->ini_path); 
+        case DLL_PROCESS_ATTACH:
+        {
+            printf("cnc-ddraw DLL_PROCESS_ATTACH");
+            
+            SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
+            timeBeginPeriod(1);
+            break;
+        }
+        case DLL_PROCESS_DETACH:
+        {
+            printf("cnc-ddraw DLL_PROCESS_DETACH");
+            
+            char buf[16];
+            sprintf(buf, "%d", WindowPosX);
+            WritePrivateProfileString("ddraw", "posX", buf, SettingsIniPath); 
+
+            sprintf(buf, "%d", WindowPosY);
+            WritePrivateProfileString("ddraw", "posY", buf, SettingsIniPath); 
+            
+            timeEndPeriod(1);
+            break;
+        }
     }
+
+    return TRUE;
 }
 
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
@@ -234,8 +256,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             }
 
             /* center the window with correct dimensions */
-            int x = (This->posX != -1) ? This->posX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
-            int y = (This->posY != -1) ? This->posY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
+            int x = (WindowPosX != -1) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
+            int y = (WindowPosY != -1) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
             RECT dst = { x, y, This->render.width+x, This->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
             SetWindowPos(This->hWnd, HWND_NOTOPMOST, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), SWP_SHOWWINDOW);
@@ -316,10 +338,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int y = (int)(short)HIWORD(lParam);
                 
                 if (x != -32000) 
-                    ddraw->posX = x; // -32000 = Exit/Minimize
+                    WindowPosX = x; // -32000 = Exit/Minimize
                 
                 if (y != -32000)
-                    ddraw->posY = y;
+                    WindowPosY = y;
             }
             break;
         }
@@ -333,10 +355,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_SYSCOMMAND:
             if (wParam == SC_CLOSE)
             {
-                if (ddraw->windowed)
-                {
-                    SaveWindowPosition();
-                }
                 exit(0);
             }
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -554,11 +572,6 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
         {
             FreeLibrary(This->real_dll);
         }
-        
-        if (ddraw->windowed)
-        {
-            SaveWindowPosition();
-        }
 
         DeleteCriticalSection(&This->cs);
 
@@ -656,11 +669,11 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     char cwd[MAX_PATH];
     char tmp[256];
     GetCurrentDirectoryA(sizeof(cwd), cwd);
-    snprintf(This->ini_path, sizeof(This->ini_path), "%s\\ddraw.ini", cwd);
+    snprintf(SettingsIniPath, sizeof(SettingsIniPath), "%s\\ddraw.ini", cwd);
 
-    if(GetFileAttributes(This->ini_path) == 0xFFFFFFFF)
+    if(GetFileAttributes(SettingsIniPath) == 0xFFFFFFFF)
     {
-        FILE *fh = fopen(This->ini_path, "w");
+        FILE *fh = fopen(SettingsIniPath, "w");
         fputs(
             "[ddraw]\n"
             "; width and height of the window, defaults to the size game requests\r\n"
@@ -700,7 +713,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         fclose(fh);
     }
 
-    GetPrivateProfileStringA("ddraw", "windowed", "TRUE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "windowed", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
     {
         This->windowed = FALSE;
@@ -710,7 +723,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->windowed = TRUE;
     }
 
-    GetPrivateProfileStringA("ddraw", "border", "TRUE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "border", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
     {
         This->border = FALSE;
@@ -720,7 +733,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->border = TRUE;
     }
 
-    GetPrivateProfileStringA("ddraw", "boxing", "FALSE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "boxing", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
     {
         This->boxing = FALSE;
@@ -730,22 +743,22 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->boxing = TRUE;
     }
 
-    GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), SettingsIniPath);
     ddraw->screenshotKey = toupper(tmp[0]);
     
-    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, This->ini_path);
-    This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, This->ini_path);
-    This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, This->ini_path);
-    This->posX = GetPrivateProfileIntA("ddraw", "posX", 0, This->ini_path);
-    This->posY = GetPrivateProfileIntA("ddraw", "posY", 0, This->ini_path);
+    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, SettingsIniPath);
+    This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, SettingsIniPath);
+    This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);
+    WindowPosX = GetPrivateProfileIntA("ddraw", "posX", 0, SettingsIniPath);
+    WindowPosY = GetPrivateProfileIntA("ddraw", "posY", 0, SettingsIniPath);
 
-    This->render.bpp = GetPrivateProfileIntA("ddraw", "bpp", 32, This->ini_path);
+    This->render.bpp = GetPrivateProfileIntA("ddraw", "bpp", 32, SettingsIniPath);
     if (This->render.bpp != 16 && This->render.bpp != 24 && This->render.bpp != 32)
     {
         This->render.bpp = 0;
     }
 
-    GetPrivateProfileStringA("ddraw", "filter", tmp, tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "filter", tmp, tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'l' || tolower(tmp[3]) == 'l')
     {
         This->render.filter = 1;
@@ -755,7 +768,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->render.filter = 0;
     }
 
-    GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->adjmouse = TRUE;
@@ -765,7 +778,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->adjmouse = FALSE;
     }
 
-    GetPrivateProfileStringA("ddraw", "mhack", "TRUE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "mhack", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->mhack = TRUE;
@@ -775,7 +788,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->mhack = FALSE;
     }
 
-    GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->devmode = TRUE;
@@ -786,7 +799,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->devmode = FALSE;
     }
 
-    GetPrivateProfileStringA("ddraw", "vsync", "FALSE", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "vsync", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->vsync = TRUE;
@@ -796,10 +809,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->vsync = FALSE;
     }
 
-    GetPrivateProfileStringA("ddraw", "sensitivity", "0", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "sensitivity", "0", tmp, sizeof(tmp), SettingsIniPath);
     This->sensitivity = strtof(tmp, NULL);
 
-    GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->vhack = 2;
@@ -813,7 +826,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->vhack = 0;
     }
 
-    GetPrivateProfileStringA("ddraw", "renderer", "gdi", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "renderer", "gdi", tmp, sizeof(tmp), SettingsIniPath);
     if(tolower(tmp[0]) == 'd' || tolower(tmp[0]) == 'd')
     {
         printf("DirectDrawCreate: Using dummy renderer\n");
@@ -830,7 +843,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->renderer = render_main;
     }
 
-    GetPrivateProfileStringA("ddraw", "singlecpu", "true", tmp, sizeof(tmp), This->ini_path);
+    GetPrivateProfileStringA("ddraw", "singlecpu", "true", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         printf("DirectDrawCreate: Setting CPU0 affinity\n");

@@ -68,8 +68,6 @@ DWORD WINAPI render_soft_main(void)
     DWORD tick_start = 0;
     DWORD tick_end = 0;
     DWORD frame_len = 0;
-	
-	timeBeginPeriod(1);
 
     if (ddraw->boxing)
     {
@@ -163,7 +161,6 @@ DWORD WINAPI render_soft_main(void)
             }
         }
     }
-	timeEndPeriod(1);
 
     HeapFree(GetProcessHeap(), 0, bmi);
 

@@ -22,6 +22,10 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#ifndef _DEBUG
+#define printf(format, ...)
+#endif
+
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
 struct IDirectDrawSurfaceImpl;
@@ -83,9 +87,6 @@ typedef struct IDirectDrawImpl
     BOOL vhack;
 	BOOL isredalert;
     DWORD WINAPI (*renderer)(void);
-    int posX;
-    int posY;
-    char ini_path[MAX_PATH];
     char screenshotKey;
     
 } IDirectDrawImpl;

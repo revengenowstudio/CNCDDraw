@@ -88,10 +88,7 @@ DWORD WINAPI render_main(void)
 
     glEnable(GL_TEXTURE_2D);
 	
-	timeBeginPeriod(1);
-	
-
-
+    
     while(ddraw->render.thread)
     {
 		scale_w = (float)ddraw->width/tex_width;
@@ -162,8 +159,7 @@ DWORD WINAPI render_main(void)
            }
         }
     }
-	timeEndPeriod(1);
-		
+
     HeapFree(GetProcessHeap(), 0, tex);
 
     wglMakeCurrent(NULL, NULL);
