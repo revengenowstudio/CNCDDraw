@@ -56,7 +56,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         {
             printf("cnc-ddraw DLL_PROCESS_ATTACH");
             
-            SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
+            //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
             timeBeginPeriod(1);
             break;
         }
