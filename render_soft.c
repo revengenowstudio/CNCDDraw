@@ -127,12 +127,9 @@ DWORD WINAPI render_soft_main(void)
             {
                 ddraw->primary->palette->data_rgb = &bmi->bmiColors[0];
             }
-			// for 800 x 600:
-			//StretchDIBits(ddraw->render.hDC, 0, 0, ddraw->render.width, ddraw->render.height, 0, 200, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
-			
-						StretchDIBits(ddraw->render.hDC, 0, 0, ddraw->render.width, ddraw->render.height, 0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
+            
+			StretchDIBits(ddraw->render.hDC, 0, 0, ddraw->render.width, ddraw->render.height, 0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
 
-			
 			if (ddraw->primary->palette && (ddraw->cursorclip.width != CUTSCENE_WIDTH || ddraw->cursorclip.height != CUTSCENE_HEIGHT))
 			{
 				ddraw->cursorclip.width = CUTSCENE_WIDTH;
@@ -151,13 +148,13 @@ DWORD WINAPI render_soft_main(void)
 
         LeaveCriticalSection(&ddraw->cs);
 
-        if((ddraw->render.maxfps > 0) && !detect_cutscene())
+        if(ddraw->render.maxfps > 0)
         {
             tick_end = timeGetTime();
 
             if(tick_end - tick_start < frame_len)
             {
-               Sleep( frame_len - (tick_end - tick_start) + 1);
+               Sleep( frame_len - (tick_end - tick_start));
             }
         }
     }

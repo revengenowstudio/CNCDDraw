@@ -149,9 +149,9 @@ DWORD WINAPI render_main(void)
 		
 		SwapBuffers(ddraw->render.hDC); 
 
-        if((ddraw->render.maxfps > 0))
+        if(ddraw->render.maxfps > 0)
         {        
-			tick_end = timeGetTime();
+            tick_end = timeGetTime();
 			
            if(tick_end - tick_start < frame_len)
            {
