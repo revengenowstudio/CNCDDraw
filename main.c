@@ -242,6 +242,18 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 	if (hsicon)
 		SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
 
+    
+    memset(&This->render.mode, 0, sizeof(DEVMODE));
+    This->render.mode.dmSize = sizeof(DEVMODE);
+    This->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
+    This->render.mode.dmPelsWidth = This->render.width;
+    This->render.mode.dmPelsHeight = This->render.height;
+    if(This->render.bpp)
+    {
+        This->render.mode.dmFields |= DM_BITSPERPEL;
+        This->render.mode.dmBitsPerPel = This->render.bpp;
+    }
+    
     if(This->windowed)
     {
         if(!This->windowed_init)
@@ -270,17 +282,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         SetWindowPos(This->hWnd, HWND_TOPMOST, 0, 0, This->render.width, This->render.height, SWP_SHOWWINDOW);
 
         mouse_lock();
-
-        memset(&This->render.mode, 0, sizeof(DEVMODE));
-        This->render.mode.dmSize = sizeof(DEVMODE);
-        This->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
-        This->render.mode.dmPelsWidth = This->render.width;
-        This->render.mode.dmPelsHeight = This->render.height;
-        if(This->render.bpp)
-        {
-            This->render.mode.dmFields |= DM_BITSPERPEL;
-            This->render.mode.dmBitsPerPel = This->render.bpp;
-        }
 
         if(!This->devmode && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
         {
@@ -396,6 +397,57 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
+        case WM_SYSKEYDOWN:
+        {
+            if (wParam == VK_RETURN)
+            {
+                if (ddraw->windowed)
+                {
+                    if(ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
+                    {
+                        ddraw->windowed = FALSE;
+                        
+                        SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+                        SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+                        if (ddraw->locked)
+                        {
+                            mouse_unlock();
+                            mouse_lock();
+                        }
+                    }
+                }
+                else
+                {
+                    if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
+                    {
+                        if (!ddraw->border)
+                        {
+                            SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+                        }
+                        else
+                        {
+                            SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX);
+                        }
+                        
+                        int x = (WindowPosX != -1) ? WindowPosX : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
+                        int y = (WindowPosY != -1) ? WindowPosY : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
+                        RECT dst = { x, y, ddraw->render.width+x, ddraw->render.height+y };
+                        AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
+                        SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), SWP_SHOWWINDOW);
+                        
+                        if (ddraw->locked)
+                        {
+                            mouse_unlock();
+                            mouse_lock();
+                        }
+                        
+                        ddraw->windowed = TRUE;
+                    }
+                }
+                return 0;
+            }
+            break;
+        }
         case WM_KEYDOWN:
             if(wParam == VK_CONTROL || wParam == VK_TAB)
             {
