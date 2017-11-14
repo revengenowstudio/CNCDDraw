@@ -87,13 +87,13 @@ DWORD WINAPI render_main(void)
     }
 
     glEnable(GL_TEXTURE_2D);
-	
+    
     
     while(ddraw->render.thread)
     {
-		scale_w = (float)ddraw->width/tex_width;
-		scale_h = (float)ddraw->height/tex_height;
-	
+        scale_w = (float)ddraw->width/tex_width;
+        scale_h = (float)ddraw->height/tex_height;
+    
         if(ddraw->render.maxfps > 0)
         {
             tick_start = timeGetTime();
@@ -146,17 +146,17 @@ DWORD WINAPI render_main(void)
         glTexCoord2f(scale_w,scale_h);  glVertex2f( 1, -1);	
         glTexCoord2f(0,scale_h);        glVertex2f(-1, -1);
         glEnd();
-		
-		SwapBuffers(ddraw->render.hDC); 
+        
+        SwapBuffers(ddraw->render.hDC); 
 
         if(ddraw->render.maxfps > 0)
         {        
             tick_end = timeGetTime();
-			
-           if(tick_end - tick_start < frame_len)
-           {
-				Sleep( frame_len - (tick_end - tick_start));
-           }
+            
+            if(tick_end - tick_start < frame_len)
+            {
+                Sleep( frame_len - (tick_end - tick_start));
+            }
         }
     }
 
