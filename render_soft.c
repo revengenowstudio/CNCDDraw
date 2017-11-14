@@ -102,7 +102,7 @@ DWORD WINAPI render_soft_main(void)
             tick_start = timeGetTime();
         }
         
-         EnterCriticalSection(&ddraw->cs);
+        EnterCriticalSection(&ddraw->cs);
 
         if (ddraw->primary && (ddraw->primary->palette || ddraw->bpp == 16))
         {

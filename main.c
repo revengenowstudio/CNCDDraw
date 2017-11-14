@@ -614,6 +614,11 @@ struct IDirectDrawImplVtbl iface =
     ddraw_WaitForVerticalBlank
 };
 
+HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
+{
+    return DD_OK;
+}
+
 int stdout_open = 0;
 HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter) 
 {
@@ -687,7 +692,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "; use letter- or windowboxing to make a best fit (GDI only!)\n"
             "boxing=false\n"
             "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
-            "max_fps=0\n"
+            "max_fps=120\n"
             "; vertical synchronization, enable if you get tearing (OpenGL only)\n"
             "vsync=false\n"
             "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
@@ -704,7 +709,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "renderer=gdi\n"
             "; force CPU0 affinity, avoids crashes with RA, *might* have a performance impact\n"
             "singlecpu=true\n"
-            "; Windows position, -1 = center to screen\n"
+            "; Window position, -1 = center to screen\n"
             "posX=-1\n"
             "posY=-1\n"
             "; Screenshot Hotkey, default = CTRL + G\n"
