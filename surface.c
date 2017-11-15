@@ -121,9 +121,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
                 memcpy(to, from, s); 
             
-            LeaveCriticalSection(&ddraw->cs);
-            
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+            LeaveCriticalSection(&ddraw->cs);
         }
         else
         {

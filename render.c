@@ -28,6 +28,8 @@ BOOL detect_cutscene();
 
 DWORD WINAPI render_main(void)
 {
+    Sleep(500);
+    
     int i,j;
     HGLRC hRC;
 
