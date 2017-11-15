@@ -44,13 +44,6 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
 
     if(This->Ref == 0)
     {
-        if (ddraw->render.thread)
-        {
-            HANDLE thread = ddraw->render.thread;
-            ddraw->render.thread = NULL;
-            WaitForSingleObject(thread, INFINITE);
-        }
-        
         if(This->caps == DDSCAPS_PRIMARYSURFACE)
         {
             EnterCriticalSection(&ddraw->cs);
@@ -129,6 +122,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                 memcpy(to, from, s); 
             
             LeaveCriticalSection(&ddraw->cs);
+            
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
         }
         else
         {
@@ -211,6 +206,11 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 #if _DEBUG
     printf("IDirectDrawSurface::Flip(This=%p, ...)\n", This);
 #endif
+
+    if(This->caps & DDSCAPS_PRIMARYSURFACE)
+    {
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+    }
 
     return DD_OK;
 }
@@ -320,11 +320,7 @@ HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDest
     }
 #endif
 
-    HRESULT ret = ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
-    
-    //EnterCriticalSection(&ddraw->cs);
-
-    return ret;
+    return ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
 }
 
 HRESULT __stdcall ddraw_surface_ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
@@ -379,7 +375,10 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
-    //LeaveCriticalSection(&ddraw->cs);
+    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT))
+    {
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+    }
 
     return DD_OK;
 }
@@ -492,12 +491,6 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
     Surface->Ref = 0;
     ddraw_surface_AddRef(Surface);
     
-    if(lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
-    {
-        This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-        SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
-    }
-
     return DD_OK;
 }
 

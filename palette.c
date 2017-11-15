@@ -58,6 +58,12 @@ HRESULT __stdcall ddraw_palette_SetEntries(IDirectDrawPaletteImpl *This, DWORD d
             This->data_rgb[i].rgbReserved = 0;
         }
     }
+    
+    /* FIXME: only refresh the screen when the primary palette is changed */
+    if(ddraw->primary)
+    {
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+    }
 
     return DD_OK;
 }

@@ -89,7 +89,7 @@ DWORD WINAPI render_main(void)
     glEnable(GL_TEXTURE_2D);
     
     
-    while(ddraw->render.thread)
+    while(ddraw->render.thread && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
         scale_w = (float)ddraw->width/tex_width;
         scale_h = (float)ddraw->height/tex_height;
