@@ -806,8 +806,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, SettingsIniPath);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, SettingsIniPath);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);
-    WindowPosX = GetPrivateProfileIntA("ddraw", "posX", 0, SettingsIniPath);
-    WindowPosY = GetPrivateProfileIntA("ddraw", "posY", 0, SettingsIniPath);
+    WindowPosX = GetPrivateProfileIntA("ddraw", "posX", -1, SettingsIniPath);
+    WindowPosY = GetPrivateProfileIntA("ddraw", "posY", -1, SettingsIniPath);
 
     This->render.bpp = GetPrivateProfileIntA("ddraw", "bpp", 32, SettingsIniPath);
     if (This->render.bpp != 16 && This->render.bpp != 24 && This->render.bpp != 32)
