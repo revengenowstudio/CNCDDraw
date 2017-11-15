@@ -120,11 +120,22 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         unsigned char* from=Source->surface + y0*Source->width + x0; 
         int s = x1-x0; 
 
-        int y;
-        for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
-        { 
-            memcpy(to, from, s); 
-        } 
+        if((This->caps & DDSCAPS_PRIMARYSURFACE) && !(This->flags & DDSD_BACKBUFFERCOUNT))
+        {
+            EnterCriticalSection(&ddraw->cs);
+            
+            int y;
+            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
+                memcpy(to, from, s); 
+            
+            LeaveCriticalSection(&ddraw->cs);
+        }
+        else
+        {
+            int y;
+            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
+                memcpy(to, from, s); 
+        }
     }
 
     return DD_OK;

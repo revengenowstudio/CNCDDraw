@@ -374,8 +374,6 @@ void ToggleFullscreen()
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
-
     switch(uMsg)
     {
         case WM_MOVE:
@@ -521,11 +519,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-        case WM_ERASEBKGND:
-            EnterCriticalSection(&ddraw->cs);
-            FillRect(ddraw->render.hDC, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
-            LeaveCriticalSection(&ddraw->cs);
-            break;
     }
 
     return ddraw->WndProc(hWnd, uMsg, wParam, lParam);
