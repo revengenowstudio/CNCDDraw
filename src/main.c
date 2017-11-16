@@ -817,10 +817,22 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "posY=-1\n"
             "; Screenshot Hotkey, default = CTRL + G\n"
             "screenshotKey=G\n"
+            "; Use Pixel Buffer Objects (OpenGL only)\n"
+            "opengl_pbo=false\n"
         , fh);
         fclose(fh);
     }
 
+    GetPrivateProfileStringA("ddraw", "opengl_pbo", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
+    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
+    {
+        This->opengl_pbo = FALSE;
+    }
+    else
+    {
+        This->opengl_pbo = TRUE;
+    }
+    
     GetPrivateProfileStringA("ddraw", "windowed", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
     {

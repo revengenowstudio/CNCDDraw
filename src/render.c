@@ -18,11 +18,35 @@
 #include <windows.h>
 #include <stdio.h>
 
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#include <GL/glu.h>
+#include <GL/glext.h>
+
 #include "main.h"
 #include "surface.h"
 
 #define CUTSCENE_WIDTH 640
 #define CUTSCENE_HEIGHT 400
+
+PFNGLGENBUFFERSARBPROC pglGenBuffersARB = 0;                     // VBO Name Generation Procedure
+PFNGLBINDBUFFERARBPROC pglBindBufferARB = 0;                     // VBO Bind Procedure
+PFNGLBUFFERDATAARBPROC pglBufferDataARB = 0;                     // VBO Data Loading Procedure
+PFNGLDELETEBUFFERSARBPROC pglDeleteBuffersARB = 0;               // VBO Deletion Procedure
+PFNGLMAPBUFFERARBPROC pglMapBufferARB = 0;                       // map VBO procedure
+PFNGLUNMAPBUFFERARBPROC pglUnmapBufferARB = 0;                   // unmap VBO procedure
+#define glGenBuffersARB           pglGenBuffersARB
+#define glBindBufferARB           pglBindBufferARB
+#define glBufferDataARB           pglBufferDataARB
+#define glDeleteBuffersARB        pglDeleteBuffersARB
+#define glMapBufferARB            pglMapBufferARB
+#define glUnmapBufferARB          pglUnmapBufferARB
+
+const GLenum PIXEL_FORMAT = GL_RGBA;
+
+GLuint pboIds[2];
+GLuint textureId;
+BOOL pboSupported = FALSE;
 
 BOOL detect_cutscene();
 
@@ -35,27 +59,45 @@ DWORD WINAPI render_main(void)
 
     int tex_width = ddraw->width > 1024 ? ddraw->width : 1024;
     int tex_height = ddraw->height > 1024 ? ddraw->height : 1024;
+    int tex_size = tex_width * tex_height * sizeof(int);
     float scale_w = 1.0f;
     float scale_h = 1.0f;
-    int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_width * tex_height * sizeof(int));
+    int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
     hRC = wglCreateContext( ddraw->render.hDC );
     wglMakeCurrent( ddraw->render.hDC, hRC );
 
     char *glext = (char *)glGetString(GL_EXTENSIONS);
 
-    if(glext && strstr(glext, "WGL_EXT_swap_control"))
+    if(glext)
     {
-        BOOL (APIENTRY *wglSwapIntervalEXT)(int) = (BOOL (APIENTRY *)(int))wglGetProcAddress("wglSwapIntervalEXT");
-        if(wglSwapIntervalEXT)
+        if (strstr(glext, "WGL_EXT_swap_control"))
         {
-            if(ddraw->vsync)
+            BOOL (APIENTRY *wglSwapIntervalEXT)(int) = (BOOL (APIENTRY *)(int))wglGetProcAddress("wglSwapIntervalEXT");
+            if(wglSwapIntervalEXT)
             {
-                wglSwapIntervalEXT(1);
+                if(ddraw->vsync)
+                {
+                    wglSwapIntervalEXT(1);
+                }
+                else
+                {
+                    wglSwapIntervalEXT(0);
+                }
             }
-            else
+        }
+        if (ddraw->opengl_pbo && strstr(glext, "GL_ARB_pixel_buffer_object"))
+        {
+            glGenBuffersARB = (PFNGLGENBUFFERSARBPROC)wglGetProcAddress("glGenBuffersARB");
+            glBindBufferARB = (PFNGLBINDBUFFERARBPROC)wglGetProcAddress("glBindBufferARB");
+            glBufferDataARB = (PFNGLBUFFERDATAARBPROC)wglGetProcAddress("glBufferDataARB");
+            glDeleteBuffersARB = (PFNGLDELETEBUFFERSARBPROC)wglGetProcAddress("glDeleteBuffersARB");
+            glMapBufferARB = (PFNGLMAPBUFFERARBPROC)wglGetProcAddress("glMapBufferARB");
+            glUnmapBufferARB = (PFNGLUNMAPBUFFERARBPROC)wglGetProcAddress("glUnmapBufferARB");
+
+            if(glGenBuffersARB && glBindBufferARB && glBufferDataARB && glMapBufferARB && glUnmapBufferARB && glDeleteBuffersARB)
             {
-                wglSwapIntervalEXT(0);
+                pboSupported = TRUE;
             }
         }
     }
@@ -74,7 +116,9 @@ DWORD WINAPI render_main(void)
         frame_len = 1000.0f / ddraw->render.maxfps;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, PIXEL_FORMAT, GL_UNSIGNED_BYTE, tex);
     glViewport(0, 0, ddraw->render.width, ddraw->render.height);
 
     if(ddraw->render.filter)
@@ -87,21 +131,45 @@ DWORD WINAPI render_main(void)
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
     }
-
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
+    
+    if(pboSupported)
+    {
+        glGenBuffersARB(2, pboIds);
+        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pboIds[0]);
+        glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, tex_size, 0, GL_STREAM_DRAW_ARB);
+        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pboIds[1]);
+        glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, tex_size, 0, GL_STREAM_DRAW_ARB);
+        glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+    }
+    
     glEnable(GL_TEXTURE_2D);
     
     
     while(ddraw->render.thread && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
+        static int index = 0;
         scale_w = (float)ddraw->width/tex_width;
         scale_h = (float)ddraw->height/tex_height;
-    
+        
+        index = (index + 1) % 2;
+        int nextIndex = (index + 1) % 2;
+        
         if(ddraw->render.maxfps > 0)
         {
             tick_start = timeGetTime();
         }
 
         /* convert ddraw surface to opengl texture */
+        
+        if(pboSupported)
+        {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pboIds[index]);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, PIXEL_FORMAT, GL_UNSIGNED_BYTE, 0);
+        }
+        
         EnterCriticalSection(&ddraw->cs);
 
         if(ddraw->primary && ddraw->primary->palette)
@@ -130,17 +198,47 @@ DWORD WINAPI render_main(void)
                 }
             }
 
-            for(i=0; i<ddraw->height; i++)
+            if(pboSupported)
             {
-                for(j=0; j<ddraw->width; j++)
+                glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, pboIds[nextIndex]);
+                
+                glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, tex_size, 0, GL_STREAM_DRAW_ARB);
+                int *ptr = (int *)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+                if(ptr)
                 {
-                    tex[i*ddraw->width+j] = ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
+                    for(i=0; i<ddraw->height; i++)
+                    {
+                        for(j=0; j<ddraw->width; j++)
+                        {
+                            ptr[i*ddraw->width+j] = ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
+                        }
+                    }
+                    
+                    glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+                }
+                
+                glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+            }
+            else
+            {
+                for(i=0; i<ddraw->height; i++)
+                {
+                    for(j=0; j<ddraw->width; j++)
+                    {
+                        tex[i*ddraw->width+j] = ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
+                    }
                 }
             }
+            
         }
+        
         LeaveCriticalSection(&ddraw->cs);
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+        if (!pboSupported)
+        {
+            glBindTexture(GL_TEXTURE_2D, textureId);
+            glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, PIXEL_FORMAT, GL_UNSIGNED_BYTE, tex);
+        }
 
         glBegin(GL_TRIANGLE_FAN);
         glTexCoord2f(0,0);              glVertex2f(-1,  1);
@@ -149,7 +247,9 @@ DWORD WINAPI render_main(void)
         glTexCoord2f(0,scale_h);        glVertex2f(-1, -1);
         glEnd();
         
-        SwapBuffers(ddraw->render.hDC); 
+        glBindTexture(GL_TEXTURE_2D, 0);
+        
+        SwapBuffers(ddraw->render.hDC);
 
         if(ddraw->render.maxfps > 0)
         {        
@@ -163,6 +263,10 @@ DWORD WINAPI render_main(void)
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
+    glDeleteTextures(1, &textureId);
+
+    if(pboSupported)
+        glDeleteBuffersARB(2, pboIds);
 
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
