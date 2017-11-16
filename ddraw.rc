@@ -4,16 +4,16 @@
     {
         BLOCK "040904B0"
         {
-            VALUE "CompanyName", "Toni Spets"
+            VALUE "CompanyName", "cncnet.org"
             VALUE "FileDescription", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "FileVersion", "git~"
+            VALUE "FileVersion", "1.1.0.0"
             VALUE "InternalName", "ddraw"
-            VALUE "LegalCopyright", "Copyright (c) 2010, 2011 Toni Spets"
+            VALUE "LegalCopyright", "Copyright (c) 2010-2017"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFileName", "ddraw.dll"
             VALUE "ProductName", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "ProductVersion", "git~"
-            VALUE "Comments", "http://hifi.iki.fi/cnc-ddraw/"
+            VALUE "ProductVersion", "1.1.0.0"
+            VALUE "Comments", "https://cncnet.org"
         }
     }
 
