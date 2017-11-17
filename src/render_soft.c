@@ -51,8 +51,6 @@ BOOL detect_cutscene()
 
 DWORD WINAPI render_soft_main(void)
 {
-    Sleep(500);
-    
     PBITMAPINFO bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
 
     bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -97,7 +95,7 @@ DWORD WINAPI render_soft_main(void)
         frame_len = 1000.0f / ddraw->render.maxfps;
     }
 
-    while (ddraw->render.thread && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
         if(ddraw->render.maxfps > 0)
         {
@@ -159,6 +157,8 @@ DWORD WINAPI render_soft_main(void)
                 Sleep( frame_len - (tick_end - tick_start));
             }
         }
+        
+        SetEvent(ddraw->render.ev);
     }
 
     HeapFree(GetProcessHeap(), 0, bmi);

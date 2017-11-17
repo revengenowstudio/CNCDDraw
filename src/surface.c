@@ -113,23 +113,18 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         unsigned char* from=Source->surface + y0*Source->width + x0; 
         int s = x1-x0; 
 
-        if((This->caps & DDSCAPS_PRIMARYSURFACE) && !(This->flags & DDSD_BACKBUFFERCOUNT))
-        {
-            EnterCriticalSection(&ddraw->cs);
-            
-            int y;
-            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
-                memcpy(to, from, s); 
-            
-            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-            LeaveCriticalSection(&ddraw->cs);
-        }
-        else
-        {
-            int y;
-            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
-                memcpy(to, from, s); 
-        }
+        int y;
+        for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
+        { 
+            memcpy(to, from, s); 
+        } 
+    }
+
+    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
+    {
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+        WaitForSingleObject(ddraw->render.ev, INFINITE);
+        ResetEvent(ddraw->render.ev);
     }
 
     return DD_OK;
@@ -206,9 +201,11 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
     printf("IDirectDrawSurface::Flip(This=%p, ...)\n", This);
 #endif
 
-    if(This->caps & DDSCAPS_PRIMARYSURFACE)
+    if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
+        ResetEvent(ddraw->render.ev);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+        WaitForSingleObject(ddraw->render.ev, INFINITE);
     }
 
     return DD_OK;
@@ -374,7 +371,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT))
+    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
     {
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
     }

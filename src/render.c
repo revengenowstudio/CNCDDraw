@@ -52,8 +52,6 @@ BOOL detect_cutscene();
 
 DWORD WINAPI render_main(void)
 {
-    Sleep(500);
-    
     int i,j;
     HGLRC hRC;
 
@@ -147,7 +145,7 @@ DWORD WINAPI render_main(void)
     glEnable(GL_TEXTURE_2D);
     
     
-    while(ddraw->render.thread && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while(ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
         static int index = 0;
         scale_w = (float)ddraw->width/tex_width;
@@ -229,7 +227,6 @@ DWORD WINAPI render_main(void)
                     }
                 }
             }
-            
         }
         
         LeaveCriticalSection(&ddraw->cs);
@@ -260,6 +257,8 @@ DWORD WINAPI render_main(void)
                 Sleep( frame_len - (tick_end - tick_start));
             }
         }
+        
+        SetEvent(ddraw->render.ev);
     }
 
     HeapFree(GetProcessHeap(), 0, tex);

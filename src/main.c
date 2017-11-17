@@ -191,6 +191,18 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
         return DD_OK;
     }
 
+    /* only stop drawing in GL mode when minimized */
+    if (This->renderer == render_main)
+    {
+        EnterCriticalSection(&This->cs);
+        This->render.run = FALSE;
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+        LeaveCriticalSection(&This->cs);
+
+        WaitForSingleObject(This->render.thread, INFINITE);
+        This->render.thread = NULL;
+    }
+    
     if(!ddraw->windowed)
     {
         ChangeDisplaySettings(&This->mode, 0);
@@ -237,7 +249,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if(This->render.thread == NULL)
         {
             This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-            SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
+            //SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
         }
         return DD_OK;
     }
@@ -303,7 +315,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     if(This->render.thread == NULL)
     {
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-        SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
+        //SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
     }
 
     return DD_OK;
@@ -653,21 +665,27 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             PostMessage(This->hWnd, WM_USER, 0, 0);
         }
         
-        if (This->render.thread)
+        if(This->render.run)
         {
             EnterCriticalSection(&This->cs);
-            HANDLE thread = This->render.thread;
-            This->render.thread = NULL;
-            ReleaseSemaphore(This->render.sem, 1, NULL);
+            This->render.run = FALSE;
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             LeaveCriticalSection(&This->cs);
-            
-            WaitForSingleObject(thread, INFINITE);
+
+            WaitForSingleObject(This->render.thread, INFINITE);
+            This->render.thread = NULL;
         }
 
         if(This->render.hDC)
         {
             ReleaseDC(This->hWnd, This->render.hDC);
             This->render.hDC = NULL;
+        }
+        
+        if(This->render.ev)
+        {
+            CloseHandle(This->render.ev);
+            ddraw->render.ev = NULL;
         }
 
         if(This->real_dll)
@@ -771,6 +789,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
 
     InitializeCriticalSection(&This->cs);
+    This->render.ev = CreateEvent(NULL, TRUE, FALSE, NULL);
     This->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
 
     /* load configuration options from ddraw.ini */
@@ -795,7 +814,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "; use letter- or windowboxing to make a best fit (GDI only!)\n"
             "boxing=false\n"
             "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
-            "max_fps=120\n"
+            "maxfps=0\n"
             "; vertical synchronization, enable if you get tearing (OpenGL only)\n"
             "vsync=false\n"
             "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
@@ -866,7 +885,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), SettingsIniPath);
     ddraw->screenshotKey = toupper(tmp[0]);
     
-    This->render.maxfps = GetPrivateProfileIntA("ddraw", "max_fps", 120, SettingsIniPath);
+    This->render.maxfps = GetPrivateProfileIntA("ddraw", "maxfps", 0, SettingsIniPath);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, SettingsIniPath);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);
     WindowPosX = GetPrivateProfileIntA("ddraw", "posX", -1, SettingsIniPath);
