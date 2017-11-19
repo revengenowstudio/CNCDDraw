@@ -276,6 +276,57 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.mode.dmBitsPerPel = This->render.bpp;
     }
     
+    if(!This->windowed)
+    {
+        // Making sure the chosen resolution is valid
+        if(!This->devmode)
+        {
+            int width = This->render.width;
+            int height = This->render.height;
+            
+            if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+            {
+                // fail... compare resolutions
+                if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
+                {
+                    // chosen game resolution higher than current resolution, use window mode for this case
+                    This->windowed = TRUE;
+                }
+                else
+                {
+                    // Try 2x scaling
+                    This->render.width *= 2;
+                    This->render.height *= 2;
+                    
+                    This->render.mode.dmPelsWidth = This->render.width;
+                    This->render.mode.dmPelsHeight = This->render.height;
+                    
+                    if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                    {
+                        // try current display settings
+                        This->render.width = This->mode.dmPelsWidth;
+                        This->render.height = This->mode.dmPelsHeight;
+                        
+                        This->render.mode.dmPelsWidth = This->render.width;
+                        This->render.mode.dmPelsHeight = This->render.height;
+                        
+                        if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                        {
+                            // everything failed, use window mode instead
+                            This->render.width = width;
+                            This->render.height = height;
+                            
+                            This->render.mode.dmPelsWidth = This->render.width;
+                            This->render.mode.dmPelsHeight = This->render.height;
+                            
+                            This->windowed = TRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     if(This->windowed)
     {
         if(!This->windowed_init)
