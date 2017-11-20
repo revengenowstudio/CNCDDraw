@@ -246,7 +246,7 @@ void mouse_unlock()
     }
 }
 
-void mouse_init(HWND hWnd)
+void mouse_init()
 {
     if(ddraw->mhack || ddraw->devmode)
     {

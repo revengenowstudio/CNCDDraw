@@ -29,7 +29,7 @@
 
 /* from mouse.c */
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint);
-void mouse_init(HWND);
+void mouse_init();
 void mouse_lock();
 void mouse_unlock();
 
@@ -290,6 +290,12 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                 if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
                 {
                     // chosen game resolution higher than current resolution, use window mode for this case
+                    if (!This->mhack)
+                    {
+                        This->mhack = TRUE;
+                        mouse_init();
+                    }
+                    
                     This->windowed = TRUE;
                 }
                 else
@@ -318,6 +324,12 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                             
                             This->render.mode.dmPelsWidth = This->render.width;
                             This->render.mode.dmPelsHeight = This->render.height;
+                            
+                            if (!This->mhack)
+                            {
+                                This->mhack = TRUE;
+                                mouse_init();
+                            }
                             
                             This->windowed = TRUE;
                         }
@@ -425,6 +437,12 @@ void ToggleFullscreen()
     {
         if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
+            if (!ddraw->devmode && !ddraw->mhack)
+            {
+                ddraw->mhack = TRUE;
+                mouse_init();
+            }
+            
             if (!ddraw->border)
             {
                 SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
@@ -445,7 +463,7 @@ void ToggleFullscreen()
                 mouse_unlock();
                 mouse_lock();
             }
-            
+
             ddraw->windowed = TRUE;
         }
     }
@@ -635,7 +653,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
         This->hWnd = hWnd;
     }
 
-    mouse_init(hWnd);
+    mouse_init();
 
     This->WndProc = (LRESULT CALLBACK (*)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
 
@@ -977,7 +995,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         This->mhack = FALSE;
     }
-
+    
+    if (This->windowed)
+        This->mhack = TRUE;
+        
     GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
