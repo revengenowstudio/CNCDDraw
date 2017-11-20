@@ -465,6 +465,7 @@ void ToggleFullscreen()
             }
 
             ddraw->windowed = TRUE;
+            ddraw->windowed_init = TRUE;
         }
     }
 }
@@ -477,7 +478,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_MOVE:
         {
-            if (ddraw->windowed)
+            if (ddraw->windowed && ddraw->windowed_init)
             {
                 int x = (int)(short)LOWORD(lParam);
                 int y = (int)(short)HIWORD(lParam);
