@@ -281,8 +281,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         // Making sure the chosen resolution is valid
         if(!This->devmode)
         {
-            int width = This->render.width;
-            int height = This->render.height;
+            int oldWidth = This->render.width;
+            int oldHeight = This->render.height;
             
             if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
             {
@@ -319,8 +319,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                         if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                         {
                             // everything failed, use window mode instead
-                            This->render.width = width;
-                            This->render.height = height;
+                            This->render.width = oldWidth;
+                            This->render.height = oldHeight;
                             
                             This->render.mode.dmPelsWidth = This->render.width;
                             This->render.mode.dmPelsHeight = This->render.height;
