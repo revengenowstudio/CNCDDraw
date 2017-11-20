@@ -89,6 +89,7 @@ typedef struct IDirectDrawImpl
     DWORD WINAPI (*renderer)(void);
     char screenshotKey;
     BOOL opengl_pbo;
+    BOOL fullscreen;
     
 } IDirectDrawImpl;
 

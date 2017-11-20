@@ -233,6 +233,12 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     ddraw->cursor.x = ddraw->cursorclip.width / 2;
     ddraw->cursor.y = ddraw->cursorclip.height / 2;
 
+    if(This->fullscreen)
+    {
+        This->render.width = This->mode.dmPelsWidth;
+        This->render.height = This->mode.dmPelsHeight;
+    }
+
     if(This->render.width < This->width)
     {
         This->render.width = This->width;
@@ -873,9 +879,11 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         FILE *fh = fopen(SettingsIniPath, "w");
         fputs(
             "[ddraw]\n"
-            "; width and height of the window, defaults to the size game requests\n"
+            "; stretch to custom resolution, 0 = defaults to the size game requests\n"
             "width=0\n"
             "height=0\n"
+            "; override width/height and always stretch to fullscreen\n"
+            "fullscreen=false\n"
             "; bits per pixel, possible values: 16, 24 and 32, 0 = auto\n"
             "bpp=0\n"
             "windowed=false\n"
@@ -960,6 +968,18 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);
     WindowPosX = GetPrivateProfileIntA("ddraw", "posX", -1, SettingsIniPath);
     WindowPosY = GetPrivateProfileIntA("ddraw", "posY", -1, SettingsIniPath);
+    
+    GetPrivateProfileStringA("ddraw", "fullscreen", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
+    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
+    {
+        This->fullscreen = FALSE;
+    }
+    else
+    {
+        This->fullscreen = TRUE;
+        WindowPosX = -1;
+        WindowPosY = -1;
+    }
 
     This->render.bpp = GetPrivateProfileIntA("ddraw", "bpp", 32, SettingsIniPath);
     if (This->render.bpp != 16 && This->render.bpp != 24 && This->render.bpp != 32)
