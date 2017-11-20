@@ -872,12 +872,12 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         FILE *fh = fopen(SettingsIniPath, "w");
         fputs(
             "[ddraw]\n"
-            "; width and height of the window, defaults to the size game requests\r\n"
+            "; width and height of the window, defaults to the size game requests\n"
             "width=0\n"
             "height=0\n"
             "; bits per pixel, possible values: 16, 24 and 32, 0 = auto\n"
             "bpp=0\n"
-            "windowed=true\n"
+            "windowed=false\n"
             "; show window borders in windowed mode\n"
             "border=true\n"
             "; use letter- or windowboxing to make a best fit (GDI only!)\n"
@@ -921,7 +921,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->opengl_pbo = TRUE;
     }
     
-    GetPrivateProfileStringA("ddraw", "windowed", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
+    GetPrivateProfileStringA("ddraw", "windowed", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
     {
         This->windowed = FALSE;
