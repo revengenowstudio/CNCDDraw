@@ -482,6 +482,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
+        case WM_SIZE: 
+            return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         case WM_MOVE:
         {
             if (ddraw->windowed && ddraw->windowed_init)
@@ -495,13 +497,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (y != -32000)
                     WindowPosY = y;
             }
-            break;
+            
+            return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
-        
-        /* Carmageddon stops the main loop when it sees these, DefWindowProc is also bad */
-        //case WM_WINDOWPOSCHANGING:
-        //case WM_WINDOWPOSCHANGED:
-        //    return 0;
 
         /* C&C and RA really don't want to close down */
         case WM_SYSCOMMAND:

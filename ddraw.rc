@@ -1,6 +1,6 @@
 1 VERSIONINFO
-FILEVERSION 1,1,3,0
-PRODUCTVERSION 1,1,3,0
+FILEVERSION 1,1,4,0
+PRODUCTVERSION 1,1,4,0
 {
     BLOCK "StringFileInfo"
     {
@@ -8,13 +8,13 @@ PRODUCTVERSION 1,1,3,0
         {
             VALUE "CompanyName", "cncnet.org"
             VALUE "FileDescription", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "FileVersion", "1.1.3.0"
+            VALUE "FileVersion", "1.1.4.0"
             VALUE "InternalName", "ddraw"
             VALUE "LegalCopyright", "Copyright (c) 2010-2017"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFileName", "ddraw.dll"
             VALUE "ProductName", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "ProductVersion", "1.1.3.0"
+            VALUE "ProductVersion", "1.1.4.0"
             VALUE "Comments", "https://cncnet.org"
         }
     }
