@@ -1,0 +1,24 @@
+#pragma once
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#include <stdio.h>
+
+void DebugPrint(const char *format, ...);
+
+//#define _DEBUG 1
+
+//use OutputDebugStringA rather than printf
+//#define _DEBUGstring 1
+
+//log everything (slow)
+//#define _DEBUGx 1
+
+#ifdef _DEBUG
+
+#ifdef _DEBUGstring
+#define printf(format, ...) DebugPrint("xDBG " format, ##__VA_ARGS__)
+#endif 
+
+#else 
+#define printf(format, ...)
+#endif 

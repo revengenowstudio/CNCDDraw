@@ -19,12 +19,9 @@
 
 #include <windows.h>
 #include "ddraw.h"
+#include "debug.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
-
-#ifndef _DEBUG
-#define printf(format, ...)
-#endif
 
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;

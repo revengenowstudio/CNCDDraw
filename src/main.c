@@ -702,7 +702,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
 HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HANDLE b)
 {
-#if _DEBUG
+#if _DEBUGx
     printf("DirectDraw::WaitForVerticalBlank(This=%p, ...)\n", This);
 #endif
     return DD_OK;
@@ -819,7 +819,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
 #if _DEBUG
     if(!stdout_open)
     {
-        freopen("stdout.txt", "w", stdout);
+        freopen("ra95stdout.txt", "w", stdout);
         setvbuf(stdout, NULL, _IONBF, 0);
         stdout_open = 1;
     }

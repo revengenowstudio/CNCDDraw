@@ -147,6 +147,19 @@ DWORD WINAPI render_main(void)
     
     while(ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
+#if _DEBUG
+        static DWORD tick_fps = 0;
+        static DWORD frame_count = 0;
+        tick_start = timeGetTime();
+        if (tick_start >= tick_fps)
+        {
+            printf("Frames: %lu - Elapsed: %lu ms\n", frame_count, (tick_start - tick_fps) + 1000);
+            frame_count = 0;
+            tick_fps = tick_start + 1000;
+        }
+        frame_count++;
+#endif
+        
         static int index = 0;
         scale_w = (float)ddraw->width/tex_width;
         scale_h = (float)ddraw->height/tex_height;

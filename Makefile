@@ -3,7 +3,8 @@ WINDRES=windres
 CFLAGS=-DHAVE_LIBPNG -Iinc -Wall -Wl,--enable-stdcall-fixup -O3 -s
 LIBS=lib/libpng14.a lib/libz.a -lgdi32 -lopengl32 -lwinmm
 
-FILES = src/main.c \
+FILES = src/debug.c \
+        src/main.c \
         src/mouse.c \
         src/palette.c \
         src/surface.c \
