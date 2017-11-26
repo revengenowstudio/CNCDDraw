@@ -8,14 +8,14 @@ void DebugPrint(const char *format, ...);
 //#define _DEBUG 1
 
 //use OutputDebugStringA rather than printf
-//#define _DEBUGstring 1
+//#define _DEBUG_S 1
 
 //log everything (slow)
-//#define _DEBUGx 1
+//#define _DEBUG_X 1
 
 #ifdef _DEBUG
 
-#ifdef _DEBUGstring
+#ifdef _DEBUG_S
 #define printf(format, ...) DebugPrint("xDBG " format, ##__VA_ARGS__)
 #endif 
 

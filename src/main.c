@@ -702,7 +702,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
 HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HANDLE b)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("DirectDraw::WaitForVerticalBlank(This=%p, ...)\n", This);
 #endif
     return DD_OK;

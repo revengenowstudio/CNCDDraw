@@ -81,7 +81,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 {
     IDirectDrawSurfaceImpl *Source = (IDirectDrawSurfaceImpl *)lpDDSrcSurface;
 
-#if _DEBUGx
+#if _DEBUG_X
     printf("DirectDrawSurface::Blt(This=%p, lpDestRect=%p, lpDDSrcSurface=%p, lpSrcRect=%p, dwFlags=%d, lpDDBltFx=%p)\n", This, lpDestRect, lpDDSrcSurface, lpSrcRect, (int)dwFlags, lpDDBltFx);
     if(lpDestRect)
     {
@@ -151,7 +151,7 @@ HRESULT __stdcall ddraw_surface_DeleteAttachedSurface(IDirectDrawSurfaceImpl *Th
 
 HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSurfaceDesc)
 {
-#if _DEBUGx
+#if DEBUG_X
     printf("IDirectDrawSurface::GetSurfaceDesc(This=%p, lpDDSurfaceDesc=%p)\n", This, lpDDSurfaceDesc);
 #endif
 
@@ -197,7 +197,7 @@ HRESULT __stdcall ddraw_surface_EnumOverlayZOrders(IDirectDrawSurfaceImpl *This,
 
 HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE a, DWORD b)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("IDirectDrawSurface::Flip(This=%p, ...)\n", This);
 #endif
 
@@ -219,7 +219,7 @@ HRESULT __stdcall ddraw_surface_GetAttachedSurface(IDirectDrawSurfaceImpl *This,
 
 HRESULT __stdcall ddraw_surface_GetBltStatus(IDirectDrawSurfaceImpl *This, DWORD a)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("IDirectDrawSurface::GetBltStatus(This=%p, ...)\n", This);
 #endif
     return DD_OK;
@@ -283,7 +283,7 @@ HRESULT __stdcall ddraw_surface_Initialize(IDirectDrawSurfaceImpl *This, LPDIREC
 
 HRESULT __stdcall ddraw_surface_IsLost(IDirectDrawSurfaceImpl *This)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("IDirectDrawSurface::IsLost(This=%p)\n", This);
 #endif
     return DD_OK;
@@ -291,7 +291,7 @@ HRESULT __stdcall ddraw_surface_IsLost(IDirectDrawSurfaceImpl *This)
 
 HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDDSURFACEDESC lpDDSurfaceDesc, DWORD dwFlags, HANDLE hEvent)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("DirectDrawSurface::Lock(This=%p, lpDestRect=%p, lpDDSurfaceDesc=%p, dwFlags=%d, hEvent=%p)\n", This, lpDestRect, lpDDSurfaceDesc, (int)dwFlags, hEvent);
 
     if(dwFlags & DDLOCK_SURFACEMEMORYPTR)
@@ -367,7 +367,7 @@ HRESULT __stdcall ddraw_surface_SetPalette(IDirectDrawSurfaceImpl *This, LPDIREC
 
 HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
 {
-#if _DEBUGx
+#if _DEBUG_X
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
