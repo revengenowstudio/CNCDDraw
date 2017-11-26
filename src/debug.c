@@ -7,6 +7,6 @@ void DebugPrint(const char *format, ...)
 	va_list args;
 	va_start(args, format);
 	char buffer[512];
-	_vsnprintf_s(buffer, sizeof(buffer), _TRUNCATE, format, args);
+	_vsnprintf(buffer, sizeof(buffer), format, args);
 	OutputDebugStringA(buffer);
 }
