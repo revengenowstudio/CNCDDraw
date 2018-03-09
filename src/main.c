@@ -422,23 +422,24 @@ LRESULT CALLBACK dummy_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void ToggleFullscreen()
 {
+    if (!ddraw->locked)
+        return;
+    
     if (ddraw->windowed)
     {
+        mouse_unlock();
         if(ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
         {
             ddraw->windowed = FALSE;
             
             SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
-            if (ddraw->locked)
-            {
-                mouse_unlock();
-                mouse_lock();
-            }
         }
+        mouse_lock();
     }
     else
     {
+        mouse_unlock();
         if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
             if (!ddraw->border)
@@ -456,15 +457,10 @@ void ToggleFullscreen()
             AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
             SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), SWP_SHOWWINDOW);
             
-            if (ddraw->locked)
-            {
-                mouse_unlock();
-                mouse_lock();
-            }
-
             ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
         }
+        mouse_lock();
     }
 }
 
