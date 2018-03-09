@@ -24,7 +24,7 @@
 #define MAX_HOOKS 16
 
 BOOL mouse_active = FALSE;
-int real_height = 0;
+int yAdjust = 0;
 
 struct hook { char name[32]; void *func; };
 struct hack
@@ -35,47 +35,6 @@ struct hack
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
-    POINT pt;
-
-    if(mouse_active && ddraw->locked)
-    {
-        GetCursorPos(&pt);
-
-        if(ddraw->sensitivity > 0 && ddraw->sensitivity < 10)
-        {
-            ddraw->cursor.x += (pt.x - ddraw->center.x) * ddraw->sensitivity;
-            ddraw->cursor.y += (pt.y - ddraw->center.y) * ddraw->sensitivity;
-        }
-        else if(ddraw->adjmouse)
-        {
-            ddraw->cursor.x += (pt.x - ddraw->center.x) * ((float)ddraw->width / ddraw->render.width);
-            ddraw->cursor.y += (pt.y - ddraw->center.y) * ((float)ddraw->height / ddraw->render.height);
-        }
-        else
-        {
-            ddraw->cursor.x += pt.x - ddraw->center.x;
-            ddraw->cursor.y += pt.y - ddraw->center.y;
-        }
-
-        if(ddraw->cursor.x < 0) ddraw->cursor.x = 0;
-        if(ddraw->cursor.y < 0) ddraw->cursor.y = 0;
-        if(ddraw->cursor.x > ddraw->cursorclip.width-1) ddraw->cursor.x = ddraw->cursorclip.width-1;
-
-        if(real_height > 0 && real_height < ddraw->cursorclip.height)
-        {
-            if(ddraw->cursor.y > real_height-1) ddraw->cursor.y = real_height-1;
-        }
-        else
-        {
-            if(ddraw->cursor.y > ddraw->cursorclip.height-1) ddraw->cursor.y = ddraw->cursorclip.height-1;
-        }
-
-        if(pt.x != ddraw->center.x || pt.y != ddraw->center.y)
-        {
-            SetCursorPos(ddraw->center.x, ddraw->center.y);
-        }
-    }
-
     if (lpPoint)
     {
         lpPoint->x = (int)ddraw->cursor.x;
@@ -89,7 +48,8 @@ BOOL WINAPI fake_ClipCursor(const RECT *lpRect)
     if(lpRect)
     {
         /* hack for 640x480 mode */
-        real_height = lpRect->bottom;
+        if (lpRect->bottom == 400 && ddraw->height == 480)
+            yAdjust = 40;
     }
     return TRUE;
 }
@@ -195,12 +155,25 @@ void mouse_lock()
 
     if (mouse_active && !ddraw->locked)
     {
-        GetWindowRect(ddraw->hWnd, &rc);
+        // Get the window client area.
+        GetClientRect(ddraw->hWnd, &rc);
         
-        ddraw->center.x = (rc.right + rc.left) / 2;
-        ddraw->center.y = (rc.top + rc.bottom) / 2;
+        // stretching fix
+        rc.right -= (ddraw->render.width - ddraw->width);
+        rc.bottom -= (ddraw->render.height - ddraw->height);
 
-        SetCursorPos(ddraw->center.x, ddraw->center.y);
+        // Convert the client area to screen coordinates.
+        POINT pt = { rc.left, rc.top };
+        POINT pt2 = { rc.right, rc.bottom };
+        ClientToScreen(ddraw->hWnd, &pt);
+        ClientToScreen(ddraw->hWnd, &pt2);
+        
+        SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
+        
+        rc.bottom -= yAdjust * 2;
+
+        SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
+        
         SetCapture(ddraw->hWnd);
         ClipCursor(&rc);
 
@@ -212,7 +185,6 @@ void mouse_lock()
 void mouse_unlock()
 {
     RECT rc;
-    POINT pt;
 
     if (ddraw->devmode)
     {
@@ -229,28 +201,31 @@ void mouse_unlock()
     {
         ddraw->locked = FALSE;
 
-        GetWindowRect(ddraw->hWnd, &rc);
-
-        pt.x = (rc.right - rc.left - ddraw->render.width) / 2;
-        pt.y = (rc.bottom - rc.top - ddraw->render.height - pt.x);
-        rc.left += pt.x;
-        rc.top += pt.y;
-
-        SetCursorPos(rc.left + (ddraw->cursor.x * ddraw->render.width / ddraw->width), rc.top + (ddraw->cursor.y * ddraw->render.height / ddraw->height));
+        // Get the window client area.
+        GetClientRect(ddraw->hWnd, &rc);
+        
+        // Convert the client area to screen coordinates.
+        POINT pt = { rc.left, rc.top };
+        POINT pt2 = { rc.right, rc.bottom };
+        ClientToScreen(ddraw->hWnd, &pt);
+        ClientToScreen(ddraw->hWnd, &pt2);
+        SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
+       
         while(ShowCursor(TRUE) < 0);
         SetCursor(LoadCursor(NULL, IDC_ARROW));
 
         ClipCursor(NULL);
         ReleaseCapture();
+        
+        SetCursorPos(
+            rc.left + (ddraw->cursor.x  * ((float)ddraw->render.width / ddraw->width)), 
+            rc.top + ((ddraw->cursor.y + yAdjust) * ((float)ddraw->render.height / ddraw->height)));
 
     }
 }
 
 void mouse_init()
 {
-    if(ddraw->mhack || ddraw->devmode)
-    {
-        hack_iat(&hacks[0]);
-        mouse_active = TRUE;
-    }
+    hack_iat(&hacks[0]);
+    mouse_active = TRUE;
 }

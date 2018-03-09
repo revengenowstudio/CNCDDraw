@@ -296,12 +296,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                 if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
                 {
                     // chosen game resolution higher than current resolution, use window mode for this case
-                    if (!This->mhack)
-                    {
-                        This->mhack = TRUE;
-                        mouse_init();
-                    }
-                    
                     This->windowed = TRUE;
                 }
                 else
@@ -330,12 +324,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                             
                             This->render.mode.dmPelsWidth = This->render.width;
                             This->render.mode.dmPelsHeight = This->render.height;
-                            
-                            if (!This->mhack)
-                            {
-                                This->mhack = TRUE;
-                                mouse_init();
-                            }
                             
                             This->windowed = TRUE;
                         }
@@ -443,12 +431,6 @@ void ToggleFullscreen()
     {
         if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
-            if (!ddraw->devmode && !ddraw->mhack)
-            {
-                ddraw->mhack = TRUE;
-                mouse_init();
-            }
-            
             if (!ddraw->border)
             {
                 SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
@@ -590,7 +572,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
-            if (ddraw->mhack && !ddraw->locked)
+            if (!ddraw->devmode && !ddraw->locked)
             {
                 ddraw->cursor.x = LOWORD(lParam) * ((float)ddraw->width / ddraw->render.width);
                 ddraw->cursor.y = HIWORD(lParam) * ((float)ddraw->height / ddraw->render.height);
@@ -604,22 +586,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_MOUSEMOVE:
-            if (ddraw->mhack)
-            {
-                if (!ddraw->locked)
-                {
-                    return 0;
-                }
 
-                fake_GetCursorPos(NULL); /* update our own cursor */
-                lParam = MAKELPARAM(ddraw->cursor.x, ddraw->cursor.y);
+            if (!ddraw->devmode && !ddraw->locked)
+            {
+                return 0;
             }
+
+            ddraw->cursor.x = GET_X_LPARAM(lParam);
+            ddraw->cursor.y = GET_Y_LPARAM(lParam);
 
             if (ddraw->devmode)
             {
                 mouse_lock();
-                ddraw->cursor.x = GET_X_LPARAM(lParam);
-                ddraw->cursor.y = GET_Y_LPARAM(lParam);
             }
             break;
 
@@ -895,12 +873,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "vsync=false\n"
             "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
             "filter=nearest\n"
-            "; automatic mouse sensitivity scaling\n"
-            "adjmouse=false\n"
-            "; manual sensitivity scaling, 0 = disabled, 0.5 = half, 1.0 = normal\n"
-            "sensitivity=0.0\n"
-            "; enable C&C/RA mouse hack\n"
-            "mhack=false\n"
             "; enable C&C video resize hack, auto = auto-detect game, true = forced, false = disabled\n"
             "vhack=false\n"
             "; switch between OpenGL (opengl) and software (gdi) renderers, latter supports less features but might be faster depending on the GPU\n"
@@ -994,35 +966,11 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         This->render.filter = 0;
     }
-
-    GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->adjmouse = TRUE;
-    }
-    else
-    {
-        This->adjmouse = FALSE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "mhack", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->mhack = TRUE;
-    }
-    else
-    {
-        This->mhack = FALSE;
-    }
-    
-    if (This->windowed)
-        This->mhack = TRUE;
         
     GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
         This->devmode = TRUE;
-        This->mhack = FALSE;
     }
     else
     {
@@ -1038,9 +986,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         This->vsync = FALSE;
     }
-
-    GetPrivateProfileStringA("ddraw", "sensitivity", "0", tmp, sizeof(tmp), SettingsIniPath);
-    This->sensitivity = strtof(tmp, NULL);
 
     GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
