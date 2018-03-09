@@ -37,6 +37,17 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
     if (lpPoint)
     {
+        POINT pt;
+        
+        if (!GetCursorPos(&pt))
+            return FALSE;
+        
+        if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
+        {
+            ddraw->cursor.x = pt.x;
+            ddraw->cursor.y = pt.y;
+        }
+        
         lpPoint->x = (int)ddraw->cursor.x;
         lpPoint->y = (int)ddraw->cursor.y;
     }

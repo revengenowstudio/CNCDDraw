@@ -602,12 +602,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
 
-            ddraw->cursor.x = GET_X_LPARAM(lParam);
-            ddraw->cursor.y = GET_Y_LPARAM(lParam);
-
             if (ddraw->devmode)
             {
                 mouse_lock();
+                ddraw->cursor.x = GET_X_LPARAM(lParam);
+                ddraw->cursor.y = GET_Y_LPARAM(lParam);
             }
             break;
 
