@@ -422,9 +422,6 @@ LRESULT CALLBACK dummy_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 void ToggleFullscreen()
 {
-    if (!ddraw->locked)
-        return;
-    
     if (ddraw->windowed)
     {
         mouse_unlock();
