@@ -57,6 +57,16 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             printf("cnc-ddraw DLL_PROCESS_ATTACH");
             
             //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
+            
+            HMODULE user32 = GetModuleHandle("user32.dll");
+            typedef BOOL (__stdcall* SetProcessDPIAware_)();
+            if(user32)
+            {
+                SetProcessDPIAware_ setProcessDPIAware = (SetProcessDPIAware_)GetProcAddress(user32, "SetProcessDPIAware");
+                if (setProcessDPIAware) 
+                    setProcessDPIAware();
+            }
+            
             timeBeginPeriod(1);
             break;
         }
