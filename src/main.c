@@ -58,13 +58,28 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             
             //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
             
-            HMODULE user32 = GetModuleHandle("user32.dll");
-            typedef BOOL (__stdcall* SetProcessDPIAware_)();
-            if(user32)
+            BOOL setDpiAware = FALSE;
+            HMODULE hShcore = GetModuleHandle("shcore.dll");
+            typedef HRESULT (__stdcall* SetProcessDpiAwareness_)(PROCESS_DPI_AWARENESS value);
+            if(hShcore)
             {
-                SetProcessDPIAware_ setProcessDPIAware = (SetProcessDPIAware_)GetProcAddress(user32, "SetProcessDPIAware");
-                if (setProcessDPIAware) 
-                    setProcessDPIAware();
+                SetProcessDpiAwareness_ setProcessDpiAwareness = (SetProcessDpiAwareness_)GetProcAddress(hShcore, "SetProcessDpiAwareness");
+                if (setProcessDpiAwareness)
+                {
+                    HRESULT result = setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+                    setDpiAware = result == S_OK || result == E_ACCESSDENIED;
+                }   
+            }
+            if (!setDpiAware)
+            {
+                HMODULE hUser32 = GetModuleHandle("user32.dll");
+                typedef BOOL (__stdcall* SetProcessDPIAware_)();
+                if(hUser32)
+                {
+                    SetProcessDPIAware_ setProcessDPIAware = (SetProcessDPIAware_)GetProcAddress(hUser32, "SetProcessDPIAware");
+                    if (setProcessDPIAware) 
+                        setProcessDPIAware();
+                }
             }
             
             timeBeginPeriod(1);
