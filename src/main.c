@@ -63,7 +63,9 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             typedef HRESULT (__stdcall* SetProcessDpiAwareness_)(PROCESS_DPI_AWARENESS value);
             if(hShcore)
             {
-                SetProcessDpiAwareness_ setProcessDpiAwareness = (SetProcessDpiAwareness_)GetProcAddress(hShcore, "SetProcessDpiAwareness");
+                SetProcessDpiAwareness_ setProcessDpiAwareness = 
+                    (SetProcessDpiAwareness_)GetProcAddress(hShcore, "SetProcessDpiAwareness");
+                    
                 if (setProcessDpiAwareness)
                 {
                     HRESULT result = setProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
@@ -76,7 +78,9 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
                 typedef BOOL (__stdcall* SetProcessDPIAware_)();
                 if(hUser32)
                 {
-                    SetProcessDPIAware_ setProcessDPIAware = (SetProcessDPIAware_)GetProcAddress(hUser32, "SetProcessDPIAware");
+                    SetProcessDPIAware_ setProcessDPIAware = 
+                        (SetProcessDPIAware_)GetProcAddress(hUser32, "SetProcessDPIAware");
+                        
                     if (setProcessDPIAware) 
                         setProcessDPIAware();
                 }
