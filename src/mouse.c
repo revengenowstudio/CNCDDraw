@@ -35,19 +35,27 @@ struct hack
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
-    if (lpPoint)
+    POINT pt;
+    
+    if (!GetCursorPos(&pt))
+        return FALSE;
+    
+    if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
     {
-        POINT pt;
-        
-        if (!GetCursorPos(&pt))
-            return FALSE;
-        
-        if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
+        if(ddraw->adjmouse)
+        {
+            ddraw->cursor.x = pt.x * ((float)ddraw->width / ddraw->render.width);
+            ddraw->cursor.y = pt.y * ((float)ddraw->height / ddraw->render.height);
+        }
+        else
         {
             ddraw->cursor.x = pt.x;
             ddraw->cursor.y = pt.y;
         }
+    }
         
+    if (lpPoint)
+    {
         lpPoint->x = (int)ddraw->cursor.x;
         lpPoint->y = (int)ddraw->cursor.y;
     }
@@ -169,9 +177,12 @@ void mouse_lock()
         // Get the window client area.
         GetClientRect(ddraw->hWnd, &rc);
         
-        // stretching fix
-        rc.right -= (ddraw->render.width - ddraw->width);
-        rc.bottom -= (ddraw->render.height - ddraw->height);
+        if(!ddraw->adjmouse)
+        {
+            // stretching fix
+            rc.right -= (ddraw->render.width - ddraw->width);
+            rc.bottom -= (ddraw->render.height - ddraw->height);
+        }
 
         // Convert the client area to screen coordinates.
         POINT pt = { rc.left, rc.top };
@@ -181,10 +192,19 @@ void mouse_lock()
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
-        rc.bottom -= yAdjust * 2;
+        rc.bottom -= (yAdjust * 2);
 
-        SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
-        
+        if(ddraw->adjmouse)
+        {
+            SetCursorPos(
+                rc.left + (ddraw->cursor.x * ((float)ddraw->render.width / ddraw->width)), 
+                rc.top + ((ddraw->cursor.y - yAdjust) * ((float)ddraw->render.height / ddraw->height)));
+        }
+        else
+        {
+            SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
+        }
+
         SetCapture(ddraw->hWnd);
         ClipCursor(&rc);
 
@@ -229,7 +249,7 @@ void mouse_unlock()
         ReleaseCapture();
         
         SetCursorPos(
-            rc.left + (ddraw->cursor.x  * ((float)ddraw->render.width / ddraw->width)), 
+            rc.left + (ddraw->cursor.x * ((float)ddraw->render.width / ddraw->width)), 
             rc.top + ((ddraw->cursor.y + yAdjust) * ((float)ddraw->render.height / ddraw->height)));
 
     }

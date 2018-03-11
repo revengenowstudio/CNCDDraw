@@ -75,6 +75,7 @@ typedef struct IDirectDrawImpl
     struct { float x; float y; } cursor;
     struct { int width; int height; } cursorclip;
     BOOL locked;
+    BOOL adjmouse;
     BOOL devmode;
     BOOL vsync;
     BOOL vhack;

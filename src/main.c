@@ -609,9 +609,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_MBUTTONDOWN:
         case WM_MOUSEMOVE:
 
-            if (!ddraw->devmode && !ddraw->locked)
+            if (!ddraw->devmode)
             {
-                return 0;
+                if (!ddraw->locked)
+                {
+                    return 0;
+                }
+                
+                if(ddraw->adjmouse)
+                {
+                    fake_GetCursorPos(NULL); /* update our own cursor */
+                    lParam = MAKELPARAM(ddraw->cursor.x, ddraw->cursor.y);
+                }
             }
 
             if (ddraw->devmode)
@@ -894,6 +903,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "vsync=false\n"
             "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
             "filter=nearest\n"
+            "; automatic mouse sensitivity scaling\n"
+            "adjmouse=false\n"
             "; enable C&C video resize hack, auto = auto-detect game, true = forced, false = disabled\n"
             "vhack=false\n"
             "; switch between OpenGL (opengl) and software (gdi) renderers, latter supports less features but might be faster depending on the GPU\n"
@@ -988,6 +999,16 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->render.filter = 0;
     }
         
+    GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
+    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
+    {
+        This->adjmouse = TRUE;
+    }
+    else
+    {
+        This->adjmouse = FALSE;
+    }
+
     GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {
