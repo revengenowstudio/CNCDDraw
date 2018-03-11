@@ -389,13 +389,13 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     {
         SetWindowPos(This->hWnd, HWND_TOPMOST, 0, 0, This->render.width, This->render.height, SWP_SHOWWINDOW);
 
-        mouse_lock();
-
         if(!This->devmode && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
         {
             This->render.run = FALSE;
             return DDERR_INVALIDMODE;
         }
+        
+        mouse_lock();
     }
     
     if(This->render.thread == NULL)
@@ -522,13 +522,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
             {
-                if (wParam == WA_ACTIVE)
-                {
-                    mouse_lock();
-                }
                 if (!ddraw->windowed)
                 {
                     ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+                }
+                if (wParam == WA_ACTIVE)
+                {
+                    mouse_lock();
                 }
             }
             else if (wParam == WA_INACTIVE)
