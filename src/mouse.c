@@ -192,7 +192,7 @@ void mouse_lock()
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
-        rc.bottom -= (yAdjust * 2);
+        rc.bottom -= (yAdjust * 2) * ((float)ddraw->render.height / ddraw->height);
 
         if(ddraw->adjmouse)
         {
