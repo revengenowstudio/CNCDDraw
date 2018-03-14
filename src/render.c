@@ -123,21 +123,7 @@ DWORD WINAPI render_main(void)
     DWORD dst_width = ddraw->render.width;
     DWORD dst_height = ddraw->render.height;
     
-    if (ddraw->maintas)
-    {
-        dst_width = ddraw->render.width;
-        dst_height = ((float)ddraw->height / ddraw->width) * dst_width;
-        
-        if (dst_height > ddraw->render.height)
-        {
-            dst_width = ((float)dst_width / dst_height) * ddraw->render.height;
-            dst_height = ddraw->render.height;
-        }
-         
-        dst_top = ddraw->render.height / 2 - dst_height / 2;
-        dst_left = ddraw->render.width / 2 - dst_width / 2;
-    }
-    else if (ddraw->boxing)
+    if (ddraw->boxing)
     {
         dst_width = ddraw->width;
         dst_height = ddraw->height;
@@ -153,6 +139,20 @@ DWORD WINAPI render_main(void)
             }
         }
 
+        dst_top = ddraw->render.height / 2 - dst_height / 2;
+        dst_left = ddraw->render.width / 2 - dst_width / 2;
+    }
+    else if (ddraw->maintas)
+    {
+        dst_width = ddraw->render.width;
+        dst_height = ((float)ddraw->height / ddraw->width) * dst_width;
+        
+        if (dst_height > ddraw->render.height)
+        {
+            dst_width = ((float)dst_width / dst_height) * ddraw->render.height;
+            dst_height = ddraw->render.height;
+        }
+         
         dst_top = ddraw->render.height / 2 - dst_height / 2;
         dst_left = ddraw->render.width / 2 - dst_width / 2;
     }
