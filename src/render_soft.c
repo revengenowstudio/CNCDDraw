@@ -74,11 +74,15 @@ DWORD WINAPI render_soft_main(void)
         dst_width = ddraw->width;
         dst_height = ddraw->height;
 
-        /* test if we can double scale the window */
-        if (ddraw->width * 2 <= ddraw->render.width && ddraw->height * 2 <= ddraw->render.height)
+        int i;
+        for (i = 20; i-- > 1;)
         {
-            dst_width *= 2;
-            dst_height *= 2;
+            if (ddraw->width * i <= ddraw->render.width && ddraw->height * i <= ddraw->render.height)
+            {
+                dst_width *= i;
+                dst_height *= i;
+                break;
+            }
         }
 
         dst_top = ddraw->render.height / 2 - dst_height / 2;
