@@ -895,6 +895,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "windowed=false\n"
             "; show window borders in windowed mode\n"
             "border=true\n"
+            "; maintain aspect ratio (GDI only!)\n"
+            "maintas=false\n"
             "; use letter- or windowboxing to make a best fit (GDI only!)\n"
             "boxing=false\n"
             "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
@@ -960,6 +962,16 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     else
     {
         This->boxing = TRUE;
+    }
+    
+    GetPrivateProfileStringA("ddraw", "maintas", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
+    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
+    {
+        This->maintas = FALSE;
+    }
+    else
+    {
+        This->maintas = TRUE;
     }
 
     GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), SettingsIniPath);

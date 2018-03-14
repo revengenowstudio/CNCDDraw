@@ -84,6 +84,7 @@ typedef struct IDirectDrawImpl
     char screenshotKey;
     BOOL opengl_pbo;
     BOOL fullscreen;
+    BOOL maintas;
     
 } IDirectDrawImpl;
 
