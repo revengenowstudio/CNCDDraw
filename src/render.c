@@ -118,46 +118,9 @@ DWORD WINAPI render_main(void)
     glBindTexture(GL_TEXTURE_2D, textureId);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, PIXEL_FORMAT, GL_UNSIGNED_BYTE, tex);
 
-    DWORD dst_top = 0;
-    DWORD dst_left = 0;
-    DWORD dst_width = ddraw->render.width;
-    DWORD dst_height = ddraw->render.height;
-    
-    if (ddraw->boxing)
-    {
-        dst_width = ddraw->width;
-        dst_height = ddraw->height;
-
-        int i;
-        for (i = 20; i-- > 1;)
-        {
-            if (ddraw->width * i <= ddraw->render.width && ddraw->height * i <= ddraw->render.height)
-            {
-                dst_width *= i;
-                dst_height *= i;
-                break;
-            }
-        }
-
-        dst_top = ddraw->render.height / 2 - dst_height / 2;
-        dst_left = ddraw->render.width / 2 - dst_width / 2;
-    }
-    else if (ddraw->maintas)
-    {
-        dst_width = ddraw->render.width;
-        dst_height = ((float)ddraw->height / ddraw->width) * dst_width;
-        
-        if (dst_height > ddraw->render.height)
-        {
-            dst_width = ((float)dst_width / dst_height) * ddraw->render.height;
-            dst_height = ddraw->render.height;
-        }
-         
-        dst_top = ddraw->render.height / 2 - dst_height / 2;
-        dst_left = ddraw->render.width / 2 - dst_width / 2;
-    }
-
-    glViewport(dst_left, dst_top, dst_width, dst_height);
+    glViewport(
+        ddraw->render.viewport.x, ddraw->render.viewport.y, 
+        ddraw->render.viewport.width, ddraw->render.viewport.height);
     
     if(ddraw->render.filter)
     {

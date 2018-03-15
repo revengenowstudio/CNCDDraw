@@ -60,48 +60,9 @@ DWORD WINAPI render_soft_main(void)
     bmi->bmiHeader.biBitCount = ddraw->bpp;
     bmi->bmiHeader.biCompression = BI_RGB;
 
-    DWORD dst_top = 0;
-    DWORD dst_left = 0;
-    DWORD dst_width = ddraw->render.width;
-    DWORD dst_height = ddraw->render.height;
-
     DWORD tick_start = 0;
     DWORD tick_end = 0;
     DWORD frame_len = 0;
-
-    if (ddraw->boxing)
-    {
-        dst_width = ddraw->width;
-        dst_height = ddraw->height;
-
-        int i;
-        for (i = 20; i-- > 1;)
-        {
-            if (ddraw->width * i <= ddraw->render.width && ddraw->height * i <= ddraw->render.height)
-            {
-                dst_width *= i;
-                dst_height *= i;
-                break;
-            }
-        }
-
-        dst_top = ddraw->render.height / 2 - dst_height / 2;
-        dst_left = ddraw->render.width / 2 - dst_width / 2;
-    }
-    else if (ddraw->maintas)
-    {
-        dst_width = ddraw->render.width;
-        dst_height = ((float)ddraw->height / ddraw->width) * dst_width;
-        
-        if (dst_height > ddraw->render.height)
-        {
-            dst_width = ((float)dst_width / dst_height) * ddraw->render.height;
-            dst_height = ddraw->render.height;
-        }
-         
-        dst_top = ddraw->render.height / 2 - dst_height / 2;
-        dst_left = ddraw->render.width / 2 - dst_width / 2;
-    }
 
     if(ddraw->render.maxfps < 0)
     {
@@ -144,7 +105,7 @@ DWORD WINAPI render_soft_main(void)
 
             if ((ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height) && !(ddraw->vhack && detect_cutscene()) )
             {
-                StretchDIBits(ddraw->render.hDC, dst_left, dst_top, dst_width, dst_height, 0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
+                StretchDIBits(ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, ddraw->render.viewport.width, ddraw->render.viewport.height, 0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
             }
             else if (!(ddraw->vhack && detect_cutscene()))
             {

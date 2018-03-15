@@ -67,6 +67,7 @@ typedef struct IDirectDrawImpl
         HANDLE ev;
         HANDLE sem;
         DEVMODE mode;
+        struct { int width; int height; int x; int y; } viewport;
 
     } render;
 

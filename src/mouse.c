@@ -44,8 +44,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
     {
         if(ddraw->adjmouse)
         {
-            ddraw->cursor.x = pt.x * ((float)ddraw->width / ddraw->render.width);
-            ddraw->cursor.y = pt.y * ((float)ddraw->height / ddraw->render.height);
+            ddraw->cursor.x = pt.x * ((float)ddraw->width / ddraw->render.viewport.width);
+            ddraw->cursor.y = pt.y * ((float)ddraw->height / ddraw->render.viewport.height);
         }
         else
         {
@@ -53,7 +53,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             ddraw->cursor.y = pt.y;
         }
     }
-        
+
     if (lpPoint)
     {
         lpPoint->x = (int)ddraw->cursor.x;
@@ -178,11 +178,15 @@ void mouse_lock()
         // Get the window client area.
         GetClientRect(ddraw->hWnd, &rc);
         
-        if(!ddraw->adjmouse)
+        if(ddraw->adjmouse)
         {
-            // stretching fix
-            rc.right -= (ddraw->render.width - ddraw->width);
-            rc.bottom -= (ddraw->render.height - ddraw->height);
+            rc.right = ddraw->render.viewport.width;
+            rc.bottom = ddraw->render.viewport.height;
+        }
+        else
+        {
+            rc.right = ddraw->width;
+            rc.bottom = ddraw->height;
         }
 
         // Convert the client area to screen coordinates.
@@ -193,13 +197,13 @@ void mouse_lock()
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
-        rc.bottom -= (yAdjust * 2) * ((float)ddraw->render.height / ddraw->height);
+        rc.bottom -= (yAdjust * 2) * ((float)ddraw->render.viewport.height / ddraw->height);
 
         if(ddraw->adjmouse)
         {
             SetCursorPos(
-                rc.left + (ddraw->cursor.x * ((float)ddraw->render.width / ddraw->width)), 
-                rc.top + ((ddraw->cursor.y - yAdjust) * ((float)ddraw->render.height / ddraw->height)));
+                rc.left + (ddraw->cursor.x * ((float)ddraw->render.viewport.width / ddraw->width)), 
+                rc.top + ((ddraw->cursor.y - yAdjust) * ((float)ddraw->render.viewport.height / ddraw->height)));
         }
         else
         {
@@ -250,8 +254,10 @@ void mouse_unlock()
         ReleaseCapture();
         
         SetCursorPos(
-            rc.left + (ddraw->cursor.x * ((float)ddraw->render.width / ddraw->width)), 
-            rc.top + ((ddraw->cursor.y + yAdjust) * ((float)ddraw->render.height / ddraw->height)));
+            rc.left + ddraw->render.viewport.x + 
+                (ddraw->cursor.x * ((float)ddraw->render.viewport.width / ddraw->width)), 
+            rc.top + ddraw->render.viewport.y + 
+                ((ddraw->cursor.y + yAdjust) * ((float)ddraw->render.viewport.height / ddraw->height)));
 
     }
 }

@@ -362,6 +362,47 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
     }
     
+    ddraw->render.viewport.width = ddraw->render.width;
+    ddraw->render.viewport.height = ddraw->render.height;
+    ddraw->render.viewport.x = 0;
+    ddraw->render.viewport.y = 0;
+    
+    if (ddraw->boxing)
+    {
+        ddraw->render.viewport.width = ddraw->width;
+        ddraw->render.viewport.height = ddraw->height;
+
+        int i;
+        for (i = 20; i-- > 1;)
+        {
+            if (ddraw->width * i <= ddraw->render.width && ddraw->height * i <= ddraw->render.height)
+            {
+                ddraw->render.viewport.width *= i;
+                ddraw->render.viewport.height *= i;
+                break;
+            }
+        }
+
+        ddraw->render.viewport.y = ddraw->render.height / 2 - ddraw->render.viewport.height / 2;
+        ddraw->render.viewport.x = ddraw->render.width / 2 - ddraw->render.viewport.width / 2;
+    }
+    else if (ddraw->maintas)
+    {
+        ddraw->render.viewport.width = ddraw->render.width;
+        ddraw->render.viewport.height = ((float)ddraw->height / ddraw->width) * ddraw->render.viewport.width;
+        
+        if (ddraw->render.viewport.height > ddraw->render.height)
+        {
+            ddraw->render.viewport.width = 
+                ((float)ddraw->render.viewport.width / ddraw->render.viewport.height) * ddraw->render.height;
+                
+            ddraw->render.viewport.height = ddraw->render.height;
+        }
+         
+        ddraw->render.viewport.y = ddraw->render.height / 2 - ddraw->render.viewport.height / 2;
+        ddraw->render.viewport.x = ddraw->render.width / 2 - ddraw->render.viewport.width / 2;
+    }
+    
     if(This->windowed)
     {
         if(!This->windowed_init)
@@ -596,8 +637,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_MBUTTONUP:
             if (!ddraw->devmode && !ddraw->locked)
             {
-                ddraw->cursor.x = LOWORD(lParam) * ((float)ddraw->width / ddraw->render.width);
-                ddraw->cursor.y = HIWORD(lParam) * ((float)ddraw->height / ddraw->render.height);
+                int x = LOWORD(lParam);
+                int y = HIWORD(lParam);
+                
+                if (x > ddraw->render.viewport.x + ddraw->render.viewport.width || 
+                    x < ddraw->render.viewport.x || 
+                    y > ddraw->render.viewport.y + ddraw->render.viewport.height ||
+                    y < ddraw->render.viewport.y)
+                {
+                    ddraw->cursor.x = ddraw->width / 2;
+                    ddraw->cursor.y = ddraw->height / 2;
+                }    
+                else
+                {
+                    ddraw->cursor.x = 
+                        (x - ddraw->render.viewport.x) * ((float)ddraw->width / ddraw->render.viewport.width);
+                        
+                    ddraw->cursor.y = 
+                        (y - ddraw->render.viewport.y) * ((float)ddraw->height / ddraw->render.viewport.height);
+                }
+
                 mouse_lock();
                 return 0;
             }
