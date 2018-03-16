@@ -356,6 +356,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                             
                             This->windowed = TRUE;
                         }
+                        else
+                            This->maintas = TRUE;
                     }
                 }
             }
@@ -637,8 +639,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_MBUTTONUP:
             if (!ddraw->devmode && !ddraw->locked)
             {
-                int x = LOWORD(lParam);
-                int y = HIWORD(lParam);
+                int x = GET_X_LPARAM(lParam);
+                int y = GET_Y_LPARAM(lParam);
                 
                 if (x > ddraw->render.viewport.x + ddraw->render.viewport.width || 
                     x < ddraw->render.viewport.x || 
