@@ -86,6 +86,7 @@ typedef struct IDirectDrawImpl
     BOOL opengl_pbo;
     BOOL fullscreen;
     BOOL maintas;
+    BOOL fakecursorpos;
     
 } IDirectDrawImpl;
 
