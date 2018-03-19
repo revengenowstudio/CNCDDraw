@@ -985,6 +985,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "fakecursorpos=true\n"
             "; Hide WM_ACTIVATEAPP messages to prevent freezing on alt+tab (Carmageddon)\n"
             "noactivateapp=false\n"
+            "; developer mode (don't lock the cursor)\n"
+            "devmode=false\n"
             
         , fh);
         fclose(fh);
