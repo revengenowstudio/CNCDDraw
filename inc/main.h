@@ -87,6 +87,7 @@ typedef struct IDirectDrawImpl
     BOOL fullscreen;
     BOOL maintas;
     BOOL fakecursorpos;
+    BOOL noactivateapp;
     
 } IDirectDrawImpl;
 

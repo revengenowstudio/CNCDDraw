@@ -593,7 +593,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         case WM_ACTIVATEAPP:
             /* C&C and RA stop drawing when they receive this with FALSE wParam, disable in windowed mode */
-            if (ddraw->windowed)
+            if (ddraw->windowed || ddraw->noactivateapp)
             {
                 return 0;
             }
@@ -983,6 +983,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "opengl_pbo=false\n"
             "; Fake cursor position for games that use GetCursorPos and expect to be in fullscreen\n"
             "fakecursorpos=true\n"
+            "; Hide WM_ACTIVATEAPP messages to prevent freezing on alt+tab (Carmageddon)\n"
+            "noactivateapp=false\n"
+            
         , fh);
         fclose(fh);
     }
@@ -1112,6 +1115,16 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     else
     {
         This->fakecursorpos = FALSE;
+    }
+    
+    GetPrivateProfileStringA("ddraw", "noactivateapp", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
+    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
+    {
+        This->noactivateapp = TRUE;
+    }
+    else
+    {
+        This->noactivateapp = FALSE;
     }
     
     GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), SettingsIniPath);
