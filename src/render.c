@@ -93,7 +93,8 @@ DWORD WINAPI render_main(void)
             glMapBufferARB = (PFNGLMAPBUFFERARBPROC)wglGetProcAddress("glMapBufferARB");
             glUnmapBufferARB = (PFNGLUNMAPBUFFERARBPROC)wglGetProcAddress("glUnmapBufferARB");
 
-            if(glGenBuffersARB && glBindBufferARB && glBufferDataARB && glMapBufferARB && glUnmapBufferARB && glDeleteBuffersARB)
+            if(glGenBuffersARB && glBindBufferARB && glBufferDataARB && 
+               glMapBufferARB && glUnmapBufferARB && glDeleteBuffersARB)
             {
                 pboSupported = TRUE;
             }
@@ -224,7 +225,8 @@ DWORD WINAPI render_main(void)
                     {
                         for(j=0; j<ddraw->width; j++)
                         {
-                            ptr[i*ddraw->width+j] = ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
+                            ptr[i*ddraw->width+j] = 
+                                ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
                         }
                     }
                     
@@ -239,7 +241,8 @@ DWORD WINAPI render_main(void)
                 {
                     for(j=0; j<ddraw->width; j++)
                     {
-                        tex[i*ddraw->width+j] = ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
+                        tex[i*ddraw->width+j] = 
+                            ddraw->primary->palette->data_bgr[((unsigned char *)ddraw->primary->surface)[i*ddraw->primary->lPitch + j*ddraw->primary->lXPitch]];
                     }
                 }
             }

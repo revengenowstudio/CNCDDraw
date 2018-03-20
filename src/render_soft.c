@@ -103,13 +103,20 @@ DWORD WINAPI render_soft_main(void)
                 ddraw->primary->palette->data_rgb = &bmi->bmiColors[0];
             }
 
-            if ((ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height) && !(ddraw->vhack && detect_cutscene()) )
+            if ((ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height) && 
+                !(ddraw->vhack && detect_cutscene()) )
             {
-                StretchDIBits(ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, ddraw->render.viewport.width, ddraw->render.viewport.height, 0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
+                StretchDIBits(
+                    ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
+                    ddraw->render.viewport.width, ddraw->render.viewport.height, 
+                    0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, 
+                    bmi, DIB_RGB_COLORS, SRCCOPY);
             }
             else if (!(ddraw->vhack && detect_cutscene()))
             {
-                SetDIBitsToDevice(ddraw->render.hDC, 0, 0, ddraw->width, ddraw->height, 0, 0, 0, ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS);
+                SetDIBitsToDevice(
+                    ddraw->render.hDC, 0, 0, ddraw->width, ddraw->height, 0, 0, 0, 
+                    ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS);
             }
 
         }
@@ -120,9 +127,14 @@ DWORD WINAPI render_soft_main(void)
                 ddraw->primary->palette->data_rgb = &bmi->bmiColors[0];
             }
             
-            StretchDIBits(ddraw->render.hDC, 0, 0, ddraw->render.width, ddraw->render.height, 0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, bmi, DIB_RGB_COLORS, SRCCOPY);
+            StretchDIBits(
+                ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
+                ddraw->render.viewport.width, ddraw->render.viewport.height, 
+                0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, 
+                bmi, DIB_RGB_COLORS, SRCCOPY);
 
-            if (ddraw->primary->palette && (ddraw->cursorclip.width != CUTSCENE_WIDTH || ddraw->cursorclip.height != CUTSCENE_HEIGHT))
+            if (ddraw->primary->palette && 
+                (ddraw->cursorclip.width != CUTSCENE_WIDTH || ddraw->cursorclip.height != CUTSCENE_HEIGHT))
             {
                 ddraw->cursorclip.width = CUTSCENE_WIDTH;
                 ddraw->cursorclip.height = CUTSCENE_HEIGHT;
@@ -130,7 +142,8 @@ DWORD WINAPI render_soft_main(void)
                 ddraw->cursor.y = CUTSCENE_HEIGHT / 2;
             }
         }
-        else if(ddraw->primary && ddraw->primary->palette && (ddraw->cursorclip.width != ddraw->width || ddraw->cursorclip.height != ddraw->height))
+        else if(ddraw->primary && ddraw->primary->palette && 
+                (ddraw->cursorclip.width != ddraw->width || ddraw->cursorclip.height != ddraw->height))
         {
             ddraw->cursorclip.width = ddraw->width;
             ddraw->cursorclip.height = ddraw->height;
