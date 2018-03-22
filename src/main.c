@@ -441,6 +441,11 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         mouse_lock();
     }
     
+    if(This->boxing || This->maintas)
+    {
+        RedrawWindow(This->hWnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
+    }
+    
     if(This->render.thread == NULL)
     {
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
