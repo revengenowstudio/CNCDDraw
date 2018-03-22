@@ -441,7 +441,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         mouse_lock();
     }
     
-    if(This->boxing || This->maintas)
+    if(This->render.viewport.x != 0 || This->render.viewport.y != 0)
     {
         RedrawWindow(This->hWnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
