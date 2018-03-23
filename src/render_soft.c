@@ -46,8 +46,12 @@ BOOL detect_cutscene()
         }
         return FALSE;
     }
+    else if (ddraw->iscnc1)
+    {
+        return getPixel(CUTSCENE_WIDTH + 1, 0) == 0 || getPixel(CUTSCENE_WIDTH + 5, 1) == 0 ? TRUE : FALSE;
+    }
 
-    return getPixel(CUTSCENE_WIDTH + 1, 0) == 0 || getPixel(CUTSCENE_WIDTH + 5, 1) == 0 ? TRUE : FALSE;	
+    return FALSE;
 }
 
 DWORD WINAPI render_soft_main(void)

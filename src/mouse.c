@@ -56,7 +56,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             ddraw->cursor.y = pt.y;
         }
         
-        if (ddraw->vhack && ddraw->iscnc1 && ddraw->incutscene)
+        if (ddraw->vhack && (ddraw->iscnc1 || ddraw->isredalert) && ddraw->incutscene)
         {
             int diffx = 0, diffy = 0;
 
