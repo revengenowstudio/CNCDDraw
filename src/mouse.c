@@ -35,10 +35,13 @@ struct hack
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
-    POINT pt;
+    POINT pt, realpt;
     
     if (!GetCursorPos(&pt))
         return FALSE;
+    
+    realpt.x = pt.x;
+    realpt.y = pt.y;
     
     if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
     {
@@ -52,6 +55,26 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             ddraw->cursor.x = pt.x;
             ddraw->cursor.y = pt.y;
         }
+        
+        if (ddraw->vhack && ddraw->iscnc1 && ddraw->incutscene)
+        {
+            int diffx = 0, diffy = 0;
+
+            if (ddraw->cursor.x > CUTSCENE_WIDTH)
+            {
+                diffx = ddraw->cursor.x - CUTSCENE_WIDTH;
+                ddraw->cursor.x = CUTSCENE_WIDTH;
+            }
+                
+            if (ddraw->cursor.y > CUTSCENE_HEIGHT)
+            {
+                diffy = ddraw->cursor.y - CUTSCENE_HEIGHT;
+                ddraw->cursor.y = CUTSCENE_HEIGHT;
+            }
+
+            if (diffx || diffy)
+                SetCursorPos(realpt.x - diffx, realpt.y - diffy);
+        }
     }
 
     if (lpPoint)
@@ -63,7 +86,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         }
         else if (ddraw->locked || ddraw->devmode)
         {
-            return GetCursorPos(lpPoint);
+            lpPoint->x = realpt.x;
+            lpPoint->y = realpt.y;
         }
         else
             return FALSE;

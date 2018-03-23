@@ -20,8 +20,6 @@
 #include "main.h"
 #include "surface.h"
 
-#define CUTSCENE_WIDTH 640
-#define CUTSCENE_HEIGHT 400
 
 static unsigned char getPixel(int x, int y)
 {
@@ -37,7 +35,10 @@ BOOL detect_cutscene()
     if(ddraw->width <= CUTSCENE_WIDTH || ddraw->height <= CUTSCENE_HEIGHT)
         return FALSE;
         
-    if (ddraw->isredalert == TRUE)
+    //if (ddraw->isredalert && *InMovie)
+    //    return !*IsVQA640;
+        
+    if (ddraw->isredalert)
     {
         if ((*InMovie && !*IsVQA640) || *ShouldStretch)
         {
@@ -133,22 +134,14 @@ DWORD WINAPI render_soft_main(void)
                 0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, 
                 bmi, DIB_RGB_COLORS, SRCCOPY);
 
-            if (ddraw->primary->palette && 
-                (ddraw->cursorclip.width != CUTSCENE_WIDTH || ddraw->cursorclip.height != CUTSCENE_HEIGHT))
+            if (ddraw->primary->palette && !ddraw->incutscene)
             {
-                ddraw->cursorclip.width = CUTSCENE_WIDTH;
-                ddraw->cursorclip.height = CUTSCENE_HEIGHT;
-                ddraw->cursor.x = CUTSCENE_WIDTH / 2;
-                ddraw->cursor.y = CUTSCENE_HEIGHT / 2;
+                ddraw->incutscene = TRUE;
             }
         }
-        else if(ddraw->primary && ddraw->primary->palette && 
-                (ddraw->cursorclip.width != ddraw->width || ddraw->cursorclip.height != ddraw->height))
+        else if(ddraw->primary && ddraw->primary->palette && ddraw->incutscene)
         {
-            ddraw->cursorclip.width = ddraw->width;
-            ddraw->cursorclip.height = ddraw->height;
-            ddraw->cursor.x = ddraw->width / 2;
-            ddraw->cursor.y = ddraw->height / 2;
+            ddraw->incutscene = FALSE;
         }
 
         LeaveCriticalSection(&ddraw->cs);

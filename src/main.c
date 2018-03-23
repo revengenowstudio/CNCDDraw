@@ -256,11 +256,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     This->width = width;
     This->height = height;
     This->bpp = bpp;
-    This->cursorclip.width = width;
-    This->cursorclip.height = height;
 
-    ddraw->cursor.x = ddraw->cursorclip.width / 2;
-    ddraw->cursor.y = ddraw->cursorclip.height / 2;
+    ddraw->cursor.x = width / 2;
+    ddraw->cursor.y = height / 2;
 
     if(This->fullscreen)
     {
@@ -766,10 +764,16 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
     GetWindowText(This->hWnd, (LPTSTR)&This->title, sizeof(This->title));
 
-	if (!strcmp(This->title, "Red Alert"))
-	{
-		ddraw->isredalert = 1;
-	}
+    ddraw->isredalert = strcmp(This->title, "Red Alert") == 0;
+    ddraw->iscnc1 = strcmp(This->title, "Command & Conquer") == 0;
+    
+    if(This->vhack == 1)
+    {
+        if (!ddraw->isredalert && !ddraw->iscnc1)
+        {
+            This->vhack = 0;
+        }
+    }
 
     return DD_OK;
 }

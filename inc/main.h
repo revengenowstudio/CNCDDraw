@@ -23,6 +23,9 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#define CUTSCENE_WIDTH 640
+#define CUTSCENE_HEIGHT 400
+
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
 struct IDirectDrawSurfaceImpl;
@@ -74,13 +77,14 @@ typedef struct IDirectDrawImpl
     HWND hWnd;
     LRESULT CALLBACK (*WndProc)(HWND, UINT, WPARAM, LPARAM);
     struct { float x; float y; } cursor;
-    struct { int width; int height; } cursorclip;
     BOOL locked;
     BOOL adjmouse;
     BOOL devmode;
     BOOL vsync;
     BOOL vhack;
 	BOOL isredalert;
+	BOOL iscnc1;
+	BOOL incutscene;
     DWORD WINAPI (*renderer)(void);
     char screenshotKey;
     BOOL opengl_pbo;

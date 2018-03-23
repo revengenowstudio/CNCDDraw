@@ -26,8 +26,6 @@
 #include "main.h"
 #include "surface.h"
 
-#define CUTSCENE_WIDTH 640
-#define CUTSCENE_HEIGHT 400
 
 PFNGLGENBUFFERSARBPROC pglGenBuffersARB = 0;                     // VBO Name Generation Procedure
 PFNGLBINDBUFFERARBPROC pglBindBufferARB = 0;                     // VBO Bind Procedure
@@ -194,22 +192,16 @@ DWORD WINAPI render_main(void)
                 scale_w *= (float)CUTSCENE_WIDTH / ddraw->width;
                 scale_h *= (float)CUTSCENE_HEIGHT / ddraw->height;
 
-                if (ddraw->cursorclip.width != CUTSCENE_WIDTH || ddraw->cursorclip.height != CUTSCENE_HEIGHT)
+                if (!ddraw->incutscene)
                 {
-                    ddraw->cursorclip.width = CUTSCENE_WIDTH;
-                    ddraw->cursorclip.height = CUTSCENE_HEIGHT;
-                    ddraw->cursor.x = CUTSCENE_WIDTH / 2;
-                    ddraw->cursor.y = CUTSCENE_HEIGHT / 2;
+                    ddraw->incutscene = TRUE;
                 }
             }
             else
             {
-                if (ddraw->cursorclip.width != ddraw->width || ddraw->cursorclip.height != ddraw->height)
+                if (ddraw->incutscene)
                 {
-                    ddraw->cursorclip.width = ddraw->width;
-                    ddraw->cursorclip.height = ddraw->height;
-                    ddraw->cursor.x = ddraw->width / 2;
-                    ddraw->cursor.y = ddraw->height / 2;
+                    ddraw->incutscene = FALSE;
                 }
             }
 
