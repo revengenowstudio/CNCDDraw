@@ -109,8 +109,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             y0 = max(y0, lpSrcRect->top); 
             y1 = min(y1, lpSrcRect->bottom); 
         } 
-        unsigned char* to=This->surface + dy*This->width + dx; 
-        unsigned char* from=Source->surface + y0*Source->width + x0; 
+        unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx; 
+        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
         int s = x1-x0; 
 
         int y;

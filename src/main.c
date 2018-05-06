@@ -732,7 +732,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
     mouse_init();
 
-    This->WndProc = (LRESULT CALLBACK (*)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
+    This->WndProc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
 
     if (This->renderer == render_dummy_main)
     {
@@ -898,7 +898,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     if(!stdout_open)
     {
         freopen("ra95stdout.txt", "w", stdout);
-        setvbuf(stdout, NULL, _IONBF, 0);
+        setvbuf(stdout, NULL, _IOLBF, 1024);
         stdout_open = 1;
     }
 #endif
@@ -932,7 +932,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         return DDERR_GENERIC;
     }
 
-    This->DirectDrawCreate = (HRESULT WINAPI (*)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
+    This->DirectDrawCreate = (HRESULT (WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
 
     if(!This->DirectDrawCreate)
     {

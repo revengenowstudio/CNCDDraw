@@ -8,7 +8,7 @@ void DebugPrint(const char *format, ...);
 //#define _DEBUG 1
 
 //use OutputDebugStringA rather than printf
-//#define _DEBUG_S 1
+#define _DEBUG_S 1
 
 //log everything (slow)
 //#define _DEBUG_X 1

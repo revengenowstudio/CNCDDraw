@@ -51,7 +51,7 @@ typedef struct IDirectDrawImpl
     HMODULE real_dll;
 
     /* real export from system32\ddraw.dll */
-    HRESULT WINAPI (*DirectDrawCreate)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
+    HRESULT (WINAPI *DirectDrawCreate)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
     CRITICAL_SECTION cs;
 
     struct
@@ -75,7 +75,7 @@ typedef struct IDirectDrawImpl
     } render;
 
     HWND hWnd;
-    LRESULT CALLBACK (*WndProc)(HWND, UINT, WPARAM, LPARAM);
+    LRESULT (CALLBACK *WndProc)(HWND, UINT, WPARAM, LPARAM);
     struct { float x; float y; } cursor;
     BOOL locked;
     BOOL adjmouse;
@@ -85,7 +85,7 @@ typedef struct IDirectDrawImpl
 	BOOL isredalert;
 	BOOL iscnc1;
 	BOOL incutscene;
-    DWORD WINAPI (*renderer)(void);
+    DWORD (WINAPI *renderer)(void);
     char screenshotKey;
     BOOL opengl_pbo;
     BOOL fullscreen;
