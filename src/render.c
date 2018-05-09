@@ -82,24 +82,24 @@ DWORD WINAPI render_main(void)
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
-    GLuint PaletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
+    GLuint paletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
 
     // primary surface texture
-    GLuint SurfaceTexId = 0;
-    glGenTextures(1, &SurfaceTexId);
-    glBindTexture(GL_TEXTURE_2D, SurfaceTexId);
+    GLuint surfaceTexId = 0;
+    glGenTextures(1, &surfaceTexId);
+    glBindTexture(GL_TEXTURE_2D, surfaceTexId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    if (PaletteConvProgram)
+    if (paletteConvProgram)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
     else
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
 
     // palette texture
-    GLuint PaletteTexId = 0;
-    glGenTextures(1, &PaletteTexId);
-    glBindTexture(GL_TEXTURE_2D, PaletteTexId);
+    GLuint paletteTexId = 0;
+    glGenTextures(1, &paletteTexId);
+    glBindTexture(GL_TEXTURE_2D, paletteTexId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -112,12 +112,12 @@ DWORD WINAPI render_main(void)
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    GLint SurfaceUniLoc = 0, PaletteUniLoc = 0;
-    if (PaletteConvProgram)
+    GLint surfaceUniLoc = 0, paletteUniLoc = 0;
+    if (paletteConvProgram)
     {
-        glUseProgram(PaletteConvProgram);
-        SurfaceUniLoc = glGetUniformLocation(PaletteConvProgram, "SurfaceTex");
-        PaletteUniLoc = glGetUniformLocation(PaletteConvProgram, "PaletteTex");
+        glUseProgram(paletteConvProgram);
+        surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
+        paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
     }
 
     glEnable(GL_TEXTURE_2D);
@@ -143,17 +143,17 @@ DWORD WINAPI render_main(void)
         if (ddraw->render.maxfps > 0)
             tick_start = timeGetTime();
 
-        if (PaletteConvProgram && glActiveTexture && glUniform1i)
+        if (paletteConvProgram && glActiveTexture && glUniform1i)
         {
             glActiveTexture(GL_TEXTURE0);
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, PaletteTexId);
-            glUniform1i(PaletteUniLoc, 0);
+            glBindTexture(GL_TEXTURE_2D, paletteTexId);
+            glUniform1i(paletteUniLoc, 0);
 
             glActiveTexture(GL_TEXTURE1);
             glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, SurfaceTexId);
-            glUniform1i(SurfaceUniLoc, 1);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+            glUniform1i(surfaceUniLoc, 1);
         }
 
         EnterCriticalSection(&ddraw->cs);
@@ -174,12 +174,12 @@ DWORD WINAPI render_main(void)
                     ddraw->incutscene = FALSE;
             }
 
-            if (PaletteConvProgram)
+            if (paletteConvProgram)
             {
-                glBindTexture(GL_TEXTURE_2D, PaletteTexId);
+                glBindTexture(GL_TEXTURE_2D, paletteTexId);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, ddraw->primary->palette->data_bgr);
 
-                glBindTexture(GL_TEXTURE_2D, SurfaceTexId);
+                glBindTexture(GL_TEXTURE_2D, surfaceTexId);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RED, GL_UNSIGNED_BYTE, ddraw->primary->surface);
             }
             else
@@ -203,9 +203,9 @@ DWORD WINAPI render_main(void)
 
         LeaveCriticalSection(&ddraw->cs);
 
-        if (!PaletteConvProgram)
+        if (!paletteConvProgram)
         {
-            glBindTexture(GL_TEXTURE_2D, SurfaceTexId);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RGBA, GL_UNSIGNED_BYTE, tex);
         }
 
@@ -232,12 +232,18 @@ DWORD WINAPI render_main(void)
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
-    glDeleteTextures(1, &SurfaceTexId);
-    glDeleteTextures(1, &PaletteTexId);
+    glDeleteTextures(1, &surfaceTexId);
+    glDeleteTextures(1, &paletteTexId);
 
-    if (PaletteConvProgram && glDeleteProgram)
-        glDeleteProgram(PaletteConvProgram);
+    if (glUseProgram)
+        glUseProgram(0);
 
+    if (glDeleteProgram)
+    {
+        if (paletteConvProgram)
+            glDeleteProgram(paletteConvProgram);
+    }
+        
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
 
