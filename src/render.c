@@ -22,7 +22,8 @@
 #include "surface.h"
 
 const GLchar *PaletteVertShaderSrc =
-    "# version 110\n"
+    "//Vertex shader\n"
+    "#version 110\n"
     "varying vec2 TexCoord0; \n"
     "\n"
     "void main(void)\n"
@@ -82,7 +83,9 @@ DWORD WINAPI render_main(void)
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
-    GLuint paletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
+    GLuint paletteConvProgram = 0; 
+    if (glGetUniformLocation && glActiveTexture && glUniform1i)
+        paletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
 
     // primary surface texture
     GLuint surfaceTexId = 0;
@@ -143,7 +146,7 @@ DWORD WINAPI render_main(void)
         if (ddraw->render.maxfps > 0)
             tick_start = timeGetTime();
 
-        if (paletteConvProgram && glActiveTexture && glUniform1i)
+        if (paletteConvProgram)
         {
             glActiveTexture(GL_TEXTURE0);
             glEnable(GL_TEXTURE_2D);
