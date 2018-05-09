@@ -973,8 +973,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "maxfps=0\n"
             "; vertical synchronization, enable if you get tearing (OpenGL only)\n"
             "vsync=false\n"
-            "; scaling filter, nearest = sharp, linear = smooth (OpenGL only)\n"
-            "filter=nearest\n"
             "; automatic mouse sensitivity scaling\n"
             "adjmouse=false\n"
             "; enable C&C video resize hack, auto = auto-detect game, true = forced, false = disabled\n"
@@ -988,8 +986,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "posY=-1\n"
             "; Screenshot Hotkey, default = CTRL + G\n"
             "screenshotKey=G\n"
-            "; Use Pixel Buffer Objects (OpenGL only)\n"
-            "opengl_pbo=false\n"
             "; Fake cursor position for games that use GetCursorPos and expect to be in fullscreen\n"
             "fakecursorpos=true\n"
             "; Hide WM_ACTIVATEAPP messages to prevent freezing on alt+tab (Carmageddon)\n"
@@ -999,16 +995,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             
         , fh);
         fclose(fh);
-    }
-
-    GetPrivateProfileStringA("ddraw", "opengl_pbo", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->opengl_pbo = FALSE;
-    }
-    else
-    {
-        This->opengl_pbo = TRUE;
     }
     
     GetPrivateProfileStringA("ddraw", "windowed", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
@@ -1078,16 +1064,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->render.bpp = 0;
     }
 
-    GetPrivateProfileStringA("ddraw", "filter", tmp, tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'l' || tolower(tmp[3]) == 'l')
-    {
-        This->render.filter = 1;
-    }
-    else
-    {
-        This->render.filter = 0;
-    }
-        
     GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
     {

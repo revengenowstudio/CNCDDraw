@@ -60,7 +60,6 @@ typedef struct IDirectDrawImpl
         int width;
         int height;
         int bpp;
-        int filter;
 
         HDC hDC;
         int *tex;
@@ -87,7 +86,6 @@ typedef struct IDirectDrawImpl
 	BOOL incutscene;
     DWORD (WINAPI *renderer)(void);
     char screenshotKey;
-    BOOL opengl_pbo;
     BOOL fullscreen;
     BOOL maintas;
     BOOL fakecursorpos;

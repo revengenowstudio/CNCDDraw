@@ -12,7 +12,8 @@ FILES = src/debug.c \
         src/render.c \
         src/render_soft.c \
         src/render_dummy.c \
-        src/screenshot.c
+        src/screenshot.c \
+        src/opengl.c
 
 all:
 	$(WINDRES) -J rc ddraw.rc ddraw.rc.o

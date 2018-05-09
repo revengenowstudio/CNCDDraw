@@ -45,36 +45,45 @@
     <ClCompile Include="src\surface.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\opengl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\clipper.h">
+    <ClInclude Include="inc\clipper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ddraw.h">
+    <ClInclude Include="inc\ddraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\debug.h">
+    <ClInclude Include="inc\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\main.h">
+    <ClInclude Include="inc\glext.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\palette.h">
+    <ClInclude Include="inc\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\png.h">
+    <ClInclude Include="inc\palette.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\pngconf.h">
+    <ClInclude Include="inc\png.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\surface.h">
+    <ClInclude Include="inc\pngconf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\zconf.h">
+    <ClInclude Include="inc\surface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\zlib.h">
+    <ClInclude Include="inc\zconf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\zlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\opengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

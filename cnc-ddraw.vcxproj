@@ -15,6 +15,7 @@
     <ClCompile Include="src\debug.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\mouse.c" />
+    <ClCompile Include="src\opengl.c" />
     <ClCompile Include="src\palette.c" />
     <ClCompile Include="src\render.c" />
     <ClCompile Include="src\render_dummy.c" />
@@ -28,6 +29,7 @@
     <ClInclude Include="inc\debug.h" />
     <ClInclude Include="inc\glext.h" />
     <ClInclude Include="inc\main.h" />
+    <ClInclude Include="inc\opengl.h" />
     <ClInclude Include="inc\palette.h" />
     <ClInclude Include="inc\png.h" />
     <ClInclude Include="inc\pngconf.h" />
