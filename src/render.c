@@ -46,10 +46,6 @@ const GLchar *PaletteFragShaderSrc =
     "}\n";
 
 
-GLuint SurfaceTexId, PaletteTexId;
-GLint SurfaceUniLoc, PaletteUniLoc;
-GLuint PaletteConvProgram;
-
 BOOL detect_cutscene();
 
 DWORD WINAPI render_main(void)
@@ -86,10 +82,10 @@ DWORD WINAPI render_main(void)
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
-    if (!PaletteConvProgram)
-        PaletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
+    GLuint PaletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
 
     // primary surface texture
+    GLuint SurfaceTexId = 0;
     glGenTextures(1, &SurfaceTexId);
     glBindTexture(GL_TEXTURE_2D, SurfaceTexId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -101,6 +97,7 @@ DWORD WINAPI render_main(void)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
 
     // palette texture
+    GLuint PaletteTexId = 0;
     glGenTextures(1, &PaletteTexId);
     glBindTexture(GL_TEXTURE_2D, PaletteTexId);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -115,6 +112,7 @@ DWORD WINAPI render_main(void)
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
+    GLint SurfaceUniLoc = 0, PaletteUniLoc = 0;
     if (PaletteConvProgram)
     {
         glUseProgram(PaletteConvProgram);
@@ -236,6 +234,9 @@ DWORD WINAPI render_main(void)
     HeapFree(GetProcessHeap(), 0, tex);
     glDeleteTextures(1, &SurfaceTexId);
     glDeleteTextures(1, &PaletteTexId);
+
+    if (PaletteConvProgram && glDeleteProgram)
+        glDeleteProgram(PaletteConvProgram);
 
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);

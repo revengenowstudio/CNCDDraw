@@ -130,7 +130,7 @@ BOOL OpenGL_ExtExists(char *ext)
 GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource)
 {
     if (!glCreateShader || !glShaderSource || !glCompileShader || !glCreateProgram ||
-        !glAttachShader || !glLinkProgram || !glUseProgram)
+        !glAttachShader || !glLinkProgram || !glUseProgram || !glDetachShader)
         return 0;
 
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -177,6 +177,11 @@ GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource)
         glAttachShader(program, fragShader);
 
         glLinkProgram(program);
+
+        glDetachShader(program, vertShader);
+        glDetachShader(program, fragShader);
+        glDeleteShader(vertShader);
+        glDeleteShader(fragShader);
 
         if (glGetProgramiv)
         {
