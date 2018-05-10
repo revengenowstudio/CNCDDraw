@@ -56,6 +56,8 @@ BOOL detect_cutscene()
 
 DWORD WINAPI render_soft_main(void)
 {
+    Sleep(500);
+
     PBITMAPINFO bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
 
     bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);

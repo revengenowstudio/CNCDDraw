@@ -22,6 +22,7 @@
 
 void dump_ddscaps(DWORD dwCaps);
 void dump_ddsd(DWORD dwFlags);
+DWORD WINAPI render_main(void);
 
 HRESULT __stdcall ddraw_surface_QueryInterface(IDirectDrawSurfaceImpl *This, REFIID riid, void **obj)
 {
@@ -123,8 +124,13 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
     {
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        WaitForSingleObject(ddraw->render.ev, INFINITE);
-        ResetEvent(ddraw->render.ev);
+        if (ddraw->renderer != render_main)
+        {
+            WaitForSingleObject(ddraw->render.ev, INFINITE);
+            ResetEvent(ddraw->render.ev);
+        }
+        else
+            SwitchToThread();
     }
 
     return DD_OK;
@@ -203,9 +209,14 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
-        ResetEvent(ddraw->render.ev);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        WaitForSingleObject(ddraw->render.ev, INFINITE);
+        if (ddraw->renderer != render_main)
+        {
+            ResetEvent(ddraw->render.ev);
+            WaitForSingleObject(ddraw->render.ev, INFINITE);
+        }
+        else
+            SwitchToThread();
     }
 
     return DD_OK;

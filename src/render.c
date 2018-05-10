@@ -41,8 +41,8 @@ const GLchar *PaletteFragShaderSrc =
     "\n"
     "void main()\n"
     "{\n"
-    "   vec4 myindex = texture2D(SurfaceTex, TexCoord0); \n"
-    "   vec4 texel = texture2D(PaletteTex, myindex.xy); \n"
+    "   vec4 index = texture2D(SurfaceTex, TexCoord0); \n"
+    "   vec4 texel = texture2D(PaletteTex, index.xy); \n"
     "   gl_FragColor = texel;\n"
     "}\n";
 
@@ -51,6 +51,8 @@ BOOL detect_cutscene();
 
 DWORD WINAPI render_main(void)
 {
+    Sleep(500);
+
     HGLRC hRC = wglCreateContext(ddraw->render.hDC);
     wglMakeCurrent(ddraw->render.hDC, hRC);
 
@@ -243,8 +245,6 @@ DWORD WINAPI render_main(void)
             if (tick_end - tick_start < frame_len)
                 Sleep(frame_len - (tick_end - tick_start));
         }
-
-        SetEvent(ddraw->render.ev);
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
