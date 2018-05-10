@@ -94,10 +94,23 @@ DWORD WINAPI render_main(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
+    while (glGetError() != GL_NO_ERROR);
+
     if (paletteConvProgram)
+    {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+
+        if (glGetError() != GL_NO_ERROR)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+    }
     else
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+
+        if (glGetError() != GL_NO_ERROR)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+    }
+
 
     // palette texture
     GLuint paletteTexId = 0;
