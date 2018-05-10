@@ -77,6 +77,9 @@ DWORD WINAPI render_main(void)
     if (ddraw->render.maxfps < 0)
         ddraw->render.maxfps = ddraw->mode.dmDisplayFrequency;
 
+    if (ddraw->render.maxfps == 0)
+        ddraw->render.maxfps = 125;
+
     if (ddraw->render.maxfps > 0)
         frame_len = 1000.0f / ddraw->render.maxfps;
 
