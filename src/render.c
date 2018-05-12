@@ -86,8 +86,8 @@ DWORD WINAPI render_main(void)
     if (ddraw->render.maxfps > 0)
         frame_len = 1000.0f / ddraw->render.maxfps;
 
-    int tex_width = ddraw->width > 1024 ? ddraw->width : 1024;
-    int tex_height = ddraw->height > 1024 ? ddraw->height : 1024;
+    int tex_width = ddraw->width <= 512 ? 512 : ddraw->width <= 1024 ? 1024 : ddraw->width > 2048 ? ddraw->width : 2048;
+    int tex_height = ddraw->height > tex_width ? ddraw->height : tex_width;
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
