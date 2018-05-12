@@ -157,11 +157,8 @@ GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
     if (!vertShader || !fragShader)
         return 0;
 
-    const GLchar *vertSrc[2] = { "#define VERTEX\n", vertSource };
-    const GLchar *fragSrc[2] = { "#define FRAGMENT\n", fragSource };
-
-    glShaderSource(vertShader, 2, vertSrc, NULL);
-    glShaderSource(fragShader, 2, fragSrc, NULL);
+    glShaderSource(vertShader, 1, &vertSource, NULL);
+    glShaderSource(fragShader, 1, &fragSource, NULL);
 
     GLint isCompiled = 0;
 
@@ -232,15 +229,46 @@ GLuint OpenGL_BuildProgramFromFile(const char *filePath)
         long fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        char *source = malloc(fileSize + 1);
+        char *source = calloc(fileSize + 1, 1);
         if (source)
         {
             fread(source, fileSize, 1, file);
             fclose(file);
 
-            source[fileSize] = 0;
+            char *vertSource = calloc(fileSize + 50, 1);
+            char *fragSource = calloc(fileSize + 50, 1);
 
-            program = OpenGL_BuildProgram(source, source);
+            if (fragSource && vertSource)
+            {
+                const char *versionStart = strstr(source, "#version");
+                if (versionStart)
+                {
+                    const char deli[2] = "\n";
+                    char *version = strtok(versionStart, deli);
+
+                    strcpy(vertSource, source);
+                    strcpy(fragSource, source);
+                    strcat(vertSource, "\n#define VERTEX\n");
+                    strcat(fragSource, "\n#define FRAGMENT\n");
+                    strcat(vertSource, version + strlen(version) + 1);
+                    strcat(fragSource, version + strlen(version) + 1);
+
+                    program = OpenGL_BuildProgram(vertSource, fragSource);
+                }
+                else
+                {
+                    strcpy(vertSource, "#define VERTEX\n");
+                    strcpy(fragSource, "#define FRAGMENT\n");
+                    strcat(vertSource, source);
+                    strcat(fragSource, source);
+
+                    program = OpenGL_BuildProgram(vertSource, fragSource);
+                }
+
+                free(vertSource);
+                free(fragSource);
+            }
+
             free(source);
         }
     }
