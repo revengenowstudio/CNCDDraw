@@ -240,7 +240,7 @@ GLuint OpenGL_BuildProgramFromFile(const char *filePath)
 
             if (fragSource && vertSource)
             {
-                const char *versionStart = strstr(source, "#version");
+                char *versionStart = strstr(source, "#version");
                 if (versionStart)
                 {
                     const char deli[2] = "\n";

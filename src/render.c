@@ -351,13 +351,13 @@ DWORD WINAPI render_main(void)
             glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
 
             glPushAttrib(GL_VIEWPORT_BIT);
-            glViewport(0, 0, tex_width, tex_height);
+            glViewport(0, 0, ddraw->width, ddraw->height);
 
             glBegin(GL_TRIANGLE_FAN);
-            glTexCoord2f(0, 0);   glVertex2f(-1, -1);
-            glTexCoord2f(0, 1);   glVertex2f(-1, 1);
-            glTexCoord2f(1, 1);   glVertex2f(1, 1);
-            glTexCoord2f(1, 0);   glVertex2f(1, -1);
+            glTexCoord2f(0, 0);              glVertex2f(-1, -1);
+            glTexCoord2f(0, scale_h);        glVertex2f(-1, 1);
+            glTexCoord2f(scale_w, scale_h);  glVertex2f(1, 1);
+            glTexCoord2f(scale_w, 0);        glVertex2f(1, -1);
             glEnd();
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
