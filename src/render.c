@@ -21,7 +21,7 @@
 #include "main.h"
 #include "surface.h"
 
-const GLchar *PaletteVertShaderSrc =
+const GLchar *PassthroughVertShaderSrc =
     "//Vertex shader\n"
     "#version 110\n"
     "varying vec2 TexCoord0; \n"
@@ -80,6 +80,9 @@ DWORD WINAPI render_main(void)
     if (ddraw->render.maxfps == 0)
         ddraw->render.maxfps = 125;
 
+    if (ddraw->render.maxfps >= 1000)
+        ddraw->render.maxfps = 0;
+
     if (ddraw->render.maxfps > 0)
         frame_len = 1000.0f / ddraw->render.maxfps;
 
@@ -90,7 +93,14 @@ DWORD WINAPI render_main(void)
 
     GLuint paletteConvProgram = 0; 
     if (glGetUniformLocation && glActiveTexture && glUniform1i)
-        paletteConvProgram = OpenGL_BuildProgram(&PaletteVertShaderSrc, &PaletteFragShaderSrc);
+        paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
+
+    GLuint scaleProgram = 0;
+    if (glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers && 
+        glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
+        glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
+        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv)
+        scaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
 
     // primary surface texture
     GLuint surfaceTexId = 0;
@@ -125,21 +135,121 @@ DWORD WINAPI render_main(void)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    while (glGetError() != GL_NO_ERROR);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    if (glGetError() != GL_NO_ERROR)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glViewport(
         ddraw->render.viewport.x, ddraw->render.viewport.y,
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-
     GLint surfaceUniLoc = 0, paletteUniLoc = 0;
     if (paletteConvProgram)
     {
-        glUseProgram(paletteConvProgram);
         surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
         paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
     }
+
+    GLint textureUniLoc = -1, texCoordUniLoc = -1, frameCountUniLoc = -1;
+    GLuint frameBufferId = 0;
+    GLuint frameBufferTexId = 0;
+    GLuint vboBuffers[3];
+
+    if (scaleProgram)
+    {
+        glUseProgram(scaleProgram);
+
+        GLint vertexCoordUniLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
+        texCoordUniLoc = glGetAttribLocation(scaleProgram, "TexCoord");
+        textureUniLoc = glGetUniformLocation(scaleProgram, "Texture");
+        frameCountUniLoc = glGetUniformLocation(scaleProgram, "FrameCount");
+
+        glGenBuffers(3, vboBuffers);
+
+        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[0]);
+        static const GLfloat vertexCoord[] = {
+           -1.0f, 1.0f,
+            1.0f, 1.0f,
+            1.0f,-1.0f,
+           -1.0f,-1.0f,
+        };
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoord), vertexCoord, GL_STATIC_DRAW);
+        glVertexAttribPointer(vertexCoordUniLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(vertexCoordUniLoc);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboBuffers[2]);
+        static const GLushort indices[] =
+        {
+            0, 1, 2,
+            0, 2, 3,
+        };
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+        float inputSize[2], outputSize[2], textureSize[2];
+
+        inputSize[0] = ddraw->width;
+        inputSize[1] = ddraw->height;
+        textureSize[0] = tex_width;
+        textureSize[1] = tex_height;
+        outputSize[0] = ddraw->render.viewport.width;
+        outputSize[1] = ddraw->render.viewport.height;
+
+        glUniform2fv(glGetUniformLocation(scaleProgram, "OutputSize"), 1, outputSize);
+        glUniform2fv(glGetUniformLocation(scaleProgram, "TextureSize"), 1, textureSize);
+        glUniform2fv(glGetUniformLocation(scaleProgram, "InputSize"), 1, inputSize);
+
+        glUniform4f(glGetAttribLocation(scaleProgram, "Color"), 1, 1, 1, 1);
+        glUniform1i(glGetUniformLocation(scaleProgram, "FrameDirection"), 1);
+
+        const float mvpMatrix[16] = {
+            1,0,0,0,
+            0,1,0,0,
+            0,0,1,0,
+            0,0,0,1,
+        };
+        glUniformMatrix4fv(glGetUniformLocation(scaleProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
+
+        glGenFramebuffers(1, &frameBufferId);
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+        glGenTextures(1, &frameBufferTexId);
+        glBindTexture(GL_TEXTURE_2D, frameBufferTexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameBufferTexId, 0);
+
+        GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, drawBuffers);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        {
+            glDeleteTextures(1, &frameBufferTexId);
+
+            if (glDeleteFramebuffers)
+                glDeleteFramebuffers(1, &frameBufferId);
+
+            if (glDeleteProgram)
+                glDeleteProgram(scaleProgram);
+
+            scaleProgram = 0;
+
+            if (glDeleteBuffers)
+                glDeleteBuffers(3, vboBuffers);
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+ 
+    glBindTexture(GL_TEXTURE_2D, 0);
+
 
     glEnable(GL_TEXTURE_2D);
 
@@ -163,19 +273,6 @@ DWORD WINAPI render_main(void)
 
         if (ddraw->render.maxfps > 0)
             tick_start = timeGetTime();
-
-        if (paletteConvProgram)
-        {
-            glActiveTexture(GL_TEXTURE0);
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, paletteTexId);
-            glUniform1i(paletteUniLoc, 0);
-
-            glActiveTexture(GL_TEXTURE1);
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-            glUniform1i(surfaceUniLoc, 1);
-        }
 
         EnterCriticalSection(&ddraw->cs);
 
@@ -230,12 +327,90 @@ DWORD WINAPI render_main(void)
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RGBA, GL_UNSIGNED_BYTE, tex);
         }
 
-        glBegin(GL_TRIANGLE_FAN);
-        glTexCoord2f(0, 0);              glVertex2f(-1, 1);
-        glTexCoord2f(scale_w, 0);        glVertex2f(1, 1);
-        glTexCoord2f(scale_w, scale_h);  glVertex2f(1, -1);
-        glTexCoord2f(0, scale_h);        glVertex2f(-1, -1);
-        glEnd();
+        if (paletteConvProgram)
+        {
+            glUseProgram(paletteConvProgram);
+
+            glActiveTexture(GL_TEXTURE0);
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, paletteTexId);
+            glUniform1i(paletteUniLoc, 0);
+
+            glActiveTexture(GL_TEXTURE1);
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+            glUniform1i(surfaceUniLoc, 1);
+
+            glActiveTexture(GL_TEXTURE0);
+        }
+
+        if (scaleProgram)
+        {
+            // draw surface into framebuffer
+
+            glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+            glPushAttrib(GL_VIEWPORT_BIT);
+            glViewport(0, 0, tex_width, tex_height);
+
+            glBegin(GL_TRIANGLE_FAN);
+            glTexCoord2f(0, 0);   glVertex2f(-1, -1);
+            glTexCoord2f(0, 1);   glVertex2f(-1, 1);
+            glTexCoord2f(1, 1);   glVertex2f(1, 1);
+            glTexCoord2f(1, 0);   glVertex2f(1, -1);
+            glEnd();
+
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            glPopAttrib();
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
+            // apply filter
+
+            glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[1]);
+
+            GLfloat texCoord[] = {
+                0.0f,    0.0f,
+                scale_w, 0.0f,
+                scale_w, scale_h,
+                0,       scale_h,
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+            glVertexAttribPointer(texCoordUniLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(texCoordUniLoc);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboBuffers[2]);
+
+            glUseProgram(scaleProgram);
+            glActiveTexture(GL_TEXTURE0);
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, frameBufferTexId);
+            glUniform1i(textureUniLoc, 0);
+
+            static int frames = 1;
+            if (frameCountUniLoc != -1)
+                glUniform1i(frameCountUniLoc, frames++);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        }
+        else
+        {
+            glBegin(GL_TRIANGLE_FAN);
+            glTexCoord2f(0, 0);              glVertex2f(-1, 1);
+            glTexCoord2f(scale_w, 0);        glVertex2f(1, 1);
+            glTexCoord2f(scale_w, scale_h);  glVertex2f(1, -1);
+            glTexCoord2f(0, scale_h);        glVertex2f(-1, -1);
+            glEnd();
+        }
+
+        if (scaleProgram && !paletteConvProgram)
+            glUseProgram(0);
 
         glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -253,14 +428,28 @@ DWORD WINAPI render_main(void)
     HeapFree(GetProcessHeap(), 0, tex);
     glDeleteTextures(1, &surfaceTexId);
     glDeleteTextures(1, &paletteTexId);
-
+    
     if (glUseProgram)
         glUseProgram(0);
+
+    if (scaleProgram)
+    {
+        glDeleteTextures(1, &frameBufferTexId);
+
+        if (glDeleteBuffers)
+            glDeleteBuffers(3, vboBuffers);
+
+        if (glDeleteFramebuffers)
+            glDeleteFramebuffers(1, &frameBufferId);
+    } 
 
     if (glDeleteProgram)
     {
         if (paletteConvProgram)
             glDeleteProgram(paletteConvProgram);
+
+        if (scaleProgram)
+            glDeleteProgram(scaleProgram);
     }
         
     wglMakeCurrent(NULL, NULL);

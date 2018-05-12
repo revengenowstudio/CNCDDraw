@@ -23,6 +23,7 @@ PFNGLUNIFORM1FVPROC glUniform1fv = NULL;
 PFNGLUNIFORM2FVPROC glUniform2fv = NULL;
 PFNGLUNIFORM3FVPROC glUniform3fv = NULL;
 PFNGLUNIFORM4FVPROC glUniform4fv = NULL;
+PFNGLUNIFORM4FPROC glUniform4f = NULL;
 PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = NULL;
 PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation = NULL;
 PFNGLVERTEXATTRIB1FPROC glVertexAttrib1f = NULL;
@@ -47,6 +48,7 @@ PFNGLGENBUFFERSPROC glGenBuffers = NULL;
 PFNGLBINDBUFFERPROC	glBindBuffer = NULL;
 PFNGLBUFFERDATAPROC	glBufferData = NULL;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = NULL;
+PFNGLDELETEBUFFERSPROC glDeleteBuffers = NULL;
 
 PFNGLGENBUFFERSARBPROC glGenBuffersARB = NULL;
 PFNGLBINDBUFFERARBPROC glBindBufferARB = NULL;
@@ -58,6 +60,13 @@ PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB = NULL;
 PFNGLACTIVETEXTUREARBPROC glActiveTexture = NULL;
 PFNGLCLIENTACTIVETEXTUREPROC glClientActiveTexture = NULL;
 PFNGLMULTITEXCOORD2FPROC glMultiTexCoord2f = NULL;
+
+PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers = NULL;
+PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer = NULL;
+PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D = NULL;
+PFNGLDRAWBUFFERSPROC glDrawBuffers = NULL;
+PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus = NULL;
+PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers = NULL;
 
 void OpenGL_Init()
 {
@@ -81,6 +90,7 @@ void OpenGL_Init()
     glUniform2fv = (PFNGLUNIFORM2FVPROC)wglGetProcAddress("glUniform2fv");
     glUniform3fv = (PFNGLUNIFORM3FVPROC)wglGetProcAddress("glUniform3fv");
     glUniform4fv = (PFNGLUNIFORM4FVPROC)wglGetProcAddress("glUniform4fv");
+    glUniform4f = (PFNGLUNIFORM4FPROC)wglGetProcAddress("glUniform4f");
     glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)wglGetProcAddress("glUniformMatrix4fv");
     glGetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC)wglGetProcAddress("glGetAttribLocation");
     glVertexAttrib1f = (PFNGLVERTEXATTRIB1FPROC)wglGetProcAddress("glVertexAttrib1f");
@@ -103,6 +113,7 @@ void OpenGL_Init()
     glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
     glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
     glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
+    glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
 
     glGenBuffersARB = (PFNGLGENBUFFERSARBPROC)wglGetProcAddress("glGenBuffersARB");
     glBindBufferARB = (PFNGLBINDBUFFERARBPROC)wglGetProcAddress("glBindBufferARB");
@@ -114,6 +125,13 @@ void OpenGL_Init()
     glActiveTexture = (PFNGLACTIVETEXTUREARBPROC)wglGetProcAddress("glActiveTexture");
     glClientActiveTexture = (PFNGLCLIENTACTIVETEXTUREPROC)wglGetProcAddress("glClientActiveTexture");
     glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)wglGetProcAddress("glMultiTexCoord2f");
+
+    glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)wglGetProcAddress("glGenFramebuffers");
+    glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)wglGetProcAddress("glBindFramebuffer");
+    glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)wglGetProcAddress("glFramebufferTexture2D");
+    glDrawBuffers = (PFNGLDRAWBUFFERSPROC)wglGetProcAddress("glDrawBuffers");
+    glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
+    glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
 }
 
 BOOL OpenGL_ExtExists(char *ext)
@@ -127,7 +145,7 @@ BOOL OpenGL_ExtExists(char *ext)
     return FALSE;
 }
 
-GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource)
+GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
 {
     if (!glCreateShader || !glShaderSource || !glCompileShader || !glCreateProgram ||
         !glAttachShader || !glLinkProgram || !glUseProgram || !glDetachShader)
@@ -139,8 +157,11 @@ GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource)
     if (!vertShader || !fragShader)
         return 0;
 
-    glShaderSource(vertShader, 1, vertSource, NULL);
-    glShaderSource(fragShader, 1, fragSource, NULL);
+    const GLchar *vertSrc[2] = { "#define VERTEX\n", vertSource };
+    const GLchar *fragSrc[2] = { "#define FRAGMENT\n", fragSource };
+
+    glShaderSource(vertShader, 2, vertSrc, NULL);
+    glShaderSource(fragShader, 2, fragSrc, NULL);
 
     GLint isCompiled = 0;
 
@@ -194,6 +215,33 @@ GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource)
 
                 return 0;
             }
+        }
+    }
+
+    return program;
+}
+
+GLuint OpenGL_BuildProgramFromFile(const char *filePath)
+{
+    GLuint program = 0;
+
+    FILE *file = fopen(filePath, "rb");
+    if (file)
+    {
+        fseek(file, 0, SEEK_END);
+        long fileSize = ftell(file);
+        fseek(file, 0, SEEK_SET);
+
+        char *source = malloc(fileSize + 1);
+        if (source)
+        {
+            fread(source, fileSize, 1, file);
+            fclose(file);
+
+            source[fileSize] = 0;
+
+            program = OpenGL_BuildProgram(source, source);
+            free(source);
         }
     }
 

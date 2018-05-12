@@ -5,7 +5,8 @@
 
 void OpenGL_Init();
 BOOL OpenGL_ExtExists(char *ext);
-GLuint OpenGL_BuildProgram(const GLchar **vertSource, const GLchar **fragSource);
+GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
+GLuint OpenGL_BuildProgramFromFile(const char *filePath);
 
 // Program
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
@@ -27,6 +28,7 @@ extern PFNGLUNIFORM1FVPROC glUniform1fv;
 extern PFNGLUNIFORM2FVPROC glUniform2fv;
 extern PFNGLUNIFORM3FVPROC glUniform3fv;
 extern PFNGLUNIFORM4FVPROC glUniform4fv;
+extern PFNGLUNIFORM4FPROC glUniform4f;
 extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 extern PFNGLGETATTRIBLOCATIONPROC glGetAttribLocation;
 extern PFNGLVERTEXATTRIB1FPROC glVertexAttrib1f;
@@ -51,6 +53,7 @@ extern PFNGLGENBUFFERSPROC glGenBuffers;
 extern PFNGLBINDBUFFERPROC	glBindBuffer;
 extern PFNGLBUFFERDATAPROC	glBufferData;
 extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
+extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 
 extern PFNGLGENBUFFERSARBPROC glGenBuffersARB;
 extern PFNGLBINDBUFFERARBPROC glBindBufferARB;
@@ -62,3 +65,10 @@ extern PFNGLUNMAPBUFFERARBPROC glUnmapBufferARB;
 extern PFNGLACTIVETEXTUREARBPROC glActiveTexture;
 extern PFNGLCLIENTACTIVETEXTUREPROC glClientActiveTexture;
 extern PFNGLMULTITEXCOORD2FPROC glMultiTexCoord2f;
+
+extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
+extern PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
+extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
+extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
+extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
+extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;

@@ -978,7 +978,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "adjmouse=false\n"
             "; enable C&C video resize hack, auto = auto-detect game, true = forced, false = disabled\n"
             "vhack=false\n"
-            "; switch between OpenGL (opengl) and software (gdi) renderers, latter supports less features but might be faster depending on the GPU\n"
+            "; switch between OpenGL (opengl) and software (gdi) renderers\n"
             "renderer=gdi\n"
             "; force CPU0 affinity, avoids crashes with RA, *might* have a performance impact\n"
             "singlecpu=true\n"
@@ -1145,6 +1145,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         printf("DirectDrawCreate: Using OpenGL renderer\n");
         This->renderer = render_main;
     }
+
+    // to do: read .glslp config file instead of the shader and apply the correct settings
+    GetPrivateProfileStringA("ddraw", "shader", "", This->shader, sizeof(This->shader), SettingsIniPath);
 
     GetPrivateProfileStringA("ddraw", "singlecpu", "true", tmp, sizeof(tmp), SettingsIniPath);
     if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')

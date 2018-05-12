@@ -90,6 +90,7 @@ typedef struct IDirectDrawImpl
     BOOL maintas;
     BOOL fakecursorpos;
     BOOL noactivateapp;
+    char shader[MAX_PATH];
     
 } IDirectDrawImpl;
 
