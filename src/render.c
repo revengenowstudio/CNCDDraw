@@ -22,7 +22,6 @@
 #include "surface.h"
 
 const GLchar *PassthroughVertShaderSrc =
-    "//Vertex shader\n"
     "#version 110\n"
     "varying vec2 TexCoord0; \n"
     "\n"
@@ -33,7 +32,6 @@ const GLchar *PassthroughVertShaderSrc =
     "}\n";
 
 const GLchar *PaletteFragShaderSrc =
-    "//Fragment shader\n"
     "#version 110\n"
     "uniform sampler2D PaletteTex; \n"
     "uniform sampler2D SurfaceTex; \n"

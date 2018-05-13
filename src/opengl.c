@@ -182,7 +182,10 @@ GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
         if (isCompiled == GL_FALSE)
         {
             if (glDeleteShader)
+            {
                 glDeleteShader(fragShader);
+                glDeleteShader(vertShader);
+            }
 
             return 0;
         }
