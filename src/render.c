@@ -86,8 +86,13 @@ DWORD WINAPI render_main(void)
     if (ddraw->render.maxfps > 0)
         frame_len = 1000.0f / ddraw->render.maxfps;
 
-    int tex_width = ddraw->width <= 512 ? 512 : ddraw->width <= 1024 ? 1024 : ddraw->width > 2048 ? ddraw->width : 2048;
-    int tex_height = ddraw->height > tex_width ? ddraw->height : tex_width;
+    int tex_width = 
+        ddraw->width <= 1024 ? 1024 : ddraw->width <= 2048 ? 2048 : ddraw->width <= 4096 ? 4096 : ddraw->width;
+    int tex_height = 
+        ddraw->height <= tex_width ? tex_width : ddraw->height <= 2048 ? 2048 : ddraw->height <= 4096 ? 4096 : ddraw->height;
+    
+    tex_width = tex_width > tex_height ? tex_width : tex_height;
+
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
@@ -138,22 +143,22 @@ DWORD WINAPI render_main(void)
 
     while (glGetError() != GL_NO_ERROR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
     if (glGetError() != GL_NO_ERROR)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glViewport(
         ddraw->render.viewport.x, ddraw->render.viewport.y,
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
-    GLint surfaceUniLoc = 0, paletteUniLoc = 0;
+    GLint surfaceUniLoc = -1, paletteUniLoc = -1;
     if (paletteConvProgram)
     {
         surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
         paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
     }
 
-    GLint textureUniLoc = -1, texCoordUniLoc = -1, frameCountUniLoc = -1;
+    GLint textureUniLoc = -1, texCoordAttrLoc = -1, frameCountUniLoc = -1;
     GLuint frameBufferId = 0;
     GLuint frameBufferTexId = 0;
     GLuint vboBuffers[3];
@@ -162,8 +167,8 @@ DWORD WINAPI render_main(void)
     {
         glUseProgram(scaleProgram);
 
-        GLint vertexCoordUniLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
-        texCoordUniLoc = glGetAttribLocation(scaleProgram, "TexCoord");
+        GLint vertexCoordAttrLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
+        texCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
         textureUniLoc = glGetUniformLocation(scaleProgram, "Texture");
         frameCountUniLoc = glGetUniformLocation(scaleProgram, "FrameCount");
 
@@ -177,8 +182,8 @@ DWORD WINAPI render_main(void)
            -1.0f,-1.0f,
         };
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoord), vertexCoord, GL_STATIC_DRAW);
-        glVertexAttribPointer(vertexCoordUniLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(vertexCoordUniLoc);
+        glVertexAttribPointer(vertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(vertexCoordAttrLoc);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboBuffers[2]);
         static const GLushort indices[] =
@@ -378,8 +383,8 @@ DWORD WINAPI render_main(void)
             };
 
             glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-            glVertexAttribPointer(texCoordUniLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(texCoordUniLoc);
+            glVertexAttribPointer(texCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(texCoordAttrLoc);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
