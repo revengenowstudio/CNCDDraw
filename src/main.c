@@ -993,6 +993,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "noactivateapp=false\n"
             "; developer mode (don't lock the cursor)\n"
             "devmode=false\n"
+            "; preliminary libretro shader support (e.g. cubic.glsl) https://github.com/libretro/glsl-shaders\n"
+            "shader=\n"
             
         , fh);
         fclose(fh);
