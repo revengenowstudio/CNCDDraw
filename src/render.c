@@ -46,13 +46,26 @@ const GLchar *PaletteFragShaderSrc =
 
 
 BOOL detect_cutscene();
+DWORD WINAPI render_soft_main(void);
 
 DWORD WINAPI render_main(void)
 {
     Sleep(500);
 
     HGLRC hRC = wglCreateContext(ddraw->render.hDC);
-    wglMakeCurrent(ddraw->render.hDC, hRC);
+    BOOL madeCurrent = hRC && wglMakeCurrent(ddraw->render.hDC, hRC);
+
+    if (!madeCurrent || (ddraw->autorenderer && glGetError() != GL_NO_ERROR))
+    {
+        if (madeCurrent)
+        {
+            wglMakeCurrent(NULL, NULL);
+            wglDeleteContext(hRC);
+        }
+
+        ddraw->renderer = render_soft_main;
+        return render_soft_main();
+    }
 
     OpenGL_Init();
 
@@ -71,18 +84,19 @@ DWORD WINAPI render_main(void)
     DWORD tick_start = 0;
     DWORD tick_end = 0;
     DWORD frame_len = 0;
+    int maxfps = ddraw->render.maxfps;
 
-    if (ddraw->render.maxfps < 0)
-        ddraw->render.maxfps = ddraw->mode.dmDisplayFrequency;
+    if (maxfps < 0)
+        maxfps = ddraw->mode.dmDisplayFrequency;
 
-    if (ddraw->render.maxfps == 0)
-        ddraw->render.maxfps = 125;
+    if (maxfps == 0)
+        maxfps = 125;
 
-    if (ddraw->render.maxfps >= 1000)
-        ddraw->render.maxfps = 0;
+    if (maxfps >= 1000)
+        maxfps = 0;
 
-    if (ddraw->render.maxfps > 0)
-        frame_len = 1000.0f / ddraw->render.maxfps;
+    if (maxfps > 0)
+        frame_len = 1000.0f / maxfps;
 
     int tex_width = 
         ddraw->width <= 1024 ? 1024 : ddraw->width <= 2048 ? 2048 : ddraw->width <= 4096 ? 4096 : ddraw->width;
@@ -247,11 +261,11 @@ DWORD WINAPI render_main(void)
     }
  
     glBindTexture(GL_TEXTURE_2D, 0);
-
-
     glEnable(GL_TEXTURE_2D);
 
-    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || glGetError() != GL_NO_ERROR));
+
+    while (useOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
 #if _DEBUG
         static DWORD tick_fps = 0;
@@ -269,7 +283,7 @@ DWORD WINAPI render_main(void)
         float scale_w = (float)ddraw->width / tex_width;
         float scale_h = (float)ddraw->height / tex_height;
 
-        if (ddraw->render.maxfps > 0)
+        if (maxfps > 0)
             tick_start = timeGetTime();
 
         EnterCriticalSection(&ddraw->cs);
@@ -414,7 +428,7 @@ DWORD WINAPI render_main(void)
 
         SwapBuffers(ddraw->render.hDC);
 
-        if (ddraw->render.maxfps > 0)
+        if (maxfps > 0)
         {
             tick_end = timeGetTime();
 
@@ -452,6 +466,12 @@ DWORD WINAPI render_main(void)
         
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(hRC);
+
+    if (!useOpenGL)
+    {
+        ddraw->renderer = render_soft_main;
+        render_soft_main();
+    }
 
     return 0;
 }

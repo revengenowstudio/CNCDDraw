@@ -978,8 +978,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "adjmouse=false\n"
             "; enable C&C video resize hack, auto = auto-detect game, true = forced, false = disabled\n"
             "vhack=false\n"
-            "; switch between OpenGL (opengl) and software (gdi) renderers\n"
-            "renderer=gdi\n"
+            "; switch between OpenGL (opengl) and software (gdi) renderers, (auto) = try opengl, fallback = gdi\n"
+            "renderer=auto\n"
             "; force CPU0 affinity, avoids crashes with RA, *might* have a performance impact\n"
             "singlecpu=true\n"
             "; Window position, -1 = center to screen\n"
@@ -1131,7 +1131,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         This->vhack = 0;
     }
 
-    GetPrivateProfileStringA("ddraw", "renderer", "gdi", tmp, sizeof(tmp), SettingsIniPath);
+    GetPrivateProfileStringA("ddraw", "renderer", "auto", tmp, sizeof(tmp), SettingsIniPath);
     if(tolower(tmp[0]) == 'd' || tolower(tmp[0]) == 'd')
     {
         printf("DirectDrawCreate: Using dummy renderer\n");
@@ -1141,6 +1141,12 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         printf("DirectDrawCreate: Using software renderer\n");
         This->renderer = render_soft_main;
+    }
+    else if (tolower(tmp[0]) == 'a')
+    {
+        printf("DirectDrawCreate: Using automatic renderer\n");
+        This->renderer = render_main;
+        This->autorenderer = TRUE;
     }
     else
     {
