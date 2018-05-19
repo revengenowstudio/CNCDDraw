@@ -20,8 +20,6 @@
 #include <windows.h>
 #include "ddraw.h"
 #include "debug.h"
-#include <GL/gl.h>
-#include <GL/glu.h>
 
 #define CUTSCENE_WIDTH 640
 #define CUTSCENE_HEIGHT 400
