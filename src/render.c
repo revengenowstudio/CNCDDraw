@@ -89,21 +89,21 @@ DWORD WINAPI render_main(void)
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
-    BOOL got30 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
+    BOOL gotOpenglV3 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
         glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray;
 
-    BOOL got20 = glGetUniformLocation && glActiveTexture && glUniform1i;
+    BOOL gotOpenglV2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 
     GLuint paletteConvProgram = 0; 
-    if (got30)
+    if (gotOpenglV3)
         paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
-    else if (got20)
+    else if (gotOpenglV2)
         paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PaletteFragShader110Src);
 
     GLuint scaleProgram = 0;
-    if (got30)
+    if (gotOpenglV3)
         scaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
 
     // primary surface texture
@@ -153,7 +153,7 @@ DWORD WINAPI render_main(void)
         surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
         paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
 
-        if (got30)
+        if (gotOpenglV3)
         {
             glUseProgram(paletteConvProgram);
 
@@ -418,6 +418,8 @@ DWORD WINAPI render_main(void)
         scale_w = (float)ddraw->width / tex_width;
         scale_h = (float)ddraw->height / tex_height;
 
+        BOOL scaleChanged = FALSE;
+
         if (maxfps > 0)
             tick_start = timeGetTime();
 
@@ -425,8 +427,6 @@ DWORD WINAPI render_main(void)
 
         if (ddraw->primary && ddraw->primary->palette)
         {
-            BOOL scaleChanged = FALSE;
-
             if (ddraw->vhack && detect_cutscene())
             {
                 scale_w *= (float)CUTSCENE_WIDTH / ddraw->width;
@@ -445,56 +445,6 @@ DWORD WINAPI render_main(void)
                 {
                     scaleChanged = TRUE;
                     ddraw->incutscene = FALSE;
-                }
-            }
-
-            if (scaleChanged)
-            {
-                if (scaleProgram && paletteConvProgram)
-                {
-                    glBindVertexArray(mainVao);
-                    glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
-                    GLfloat texCoordPal[] = {
-                        0.0f,    0.0f,
-                        0.0f,    scale_h,
-                        scale_w, scale_h,
-                        scale_w, 0.0f,
-                    };
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoordPal), texCoordPal, GL_STATIC_DRAW);
-                    glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(mainTexCoordAttrLoc);
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-
-                    glBindVertexArray(scaleVao);
-                    glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[1]);
-                    GLfloat texCoord[] = {
-                        0.0f,    0.0f,
-                        scale_w, 0.0f,
-                        scale_w, scale_h,
-                        0.0f,    scale_h,
-                    };
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-                    glVertexAttribPointer(scaleTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(scaleTexCoordAttrLoc);
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
-                }
-                else if (got30 && paletteConvProgram)
-                {
-                    glBindVertexArray(mainVao);
-                    glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
-                    GLfloat texCoord[] = {
-                        0.0f,    0.0f,
-                        scale_w, 0.0f,
-                        scale_w, scale_h,
-                        0.0f,    scale_h,
-                    };
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-                    glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                    glEnableVertexAttribArray(mainTexCoordAttrLoc);
-                    glBindBuffer(GL_ARRAY_BUFFER, 0);
-                    glBindVertexArray(0);
                 }
             }
 
@@ -531,6 +481,56 @@ DWORD WINAPI render_main(void)
         {
             glBindTexture(GL_TEXTURE_2D, surfaceTexId);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RGBA, GL_UNSIGNED_BYTE, tex);
+        }
+
+        if (scaleChanged)
+        {
+            if (scaleProgram && paletteConvProgram)
+            {
+                glBindVertexArray(mainVao);
+                glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
+                GLfloat texCoordPal[] = {
+                    0.0f,    0.0f,
+                    0.0f,    scale_h,
+                    scale_w, scale_h,
+                    scale_w, 0.0f,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoordPal), texCoordPal, GL_STATIC_DRAW);
+                glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(mainTexCoordAttrLoc);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+
+                glBindVertexArray(scaleVao);
+                glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[1]);
+                GLfloat texCoord[] = {
+                    0.0f,    0.0f,
+                    scale_w, 0.0f,
+                    scale_w, scale_h,
+                    0.0f,    scale_h,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+                glVertexAttribPointer(scaleTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(scaleTexCoordAttrLoc);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+            }
+            else if (gotOpenglV3 && paletteConvProgram)
+            {
+                glBindVertexArray(mainVao);
+                glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
+                GLfloat texCoord[] = {
+                    0.0f,    0.0f,
+                    scale_w, 0.0f,
+                    scale_w, scale_h,
+                    0.0f,    scale_h,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+                glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(mainTexCoordAttrLoc);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+            }
         }
 
         if (paletteConvProgram)
@@ -587,7 +587,7 @@ DWORD WINAPI render_main(void)
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
             glBindVertexArray(0);
         }
-        else if (got30 && paletteConvProgram)
+        else if (gotOpenglV3 && paletteConvProgram)
         {
             glBindVertexArray(mainVao);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
@@ -649,7 +649,7 @@ DWORD WINAPI render_main(void)
             glDeleteProgram(scaleProgram);
     }
 
-    if (got30)
+    if (gotOpenglV3)
     {
         if (paletteConvProgram)
         {
