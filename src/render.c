@@ -146,7 +146,7 @@ DWORD WINAPI render_main(void)
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
 
-    GLint surfaceUniLoc = -1, paletteUniLoc = -1, mainTexCoordAttrLoc = -1;
+    GLint surfaceUniLoc = -1, paletteUniLoc = -1, mainTexCoordAttrLoc = -1, mainVertexCoordAttrLoc = -1;
     GLuint mainVbos[3], mainVao;
     if (paletteConvProgram)
     {
@@ -157,7 +157,7 @@ DWORD WINAPI render_main(void)
         {
             glUseProgram(paletteConvProgram);
 
-            GLint vertexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "VertexCoord");
+            mainVertexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "VertexCoord");
             mainTexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "TexCoord");
 
             glGenBuffers(3, mainVbos);
@@ -211,8 +211,8 @@ DWORD WINAPI render_main(void)
             glBindVertexArray(mainVao);
 
             glBindBuffer(GL_ARRAY_BUFFER, mainVbos[0]);
-            glVertexAttribPointer(vertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(vertexCoordAttrLoc);
+            glVertexAttribPointer(mainVertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(mainVertexCoordAttrLoc);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
@@ -363,14 +363,28 @@ DWORD WINAPI render_main(void)
             if (paletteConvProgram)
             {
                 glBindVertexArray(mainVao);
+                glBindBuffer(GL_ARRAY_BUFFER, mainVbos[0]);
+                static const GLfloat vertexCoordPal[] = {
+                    -1.0f, 1.0f,
+                     1.0f, 1.0f,
+                     1.0f,-1.0f,
+                    -1.0f,-1.0f,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoordPal), vertexCoordPal, GL_STATIC_DRAW);
+                glVertexAttribPointer(mainVertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(mainVertexCoordAttrLoc);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+
+                glBindVertexArray(mainVao);
                 glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
-                GLfloat texCoord[] = {
+                GLfloat texCoordPal[] = {
                     0.0f,    0.0f,
                     scale_w, 0.0f,
                     scale_w, scale_h,
                     0.0f,    scale_h,
                 };
-                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoordPal), texCoordPal, GL_STATIC_DRAW);
                 glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
                 glEnableVertexAttribArray(mainTexCoordAttrLoc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
