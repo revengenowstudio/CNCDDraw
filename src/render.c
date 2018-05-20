@@ -500,20 +500,6 @@ DWORD WINAPI render_main(void)
                 glEnableVertexAttribArray(mainTexCoordAttrLoc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
-
-                glBindVertexArray(scaleVao);
-                glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[1]);
-                GLfloat texCoord[] = {
-                    0.0f,    0.0f,
-                    scale_w, 0.0f,
-                    scale_w, scale_h,
-                    0.0f,    scale_h,
-                };
-                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-                glVertexAttribPointer(scaleTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                glEnableVertexAttribArray(scaleTexCoordAttrLoc);
-                glBindBuffer(GL_ARRAY_BUFFER, 0);
-                glBindVertexArray(0);
             }
             else if (gotOpenglV3 && paletteConvProgram)
             {
