@@ -54,6 +54,9 @@ extern PFNGLBINDBUFFERPROC	glBindBuffer;
 extern PFNGLBUFFERDATAPROC	glBufferData;
 extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
+extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
+extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
+extern PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
 
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
 

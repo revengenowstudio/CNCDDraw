@@ -31,6 +31,7 @@
     <ClInclude Include="inc\main.h" />
     <ClInclude Include="inc\opengl.h" />
     <ClInclude Include="inc\palette.h" />
+    <ClInclude Include="inc\paletteshader.h" />
     <ClInclude Include="inc\png.h" />
     <ClInclude Include="inc\pngconf.h" />
     <ClInclude Include="inc\surface.h" />

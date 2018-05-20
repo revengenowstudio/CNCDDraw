@@ -86,6 +86,9 @@
     <ClInclude Include="inc\opengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\paletteshader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc">

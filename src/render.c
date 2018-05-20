@@ -20,29 +20,7 @@
 #include "opengl.h"
 #include "main.h"
 #include "surface.h"
-
-const GLchar *PassthroughVertShaderSrc =
-    "#version 110\n"
-    "varying vec2 TexCoord0; \n"
-    "\n"
-    "void main(void)\n"
-    "{\n"
-    "    gl_Position = ftransform(); \n"
-    "    TexCoord0 = gl_MultiTexCoord0.xy; \n"
-    "}\n";
-
-const GLchar *PaletteFragShaderSrc =
-    "#version 110\n"
-    "uniform sampler2D PaletteTex; \n"
-    "uniform sampler2D SurfaceTex; \n"
-    "varying vec2 TexCoord0; \n"
-    "\n"
-    "void main()\n"
-    "{\n"
-    "   vec4 index = texture2D(SurfaceTex, TexCoord0); \n"
-    "   vec4 texel = texture2D(PaletteTex, index.xy); \n"
-    "   gl_FragColor = texel;\n"
-    "}\n";
+#include "paletteshader.h"
 
 
 BOOL detect_cutscene();
@@ -108,15 +86,21 @@ DWORD WINAPI render_main(void)
     int tex_size = tex_width * tex_height * sizeof(int);
     int *tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, tex_size);
 
-    GLuint paletteConvProgram = 0; 
-    if (glGetUniformLocation && glActiveTexture && glUniform1i)
-        paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
-
-    GLuint scaleProgram = 0;
-    if (glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers && 
+    BOOL got30 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
-        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv)
+        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray;
+
+    BOOL got20 = glGetUniformLocation && glActiveTexture && glUniform1i;
+
+    GLuint paletteConvProgram = 0; 
+    if (got30)
+        paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
+    else if (got20)
+        paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PaletteFragShader110Src);
+
+    GLuint scaleProgram = 0;
+    if (got30)
         scaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
 
     // primary surface texture
@@ -158,30 +142,96 @@ DWORD WINAPI render_main(void)
         ddraw->render.viewport.x, ddraw->render.viewport.y,
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
-    GLint surfaceUniLoc = -1, paletteUniLoc = -1;
+
+    GLint surfaceUniLoc = -1, paletteUniLoc = -1, mainTexCoordAttrLoc = -1;
+    GLuint mainVbos[3], mainVao;
     if (paletteConvProgram)
     {
         surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
         paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
+
+        if (got30)
+        {
+            glUseProgram(paletteConvProgram);
+
+            GLint vertexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "VertexCoord");
+            mainTexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "TexCoord");
+
+            glGenBuffers(3, mainVbos);
+
+            glBindBuffer(GL_ARRAY_BUFFER, mainVbos[0]);
+            if (scaleProgram)
+            {
+                glBindBuffer(GL_ARRAY_BUFFER, mainVbos[0]);
+                static const GLfloat vertexCoordPal[] = {
+                    -1.0f, -1.0f,
+                    -1.0f,  1.0f,
+                     1.0f,  1.0f,
+                     1.0f, -1.0f,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoordPal), vertexCoordPal, GL_STATIC_DRAW);
+            }
+            else
+            {
+                static const GLfloat vertexCoord[] = {
+                    -1.0f, 1.0f,
+                     1.0f, 1.0f,
+                     1.0f,-1.0f,
+                    -1.0f,-1.0f,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoord), vertexCoord, GL_STATIC_DRAW);
+            }
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glGenVertexArrays(1, &mainVao);
+            glBindVertexArray(mainVao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, mainVbos[0]);
+            glVertexAttribPointer(vertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(vertexCoordAttrLoc);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mainVbos[2]);
+            static const GLushort indices[] =
+            {
+                0, 1, 2,
+                0, 2, 3,
+            };
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+            glBindVertexArray(0);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+            glUniform4f(glGetAttribLocation(paletteConvProgram, "Color"), 1, 1, 1, 1);
+
+            const float mvpMatrix[16] = {
+                1,0,0,0,
+                0,1,0,0,
+                0,0,1,0,
+                0,0,0,1,
+            };
+            glUniformMatrix4fv(glGetUniformLocation(paletteConvProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
+
+        }
     }
 
-    GLint textureUniLoc = -1, texCoordAttrLoc = -1, frameCountUniLoc = -1;
+    GLint textureUniLoc = -1, scaleTexCoordAttrLoc = -1, frameCountUniLoc = -1;
     GLuint frameBufferId = 0;
     GLuint frameBufferTexId = 0;
-    GLuint vboBuffers[3];
+    GLuint scaleVbos[3], scaleVao;
 
     if (scaleProgram)
     {
         glUseProgram(scaleProgram);
 
         GLint vertexCoordAttrLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
-        texCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
+        scaleTexCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
         textureUniLoc = glGetUniformLocation(scaleProgram, "Texture");
         frameCountUniLoc = glGetUniformLocation(scaleProgram, "FrameCount");
 
-        glGenBuffers(3, vboBuffers);
+        glGenBuffers(3, scaleVbos);
 
-        glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[0]);
+        glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[0]);
         static const GLfloat vertexCoord[] = {
            -1.0f, 1.0f,
             1.0f, 1.0f,
@@ -189,10 +239,17 @@ DWORD WINAPI render_main(void)
            -1.0f,-1.0f,
         };
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertexCoord), vertexCoord, GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        glGenVertexArrays(1, &scaleVao);
+        glBindVertexArray(scaleVao);
+
+        glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[0]);
         glVertexAttribPointer(vertexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(vertexCoordAttrLoc);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboBuffers[2]);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scaleVbos[2]);
         static const GLushort indices[] =
         {
             0, 1, 2,
@@ -200,7 +257,7 @@ DWORD WINAPI render_main(void)
         };
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glBindVertexArray(0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         float inputSize[2], outputSize[2], textureSize[2];
@@ -254,7 +311,10 @@ DWORD WINAPI render_main(void)
             scaleProgram = 0;
 
             if (glDeleteBuffers)
-                glDeleteBuffers(3, vboBuffers);
+                glDeleteBuffers(3, scaleVbos);
+
+            if (glDeleteVertexArrays)
+                glDeleteVertexArrays(1, &scaleVao);
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -356,48 +416,63 @@ DWORD WINAPI render_main(void)
             glActiveTexture(GL_TEXTURE0);
         }
 
-        if (scaleProgram)
+        if (scaleProgram && paletteConvProgram)
         {
             // draw surface into framebuffer
 
-            glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
-
-            glPushAttrib(GL_VIEWPORT_BIT);
             glViewport(0, 0, ddraw->width, ddraw->height);
 
-            glBegin(GL_TRIANGLE_FAN);
-            glTexCoord2f(0, 0);              glVertex2f(-1, -1);
-            glTexCoord2f(0, scale_h);        glVertex2f(-1, 1);
-            glTexCoord2f(scale_w, scale_h);  glVertex2f(1, 1);
-            glTexCoord2f(scale_w, 0);        glVertex2f(1, -1);
-            glEnd();
+            glBindVertexArray(mainVao);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
+
+            glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
+
+            GLfloat texCoordPal[] = {
+                0.0f,    0.0f,
+                0.0f,    scale_h,
+                scale_w, scale_h,
+                scale_w, 0.0f,
+            };
+            glBufferData(GL_ARRAY_BUFFER, sizeof(texCoordPal), texCoordPal, GL_STATIC_DRAW);
+            glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(mainTexCoordAttrLoc);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-            glPopAttrib();
+            glBindVertexArray(0);
+
+            glViewport(
+                ddraw->render.viewport.x, ddraw->render.viewport.y,
+                ddraw->render.viewport.width, ddraw->render.viewport.height);
+
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, 0);
 
             // apply filter
 
-            glBindBuffer(GL_ARRAY_BUFFER, vboBuffers[1]);
+            glUseProgram(scaleProgram);
+
+            glBindVertexArray(scaleVao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[1]);
 
             GLfloat texCoord[] = {
                 0.0f,    0.0f,
                 scale_w, 0.0f,
                 scale_w, scale_h,
-                0,       scale_h,
+                0.0f,    scale_h,
             };
-
             glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-            glVertexAttribPointer(texCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-            glEnableVertexAttribArray(texCoordAttrLoc);
+            glVertexAttribPointer(scaleTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(scaleTexCoordAttrLoc);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboBuffers[2]);
-
-            glUseProgram(scaleProgram);
             glActiveTexture(GL_TEXTURE0);
             glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, frameBufferTexId);
@@ -409,7 +484,30 @@ DWORD WINAPI render_main(void)
 
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            glBindVertexArray(0);
+        }
+        else if (got30 && paletteConvProgram)
+        {
+            glBindVertexArray(mainVao);
+
+            glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
+
+            GLfloat texCoord[] = {
+                0.0f,    0.0f,
+                scale_w, 0.0f,
+                scale_w, scale_h,
+                0.0f,    scale_h,
+            };
+
+            glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+            glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+            glEnableVertexAttribArray(mainTexCoordAttrLoc);
+
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+
+            glBindVertexArray(0);
         }
         else
         {
@@ -449,10 +547,13 @@ DWORD WINAPI render_main(void)
         glDeleteTextures(1, &frameBufferTexId);
 
         if (glDeleteBuffers)
-            glDeleteBuffers(3, vboBuffers);
+            glDeleteBuffers(3, scaleVbos);
 
         if (glDeleteFramebuffers)
             glDeleteFramebuffers(1, &frameBufferId);
+
+        if (glDeleteVertexArrays)
+            glDeleteVertexArrays(1, &scaleVao);
     } 
 
     if (glDeleteProgram)
@@ -462,6 +563,18 @@ DWORD WINAPI render_main(void)
 
         if (scaleProgram)
             glDeleteProgram(scaleProgram);
+    }
+
+    if (got30)
+    {
+        if (paletteConvProgram)
+        {
+            if (glDeleteBuffers)
+                glDeleteBuffers(3, mainVbos);
+
+            if (glDeleteVertexArrays)
+                glDeleteVertexArrays(1, &mainVao);
+        }
     }
         
     wglMakeCurrent(NULL, NULL);
