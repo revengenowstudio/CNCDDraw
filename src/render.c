@@ -359,6 +359,23 @@ DWORD WINAPI render_main(void)
 
             if (glDeleteVertexArrays)
                 glDeleteVertexArrays(1, &scaleVao);
+
+            if (paletteConvProgram)
+            {
+                glBindVertexArray(mainVao);
+                glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
+                GLfloat texCoord[] = {
+                    0.0f,    0.0f,
+                    scale_w, 0.0f,
+                    scale_w, scale_h,
+                    0.0f,    scale_h,
+                };
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
+                glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(mainTexCoordAttrLoc);
+                glBindBuffer(GL_ARRAY_BUFFER, 0);
+                glBindVertexArray(0);
+            }
         }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -459,7 +476,6 @@ DWORD WINAPI render_main(void)
                         scale_w, scale_h,
                         0.0f,    scale_h,
                     };
-
                     glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
                     glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
                     glEnableVertexAttribArray(mainTexCoordAttrLoc);
