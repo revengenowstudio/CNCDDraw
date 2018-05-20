@@ -244,7 +244,7 @@ DWORD WINAPI render_main(void)
         }
     }
 
-    GLint textureUniLoc = -1, scaleTexCoordAttrLoc = -1, frameCountUniLoc = -1;
+    GLint textureUniLoc = -1, frameCountUniLoc = -1;
     GLuint frameBufferId = 0;
     GLuint frameBufferTexId = 0;
     GLuint scaleVbos[3], scaleVao;
@@ -254,7 +254,7 @@ DWORD WINAPI render_main(void)
         glUseProgram(scaleProgram);
 
         GLint vertexCoordAttrLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
-        scaleTexCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
+        GLint texCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
         textureUniLoc = glGetUniformLocation(scaleProgram, "Texture");
         frameCountUniLoc = glGetUniformLocation(scaleProgram, "FrameCount");
 
@@ -289,8 +289,8 @@ DWORD WINAPI render_main(void)
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glBindBuffer(GL_ARRAY_BUFFER, scaleVbos[1]);
-        glVertexAttribPointer(scaleTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(scaleTexCoordAttrLoc);
+        glVertexAttribPointer(texCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(texCoordAttrLoc);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, scaleVbos[2]);
@@ -489,13 +489,13 @@ DWORD WINAPI render_main(void)
             {
                 glBindVertexArray(mainVao);
                 glBindBuffer(GL_ARRAY_BUFFER, mainVbos[1]);
-                GLfloat texCoordPal[] = {
+                GLfloat texCoord[] = {
                     0.0f,    0.0f,
                     0.0f,    scale_h,
                     scale_w, scale_h,
                     scale_w, 0.0f,
                 };
-                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoordPal), texCoordPal, GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
                 glVertexAttribPointer(mainTexCoordAttrLoc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
                 glEnableVertexAttribArray(mainTexCoordAttrLoc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
