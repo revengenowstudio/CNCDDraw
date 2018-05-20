@@ -231,8 +231,6 @@ DWORD WINAPI render_main(void)
             glBindVertexArray(0);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-            glUniform4f(glGetAttribLocation(paletteConvProgram, "Color"), 1, 1, 1, 1);
-
             const float mvpMatrix[16] = {
                 1,0,0,0,
                 0,1,0,0,
@@ -316,8 +314,6 @@ DWORD WINAPI render_main(void)
         glUniform2fv(glGetUniformLocation(scaleProgram, "OutputSize"), 1, outputSize);
         glUniform2fv(glGetUniformLocation(scaleProgram, "TextureSize"), 1, textureSize);
         glUniform2fv(glGetUniformLocation(scaleProgram, "InputSize"), 1, inputSize);
-
-        glUniform4f(glGetAttribLocation(scaleProgram, "Color"), 1, 1, 1, 1);
         glUniform1i(glGetUniformLocation(scaleProgram, "FrameDirection"), 1);
 
         const float mvpMatrix[16] = {

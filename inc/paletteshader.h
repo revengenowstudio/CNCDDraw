@@ -18,9 +18,9 @@ const GLchar *PaletteFragShader110Src =
     "\n"
     "void main()\n"
     "{\n"
-    "   vec4 index = texture2D(SurfaceTex, TexCoord0); \n"
-    "   vec4 texel = texture2D(PaletteTex, index.xy); \n"
-    "   gl_FragColor = texel;\n"
+    "   vec4 paletteIndex = texture2D(SurfaceTex, TexCoord0); \n"
+    "   vec4 outTexel = texture2D(PaletteTex, paletteIndex.xy); \n"
+    "   gl_FragColor = outTexel;\n"
     "}\n";
 
 
@@ -49,17 +49,11 @@ const GLchar *PassthroughVertShaderSrc =
     "COMPAT_VARYING vec4 COL0;\n"
     "COMPAT_VARYING vec4 TEX0;\n"
     "\n"
-    "vec4 _oPosition1; \n"
     "uniform mat4 MVPMatrix;\n"
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 _oColor;\n"
-    "    vec2 _otexCoord;\n"
-    "    gl_Position = VertexCoord.x * MVPMatrix[0] + VertexCoord.y * MVPMatrix[1] + VertexCoord.z * MVPMatrix[2] + VertexCoord.w * MVPMatrix[3];\n"
-    "    _oPosition1 = gl_Position;\n"
-    "    _oColor = COLOR;\n"
-    "    _otexCoord = TexCoord.xy;\n"
+    "    gl_Position = MVPMatrix * VertexCoord;\n"
     "    COL0 = COLOR;\n"
     "    TEX0.xy = TexCoord.xy;\n"
     "}\n";
@@ -93,7 +87,7 @@ const GLchar *PaletteFragShaderSrc =
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 index = COMPAT_TEXTURE(SurfaceTex, TEX0.xy);\n"
-    "    vec4 texel = COMPAT_TEXTURE(PaletteTex, index.xy);\n"
-    "    FragColor = texel;\n"
+    "    vec4 paletteIndex = COMPAT_TEXTURE(SurfaceTex, TEX0.xy);\n"
+    "    vec4 outTexel = COMPAT_TEXTURE(PaletteTex, paletteIndex.xy);\n"
+    "    FragColor = outTexel;\n"
     "}\n";
