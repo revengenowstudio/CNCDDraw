@@ -19,7 +19,7 @@ const GLchar *PaletteFragShader110Src =
     "void main()\n"
     "{\n"
     "   vec4 paletteIndex = texture2D(SurfaceTex, TexCoord0); \n"
-    "   vec4 outTexel = texture2D(PaletteTex, paletteIndex.xy); \n"
+    "   vec4 outTexel = texture2D(PaletteTex, vec2(paletteIndex.r, 0)); \n"
     "   gl_FragColor = outTexel;\n"
     "}\n";
 
@@ -88,6 +88,6 @@ const GLchar *PaletteFragShaderSrc =
     "void main()\n"
     "{\n"
     "    vec4 paletteIndex = COMPAT_TEXTURE(SurfaceTex, TEX0.xy);\n"
-    "    vec4 outTexel = COMPAT_TEXTURE(PaletteTex, paletteIndex.xy);\n"
+    "    vec4 outTexel = COMPAT_TEXTURE(PaletteTex, vec2(paletteIndex.r, 0));\n"
     "    FragColor = outTexel;\n"
     "}\n";

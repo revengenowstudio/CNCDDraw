@@ -107,6 +107,7 @@ DWORD WINAPI render_main(void)
         scaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
 
     // primary surface texture
+    GLenum surfaceFormat = GL_LUMINANCE;
     GLuint surfaceTexId = 0;
     glGenTextures(1, &surfaceTexId);
     glBindTexture(GL_TEXTURE_2D, surfaceTexId);
@@ -117,13 +118,16 @@ DWORD WINAPI render_main(void)
 
     if (paletteConvProgram)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, tex_width, tex_height, 0, surfaceFormat = GL_LUMINANCE, GL_UNSIGNED_BYTE, 0);
 
         if (glGetError() != GL_NO_ERROR)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
 
         if (glGetError() != GL_NO_ERROR)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RED, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+
+        if (glGetError() != GL_NO_ERROR)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
     }
     else
     {
@@ -450,7 +454,7 @@ DWORD WINAPI render_main(void)
                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, ddraw->primary->palette->data_bgr);
 
                 glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RED, GL_UNSIGNED_BYTE, ddraw->primary->surface);
+                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, surfaceFormat, GL_UNSIGNED_BYTE, ddraw->primary->surface);
             }
             else
             {
