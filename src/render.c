@@ -125,9 +125,6 @@ DWORD WINAPI render_main(void)
 
         if (glGetError() != GL_NO_ERROR)
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
-
-        if (glGetError() != GL_NO_ERROR)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
     }
     else
     {
