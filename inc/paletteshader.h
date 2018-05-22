@@ -4,7 +4,7 @@ const GLchar *PassthroughVertShader110Src =
     "#version 110\n"
     "varying vec2 TexCoord0; \n"
     "\n"
-    "void main(void)\n"
+    "void main()\n"
     "{\n"
     "    gl_Position = ftransform(); \n"
     "    TexCoord0 = gl_MultiTexCoord0.xy; \n"
@@ -12,8 +12,8 @@ const GLchar *PassthroughVertShader110Src =
 
 const GLchar *PaletteFragShader110Src =
     "#version 110\n"
-    "uniform sampler2D PaletteTex; \n"
     "uniform sampler2D SurfaceTex; \n"
+    "uniform sampler2D PaletteTex; \n"
     "varying vec2 TexCoord0; \n"
     "\n"
     "void main()\n"
@@ -81,8 +81,8 @@ const GLchar *PaletteFragShaderSrc =
     "#define COMPAT_PRECISION\n"
     "#endif\n"
     "\n"
-    "uniform sampler2D PaletteTex;\n"
     "uniform sampler2D SurfaceTex;\n"
+    "uniform sampler2D PaletteTex;\n"
     "COMPAT_VARYING vec4 TEX0;\n"
     "\n"
     "void main()\n"

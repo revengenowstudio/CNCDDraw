@@ -92,7 +92,8 @@ DWORD WINAPI render_main(void)
     BOOL gotOpenglV3 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
-        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray;
+        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray &&
+        glGetUniformLocation;
 
     BOOL gotOpenglV2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 
@@ -150,17 +151,14 @@ DWORD WINAPI render_main(void)
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
 
-    GLint surfaceUniLoc = -1, paletteUniLoc = -1, mainTexCoordAttrLoc = -1, mainVertexCoordAttrLoc = -1;
+    GLint mainTexCoordAttrLoc = -1, mainVertexCoordAttrLoc = -1;
     GLuint mainVbos[3], mainVao;
     if (paletteConvProgram)
     {
-        surfaceUniLoc = glGetUniformLocation(paletteConvProgram, "SurfaceTex");
-        paletteUniLoc = glGetUniformLocation(paletteConvProgram, "PaletteTex");
+        glUseProgram(paletteConvProgram);
 
         if (gotOpenglV3)
         {
-            glUseProgram(paletteConvProgram);
-
             mainVertexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "VertexCoord");
             mainTexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "TexCoord");
 
@@ -244,9 +242,21 @@ DWORD WINAPI render_main(void)
             glUniformMatrix4fv(glGetUniformLocation(paletteConvProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
 
         }
+
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+        glUniform1i(glGetUniformLocation(paletteConvProgram, "SurfaceTex"), 0);
+
+        glActiveTexture(GL_TEXTURE1);
+        glEnable(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, paletteTexId);
+        glUniform1i(glGetUniformLocation(paletteConvProgram, "PaletteTex"), 1);
+
+        glActiveTexture(GL_TEXTURE0);
     }
 
-    GLint textureUniLoc = -1, frameCountUniLoc = -1;
+    GLint frameCountUniLoc = -1;
     GLuint frameBufferId = 0;
     GLuint frameBufferTexId = 0;
     GLuint scaleVbos[3], scaleVao;
@@ -257,7 +267,6 @@ DWORD WINAPI render_main(void)
 
         GLint vertexCoordAttrLoc = glGetAttribLocation(scaleProgram, "VertexCoord");
         GLint texCoordAttrLoc = glGetAttribLocation(scaleProgram, "TexCoord");
-        textureUniLoc = glGetUniformLocation(scaleProgram, "Texture");
         frameCountUniLoc = glGetUniformLocation(scaleProgram, "FrameCount");
 
         glGenBuffers(3, scaleVbos);
@@ -319,6 +328,7 @@ DWORD WINAPI render_main(void)
         glUniform2fv(glGetUniformLocation(scaleProgram, "TextureSize"), 1, textureSize);
         glUniform2fv(glGetUniformLocation(scaleProgram, "InputSize"), 1, inputSize);
         glUniform1i(glGetUniformLocation(scaleProgram, "FrameDirection"), 1);
+        glUniform1i(glGetUniformLocation(scaleProgram, "Texture"), 0);
 
         const float mvpMatrix[16] = {
             1,0,0,0,
@@ -389,13 +399,16 @@ DWORD WINAPI render_main(void)
                 glEnableVertexAttribArray(mainTexCoordAttrLoc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
+
+                glUseProgram(paletteConvProgram);
             }
         }
+        else
+            glUseProgram(0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
  
-    glBindTexture(GL_TEXTURE_2D, 0);
     glEnable(GL_TEXTURE_2D);
 
     BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || glGetError() != GL_NO_ERROR));
@@ -519,26 +532,15 @@ DWORD WINAPI render_main(void)
             }
         }
 
-        if (paletteConvProgram)
-        {
-            glUseProgram(paletteConvProgram);
-
-            glActiveTexture(GL_TEXTURE0);
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, paletteTexId);
-            glUniform1i(paletteUniLoc, 0);
-
-            glActiveTexture(GL_TEXTURE1);
-            glEnable(GL_TEXTURE_2D);
-            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-            glUniform1i(surfaceUniLoc, 1);
-
-            glActiveTexture(GL_TEXTURE0);
-        }
-
         if (scaleProgram && paletteConvProgram)
         {
             // draw surface into framebuffer
+            glUseProgram(paletteConvProgram);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, paletteTexId);
 
             glViewport(0, 0, ddraw->width, ddraw->height);
 
@@ -550,20 +552,18 @@ DWORD WINAPI render_main(void)
 
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+
             glViewport(
                 ddraw->render.viewport.x, ddraw->render.viewport.y,
                 ddraw->render.viewport.width, ddraw->render.viewport.height);
-
-            glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, 0);
 
             // apply filter
 
             glUseProgram(scaleProgram);
             glActiveTexture(GL_TEXTURE0);
-            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, frameBufferTexId);
-            glUniform1i(textureUniLoc, 0);
 
             static int frames = 1;
             if (frameCountUniLoc != -1)
@@ -588,11 +588,6 @@ DWORD WINAPI render_main(void)
             glTexCoord2f(0, scale_h);        glVertex2f(-1, -1);
             glEnd();
         }
-
-        if (scaleProgram && !paletteConvProgram)
-            glUseProgram(0);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
 
         SwapBuffers(ddraw->render.hDC);
 
