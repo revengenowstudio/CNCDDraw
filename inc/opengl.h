@@ -8,6 +8,8 @@ BOOL OpenGL_ExtExists(char *ext);
 GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
 GLuint OpenGL_BuildProgramFromFile(const char *filePath);
 
+typedef void (APIENTRYP PFNWGLSWAPINTERVALEXT) (int interval);
+
 // Program
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
 extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
@@ -66,3 +68,5 @@ extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
 extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
+
+extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;

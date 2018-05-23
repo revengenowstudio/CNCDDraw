@@ -49,7 +49,6 @@ DWORD WINAPI render_main(void)
 
     if (OpenGL_ExtExists("WGL_EXT_swap_control"))
     {
-        BOOL(APIENTRY *wglSwapIntervalEXT)(int) = (BOOL(APIENTRY *)(int))wglGetProcAddress("wglSwapIntervalEXT");
         if (wglSwapIntervalEXT)
         {
             if (ddraw->vsync)
@@ -532,15 +531,19 @@ DWORD WINAPI render_main(void)
             }
         }
 
-        if (scaleProgram && paletteConvProgram)
+        if (paletteConvProgram)
         {
-            // draw surface into framebuffer
-            glUseProgram(paletteConvProgram);
-
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, surfaceTexId);
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, paletteTexId);
+            glActiveTexture(GL_TEXTURE0);
+        }
+
+        if (scaleProgram && paletteConvProgram)
+        {
+            // draw surface into framebuffer
+            glUseProgram(paletteConvProgram);
 
             glViewport(0, 0, ddraw->width, ddraw->height);
 

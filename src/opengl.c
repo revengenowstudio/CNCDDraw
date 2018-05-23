@@ -62,6 +62,8 @@ PFNGLDRAWBUFFERSPROC glDrawBuffers = NULL;
 PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus = NULL;
 PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers = NULL;
 
+PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT = NULL;
+
 void OpenGL_Init()
 {
     // Program
@@ -120,6 +122,8 @@ void OpenGL_Init()
     glDrawBuffers = (PFNGLDRAWBUFFERSPROC)wglGetProcAddress("glDrawBuffers");
     glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)wglGetProcAddress("glCheckFramebufferStatus");
     glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
+
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXT)wglGetProcAddress("wglSwapIntervalEXT");
 }
 
 BOOL OpenGL_ExtExists(char *ext)
