@@ -156,6 +156,9 @@ DWORD WINAPI render_main(void)
     {
         glUseProgram(paletteConvProgram);
 
+        glUniform1i(glGetUniformLocation(paletteConvProgram, "SurfaceTex"), 0);
+        glUniform1i(glGetUniformLocation(paletteConvProgram, "PaletteTex"), 1);
+
         if (gotOpenglV3)
         {
             mainVertexCoordAttrLoc = glGetAttribLocation(paletteConvProgram, "VertexCoord");
@@ -241,18 +244,6 @@ DWORD WINAPI render_main(void)
             glUniformMatrix4fv(glGetUniformLocation(paletteConvProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
 
         }
-
-        glActiveTexture(GL_TEXTURE0);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-        glUniform1i(glGetUniformLocation(paletteConvProgram, "SurfaceTex"), 0);
-
-        glActiveTexture(GL_TEXTURE1);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, paletteTexId);
-        glUniform1i(glGetUniformLocation(paletteConvProgram, "PaletteTex"), 1);
-
-        glActiveTexture(GL_TEXTURE0);
     }
 
     GLint frameCountUniLoc = -1;
@@ -408,9 +399,9 @@ DWORD WINAPI render_main(void)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
  
-    glEnable(GL_TEXTURE_2D);
-
     BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || glGetError() != GL_NO_ERROR));
+
+    glEnable(GL_TEXTURE_2D);
 
     while (useOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
@@ -534,8 +525,10 @@ DWORD WINAPI render_main(void)
         if (paletteConvProgram)
         {
             glActiveTexture(GL_TEXTURE0);
+            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, surfaceTexId);
             glActiveTexture(GL_TEXTURE1);
+            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, paletteTexId);
             glActiveTexture(GL_TEXTURE0);
         }
