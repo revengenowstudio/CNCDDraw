@@ -401,7 +401,8 @@ DWORD WINAPI render_main(void)
  
     BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || glGetError() != GL_NO_ERROR));
 
-    glEnable(GL_TEXTURE_2D);
+    if (!paletteConvProgram)
+        glEnable(GL_TEXTURE_2D);
 
     while (useOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
@@ -525,10 +526,8 @@ DWORD WINAPI render_main(void)
         if (paletteConvProgram)
         {
             glActiveTexture(GL_TEXTURE0);
-            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, surfaceTexId);
             glActiveTexture(GL_TEXTURE1);
-            glEnable(GL_TEXTURE_2D);
             glBindTexture(GL_TEXTURE_2D, paletteTexId);
             glActiveTexture(GL_TEXTURE0);
         }
