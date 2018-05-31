@@ -36,17 +36,18 @@ PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray = NULL;
 PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation = NULL;
 PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform = NULL;
 
-// Shader
 PFNGLCREATESHADERPROC glCreateShader = NULL;
 PFNGLDELETESHADERPROC glDeleteShader = NULL;
 PFNGLSHADERSOURCEPROC glShaderSource = NULL;
 PFNGLCOMPILESHADERPROC glCompileShader = NULL;
 PFNGLGETSHADERIVPROC glGetShaderiv = NULL;
 
-// VBO
 PFNGLGENBUFFERSPROC glGenBuffers = NULL;
 PFNGLBINDBUFFERPROC	glBindBuffer = NULL;
 PFNGLBUFFERDATAPROC	glBufferData = NULL;
+PFNGLMAPBUFFERPROC glMapBuffer = NULL;
+PFNGLUNMAPBUFFERPROC glUnmapBuffer = NULL;
+PFNGLBUFFERSUBDATAPROC glBufferSubData = NULL;
 PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = NULL;
 PFNGLDELETEBUFFERSPROC glDeleteBuffers = NULL;
 PFNGLGENVERTEXARRAYSPROC glGenVertexArrays = NULL;
@@ -63,6 +64,8 @@ PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus = NULL;
 PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers = NULL;
 
 PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT = NULL;
+
+PFNGLTEXBUFFERPROC glTexBuffer = NULL;
 
 void OpenGL_Init()
 {
@@ -97,17 +100,18 @@ void OpenGL_Init()
     glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)wglGetProcAddress("glEnableVertexAttribArray");
     glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)wglGetProcAddress("glBindAttribLocation");
 
-    // Shader
     glCreateShader = (PFNGLCREATESHADERPROC)wglGetProcAddress("glCreateShader");
     glDeleteShader = (PFNGLDELETESHADERPROC)wglGetProcAddress("glDeleteShader");
     glShaderSource = (PFNGLSHADERSOURCEPROC)wglGetProcAddress("glShaderSource");
     glCompileShader = (PFNGLCOMPILESHADERPROC)wglGetProcAddress("glCompileShader");
     glGetShaderiv = (PFNGLGETSHADERIVPROC)wglGetProcAddress("glGetShaderiv");
 
-    // VBO
     glGenBuffers = (PFNGLGENBUFFERSPROC)wglGetProcAddress("glGenBuffers");
     glBindBuffer = (PFNGLBINDBUFFERPROC)wglGetProcAddress("glBindBuffer");
     glBufferData = (PFNGLBUFFERDATAPROC)wglGetProcAddress("glBufferData");
+    glMapBuffer = (PFNGLMAPBUFFERPROC)wglGetProcAddress("glMapBuffer");
+    glUnmapBuffer = (PFNGLUNMAPBUFFERPROC)wglGetProcAddress("glUnmapBuffer");
+    glBufferSubData = (PFNGLBUFFERSUBDATAPROC)wglGetProcAddress("glBufferSubData");
     glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)wglGetProcAddress("glVertexAttribPointer");
     glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)wglGetProcAddress("glDeleteBuffers");
     glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)wglGetProcAddress("glGenVertexArrays");
@@ -124,6 +128,8 @@ void OpenGL_Init()
     glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)wglGetProcAddress("glDeleteFramebuffers");
 
     wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXT)wglGetProcAddress("wglSwapIntervalEXT");
+
+    glTexBuffer = (PFNGLTEXBUFFERPROC)wglGetProcAddress("glTexBuffer");
 }
 
 BOOL OpenGL_ExtExists(char *ext)

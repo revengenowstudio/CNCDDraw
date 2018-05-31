@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <stdio.h>
 
+void CounterStart();
+double CounterStop();
 void DebugPrint(const char *format, ...);
 
 //#define _DEBUG 1

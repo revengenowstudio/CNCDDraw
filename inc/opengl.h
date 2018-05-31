@@ -10,7 +10,6 @@ GLuint OpenGL_BuildProgramFromFile(const char *filePath);
 
 typedef void (APIENTRYP PFNWGLSWAPINTERVALEXT) (int interval);
 
-// Program
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
 extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
 extern PFNGLUSEPROGRAMPROC glUseProgram;
@@ -43,17 +42,18 @@ extern PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 extern PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
 extern PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
 
-// Shader
 extern PFNGLCREATESHADERPROC glCreateShader;
 extern PFNGLDELETESHADERPROC glDeleteShader;
 extern PFNGLSHADERSOURCEPROC glShaderSource;
 extern PFNGLCOMPILESHADERPROC glCompileShader;
 extern PFNGLGETSHADERIVPROC glGetShaderiv;
 
-// VBO
 extern PFNGLGENBUFFERSPROC glGenBuffers;
 extern PFNGLBINDBUFFERPROC	glBindBuffer;
 extern PFNGLBUFFERDATAPROC	glBufferData;
+extern PFNGLMAPBUFFERPROC glMapBuffer;
+extern PFNGLUNMAPBUFFERPROC glUnmapBuffer;
+extern PFNGLBUFFERSUBDATAPROC glBufferSubData;
 extern PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer;
 extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
@@ -70,3 +70,5 @@ extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 
 extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
+
+extern PFNGLTEXBUFFERPROC glTexBuffer;
