@@ -45,6 +45,25 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
     
     if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
     {
+        //fallback solution for possible ClipCursor failure
+        int diffx = 0, diffy = 0;
+
+        if (pt.x < 0)
+        {
+            diffx = abs(pt.x);
+            pt.x = 0;
+        }
+
+        if (pt.y < 0)
+        {
+            diffy = abs(pt.y);
+            pt.y = 0;
+        }
+
+        if (diffx || diffy)
+            SetCursorPos(realpt.x + diffx, realpt.y + diffy);
+
+
         if(ddraw->adjmouse)
         {
             ddraw->cursor.x = pt.x * ((float)ddraw->width / ddraw->render.viewport.width);
@@ -55,10 +74,31 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             ddraw->cursor.x = pt.x;
             ddraw->cursor.y = pt.y;
         }
-        
+
+        //fallback solution for possible ClipCursor failure
+        diffx = 0;
+        diffy = 0;
+
+        if (ddraw->cursor.x > ddraw->width)
+        {
+            diffx = ddraw->cursor.x - ddraw->width;
+            ddraw->cursor.x = ddraw->width;
+        }
+
+        if (ddraw->cursor.y > ddraw->height)
+        {
+            diffy = ddraw->cursor.y - ddraw->height;
+            ddraw->cursor.y = ddraw->height;
+        }
+
+        if (diffx || diffy)
+            SetCursorPos(realpt.x - diffx, realpt.y - diffy);
+
+
         if (ddraw->vhack && (ddraw->iscnc1 || ddraw->isredalert) && ddraw->incutscene)
         {
-            int diffx = 0, diffy = 0;
+            diffx = 0;
+            diffy = 0;
 
             if (ddraw->cursor.x > CUTSCENE_WIDTH)
             {
