@@ -47,21 +47,35 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
     {
         //fallback solution for possible ClipCursor failure
         int diffx = 0, diffy = 0;
+        int maxWidth = ddraw->adjmouse ? ddraw->render.viewport.width : ddraw->width;
+        int maxHeight = ddraw->adjmouse ? ddraw->render.viewport.height : ddraw->height;
 
         if (pt.x < 0)
         {
-            diffx = abs(pt.x);
+            diffx = pt.x;
             pt.x = 0;
         }
 
         if (pt.y < 0)
         {
-            diffy = abs(pt.y);
+            diffy = pt.y;
             pt.y = 0;
         }
 
+        if (pt.x > maxWidth)
+        {
+            diffx = pt.x - maxWidth;
+            pt.x = maxWidth;
+        }
+
+        if (pt.y > maxHeight)
+        {
+            diffy = pt.y - maxHeight;
+            pt.y = maxHeight;
+        }
+
         if (diffx || diffy)
-            SetCursorPos(realpt.x + diffx, realpt.y + diffy);
+            SetCursorPos(realpt.x - diffx, realpt.y - diffy);
 
 
         if(ddraw->adjmouse)
@@ -74,26 +88,6 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             ddraw->cursor.x = pt.x;
             ddraw->cursor.y = pt.y;
         }
-
-        //fallback solution for possible ClipCursor failure
-        diffx = 0;
-        diffy = 0;
-
-        if (ddraw->cursor.x > ddraw->width)
-        {
-            diffx = ddraw->cursor.x - ddraw->width;
-            ddraw->cursor.x = ddraw->width;
-        }
-
-        if (ddraw->cursor.y > ddraw->height)
-        {
-            diffy = ddraw->cursor.y - ddraw->height;
-            ddraw->cursor.y = ddraw->height;
-        }
-
-        if (diffx || diffy)
-            SetCursorPos(realpt.x - diffx, realpt.y - diffy);
-
 
         if (ddraw->vhack && (ddraw->iscnc1 || ddraw->isredalert) && ddraw->incutscene)
         {
