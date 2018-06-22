@@ -53,8 +53,13 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
         }
         if(This->surface)
         {
-            HeapFree(GetProcessHeap(), 0, This->surface);
+            DeleteObject(This->bitmap);
+            DeleteDC(This->hDC);
         }
+
+        if (This->bmi)
+            HeapFree(GetProcessHeap(), 0, This->bmi);
+
         if(This->palette)
         {
             IDirectDrawPalette_Release(This->palette);
@@ -486,9 +491,29 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
     if(Surface->width && Surface->height)
     {
+        Surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
+        Surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+        Surface->bmi->bmiHeader.biWidth = Surface->width;
+        Surface->bmi->bmiHeader.biHeight = -Surface->height;
+        Surface->bmi->bmiHeader.biPlanes = 1;
+        Surface->bmi->bmiHeader.biBitCount = Surface->bpp;
+        Surface->bmi->bmiHeader.biCompression = BI_RGB;
+
+        int i;
+        for (i = 0; i < 256; i++)
+        {
+            Surface->bmi->bmiColors[i].rgbRed = i;
+            Surface->bmi->bmiColors[i].rgbGreen = i;
+            Surface->bmi->bmiColors[i].rgbBlue = i;
+            Surface->bmi->bmiColors[i].rgbReserved = 0;
+        }
+
         Surface->lXPitch = Surface->bpp / 8;
         Surface->lPitch = Surface->width * Surface->lXPitch;
-        Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * Surface->height * Surface->lXPitch);
+
+        Surface->hDC = CreateCompatibleDC(ddraw->render.hDC);
+        Surface->bitmap = CreateDIBSection(Surface->hDC, Surface->bmi, DIB_RGB_COLORS, (void **)&Surface->surface, NULL, 0);
+        SelectObject(Surface->hDC, Surface->bitmap);
     }
 
     printf(" Surface = %p (%dx%d@%d)\n", Surface, (int)Surface->width, (int)Surface->height, (int)Surface->bpp);

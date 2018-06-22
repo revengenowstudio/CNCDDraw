@@ -24,6 +24,8 @@
 #define CUTSCENE_WIDTH 640
 #define CUTSCENE_HEIGHT 400
 
+extern char OpenglVersion[];
+
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
 struct IDirectDrawSurfaceImpl;

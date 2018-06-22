@@ -46,6 +46,10 @@ typedef struct IDirectDrawSurfaceImpl
     DWORD lPitch;
     DWORD lXPitch;
 
+    PBITMAPINFO bmi;
+    HBITMAP bitmap;
+    HDC hDC;
+
 } IDirectDrawSurfaceImpl;
 
 struct IDirectDrawSurfaceImplVtbl

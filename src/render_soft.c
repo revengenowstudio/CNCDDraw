@@ -58,14 +58,15 @@ DWORD WINAPI render_soft_main(void)
 {
     Sleep(500);
 
-    PBITMAPINFO bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
-
-    bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    bmi->bmiHeader.biWidth = ddraw->width;
-    bmi->bmiHeader.biHeight = -ddraw->height;
-    bmi->bmiHeader.biPlanes = 1;
-    bmi->bmiHeader.biBitCount = ddraw->bpp;
-    bmi->bmiHeader.biCompression = BI_RGB;
+    DWORD warningEndTick = timeGetTime() + (15 * 1000);
+    char warningText[512] = { 0 };
+    if (OpenglVersion[0])
+    {
+        snprintf(
+            warningText, sizeof(warningText), 
+            "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
+            strlen(OpenglVersion) > 10 ? "" : OpenglVersion);
+    }
 
     DWORD tick_start = 0;
     DWORD tick_end = 0;
@@ -107,7 +108,18 @@ DWORD WINAPI render_soft_main(void)
         {
             if (ddraw->primary->palette && ddraw->primary->palette->data_rgb == NULL)
             {
-                ddraw->primary->palette->data_rgb = &bmi->bmiColors[0];
+                ddraw->primary->palette->data_rgb = &ddraw->primary->bmi->bmiColors[0];
+            }
+
+            if (warningText[0])
+            {
+                if (timeGetTime() < warningEndTick)
+                {
+                    RECT rc = { 0, 0, ddraw->width, ddraw->height };
+                    DrawText(ddraw->primary->hDC, warningText, -1, &rc, DT_NOCLIP | DT_CENTER);
+                }
+                else
+                    warningText[0] = 0;
             }
 
             if ((ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height) && 
@@ -117,13 +129,13 @@ DWORD WINAPI render_soft_main(void)
                     ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
                     ddraw->render.viewport.width, ddraw->render.viewport.height, 
                     0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, 
-                    bmi, DIB_RGB_COLORS, SRCCOPY);
+                    ddraw->primary->bmi, DIB_RGB_COLORS, SRCCOPY);
             }
             else if (!(ddraw->vhack && detect_cutscene()))
             {
                 SetDIBitsToDevice(
                     ddraw->render.hDC, 0, 0, ddraw->width, ddraw->height, 0, 0, 0, 
-                    ddraw->height, ddraw->primary->surface, bmi, DIB_RGB_COLORS);
+                    ddraw->height, ddraw->primary->surface, ddraw->primary->bmi, DIB_RGB_COLORS);
             }
 
         }
@@ -131,14 +143,14 @@ DWORD WINAPI render_soft_main(void)
         {
             if (ddraw->primary->palette && ddraw->primary->palette->data_rgb == NULL)
             {
-                ddraw->primary->palette->data_rgb = &bmi->bmiColors[0];
+                ddraw->primary->palette->data_rgb = &ddraw->primary->bmi->bmiColors[0];
             }
             
             StretchDIBits(
                 ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
                 ddraw->render.viewport.width, ddraw->render.viewport.height, 
                 0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, 
-                bmi, DIB_RGB_COLORS, SRCCOPY);
+                ddraw->primary->bmi, DIB_RGB_COLORS, SRCCOPY);
 
             if (ddraw->primary->palette && !ddraw->incutscene)
             {
@@ -164,8 +176,6 @@ DWORD WINAPI render_soft_main(void)
         
         SetEvent(ddraw->render.ev);
     }
-
-    HeapFree(GetProcessHeap(), 0, bmi);
 
     return TRUE;
 }

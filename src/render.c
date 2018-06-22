@@ -22,6 +22,7 @@
 #include "surface.h"
 #include "paletteshader.h"
 
+char OpenglVersion[128];
 
 BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
@@ -32,6 +33,14 @@ DWORD WINAPI render_main(void)
 
     HGLRC hRC = wglCreateContext(ddraw->render.hDC);
     BOOL madeCurrent = hRC && wglMakeCurrent(ddraw->render.hDC, hRC);
+
+    char *glversion = (char *)glGetString(GL_VERSION);
+    if (glversion)
+    {
+        strncpy(OpenglVersion, glversion, sizeof(OpenglVersion));
+        const char deli[2] = " ";
+        strtok(OpenglVersion, deli);
+    }
 
     if (!madeCurrent || (ddraw->autorenderer && glGetError() != GL_NO_ERROR))
     {
