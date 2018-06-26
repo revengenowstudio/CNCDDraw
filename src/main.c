@@ -619,6 +619,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
             break;
+        case WM_AUTORENDERER:
+        {
+            mouse_unlock();
+            ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+            ShowWindow(ddraw->hWnd, SW_RESTORE);
+            mouse_lock();
+            return 0;
+        }
         case WM_NCLBUTTONDBLCLK:
         {
             ToggleFullscreen();

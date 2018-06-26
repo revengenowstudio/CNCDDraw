@@ -24,6 +24,8 @@
 #define CUTSCENE_WIDTH 640
 #define CUTSCENE_HEIGHT 400
 
+#define WM_AUTORENDERER WM_USER+111
+
 extern char OpenglVersion[];
 
 struct IDirectDrawImpl;

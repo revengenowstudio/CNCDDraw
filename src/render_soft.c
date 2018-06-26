@@ -56,17 +56,20 @@ BOOL detect_cutscene()
 
 DWORD WINAPI render_soft_main(void)
 {
-    Sleep(500);
-
     DWORD warningEndTick = timeGetTime() + (15 * 1000);
     char warningText[512] = { 0 };
     if (OpenglVersion[0])
     {
+        if (!ddraw->windowed)
+            PostMessage(ddraw->hWnd, WM_AUTORENDERER, 0, 0);
+
         snprintf(
             warningText, sizeof(warningText), 
             "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
             strlen(OpenglVersion) > 10 ? "" : OpenglVersion);
     }
+    else
+        Sleep(500);
 
     DWORD tick_start = 0;
     DWORD tick_end = 0;
@@ -95,7 +98,7 @@ DWORD WINAPI render_soft_main(void)
         {
             snprintf(
                 debugText, sizeof(debugText),
-                "FPS: %lu | Time: %2.2f ms",
+                "FPS: %lu | Time: %2.2f ms  ",
                 frame_count, frameTime);
 
             frame_count = 0;
