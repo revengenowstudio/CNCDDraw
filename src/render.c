@@ -499,6 +499,16 @@ DWORD WINAPI render_main(void)
                 }
 
             }
+
+            static int errorCheckCount = 0;
+            if (ddraw->autorenderer && errorCheckCount < 3)
+            {
+                errorCheckCount++;
+                glFinish();
+
+                if (glGetError() != GL_NO_ERROR)
+                    useOpenGL = FALSE;
+            }
         }
 
         LeaveCriticalSection(&ddraw->cs);
