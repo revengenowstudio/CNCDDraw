@@ -87,13 +87,26 @@ DWORD WINAPI render_soft_main(void)
 #if _DEBUG
         static DWORD tick_fps = 0;
         static DWORD frame_count = 0;
+        static char debugText[512] = { 0 };
+        static double frameTime = 0;
+        RECT debugrc = { 0, 0, ddraw->width, ddraw->height };
         tick_start = timeGetTime();
         if (tick_start >= tick_fps)
         {
-            printf("Frames: %lu - Elapsed: %lu ms\n", frame_count, (tick_start - tick_fps) + 1000);
+            snprintf(
+                debugText, sizeof(debugText),
+                "FPS: %lu | Time: %2.2f ms",
+                frame_count, frameTime);
+
             frame_count = 0;
             tick_fps = tick_start + 1000;
+
+            CounterStart();
         }
+
+        if (ddraw->primary && ddraw->primary->palette)
+            DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);
+
         frame_count++;
 #endif
 
@@ -163,6 +176,10 @@ DWORD WINAPI render_soft_main(void)
         }
 
         LeaveCriticalSection(&ddraw->cs);
+
+#if _DEBUG
+        if (frame_count == 1) frameTime = CounterStop();
+#endif
 
         if(maxfps > 0)
         {

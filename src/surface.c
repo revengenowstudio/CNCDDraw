@@ -508,6 +508,12 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
             Surface->bmi->bmiColors[i].rgbReserved = 0;
         }
 
+#if _DEBUG
+        Surface->bmi->bmiColors[255].rgbRed = 250;
+        Surface->bmi->bmiColors[255].rgbGreen = 250;
+        Surface->bmi->bmiColors[255].rgbBlue = 250;
+#endif
+
         Surface->lXPitch = Surface->bpp / 8;
         Surface->lPitch = Surface->width * Surface->lXPitch;
 
