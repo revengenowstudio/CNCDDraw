@@ -426,7 +426,7 @@ DWORD WINAPI render_main(void)
         {
             snprintf(
                 debugText, sizeof(debugText),
-                "FPS: %lu | Time: %2.2f ms",
+                "FPS: %lu | Time: %2.2f ms  ",
                 frame_count, frameTime);
 
             frame_count = 0;

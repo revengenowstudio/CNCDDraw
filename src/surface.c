@@ -51,11 +51,14 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
             ddraw->primary = NULL;
             LeaveCriticalSection(&ddraw->cs);
         }
-        if(This->surface)
-        {
+
+        if (This->bitmap)
             DeleteObject(This->bitmap);
+        else if (This->surface)
+            HeapFree(GetProcessHeap(), 0, This->surface);
+
+        if (This->hDC)
             DeleteDC(This->hDC);
-        }
 
         if (This->bmi)
             HeapFree(GetProcessHeap(), 0, This->bmi);
@@ -519,6 +522,10 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
         Surface->hDC = CreateCompatibleDC(ddraw->render.hDC);
         Surface->bitmap = CreateDIBSection(Surface->hDC, Surface->bmi, DIB_RGB_COLORS, (void **)&Surface->surface, NULL, 0);
+        
+        if (!Surface->bitmap)
+            Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * Surface->height * Surface->lXPitch);
+
         SelectObject(Surface->hDC, Surface->bitmap);
     }
 
