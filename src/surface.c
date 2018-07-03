@@ -104,29 +104,51 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if(Source)
     {
-        int dx=0,dy=0; 
-        if (lpDestRect)
-        {
-            dx=lpDestRect->left;
-            dy=lpDestRect->top; 
-        }
-        int x0=0,y0=0,x1=Source->width,y1=Source->height; 
-        if (lpSrcRect)
-        { 
-            x0 = max(x0, lpSrcRect->left); 
-            x1 = min(x1, lpSrcRect->right); 
-            y0 = max(y0, lpSrcRect->top); 
-            y1 = min(y1, lpSrcRect->bottom); 
-        } 
-        unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx; 
-        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-        int s = x1-x0; 
+        //BitBlt(This->hDC, lpDestRect->left, lpDestRect->top, lpDestRect->right, lpDestRect->bottom,
+        //    Source->hDC, lpSrcRect->left, lpSrcRect->top, SRCCOPY);
 
-        int y;
-        for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
-        { 
-            memcpy(to, from, s); 
-        } 
+        int dst_w = lpDestRect->right - lpDestRect->left;
+        int dst_h = lpDestRect->bottom - lpDestRect->top;
+        int src_w = lpSrcRect->right - lpSrcRect->left;
+        int src_h = lpSrcRect->bottom - lpSrcRect->top;
+
+        if (dst_w != src_w || dst_h != src_h)
+        {
+            StretchBlt(This->hDC, lpDestRect->left, lpDestRect->top, lpDestRect->right, lpDestRect->bottom,
+                Source->hDC, lpSrcRect->left, lpSrcRect->top, lpSrcRect->right, lpSrcRect->bottom, SRCCOPY);
+        }
+        else if (dst_w == This->width && dst_h == This->height &&
+                 src_w == Source->width && src_h == Source->height)
+        {
+            memcpy(This->surface, Source->surface, This->width * This->height * This->lXPitch);
+        }
+        else
+        {
+            int dx=0,dy=0;
+            if (lpDestRect)
+            {
+                dx=lpDestRect->left;
+                dy=lpDestRect->top;
+            }
+            int x0=0,y0=0,x1=Source->width,y1=Source->height;
+            if (lpSrcRect)
+            {
+                x0 = max(x0, lpSrcRect->left);
+                x1 = min(x1, lpSrcRect->right);
+                y0 = max(y0, lpSrcRect->top);
+                y1 = min(y1, lpSrcRect->bottom);
+            }
+            unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
+            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
+            int s = x1-x0;
+
+            int y;
+            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
+            {
+                memcpy(to, from, s);
+            }
+        }
+
     }
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
