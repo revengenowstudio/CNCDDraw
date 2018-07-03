@@ -102,6 +102,22 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     }
 #endif
 
+    if (dwFlags & DDBLT_COLORFILL)
+    {
+        int dst_w = lpDestRect->right - lpDestRect->left;
+        int dst_h = lpDestRect->bottom - lpDestRect->top;
+
+        for (int y = 0; y < dst_h; y++)
+        {
+            int ydst = This->width * (y + lpDestRect->top);
+
+            for (int x = 0; x < dst_w; x++)
+            {
+                ((unsigned char *)This->surface)[x + lpDestRect->left + ydst] = lpDDBltFx->dwFillColor;
+            }
+        }
+    }
+
     if(Source)
     {
         //BitBlt(This->hDC, lpDestRect->left, lpDestRect->top, lpDestRect->right, lpDestRect->bottom,
