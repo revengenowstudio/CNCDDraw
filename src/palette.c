@@ -62,6 +62,7 @@ HRESULT __stdcall ddraw_palette_SetEntries(IDirectDrawPaletteImpl *This, DWORD d
     /* FIXME: only refresh the screen when the primary palette is changed */
     if(ddraw->primary && ddraw->render.run)
     {
+        InterlockedExchange(&ddraw->render.paletteUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
     }
 

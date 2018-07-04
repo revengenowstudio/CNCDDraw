@@ -107,11 +107,12 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         int dst_w = lpDestRect->right - lpDestRect->left;
         int dst_h = lpDestRect->bottom - lpDestRect->top;
 
-        for (int y = 0; y < dst_h; y++)
+        int y, x;
+        for (y = 0; y < dst_h; y++)
         {
             int ydst = This->width * (y + lpDestRect->top);
 
-            for (int x = 0; x < dst_w; x++)
+            for (x = 0; x < dst_w; x++)
             {
                 ((unsigned char *)This->surface)[x + lpDestRect->left + ydst] = lpDDBltFx->dwFillColor;
             }
@@ -169,6 +170,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
     {
+        InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
         if (ddraw->renderer != render_main)
         {
@@ -255,6 +257,7 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
+        InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
         if (ddraw->renderer != render_main)
         {
@@ -430,6 +433,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     
     if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
     {
+        InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
     }
 

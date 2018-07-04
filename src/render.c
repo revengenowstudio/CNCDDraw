@@ -477,10 +477,18 @@ DWORD WINAPI render_main(void)
             if (paletteConvProgram)
             {
                 glBindTexture(GL_TEXTURE_2D, paletteTexId);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE, ddraw->primary->palette->data_bgr);
+                if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
+                {
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE,
+                        ddraw->primary->palette->data_bgr);
+                }
 
                 glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-                glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, surfaceFormat, GL_UNSIGNED_BYTE, ddraw->primary->surface);
+                if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
+                {
+                    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, surfaceFormat, GL_UNSIGNED_BYTE,
+                        ddraw->primary->surface);
+                }
             }
             else
             {

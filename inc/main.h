@@ -73,6 +73,8 @@ typedef struct IDirectDrawImpl
         DEVMODE mode;
         struct { int width; int height; int x; int y; } viewport;
 
+        LONG paletteUpdated;
+        LONG surfaceUpdated;
     } render;
 
     HWND hWnd;
