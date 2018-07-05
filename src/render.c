@@ -105,6 +105,9 @@ DWORD WINAPI render_main(void)
 
     BOOL gotOpenglV2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 
+    if (gotOpenglV3 && GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version")) // macOS+wine bug
+        gotOpenglV3 = FALSE;
+
     GLuint paletteConvProgram = 0; 
     if (gotOpenglV3)
         paletteConvProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
