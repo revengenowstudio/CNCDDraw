@@ -101,12 +101,9 @@ DWORD WINAPI render_main(void)
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
         glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray &&
-        glGetUniformLocation;
+        glGetUniformLocation && OpenglVersion[0] != '2';
 
     BOOL gotOpenglV2 = glGetUniformLocation && glActiveTexture && glUniform1i;
-
-    if (gotOpenglV3 && GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version")) // macOS+wine bug
-        gotOpenglV3 = FALSE;
 
     GLuint paletteConvProgram = 0; 
     if (gotOpenglV3)
