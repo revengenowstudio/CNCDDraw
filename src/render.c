@@ -421,6 +421,10 @@ DWORD WINAPI render_main(void)
         static char debugText[512] = { 0 };
         static double frameTime = 0;
         RECT debugrc = { 0, 0, ddraw->width, ddraw->height };
+
+        if (ddraw->primary && ddraw->primary->palette)
+            DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);
+
         tick_start = timeGetTime();
         if (tick_start >= tick_fps)
         {
@@ -434,10 +438,6 @@ DWORD WINAPI render_main(void)
 
             CounterStart();
         }
-
-        if (ddraw->primary && ddraw->primary->palette)
-            DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);
-
         frame_count++;
 #endif
 
