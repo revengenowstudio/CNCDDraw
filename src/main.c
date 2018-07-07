@@ -231,7 +231,9 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
         WaitForSingleObject(This->render.thread, INFINITE);
         This->render.thread = NULL;
     }
-    
+
+    ShowWindow(This->hWnd, SW_MINIMIZE);
+
     if(!ddraw->windowed)
     {
         ChangeDisplaySettings(&This->mode, 0);
