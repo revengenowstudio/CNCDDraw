@@ -57,6 +57,7 @@ DWORD WINAPI render_main(void)
     OpenGL_Init();
 
     int maxfps = ddraw->render.maxfps;
+    BOOL vsyncEnabled = FALSE;
 
     if (OpenGL_ExtExists("WGL_EXT_swap_control_tear", ddraw->render.hDC))
     { 
@@ -66,6 +67,7 @@ DWORD WINAPI render_main(void)
             {
                 wglSwapIntervalEXT(-1);
                 maxfps = 1000;
+                vsyncEnabled = TRUE;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -79,6 +81,7 @@ DWORD WINAPI render_main(void)
             {
                 wglSwapIntervalEXT(1);
                 maxfps = 1000;
+                vsyncEnabled = TRUE;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -658,6 +661,9 @@ DWORD WINAPI render_main(void)
         }
 
         SwapBuffers(ddraw->render.hDC);
+
+        if (vsyncEnabled)
+            glFinish();
 
 #if _DEBUG
         if (frame_count == 1) frameTime = CounterStop();
