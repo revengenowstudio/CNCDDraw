@@ -4,11 +4,12 @@
 #include "glext.h"
 
 void OpenGL_Init();
-BOOL OpenGL_ExtExists(char *ext);
+BOOL OpenGL_ExtExists(char *ext, HDC hdc);
 GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
 GLuint OpenGL_BuildProgramFromFile(const char *filePath);
 
 typedef void (APIENTRYP PFNWGLSWAPINTERVALEXT) (int interval);
+typedef const char* (WINAPI *PFNWGLGETEXTENSIONSSTRINGARBPROC)(HDC hdc);
 
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
 extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
@@ -70,5 +71,6 @@ extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 
 extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
+extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
 extern PFNGLTEXBUFFERPROC glTexBuffer;

@@ -56,12 +56,30 @@ DWORD WINAPI render_main(void)
 
     OpenGL_Init();
 
-    if (OpenGL_ExtExists("WGL_EXT_swap_control"))
+    int maxfps = ddraw->render.maxfps;
+
+    if (OpenGL_ExtExists("WGL_EXT_swap_control_tear", ddraw->render.hDC))
+    { 
+        if (wglSwapIntervalEXT)
+        {
+            if (ddraw->vsync)
+            {
+                wglSwapIntervalEXT(-1);
+                maxfps = 1000;
+            }
+            else
+                wglSwapIntervalEXT(0);
+        }
+    }
+    else if (OpenGL_ExtExists("WGL_EXT_swap_control", ddraw->render.hDC))
     {
         if (wglSwapIntervalEXT)
         {
             if (ddraw->vsync)
+            {
                 wglSwapIntervalEXT(1);
+                maxfps = 1000;
+            }
             else
                 wglSwapIntervalEXT(0);
         }
@@ -70,7 +88,6 @@ DWORD WINAPI render_main(void)
     DWORD tick_start = 0;
     DWORD tick_end = 0;
     DWORD frame_len = 0;
-    int maxfps = ddraw->render.maxfps;
 
     if (maxfps < 0)
         maxfps = ddraw->mode.dmDisplayFrequency;

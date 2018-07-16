@@ -662,6 +662,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #endif
             break;
 
+#ifdef HAVE_LIBPNG
+        case WM_KEYUP:
+            if (wParam == VK_SNAPSHOT)
+                screenshot(ddraw->primary);
+
+            break;
+#endif
+            
+
         /* button up messages reactivate cursor lock */
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
