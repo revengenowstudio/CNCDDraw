@@ -134,42 +134,52 @@ DWORD WINAPI render_main(void)
 
     // primary surface texture
     GLenum surfaceFormat = GL_LUMINANCE;
-    GLuint surfaceTexId = 0;
-    glGenTextures(1, &surfaceTexId);
-    glBindTexture(GL_TEXTURE_2D, surfaceTexId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    GLuint surfaceTexIds[2];
 
-    while (glGetError() != GL_NO_ERROR);
+    glGenTextures(2, surfaceTexIds);
 
-    if (paletteConvProgram)
+    int i;
+    for (i = 0; i < 2; i++)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, tex_width, tex_height, 0, surfaceFormat = GL_LUMINANCE, GL_UNSIGNED_BYTE, 0);
+        glBindTexture(GL_TEXTURE_2D, surfaceTexIds[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        if (glGetError() != GL_NO_ERROR)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+        while (glGetError() != GL_NO_ERROR);
 
-        if (glGetError() != GL_NO_ERROR)
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+        if (paletteConvProgram)
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE8, tex_width, tex_height, 0, surfaceFormat = GL_LUMINANCE, GL_UNSIGNED_BYTE, 0);
 
-        if (!ddraw->autorenderer && glGetError() != GL_NO_ERROR) // very slow...
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+            if (glGetError() != GL_NO_ERROR)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+
+            if (glGetError() != GL_NO_ERROR)
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+
+            if (!ddraw->autorenderer && glGetError() != GL_NO_ERROR) // very slow...
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, surfaceFormat = GL_RED, GL_UNSIGNED_BYTE, 0);
+        }
+        else
+        {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        }
     }
-    else
-    {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_width, tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-    }
-
 
     // palette texture
-    GLuint paletteTexId = 0;
-    glGenTextures(1, &paletteTexId);
-    glBindTexture(GL_TEXTURE_2D, paletteTexId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    GLuint paletteTexIds[2];
+
+    glGenTextures(2, paletteTexIds);
+
+    for (i = 0; i < 2; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, paletteTexIds[i]);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    }
 
     glViewport(
         ddraw->render.viewport.x, ddraw->render.viewport.y,
@@ -461,6 +471,8 @@ DWORD WINAPI render_main(void)
         scale_w = (float)ddraw->width / tex_width;
         scale_h = (float)ddraw->height / tex_height;
 
+        static int texIndex = 0, palIndex = 0;
+
         BOOL scaleChanged = FALSE;
 
         if (maxfps > 0)
@@ -493,16 +505,20 @@ DWORD WINAPI render_main(void)
 
             if (paletteConvProgram)
             {
-                glBindTexture(GL_TEXTURE_2D, paletteTexId);
                 if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
                 {
+                    palIndex = (palIndex + 1) % 2;
+                    glBindTexture(GL_TEXTURE_2D, paletteTexIds[palIndex]);
+
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE,
                         ddraw->primary->palette->data_bgr);
                 }
 
-                glBindTexture(GL_TEXTURE_2D, surfaceTexId);
                 if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
                 {
+                    texIndex = (texIndex + 1) % 2;
+                    glBindTexture(GL_TEXTURE_2D, surfaceTexIds[texIndex]);
+
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, surfaceFormat, GL_UNSIGNED_BYTE,
                         ddraw->primary->surface);
                 }
@@ -540,7 +556,7 @@ DWORD WINAPI render_main(void)
 
         if (!paletteConvProgram)
         {
-            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexIds[texIndex]);
             glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, GL_RGBA, GL_UNSIGNED_BYTE, tex);
         }
 
@@ -583,9 +599,9 @@ DWORD WINAPI render_main(void)
         if (paletteConvProgram)
         {
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, surfaceTexId);
+            glBindTexture(GL_TEXTURE_2D, surfaceTexIds[texIndex]);
             glActiveTexture(GL_TEXTURE1);
-            glBindTexture(GL_TEXTURE_2D, paletteTexId);
+            glBindTexture(GL_TEXTURE_2D, paletteTexIds[palIndex]);
             glActiveTexture(GL_TEXTURE0);
         }
 
@@ -657,8 +673,8 @@ DWORD WINAPI render_main(void)
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
-    glDeleteTextures(1, &surfaceTexId);
-    glDeleteTextures(1, &paletteTexId);
+    glDeleteTextures(2, &surfaceTexIds);
+    glDeleteTextures(2, &paletteTexIds);
     
     if (glUseProgram)
         glUseProgram(0);
