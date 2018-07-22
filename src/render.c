@@ -41,6 +41,8 @@ DWORD WINAPI render_main(void)
         const char deli[2] = " ";
         strtok(OpenglVersion, deli);
     }
+    else
+        OpenglVersion[0] = '0';
 
     if (!madeCurrent || (ddraw->autorenderer && glGetError() != GL_NO_ERROR))
     {
@@ -679,8 +681,8 @@ DWORD WINAPI render_main(void)
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
-    glDeleteTextures(2, &surfaceTexIds);
-    glDeleteTextures(2, &paletteTexIds);
+    glDeleteTextures(2, surfaceTexIds);
+    glDeleteTextures(2, paletteTexIds);
     
     if (glUseProgram)
         glUseProgram(0);
