@@ -63,7 +63,7 @@ DWORD WINAPI render_soft_main(void)
         if (!ddraw->windowed)
             PostMessage(ddraw->hWnd, WM_AUTORENDERER, 0, 0);
 
-        snprintf(
+        _snprintf(
             warningText, sizeof(warningText), 
             "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
             strlen(OpenglVersion) > 10 ? "" : OpenglVersion);

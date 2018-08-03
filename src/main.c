@@ -48,6 +48,7 @@ int WindowPosX;
 int WindowPosY;
 char SettingsIniPath[MAX_PATH];
 
+//BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
 BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 {
     switch (dwReason)
@@ -983,7 +984,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     char cwd[MAX_PATH];
     char tmp[256];
     GetCurrentDirectoryA(sizeof(cwd), cwd);
-    snprintf(SettingsIniPath, sizeof(SettingsIniPath), "%s\\ddraw.ini", cwd);
+    _snprintf(SettingsIniPath, sizeof(SettingsIniPath), "%s\\ddraw.ini", cwd);
 
     if(GetFileAttributes(SettingsIniPath) == 0xFFFFFFFF)
     {

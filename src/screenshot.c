@@ -55,7 +55,7 @@ BOOL screenshot(struct IDirectDrawSurfaceImpl *src)
     }
 
     strftime(str_time, 64, "%Y-%m-%d-%H_%M_%S", localtime(&t));
-    snprintf(filename, 128, "%s-%s.png", title, str_time);
+    _snprintf(filename, 128, "%s-%s.png", title, str_time);
 
     if(!src || !src->palette)
     {
