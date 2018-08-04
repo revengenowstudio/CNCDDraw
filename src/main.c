@@ -623,8 +623,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_AUTORENDERER:
         {
             mouse_unlock();
-            ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-            ShowWindow(ddraw->hWnd, SW_RESTORE);
+            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            //ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+            //ShowWindow(ddraw->hWnd, SW_RESTORE);
             mouse_lock();
             return 0;
         }
