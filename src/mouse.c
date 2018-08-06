@@ -26,13 +26,6 @@
 BOOL mouse_active = FALSE;
 int yAdjust = 0;
 
-struct hook { char name[32]; void *func; };
-struct hack
-{
-    char name[32];
-    struct hook hooks[MAX_HOOKS];
-};
-
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
     POINT pt, realpt;
@@ -151,83 +144,67 @@ HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
     return NULL;
 }
 
-struct hack hacks[] =
+void HookIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
 {
+    if (!hMod || hMod == INVALID_HANDLE_VALUE || !newFunction)
+        return;
+
+    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hMod;
+    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        return;
+
+    PIMAGE_NT_HEADERS pNTHeaders = (PIMAGE_NT_HEADERS)((DWORD)pDosHeader + (DWORD)pDosHeader->e_lfanew);
+    if (pNTHeaders->Signature != IMAGE_NT_SIGNATURE)
+        return;
+
+    PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)pDosHeader +
+        (DWORD)(pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
+
+    if (pImportDescriptor == (PIMAGE_IMPORT_DESCRIPTOR)pNTHeaders)
+        return;
+
+    while (pImportDescriptor->FirstThunk)
     {
-        "user32.dll",
+        char *impModuleName = (char *)((DWORD)pDosHeader + (DWORD)(pImportDescriptor->Name));
+
+        if (_stricmp(impModuleName, moduleName) == 0)
         {
-            { "GetCursorPos", fake_GetCursorPos },
-            { "ClipCursor", fake_ClipCursor },
-            { "ShowCursor", fake_ShowCursor },
-            { "SetCursor", fake_SetCursor } ,
-            { "", NULL }
-        }
-    },
-    {
-        "",
-        {
-            { "", NULL }
-        }
-    }
-};
+            PIMAGE_THUNK_DATA pFirstThunk = 
+                (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->FirstThunk);
 
-void hack_iat(struct hack *hck)
-{
-    int i;
-    char buf[32];
-    struct hook *hk;
-    DWORD dwWritten;
-    IMAGE_DOS_HEADER dos_hdr;
-    IMAGE_NT_HEADERS nt_hdr;
-    IMAGE_IMPORT_DESCRIPTOR *dir;
-    IMAGE_THUNK_DATA thunk;
-    PDWORD ptmp;
+            PIMAGE_THUNK_DATA pOrigFirstThunk = 
+                (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->OriginalFirstThunk);
 
-    HMODULE base = GetModuleHandle(NULL);
-    HANDLE hProcess = GetCurrentProcess();
-
-    ReadProcessMemory(hProcess, (void *)base, &dos_hdr, sizeof(IMAGE_DOS_HEADER), &dwWritten);
-    ReadProcessMemory(hProcess, (void *)((char *)base + dos_hdr.e_lfanew), &nt_hdr, sizeof(IMAGE_NT_HEADERS), &dwWritten);
-    dir = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, (nt_hdr.OptionalHeader.DataDirectory[1].Size));
-    ReadProcessMemory(hProcess, (void *)((char *)base + nt_hdr.OptionalHeader.DataDirectory[1].VirtualAddress), dir, nt_hdr.OptionalHeader.DataDirectory[1].Size, &dwWritten);
-
-    while (dir->Name > 0)
-    {
-        memset(buf, 0, 32);
-        ReadProcessMemory(hProcess, (void *)((char *)base + dir->Name), buf, 32, &dwWritten);
-        if (_stricmp(buf, hck->name) == 0)
-        {
-            ptmp = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(DWORD) * 64);
-            ReadProcessMemory(hProcess, (void *)((char *)base + dir->Characteristics), ptmp, sizeof(DWORD) * 64, &dwWritten);
-            i = 0;
-            while (*ptmp)
+            while (pFirstThunk->u1.Function && pOrigFirstThunk->u1.AddressOfData)
             {
-                memset(buf, 0, 32);
-                ReadProcessMemory(hProcess, (void *)((char *)base + (*ptmp) + 2), buf, 32, &dwWritten);
+                PIMAGE_IMPORT_BY_NAME pImport = 
+                    (PIMAGE_IMPORT_BY_NAME)((DWORD)pDosHeader + pOrigFirstThunk->u1.AddressOfData);
 
-                hk = &hck->hooks[0];
-                while (hk->func)
+                if ((pOrigFirstThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0 &&
+                    _stricmp((const char *)pImport->Name, functionName) == 0)
                 {
-                    if (_stricmp(hk->name, buf) == 0)
+                    DWORD oldProtect;
+                    MEMORY_BASIC_INFORMATION mbi;
+
+                    if (VirtualQuery(&pFirstThunk->u1.Function, &mbi, sizeof(MEMORY_BASIC_INFORMATION)))
                     {
-                        thunk.u1.Function = (DWORD)hk->func;
-                        thunk.u1.Ordinal = (DWORD)hk->func;
-                        thunk.u1.AddressOfData = (DWORD)hk->func;
-                        VirtualProtectEx(hProcess, (void *)((char *)base + dir->FirstThunk + (sizeof(IMAGE_THUNK_DATA) * i)), sizeof(IMAGE_THUNK_DATA), PAGE_EXECUTE_READWRITE, &dwWritten);
-                        WriteProcessMemory(hProcess, (void *)((char *)base + dir->FirstThunk + (sizeof(IMAGE_THUNK_DATA) * i)), &thunk, sizeof(IMAGE_THUNK_DATA), &dwWritten);
-                        mouse_active = TRUE;
+                        if (VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_READWRITE, &oldProtect))
+                        {
+                            pFirstThunk->u1.Function = (DWORD)newFunction;
+                            VirtualProtect(mbi.BaseAddress, mbi.RegionSize, oldProtect, &oldProtect);
+                        }
                     }
-                    hk++;
+
+                    break;
                 }
 
-                ptmp++;
-                i++;
+                pFirstThunk++;
+                pOrigFirstThunk++;
             }
         }
-        dir++;
-    }
 
-    CloseHandle(hProcess);
+        pImportDescriptor++;
+    }
 }
 
 void mouse_lock()
@@ -331,6 +308,9 @@ void mouse_unlock()
 
 void mouse_init()
 {
-    hack_iat(&hacks[0]);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "ClipCursor", (PROC)fake_ClipCursor);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "ShowCursor", (PROC)fake_ShowCursor);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetCursor", (PROC)fake_SetCursor);
     mouse_active = TRUE;
 }
