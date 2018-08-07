@@ -422,8 +422,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             int y = (WindowPosY != -1) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
             RECT dst = { x, y, This->render.width+x, This->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
-            SetWindowPos(This->hWnd, HWND_NOTOPMOST, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), SWP_SHOWWINDOW);
-
+            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
             This->windowed_init = TRUE;
         }
     }
@@ -518,8 +518,10 @@ void ToggleFullscreen()
             int y = (WindowPosY != -1) ? WindowPosY : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
             RECT dst = { x, y, ddraw->render.width+x, ddraw->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
-            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), SWP_SHOWWINDOW);
-            
+
+            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            MoveWindow(ddraw->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
+
             ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
         }
