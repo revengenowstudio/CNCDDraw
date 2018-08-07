@@ -574,10 +574,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (!ddraw->windowed)
                 {
                     ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
-                }
-                if (wParam == WA_ACTIVE)
-                {
-                    mouse_lock();
+
+                    if (wParam == WA_ACTIVE)
+                    {
+                        mouse_lock();
+                    }
                 }
             }
             else if (wParam == WA_INACTIVE)
