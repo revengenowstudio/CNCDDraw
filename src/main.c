@@ -588,8 +588,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)
                 {
-                    ChangeDisplaySettings(&ddraw->mode, 0);
                     ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+                    ChangeDisplaySettings(&ddraw->mode, 0);
                 }
             }
             return 0;
