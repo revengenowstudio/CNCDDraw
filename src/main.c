@@ -587,13 +587,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else if (wParam == WA_INACTIVE)
             {
+                mouse_unlock();
+
                 if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
                 {
                     LastSetWindowPosTick = 0;
                     return 0;
                 }
-
-                mouse_unlock();
 
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)
