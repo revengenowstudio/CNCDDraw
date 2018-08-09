@@ -486,6 +486,9 @@ LRESULT CALLBACK dummy_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+// LastSetWindowPosTick = Workaround for a wine+gnome bug where each SetWindowPos call triggers a WA_INACTIVE message
+DWORD LastSetWindowPosTick;
+
 void ToggleFullscreen()
 {
     if (ddraw->windowed)
@@ -497,6 +500,7 @@ void ToggleFullscreen()
             
             SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+            LastSetWindowPosTick = timeGetTime();
         }
         mouse_lock();
     }
@@ -583,6 +587,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else if (wParam == WA_INACTIVE)
             {
+                if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
+                {
+                    LastSetWindowPosTick = 0;
+                    return 0;
+                }
+
                 mouse_unlock();
 
                 /* minimize our window on defocus when in fullscreen */
@@ -984,6 +994,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     InitializeCriticalSection(&This->cs);
     This->render.ev = CreateEvent(NULL, TRUE, FALSE, NULL);
     This->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
+
+    This->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
 
     /* load configuration options from ddraw.ini */
     char cwd[MAX_PATH];

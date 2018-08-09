@@ -96,6 +96,7 @@ typedef struct IDirectDrawImpl
     BOOL noactivateapp;
     char shader[MAX_PATH];
     BOOL autorenderer;
+    BOOL wine;
     
 } IDirectDrawImpl;
 
