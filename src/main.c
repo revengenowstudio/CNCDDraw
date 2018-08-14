@@ -545,6 +545,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
+        case WM_WINDOWPOSCHANGED:
+        {
+            WINDOWPOS *pos = (WINDOWPOS *)lParam;
+
+            if (ddraw->wine && !ddraw->windowed && (pos->x > 0 || pos->y > 0) && LastSetWindowPosTick + 500 < timeGetTime())
+                PostMessage(ddraw->hWnd, WM_WINEFULLSCREEN, 0, 0);
+
+            break;
+        }
+        case WM_WINEFULLSCREEN:
+        {
+            if (!ddraw->windowed)
+            {
+                LastSetWindowPosTick = timeGetTime();
+                SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 1, 1, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+                SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+            }
+            return 0;
+        }
+
         case WM_SIZE: 
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         case WM_MOVE:
@@ -596,10 +616,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 mouse_unlock();
 
                 if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
-                {
-                    LastSetWindowPosTick = 0;
                     return 0;
-                }
 
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)

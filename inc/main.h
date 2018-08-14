@@ -25,6 +25,7 @@
 #define CUTSCENE_HEIGHT 400
 
 #define WM_AUTORENDERER WM_USER+111
+#define WM_WINEFULLSCREEN WM_USER+112
 
 extern char OpenglVersion[];
 
