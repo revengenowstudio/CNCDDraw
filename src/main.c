@@ -335,7 +335,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                     This->render.mode.dmPelsWidth = This->render.width;
                     This->render.mode.dmPelsHeight = This->render.height;
                     
-                    if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                    if ((This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight) ||
+                        ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                     {
                         // try current display settings
                         This->render.width = This->mode.dmPelsWidth;
