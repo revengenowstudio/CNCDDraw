@@ -30,7 +30,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
     POINT pt, realpt;
     
-    if (!GetCursorPos(&pt))
+    if (!GetCursorPos(&pt) || !ddraw)
         return FALSE;
     
     realpt.x = pt.x;
