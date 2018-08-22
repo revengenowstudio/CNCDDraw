@@ -22,6 +22,8 @@
 #include "surface.h"
 #include "paletteshader.h"
 
+#define TEXTURE_COUNT 4
+
 char OpenglVersion[128];
 
 BOOL detect_cutscene();
@@ -109,10 +111,8 @@ DWORD WINAPI render_main(void)
     int tex_width = 
         ddraw->width <= 1024 ? 1024 : ddraw->width <= 2048 ? 2048 : ddraw->width <= 4096 ? 4096 : ddraw->width;
     int tex_height = 
-        ddraw->height <= tex_width ? tex_width : ddraw->height <= 2048 ? 2048 : ddraw->height <= 4096 ? 4096 : ddraw->height;
+        ddraw->height <= 512 ? 512 : ddraw->height <= 1024 ? 1024 : ddraw->height <= 2048 ? 2048 : ddraw->height <= 4096 ? 4096 : ddraw->height;
     
-    tex_width = tex_width > tex_height ? tex_width : tex_height;
-
     float scale_w = (float)ddraw->width / tex_width;
     float scale_h = (float)ddraw->height / tex_height;
 
@@ -139,12 +139,12 @@ DWORD WINAPI render_main(void)
 
     // primary surface texture
     GLenum surfaceFormat = GL_LUMINANCE;
-    GLuint surfaceTexIds[2];
+    GLuint surfaceTexIds[TEXTURE_COUNT];
 
-    glGenTextures(2, surfaceTexIds);
+    glGenTextures(TEXTURE_COUNT, surfaceTexIds);
 
     int i;
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < TEXTURE_COUNT; i++)
     {
         glBindTexture(GL_TEXTURE_2D, surfaceTexIds[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -172,11 +172,11 @@ DWORD WINAPI render_main(void)
     }
 
     // palette texture
-    GLuint paletteTexIds[2];
+    GLuint paletteTexIds[TEXTURE_COUNT];
 
-    glGenTextures(2, paletteTexIds);
+    glGenTextures(TEXTURE_COUNT, paletteTexIds);
 
-    for (i = 0; i < 2; i++)
+    for (i = 0; i < TEXTURE_COUNT; i++)
     {
         glBindTexture(GL_TEXTURE_2D, paletteTexIds[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -512,7 +512,9 @@ DWORD WINAPI render_main(void)
             {
                 if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
                 {
-                    palIndex = (palIndex + 1) % 2;
+                    if (++palIndex >= TEXTURE_COUNT)
+                        palIndex = 0;
+
                     glBindTexture(GL_TEXTURE_2D, paletteTexIds[palIndex]);
 
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_BYTE,
@@ -521,7 +523,9 @@ DWORD WINAPI render_main(void)
 
                 if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
                 {
-                    texIndex = (texIndex + 1) % 2;
+                    if (++texIndex >= TEXTURE_COUNT)
+                        texIndex = 0;
+
                     glBindTexture(GL_TEXTURE_2D, surfaceTexIds[texIndex]);
 
                     glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, ddraw->width, ddraw->height, surfaceFormat, GL_UNSIGNED_BYTE,
@@ -681,8 +685,8 @@ DWORD WINAPI render_main(void)
     }
 
     HeapFree(GetProcessHeap(), 0, tex);
-    glDeleteTextures(2, surfaceTexIds);
-    glDeleteTextures(2, paletteTexIds);
+    glDeleteTextures(TEXTURE_COUNT, surfaceTexIds);
+    glDeleteTextures(TEXTURE_COUNT, paletteTexIds);
     
     if (glUseProgram)
         glUseProgram(0);
