@@ -842,13 +842,8 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
     ddraw->isredalert = strcmp(This->title, "Red Alert") == 0;
     ddraw->iscnc1 = strcmp(This->title, "Command & Conquer") == 0;
     
-    if(This->vhack == 1)
-    {
-        if (!ddraw->isredalert && !ddraw->iscnc1)
-        {
-            This->vhack = 0;
-        }
-    }
+    if (This->vhack && !ddraw->isredalert && !ddraw->iscnc1)
+        This->vhack = 0;
 
     return DD_OK;
 }
@@ -1195,11 +1190,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
     
     GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->vhack = 2;
-    }
-    else if(tolower(tmp[0]) == 'a')
+    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tolower(tmp[0]) == 'a' || tmp[0] == '1')
     {
         This->vhack = 1;
     }

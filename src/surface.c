@@ -420,7 +420,12 @@ HRESULT __stdcall ddraw_surface_SetPalette(IDirectDrawSurfaceImpl *This, LPDIREC
         IDirectDrawPalette_Release(This->palette);
     }
 
+    EnterCriticalSection(&ddraw->cs);
+
     This->palette = (IDirectDrawPaletteImpl *)lpDDPalette;
+    This->palette->data_rgb = &This->bmi->bmiColors[0];
+
+    LeaveCriticalSection(&ddraw->cs);
 
     return DD_OK;
 }

@@ -487,24 +487,20 @@ DWORD WINAPI render_main(void)
 
         if (ddraw->primary && ddraw->primary->palette)
         {
-            if (ddraw->vhack && detect_cutscene())
+            if (ddraw->vhack)
             {
-                scale_w *= (float)CUTSCENE_WIDTH / ddraw->width;
-                scale_h *= (float)CUTSCENE_HEIGHT / ddraw->height;
-
-                if (!ddraw->incutscene)
+                if (detect_cutscene())
                 {
-                    scaleChanged = TRUE;
-                    ddraw->incutscene = TRUE;
+                    scale_w *= (float)CUTSCENE_WIDTH / ddraw->width;
+                    scale_h *= (float)CUTSCENE_HEIGHT / ddraw->height;
+
+                    if (!InterlockedExchange(&ddraw->incutscene, TRUE))
+                        scaleChanged = TRUE;
                 }
-
-            }
-            else
-            {
-                if (ddraw->incutscene)
+                else
                 {
-                    scaleChanged = TRUE;
-                    ddraw->incutscene = FALSE;
+                    if (InterlockedExchange(&ddraw->incutscene, FALSE))
+                        scaleChanged = TRUE;
                 }
             }
 

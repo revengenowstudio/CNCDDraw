@@ -35,9 +35,6 @@ BOOL detect_cutscene()
     if(ddraw->width <= CUTSCENE_WIDTH || ddraw->height <= CUTSCENE_HEIGHT)
         return FALSE;
         
-    //if (ddraw->isredalert && *InMovie)
-    //    return !*IsVQA640;
-        
     if (ddraw->isredalert)
     {
         if ((*InMovie && !*IsVQA640) || *ShouldStretch)
@@ -120,13 +117,8 @@ DWORD WINAPI render_soft_main(void)
         
         EnterCriticalSection(&ddraw->cs);
 
-        if (ddraw->primary && (ddraw->primary->palette || ddraw->bpp == 16))
+        if (ddraw->primary && ddraw->primary->palette && ddraw->primary->palette->data_rgb)
         {
-            if (ddraw->primary->palette && ddraw->primary->palette->data_rgb == NULL)
-            {
-                ddraw->primary->palette->data_rgb = &ddraw->primary->bmi->bmiColors[0];
-            }
-
             if (warningText[0])
             {
                 if (timeGetTime() < warningEndTick)
@@ -138,44 +130,61 @@ DWORD WINAPI render_soft_main(void)
                     warningText[0] = 0;
             }
 
-            if ((ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height) && 
-                !(ddraw->vhack && detect_cutscene()) )
+            BOOL scaleCutscene = ddraw->vhack && detect_cutscene();
+
+            if (ddraw->vhack)
+                InterlockedExchange(&ddraw->incutscene, scaleCutscene);
+
+            if (scaleCutscene)
             {
                 StretchDIBits(
-                    ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
-                    ddraw->render.viewport.width, ddraw->render.viewport.height, 
-                    0, 0, ddraw->width, ddraw->height, ddraw->primary->surface, 
-                    ddraw->primary->bmi, DIB_RGB_COLORS, SRCCOPY);
+                    ddraw->render.hDC, 
+                    ddraw->render.viewport.x, 
+                    ddraw->render.viewport.y,
+                    ddraw->render.viewport.width, 
+                    ddraw->render.viewport.height,
+                    0, 
+                    ddraw->height - 400, 
+                    CUTSCENE_WIDTH, 
+                    CUTSCENE_HEIGHT, 
+                    ddraw->primary->surface,
+                    ddraw->primary->bmi, 
+                    DIB_RGB_COLORS, 
+                    SRCCOPY);
             }
-            else if (!(ddraw->vhack && detect_cutscene()))
+            else if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
+            {
+                StretchDIBits(
+                    ddraw->render.hDC, 
+                    ddraw->render.viewport.x, 
+                    ddraw->render.viewport.y, 
+                    ddraw->render.viewport.width, 
+                    ddraw->render.viewport.height, 
+                    0, 
+                    0, 
+                    ddraw->width, 
+                    ddraw->height, 
+                    ddraw->primary->surface, 
+                    ddraw->primary->bmi, 
+                    DIB_RGB_COLORS, 
+                    SRCCOPY);
+            }
+            else
             {
                 SetDIBitsToDevice(
-                    ddraw->render.hDC, 0, 0, ddraw->width, ddraw->height, 0, 0, 0, 
-                    ddraw->height, ddraw->primary->surface, ddraw->primary->bmi, DIB_RGB_COLORS);
+                    ddraw->render.hDC, 
+                    0, 
+                    0, 
+                    ddraw->width, 
+                    ddraw->height, 
+                    0, 
+                    0, 
+                    0, 
+                    ddraw->height, 
+                    ddraw->primary->surface, 
+                    ddraw->primary->bmi, 
+                    DIB_RGB_COLORS);
             }
-
-        }
-        if (ddraw->vhack && ddraw->primary && detect_cutscene()) // for vhack
-        {
-            if (ddraw->primary->palette && ddraw->primary->palette->data_rgb == NULL)
-            {
-                ddraw->primary->palette->data_rgb = &ddraw->primary->bmi->bmiColors[0];
-            }
-            
-            StretchDIBits(
-                ddraw->render.hDC, ddraw->render.viewport.x, ddraw->render.viewport.y, 
-                ddraw->render.viewport.width, ddraw->render.viewport.height, 
-                0, ddraw->height-400, CUTSCENE_WIDTH, CUTSCENE_HEIGHT, ddraw->primary->surface, 
-                ddraw->primary->bmi, DIB_RGB_COLORS, SRCCOPY);
-
-            if (ddraw->primary->palette && !ddraw->incutscene)
-            {
-                ddraw->incutscene = TRUE;
-            }
-        }
-        else if(ddraw->primary && ddraw->primary->palette && ddraw->incutscene)
-        {
-            ddraw->incutscene = FALSE;
         }
 
         LeaveCriticalSection(&ddraw->cs);
