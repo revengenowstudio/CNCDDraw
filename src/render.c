@@ -137,6 +137,8 @@ DWORD WINAPI render_main(void)
     if (gotOpenglV3)
         scaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
 
+    BOOL GotError = FALSE;
+
     // primary surface texture
     GLenum surfaceFormat = GL_LUMINANCE;
     GLuint surfaceTexIds[TEXTURE_COUNT];
@@ -149,6 +151,8 @@ DWORD WINAPI render_main(void)
         glBindTexture(GL_TEXTURE_2D, surfaceTexIds[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        GotError = GotError || glGetError() != GL_NO_ERROR;
 
         while (glGetError() != GL_NO_ERROR);
 
@@ -440,7 +444,7 @@ DWORD WINAPI render_main(void)
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
  
-    BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || glGetError() != GL_NO_ERROR));
+    BOOL useOpenGL = !(ddraw->autorenderer && (!paletteConvProgram || GotError || glGetError() != GL_NO_ERROR));
 
     if (!paletteConvProgram)
         glEnable(GL_TEXTURE_2D);
