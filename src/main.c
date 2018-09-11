@@ -1118,6 +1118,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), SettingsIniPath);
     ddraw->screenshotKey = toupper(tmp[0]);
     
+    This->sleep = GetPrivateProfileIntA("ddraw", "sleep", 0, SettingsIniPath);
     This->render.maxfps = GetPrivateProfileIntA("ddraw", "maxfps", 0, SettingsIniPath);
     This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, SettingsIniPath);
     This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);

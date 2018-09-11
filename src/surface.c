@@ -178,7 +178,12 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             ResetEvent(ddraw->render.ev);
         }
         else
-            SwitchToThread();
+        {
+            if (ddraw->sleep > 0)
+                Sleep(ddraw->sleep);
+            else
+                SwitchToThread();
+        }
     }
 
     return DD_OK;
@@ -265,7 +270,13 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             WaitForSingleObject(ddraw->render.ev, INFINITE);
         }
         else
-            SwitchToThread();
+        {
+            if (ddraw->sleep > 0)
+                Sleep(ddraw->sleep);
+            else
+                SwitchToThread();
+        }
+            
     }
 
     return DD_OK;
