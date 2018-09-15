@@ -68,6 +68,9 @@ PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = NULL;
 
 PFNGLTEXBUFFERPROC glTexBuffer = NULL;
 
+BOOL OpenGL_GotVersion2;
+BOOL OpenGL_GotVersion3;
+
 void OpenGL_Init()
 {
     // Program
@@ -132,6 +135,16 @@ void OpenGL_Init()
     wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
 
     glTexBuffer = (PFNGLTEXBUFFERPROC)wglGetProcAddress("glTexBuffer");
+
+    char *glversion = (char *)glGetString(GL_VERSION);
+
+    OpenGL_GotVersion2 = glGetUniformLocation && glActiveTexture && glUniform1i;
+
+    OpenGL_GotVersion3 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
+        glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
+        glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
+        glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray &&
+        glGetUniformLocation && glversion && glversion[0] != '2';
 }
 
 BOOL OpenGL_ExtExists(char *ext, HDC hdc)

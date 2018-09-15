@@ -74,3 +74,6 @@ extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
 extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
 extern PFNGLTEXBUFFERPROC glTexBuffer;
+
+extern BOOL OpenGL_GotVersion2;
+extern BOOL OpenGL_GotVersion3;
