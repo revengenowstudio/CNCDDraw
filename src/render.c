@@ -162,13 +162,13 @@ static void SetMaxFPS(int baseMaxFPS)
         }
     }
 
-    if (baseMaxFPS < 0)
+    if (MaxFPS < 0)
         MaxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (baseMaxFPS == 0)
+    if (MaxFPS == 0)
         MaxFPS = 125;
 
-    if (baseMaxFPS >= 1000)
+    if (MaxFPS >= 1000)
         MaxFPS = 0;
 
     if (MaxFPS > 0)
