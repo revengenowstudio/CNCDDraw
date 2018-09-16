@@ -58,6 +58,7 @@ static void InitPaletteConvertProgram();
 static void InitScaleProgram();
 static void Render();
 static void DeleteContext(HGLRC context);
+static BOOL TextureUploadTest();
 
 BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
@@ -82,6 +83,7 @@ DWORD WINAPI render_main(void)
         InitPaletteConvertProgram();
         InitScaleProgram();
 
+        GotError = GotError || !TextureUploadTest();
         GotError = GotError || glGetError() != GL_NO_ERROR;
         UseOpenGL = !(ddraw->autorenderer && (!PaletteConvertProgram || GotError));
 
@@ -281,7 +283,7 @@ static void CreateTextures(int width, int height)
                 SurfaceTexWidth, 
                 SurfaceTexHeight, 
                 0, 
-                GL_RGBA, 
+                SurfaceFormat = GL_RGBA,
                 GL_UNSIGNED_BYTE, 
                 0);
         }
@@ -867,3 +869,66 @@ static void DeleteContext(HGLRC context)
     wglMakeCurrent(NULL, NULL);
     wglDeleteContext(context);
 }
+
+static BOOL TextureUploadTest()
+{
+    static char testData[] = { 0,1,2,0,0,2,3,0,0,4,5,0,0,6,7,0,0,8,9,0 };
+
+    int i;
+    for (i = 0; i < TEXTURE_COUNT; i++)
+    {
+        memcpy(SurfaceTex, testData, sizeof(testData));
+
+        glBindTexture(GL_TEXTURE_2D, SurfaceTexIds[i]);
+
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            ddraw->width,
+            ddraw->height,
+            SurfaceFormat,
+            GL_UNSIGNED_BYTE,
+            SurfaceTex);
+
+        glFinish();
+
+        memset(SurfaceTex, 0, sizeof(testData));
+
+        glGetTexImage(GL_TEXTURE_2D, 0, SurfaceFormat, GL_UNSIGNED_BYTE, SurfaceTex);
+        glFinish();
+
+        if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
+            return FALSE;
+    }
+
+    for (i = 0; i < TEXTURE_COUNT; i++)
+    {
+        glBindTexture(GL_TEXTURE_2D, PaletteTexIds[i]);
+
+        glTexSubImage2D(
+            GL_TEXTURE_2D,
+            0,
+            0,
+            0,
+            256,
+            1,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            SurfaceTex);
+
+        glFinish();
+
+        memset(SurfaceTex, 0, sizeof(testData));
+
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
+        glFinish();
+
+        if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
+            return FALSE;
+    }
+
+    return TRUE;
+}
+
