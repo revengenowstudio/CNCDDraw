@@ -931,6 +931,8 @@ static BOOL TextureUploadTest()
 
 static BOOL ShaderTest()
 {
+    BOOL result = TRUE;
+
     if (OpenGL_GotVersion3 && PaletteConvertProgram)
     {
         memset(SurfaceTex, 0, SurfaceTexHeight * SurfaceTexWidth * sizeof(int));
@@ -1009,7 +1011,10 @@ static BOOL ShaderTest()
             for (i = 0; i < SurfaceTexHeight * SurfaceTexWidth; i++)
             {
                 if (SurfaceTex[i] != 0x80808080)
-                    return FALSE;
+                {
+                    result = FALSE;
+                    break;
+                }  
             }
         }
 
@@ -1023,5 +1028,5 @@ static BOOL ShaderTest()
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    return TRUE;
+    return result;
 }
