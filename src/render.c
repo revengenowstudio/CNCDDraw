@@ -75,11 +75,6 @@ DWORD WINAPI render_main(void)
         SetMaxFPS(ddraw->render.maxfps);
         BuildPrograms();
         CreateTextures(ddraw->width, ddraw->height);
-
-        glViewport(
-            ddraw->render.viewport.x, ddraw->render.viewport.y,
-            ddraw->render.viewport.width, ddraw->render.viewport.height);
-
         InitPaletteConvertProgram();
         InitScaleProgram();
 
@@ -386,7 +381,6 @@ static void InitPaletteConvertProgram()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         glBindVertexArray(0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
         const float mvpMatrix[16] = {
             1,0,0,0,
@@ -454,7 +448,6 @@ static void InitScaleProgram()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glBindVertexArray(0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     float inputSize[2], outputSize[2], textureSize[2];
 
@@ -540,12 +533,8 @@ static void InitScaleProgram()
             glEnableVertexAttribArray(MainTexCoordAttrLoc);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
-
-            glUseProgram(PaletteConvertProgram);
         }
     }
-    else
-        glUseProgram(0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -555,7 +544,13 @@ static void Render()
     DWORD tick_start = 0;
     DWORD tick_end = 0;
 
-    if (!PaletteConvertProgram)
+    glViewport(
+        ddraw->render.viewport.x, ddraw->render.viewport.y,
+        ddraw->render.viewport.width, ddraw->render.viewport.height);
+
+    if (PaletteConvertProgram)
+        glUseProgram(PaletteConvertProgram);
+    else
         glEnable(GL_TEXTURE_2D);
 
     while (UseOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)

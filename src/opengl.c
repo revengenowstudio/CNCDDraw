@@ -256,7 +256,7 @@ GLuint OpenGL_BuildProgramFromFile(const char *filePath)
         long fileSize = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        char *source = calloc(fileSize + 1, 1);
+        char *source = fileSize > 0 ? calloc(fileSize + 1, 1) : NULL;
         if (source)
         {
             fread(source, fileSize, 1, file);
