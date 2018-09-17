@@ -59,6 +59,7 @@ static void InitScaleProgram();
 static void Render();
 static void DeleteContext(HGLRC context);
 static BOOL TextureUploadTest();
+static BOOL ShaderTest();
 
 BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
@@ -79,6 +80,7 @@ DWORD WINAPI render_main(void)
         InitScaleProgram();
 
         GotError = GotError || !TextureUploadTest();
+        GotError = GotError || !ShaderTest();
         GotError = GotError || glGetError() != GL_NO_ERROR;
         UseOpenGL = !(ddraw->autorenderer && (!PaletteConvertProgram || GotError));
 
@@ -927,3 +929,99 @@ static BOOL TextureUploadTest()
     return TRUE;
 }
 
+static BOOL ShaderTest()
+{
+    if (OpenGL_GotVersion3 && PaletteConvertProgram)
+    {
+        memset(SurfaceTex, 0, SurfaceTexHeight * SurfaceTexWidth * sizeof(int));
+
+        GLuint fboId = 0;
+        glGenFramebuffers(1, &fboId);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, fboId);
+
+        GLuint fboTexId = 0;
+        glGenTextures(1, &fboTexId);
+        glBindTexture(GL_TEXTURE_2D, fboTexId);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, SurfaceTexWidth, SurfaceTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fboTexId, 0);
+
+        GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+        glDrawBuffers(1, drawBuffers);
+
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+        {
+            static char gray0pal[] = { 128,128,128,128 };
+
+            glBindTexture(GL_TEXTURE_2D, PaletteTexIds[0]);
+
+            glTexSubImage2D(
+                GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                1,
+                1,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                gray0pal);
+
+            glBindTexture(GL_TEXTURE_2D, SurfaceTexIds[0]);
+
+            glTexSubImage2D(
+                GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                SurfaceTexWidth,
+                SurfaceTexHeight,
+                SurfaceFormat,
+                GL_UNSIGNED_BYTE,
+                SurfaceTex);
+
+            glViewport(0, 0, SurfaceTexWidth, SurfaceTexHeight);
+
+            glUseProgram(PaletteConvertProgram);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, PaletteTexIds[0]);
+            glActiveTexture(GL_TEXTURE0);
+
+            glBindVertexArray(MainVAO);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+            glBindVertexArray(0);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, 0);
+            glActiveTexture(GL_TEXTURE0);
+
+            glFinish();
+
+            glBindTexture(GL_TEXTURE_2D, fboTexId);
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
+
+            glFinish();
+
+            int i;
+            for (i = 0; i < SurfaceTexHeight * SurfaceTexWidth; i++)
+            {
+                if (SurfaceTex[i] != 0x80808080)
+                    return FALSE;
+            }
+        }
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        if (glDeleteFramebuffers)
+            glDeleteFramebuffers(1, &fboId);
+
+        glDeleteTextures(1, &fboTexId);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    return TRUE;
+}
