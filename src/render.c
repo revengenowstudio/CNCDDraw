@@ -49,6 +49,7 @@ static GLuint FrameBufferId;
 static GLuint FrameBufferTexId;
 static GLuint ScaleVBOs[3], ScaleVAO;
 static BOOL UseOpenGL;
+static BOOL AdjustAlignment;
 
 static HGLRC CreateContext(HDC hdc);
 static void SetMaxFPS(int baseMaxFPS);
@@ -198,6 +199,8 @@ static void CreateTextures(int width, int height)
         height <= 512 ? 512 : height <= 1024 ? 1024 : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
     SurfaceTex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, SurfaceTexWidth * SurfaceTexHeight * sizeof(int));
+
+    AdjustAlignment = (width % 4) != 0;
 
     ScaleW = (float)width / SurfaceTexWidth;
     ScaleH = (float)height / SurfaceTexHeight;
@@ -644,6 +647,9 @@ static void Render()
 
                     glBindTexture(GL_TEXTURE_2D, SurfaceTexIds[texIndex]);
 
+                    if (AdjustAlignment)
+                        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
                     glTexSubImage2D(
                         GL_TEXTURE_2D, 
                         0, 
@@ -654,6 +660,9 @@ static void Render()
                         SurfaceFormat, 
                         GL_UNSIGNED_BYTE,
                         ddraw->primary->surface);
+
+                    if (AdjustAlignment)
+                        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
                 }
             }
             else
