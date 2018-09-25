@@ -21,8 +21,6 @@
 #include "main.h"
 #include "surface.h"
 
-#define MAX_HOOKS 16
-
 BOOL mouse_active = FALSE;
 int yAdjust = 0;
 

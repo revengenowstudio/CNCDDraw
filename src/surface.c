@@ -102,7 +102,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     }
 #endif
 
-    if (dwFlags & DDBLT_COLORFILL)
+    if (This->surface && (dwFlags & DDBLT_COLORFILL))
     {
         int dst_w = lpDestRect->right - lpDestRect->left;
         int dst_h = lpDestRect->bottom - lpDestRect->top;
