@@ -8,7 +8,6 @@
 // Try to get fullscreen exclusive working
 // Fix maintain aspect ratio / boxing
 // Use different scaling filter (seems to use blurry linear by default)
-// optional vsync
 
 const BYTE PalettePixelShaderSrc[] =
 {
@@ -97,6 +96,27 @@ DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
 
+    DWORD tick_start = 0;
+    DWORD tick_end = 0;
+    DWORD frame_len = 0;
+
+    int maxfps = ddraw->render.maxfps;
+
+    if (ddraw->vsync)
+        maxfps = 1000;
+
+    if (maxfps < 0)
+        maxfps = ddraw->mode.dmDisplayFrequency;
+
+    if (maxfps == 0)
+        maxfps = 125;
+
+    if (maxfps >= 1000)
+        maxfps = 0;
+
+    if (maxfps > 0)
+        frame_len = 1000.0f / maxfps;
+
     HMODULE hD3D9 = LoadLibrary("d3d9.dll");
     if (hD3D9)
     {
@@ -108,7 +128,7 @@ DWORD WINAPI render_d3d9_main(void)
             D3dpp.Windowed = TRUE;
             D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             D3dpp.hDeviceWindow = ddraw->hWnd;
-            D3dpp.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+            D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
             D3dpp.BackBufferWidth = ddraw->width;
             D3dpp.BackBufferHeight = ddraw->height;
             D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
@@ -126,24 +146,6 @@ DWORD WINAPI render_d3d9_main(void)
             InitDirect3D(FALSE);
         }
     }
-
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
-    DWORD frame_len = 0;
-
-    int maxfps = ddraw->render.maxfps;
-
-    if (maxfps < 0)
-        maxfps = ddraw->mode.dmDisplayFrequency;
-
-    if (maxfps == 0)
-        maxfps = 125;
-
-    if (maxfps >= 1000)
-        maxfps = 0;
-
-    if (maxfps > 0)
-        frame_len = 1000.0f / maxfps;
 
     while (D3d && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
