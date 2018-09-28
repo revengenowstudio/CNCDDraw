@@ -43,6 +43,7 @@ IDirectDrawImpl *ddraw = NULL;
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 DWORD WINAPI render_dummy_main(void);
+DWORD WINAPI render_d3d9_main(void);
 
 int WindowPosX;
 int WindowPosY;
@@ -1204,7 +1205,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
 
     GetPrivateProfileStringA("ddraw", "renderer", "auto", tmp, sizeof(tmp), SettingsIniPath);
-    if(tolower(tmp[0]) == 'd' || tolower(tmp[0]) == 'd')
+    if(tolower(tmp[0]) == 'd' && tolower(tmp[1]) == 'u')
     {
         printf("DirectDrawCreate: Using dummy renderer\n");
         This->renderer = render_dummy_main;
@@ -1219,6 +1220,11 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         printf("DirectDrawCreate: Using automatic renderer\n");
         This->renderer = render_main;
         This->autorenderer = TRUE;
+    }
+    else if (tolower(tmp[0]) == 'd')
+    {
+        printf("DirectDrawCreate: Using Direct3D 9 renderer\n");
+        This->renderer = render_d3d9_main;
     }
     else
     {

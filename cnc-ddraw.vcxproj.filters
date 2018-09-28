@@ -48,6 +48,9 @@
     <ClCompile Include="src\opengl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\render_d3d9.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\clipper.h">

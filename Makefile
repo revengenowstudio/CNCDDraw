@@ -14,6 +14,7 @@ FILES = src/debug.c \
         src/clipper.c \
         src/render.c \
         src/render_soft.c \
+        src/render_d3d9.c \
         src/render_dummy.c \
         src/screenshot.c \
         src/opengl.c
