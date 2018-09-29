@@ -49,12 +49,6 @@ static void InitDirect3D(BOOL reset)
     int width = ddraw->width;
     int height = ddraw->height;
 
-    int vpX = ddraw->render.viewport.x;
-    int vpY = ddraw->render.viewport.y;
-
-    int vpWidth = ddraw->render.viewport.width + vpX;
-    int vpHeight = ddraw->render.viewport.height + vpY;
-
     int surfaceTexWidth =
         width <= 1024 ? 1024 : width <= 2048 ? 2048 : width <= 4096 ? 4096 : width;
 
@@ -64,13 +58,19 @@ static void InitDirect3D(BOOL reset)
     float scaleW = (float)width / surfaceTexWidth;;
     float scaleH = (float)height / surfaceTexHeight;
 
+    float vpX = (float)ddraw->render.viewport.x - 0.5f;
+    float vpY = (float)ddraw->render.viewport.y - 0.5f;
+
+    float vpW = (float)(ddraw->render.viewport.width + vpX) - 0.5f;
+    float vpH = (float)(ddraw->render.viewport.height + vpY) - 0.5f;
+
     typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
     CUSTOMVERTEX vertices[] =
     {
-        { vpX - 0.5f,     vpHeight - 0.5f, 0.0f, 1.0f, 0.0f,   scaleH },
-        { vpX - 0.5f,     vpY - 0.5f,      0.0f, 1.0f, 0.0f,   0.0f },
-        { vpWidth - 0.5f, vpHeight - 0.5f, 0.0f, 1.0f, scaleW, scaleH },
-        { vpWidth - 0.5f, vpY - 0.5f,      0.0f, 1.0f, scaleW, 0.0f }
+        { vpX, vpH, 0.0f, 1.0f, 0.0f,   scaleH },
+        { vpX, vpY, 0.0f, 1.0f, 0.0f,   0.0f },
+        { vpW, vpH, 0.0f, 1.0f, scaleW, scaleH },
+        { vpW, vpY, 0.0f, 1.0f, scaleW, 0.0f }
     };
 
     D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
@@ -96,7 +96,14 @@ static void InitDirect3D(BOOL reset)
     D3ddev->lpVtbl->CreatePixelShader(D3ddev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
     D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader);
 
-    D3DVIEWPORT9 viewData = { vpX, vpY, vpWidth, vpHeight, 0.0f, 1.0f };
+    D3DVIEWPORT9 viewData = { 
+        ddraw->render.viewport.x,
+        ddraw->render.viewport.y,
+        ddraw->render.viewport.width,
+        ddraw->render.viewport.height,
+        0.0f, 
+        1.0f };
+
     D3ddev->lpVtbl->SetViewport(D3ddev, &viewData);
 }
 
