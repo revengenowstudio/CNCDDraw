@@ -19,7 +19,9 @@
 
 #include "main.h"
 #include "surface.h"
+#include "opengl.h"
 
+BOOL ShowDriverWarning;
 
 static unsigned char getPixel(int x, int y)
 {
@@ -55,7 +57,7 @@ DWORD WINAPI render_soft_main(void)
 {
     DWORD warningEndTick = timeGetTime() + (15 * 1000);
     char warningText[512] = { 0 };
-    if (OpenglVersion[0])
+    if (ShowDriverWarning)
     {
         if (!ddraw->windowed)
             PostMessage(ddraw->hWnd, WM_AUTORENDERER, 0, 0);
@@ -63,7 +65,7 @@ DWORD WINAPI render_soft_main(void)
         _snprintf(
             warningText, sizeof(warningText), 
             "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
-            strlen(OpenglVersion) > 10 ? "" : OpenglVersion);
+            strlen(OpenGL_Version) > 10 ? "" : OpenGL_Version);
     }
     else
         Sleep(500);

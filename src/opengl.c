@@ -71,6 +71,8 @@ PFNGLTEXBUFFERPROC glTexBuffer = NULL;
 BOOL OpenGL_GotVersion2;
 BOOL OpenGL_GotVersion3;
 
+char OpenGL_Version[128];
+
 void OpenGL_Init()
 {
     // Program
@@ -137,6 +139,14 @@ void OpenGL_Init()
     glTexBuffer = (PFNGLTEXBUFFERPROC)wglGetProcAddress("glTexBuffer");
 
     char *glversion = (char *)glGetString(GL_VERSION);
+    if (glversion)
+    {
+        strncpy(OpenGL_Version, glversion, sizeof(OpenGL_Version));
+        const char deli[2] = " ";
+        strtok(OpenGL_Version, deli);
+    }
+    else
+        OpenGL_Version[0] = '0';
 
     OpenGL_GotVersion2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 

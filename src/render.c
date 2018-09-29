@@ -24,8 +24,6 @@
 
 #define TEXTURE_COUNT 4
 
-char OpenglVersion[128];
-
 static HGLRC OpenGLContext;
 static int MaxFPS;
 static BOOL VSyncEnabled;
@@ -92,6 +90,7 @@ DWORD WINAPI render_main(void)
 
     if (!UseOpenGL)
     {
+        ShowDriverWarning = TRUE;
         ddraw->renderer = render_soft_main;
         render_soft_main();
     }
@@ -103,16 +102,6 @@ static HGLRC CreateContext(HDC hdc)
 {
     HGLRC context = wglCreateContext(hdc);
     BOOL madeCurrent = context && wglMakeCurrent(hdc, context);
-
-    char *glversion = (char *)glGetString(GL_VERSION);
-    if (glversion)
-    {
-        strncpy(OpenglVersion, glversion, sizeof(OpenglVersion));
-        const char deli[2] = " ";
-        strtok(OpenglVersion, deli);
-    }
-    else
-        OpenglVersion[0] = '0';
 
     if (!madeCurrent || (ddraw->autorenderer && glGetError() != GL_NO_ERROR))
     {

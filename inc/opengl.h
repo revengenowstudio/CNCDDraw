@@ -77,3 +77,5 @@ extern PFNGLTEXBUFFERPROC glTexBuffer;
 
 extern BOOL OpenGL_GotVersion2;
 extern BOOL OpenGL_GotVersion3;
+
+extern char OpenGL_Version[];

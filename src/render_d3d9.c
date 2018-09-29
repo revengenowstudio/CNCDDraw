@@ -33,6 +33,8 @@ IDirect3DTexture9 *PaletteTex;
 IDirect3DPixelShader9 *PixelShader;
 D3DPRESENT_PARAMETERS D3dpp;
 
+DWORD WINAPI render_soft_main(void);
+
 static void InitDirect3D(BOOL reset)
 {
     if (reset)
@@ -61,8 +63,8 @@ static void InitDirect3D(BOOL reset)
     float vpX = (float)ddraw->render.viewport.x;
     float vpY = (float)ddraw->render.viewport.y;
 
-    float vpW = (float)(ddraw->render.viewport.width + vpX);
-    float vpH = (float)(ddraw->render.viewport.height + vpY);
+    float vpW = (float)(ddraw->render.viewport.width + ddraw->render.viewport.x);
+    float vpH = (float)(ddraw->render.viewport.height + ddraw->render.viewport.y);
 
     typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
     CUSTOMVERTEX vertices[] =
@@ -155,11 +157,12 @@ DWORD WINAPI render_d3d9_main(void)
                 &D3dpp,
                 &D3ddev);
 
-            InitDirect3D(FALSE);
+            if (D3ddev)
+                InitDirect3D(FALSE);
         }
     }
 
-    while (D3d && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while (D3ddev && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
 #if _DEBUG
         static DWORD tick_fps = 0;
@@ -280,6 +283,15 @@ DWORD WINAPI render_d3d9_main(void)
 
     if (hD3D9)
         FreeLibrary(hD3D9);
+
+    if (!D3ddev)
+    {
+        ShowDriverWarning = TRUE;
+        ddraw->renderer = render_soft_main;
+        render_soft_main();
+    }
+
+    D3ddev = NULL;
 
     return 0;
 }

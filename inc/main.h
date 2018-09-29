@@ -27,7 +27,7 @@
 #define WM_AUTORENDERER WM_USER+111
 #define WM_WINEFULLSCREEN WM_USER+112
 
-extern char OpenglVersion[];
+extern BOOL ShowDriverWarning;
 
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
