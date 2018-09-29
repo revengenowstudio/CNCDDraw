@@ -6,8 +6,7 @@
 
 // TO DO:
 // Try to get fullscreen exclusive working
-// Fix maintain aspect ratio / boxing
-// Use different scaling filter (seems to use blurry linear by default)
+// vhack isn't working
 
 const BYTE PalettePixelShaderSrc[] =
 {
@@ -50,6 +49,12 @@ static void InitDirect3D(BOOL reset)
     int width = ddraw->width;
     int height = ddraw->height;
 
+    int vpX = ddraw->render.viewport.x;
+    int vpY = ddraw->render.viewport.y;
+
+    int vpWidth = ddraw->render.viewport.width + vpX;
+    int vpHeight = ddraw->render.viewport.height + vpY;
+
     int surfaceTexWidth =
         width <= 1024 ? 1024 : width <= 2048 ? 2048 : width <= 4096 ? 4096 : width;
 
@@ -62,10 +67,10 @@ static void InitDirect3D(BOOL reset)
     typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
     CUSTOMVERTEX vertices[] =
     {
-        { -1.0f, height, 0.0f, 1.0f, 0.0f,   scaleH },
-        { -1.0f, -1.0f,  0.0f, 1.0f, 0.0f,   0.0f },
-        { width, height, 0.0f, 1.0f, scaleW, scaleH },
-        { width, -1.0f,  0.0f, 1.0f, scaleW, 0.0f }
+        { vpX - 0.5f,     vpHeight - 0.5f, 0.0f, 1.0f, 0.0f,   scaleH },
+        { vpX - 0.5f,     vpY - 0.5f,      0.0f, 1.0f, 0.0f,   0.0f },
+        { vpWidth - 0.5f, vpHeight - 0.5f, 0.0f, 1.0f, scaleW, scaleH },
+        { vpWidth - 0.5f, vpY - 0.5f,      0.0f, 1.0f, scaleW, 0.0f }
     };
 
     D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
@@ -90,6 +95,9 @@ static void InitDirect3D(BOOL reset)
 
     D3ddev->lpVtbl->CreatePixelShader(D3ddev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
     D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader);
+
+    D3DVIEWPORT9 viewData = { vpX, vpY, vpWidth, vpHeight, 0.0f, 1.0f };
+    D3ddev->lpVtbl->SetViewport(D3ddev, &viewData);
 }
 
 DWORD WINAPI render_d3d9_main(void)
@@ -129,8 +137,8 @@ DWORD WINAPI render_d3d9_main(void)
             D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             D3dpp.hDeviceWindow = ddraw->hWnd;
             D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-            D3dpp.BackBufferWidth = ddraw->width;
-            D3dpp.BackBufferHeight = ddraw->height;
+            D3dpp.BackBufferWidth = ddraw->render.width;
+            D3dpp.BackBufferHeight = ddraw->render.height;
             D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
             D3dpp.BackBufferCount = 1;
 
