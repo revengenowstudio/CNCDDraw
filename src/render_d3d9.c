@@ -154,15 +154,27 @@ DWORD WINAPI render_d3d9_main(void)
             D3dpp.BackBufferHeight = ddraw->render.height;
             D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
             D3dpp.BackBufferCount = 1;
-
-            D3d->lpVtbl->CreateDevice(
-                D3d,
-                D3DADAPTER_DEFAULT,
-                D3DDEVTYPE_HAL,
-                ddraw->hWnd,
+            
+            DWORD behaviorFlags[] = {
+                D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
+                D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                D3DCREATE_MIXED_VERTEXPROCESSING,
                 D3DCREATE_SOFTWARE_VERTEXPROCESSING,
-                &D3dpp,
-                &D3ddev);
+            };
+
+            int i;
+            for (i = 0; i < sizeof(behaviorFlags)/sizeof(behaviorFlags[0]); i++)
+            {
+                if (SUCCEEDED(D3d->lpVtbl->CreateDevice(
+                    D3d,
+                    D3DADAPTER_DEFAULT,
+                    D3DDEVTYPE_HAL,
+                    ddraw->hWnd,
+                    D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
+                    &D3dpp,
+                    &D3ddev)))
+                        break;
+            }
 
             if (D3ddev)
                 InitDirect3D(FALSE);
