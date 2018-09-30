@@ -80,7 +80,7 @@ static void InitDirect3D(BOOL reset)
         D3ddev, sizeof(vertices), 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &D3dvb, NULL);
 
     void *data;
-    if (SUCCEEDED(D3dvb->lpVtbl->Lock(D3dvb, 0, 0, (void**)&data, 0)))
+    if (D3dvb && SUCCEEDED(D3dvb->lpVtbl->Lock(D3dvb, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
         D3dvb->lpVtbl->Unlock(D3dvb);
@@ -112,6 +112,13 @@ static void InitDirect3D(BOOL reset)
 DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
+
+    D3d = NULL;
+    D3ddev = NULL;
+    SurfaceTex = NULL;
+    PaletteTex = NULL;
+    D3dvb = NULL;
+    PixelShader = NULL;
 
     DWORD tick_start = 0;
     DWORD tick_end = 0;
@@ -162,7 +169,9 @@ DWORD WINAPI render_d3d9_main(void)
         }
     }
 
-    while (D3ddev && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    BOOL useDirect3D = D3d && D3ddev && SurfaceTex && PaletteTex && D3dvb && PixelShader;
+
+    while (useDirect3D && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
 #if _DEBUG
         static DWORD tick_fps = 0;
@@ -284,14 +293,12 @@ DWORD WINAPI render_d3d9_main(void)
     if (hD3D9)
         FreeLibrary(hD3D9);
 
-    if (!D3ddev)
+    if (!useDirect3D)
     {
         ShowDriverWarning = TRUE;
         ddraw->renderer = render_soft_main;
         render_soft_main();
     }
-
-    D3ddev = NULL;
 
     return 0;
 }
