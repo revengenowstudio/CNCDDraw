@@ -51,14 +51,16 @@ static void InitDirect3D(BOOL reset)
     int width = ddraw->width;
     int height = ddraw->height;
 
-    int surfaceTexWidth =
+    int texWidth =
         width <= 1024 ? 1024 : width <= 2048 ? 2048 : width <= 4096 ? 4096 : width;
 
-    int surfaceTexHeight =
-        height <= 512 ? 512 : height <= 1024 ? 1024 : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
+    int texHeight =
+        height <= texWidth ? texWidth : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    float scaleW = (float)width / surfaceTexWidth;;
-    float scaleH = (float)height / surfaceTexHeight;
+    texWidth = texWidth > texHeight ? texWidth : texHeight;
+
+    float scaleW = (float)width / texWidth;;
+    float scaleH = (float)height / texHeight;
 
     float vpX = (float)ddraw->render.viewport.x;
     float vpY = (float)ddraw->render.viewport.y;
@@ -88,8 +90,7 @@ static void InitDirect3D(BOOL reset)
 
     D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX));
 
-    D3ddev->lpVtbl->CreateTexture(
-        D3ddev, surfaceTexWidth, surfaceTexHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
+    D3ddev->lpVtbl->CreateTexture(D3ddev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
     D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex);
 
     D3ddev->lpVtbl->CreateTexture(D3ddev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0);
