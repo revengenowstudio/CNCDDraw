@@ -1054,7 +1054,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "adjmouse=false\n"
             "; enable C&C video resize hack (GDI / OpenGL only)\n"
             "vhack=false\n"
-            "; auto, opengl, gdi, direct3d9 (auto = try opengl, fallback = gdi)\n"
+            "; auto, opengl, gdi, direct3d9 (auto = try opengl/direct3d9, fallback = gdi)\n"
             "renderer=auto\n"
             "; force CPU0 affinity, avoids crashes with RA, *might* have a performance impact\n"
             "singlecpu=true\n"
@@ -1218,8 +1218,37 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     else if (tolower(tmp[0]) == 'a')
     {
         printf("DirectDrawCreate: Using automatic renderer\n");
-        This->renderer = render_main;
         This->autorenderer = TRUE;
+
+        DWORD version = GetVersion();
+        DWORD major = (DWORD)(LOBYTE(LOWORD(version)));
+        DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
+        BOOL useDirect3D = FALSE;
+
+        if (major < 6 || (major == 6 && minor <= 1))
+        {
+            BOOL dwmEnabled = TRUE;
+
+            HMODULE hDwmapi = LoadLibrary("Dwmapi.dll");
+            if (hDwmapi)
+            {
+                HRESULT(WINAPI *DwmIsCompositionEnabled)(BOOL*) =
+                    (HRESULT(WINAPI *)(BOOL*))GetProcAddress(hDwmapi, "DwmIsCompositionEnabled");
+
+                if (DwmIsCompositionEnabled)
+                    DwmIsCompositionEnabled(&dwmEnabled);
+
+                FreeLibrary(hDwmapi);
+            }
+
+            useDirect3D = !hDwmapi || !dwmEnabled;
+        }
+
+        if (useDirect3D && FreeLibrary(LoadLibrary("d3d9.dll")))
+            This->renderer = render_d3d9_main;
+        else
+            This->renderer = render_main;
+        
     }
     else if (tolower(tmp[0]) == 'd')
     {
