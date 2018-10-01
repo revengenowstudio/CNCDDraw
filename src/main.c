@@ -1225,7 +1225,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
         BOOL useDirect3D = FALSE;
 
-        if (major < 6 || (major == 6 && minor <= 1))
+        if (!This->wine && (major < 6 || (major == 6 && minor <= 1)))
         {
             BOOL dwmEnabled = TRUE;
 
