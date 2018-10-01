@@ -1052,7 +1052,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "vsync=false\n"
             "; automatic mouse sensitivity scaling\n"
             "adjmouse=false\n"
-            "; enable C&C video resize hack (GDI / OpenGL only)\n"
+            "; enable C&C video resize hack\n"
             "vhack=false\n"
             "; auto, opengl, gdi, direct3d9 (auto = try opengl/direct3d9, fallback = gdi)\n"
             "renderer=auto\n"
