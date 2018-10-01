@@ -4,10 +4,6 @@
 #include "main.h"
 #include "surface.h"
 
-// TO DO:
-// Try to get fullscreen exclusive working
-// vhack isn't working
-
 const BYTE PalettePixelShaderSrc[] =
 {
     0,2,255,255,254,255,42,0,67,84,65,66,28,0,0,0,115,0,0,0,0,2,255,255,
@@ -25,15 +21,47 @@ const BYTE PalettePixelShaderSrc[] =
     0,0,15,128,0,0,228,128,1,8,228,160,1,0,0,2,0,8,15,128,0,0,228,128,255,255,0,0
 };
 
-LPDIRECT3D9 D3d;
-LPDIRECT3DDEVICE9 D3ddev;
-LPDIRECT3DVERTEXBUFFER9 D3dvb;
-IDirect3DTexture9 *SurfaceTex;
-IDirect3DTexture9 *PaletteTex;
-IDirect3DPixelShader9 *PixelShader;
-D3DPRESENT_PARAMETERS D3dpp;
+typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
+static LPDIRECT3D9 D3d;
+static LPDIRECT3DDEVICE9 D3ddev;
+static LPDIRECT3DVERTEXBUFFER9 D3dvb;
+static IDirect3DTexture9 *SurfaceTex;
+static IDirect3DTexture9 *PaletteTex;
+static IDirect3DPixelShader9 *PixelShader;
+static D3DPRESENT_PARAMETERS D3dpp;
+static float ScaleW;
+static float ScaleH;
+
+BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
+
+static void UpdateVertices(BOOL inCutscene)
+{
+    float vpX = (float)ddraw->render.viewport.x;
+    float vpY = (float)ddraw->render.viewport.y;
+
+    float vpW = (float)(ddraw->render.viewport.width + ddraw->render.viewport.x);
+    float vpH = (float)(ddraw->render.viewport.height + ddraw->render.viewport.y);
+
+    float sH = inCutscene ? ScaleH * ((float)CUTSCENE_HEIGHT / ddraw->height) : ScaleH;
+    float sW = inCutscene ? ScaleW * ((float)CUTSCENE_WIDTH / ddraw->width)   : ScaleW;
+
+    CUSTOMVERTEX vertices[] =
+    {
+        { vpX - 0.5f, vpH - 0.5f, 0.0f, 1.0f, 0.0f, sH   },
+        { vpX - 0.5f, vpY - 0.5f, 0.0f, 1.0f, 0.0f, 0.0f },
+        { vpW - 0.5f, vpH - 0.5f, 0.0f, 1.0f, sW,   sH   },
+        { vpW - 0.5f, vpY - 0.5f, 0.0f, 1.0f, sW,   0.0f }
+    };
+
+    void *data;
+    if (D3dvb && SUCCEEDED(D3dvb->lpVtbl->Lock(D3dvb, 0, 0, (void**)&data, 0)))
+    {
+        memcpy(data, vertices, sizeof(vertices));
+        D3dvb->lpVtbl->Unlock(D3dvb);
+    }
+}
 
 static void InitDirect3D(BOOL reset)
 {
@@ -59,34 +87,14 @@ static void InitDirect3D(BOOL reset)
 
     texWidth = texWidth > texHeight ? texWidth : texHeight;
 
-    float scaleW = (float)width / texWidth;;
-    float scaleH = (float)height / texHeight;
-
-    float vpX = (float)ddraw->render.viewport.x;
-    float vpY = (float)ddraw->render.viewport.y;
-
-    float vpW = (float)(ddraw->render.viewport.width + ddraw->render.viewport.x);
-    float vpH = (float)(ddraw->render.viewport.height + ddraw->render.viewport.y);
-
-    typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
-    CUSTOMVERTEX vertices[] =
-    {
-        { vpX - 0.5f, vpH - 0.5f, 0.0f, 1.0f, 0.0f,   scaleH },
-        { vpX - 0.5f, vpY - 0.5f, 0.0f, 1.0f, 0.0f,   0.0f },
-        { vpW - 0.5f, vpH - 0.5f, 0.0f, 1.0f, scaleW, scaleH },
-        { vpW - 0.5f, vpY - 0.5f, 0.0f, 1.0f, scaleW, 0.0f }
-    };
+    ScaleW = (float)width / texWidth;;
+    ScaleH = (float)height / texHeight;
 
     D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
     D3ddev->lpVtbl->CreateVertexBuffer(
-        D3ddev, sizeof(vertices), 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &D3dvb, NULL);
+        D3ddev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &D3dvb, NULL);
 
-    void *data;
-    if (D3dvb && SUCCEEDED(D3dvb->lpVtbl->Lock(D3dvb, 0, 0, (void**)&data, 0)))
-    {
-        memcpy(data, vertices, sizeof(vertices));
-        D3dvb->lpVtbl->Unlock(D3dvb);
-    }
+    UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
 
     D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX));
 
@@ -221,6 +229,20 @@ DWORD WINAPI render_d3d9_main(void)
 
         if (ddraw->primary && ddraw->primary->palette && ddraw->primary->palette->data_rgb)
         {
+            if (ddraw->vhack)
+            {
+                if (detect_cutscene())
+                {
+                    if (!InterlockedExchange(&ddraw->incutscene, TRUE))
+                        UpdateVertices(TRUE);
+                }
+                else
+                {
+                    if (InterlockedExchange(&ddraw->incutscene, FALSE))
+                        UpdateVertices(FALSE);
+                }
+            }
+
             D3DLOCKED_RECT lock_rc;
 
             if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
