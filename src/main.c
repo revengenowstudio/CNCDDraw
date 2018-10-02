@@ -1218,7 +1218,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     else if (tolower(tmp[0]) == 'a')
     {
         printf("DirectDrawCreate: Using automatic renderer\n");
-        This->autorenderer = TRUE;
 
         DWORD version = GetVersion();
         DWORD major = (DWORD)(LOBYTE(LOWORD(version)));

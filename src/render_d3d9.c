@@ -43,7 +43,7 @@ DWORD WINAPI render_d3d9_main(void)
         SetStates();
 
         Render();
-    }  
+    }
 
     ReleaseDirect3D();
 
