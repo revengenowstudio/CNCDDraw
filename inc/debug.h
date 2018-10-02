@@ -6,6 +6,11 @@
 void CounterStart();
 double CounterStop();
 void DebugPrint(const char *format, ...);
+void DrawFrameInfoStart();
+void DrawFrameInfoEnd();
+
+extern double DebugFrameTime;
+extern DWORD DebugFrameCount;
 
 //#define _DEBUG 1
 

@@ -40,7 +40,7 @@ static BOOL CreateDirect3D();
 static BOOL CreateResources();
 static void SetStates();
 static void UpdateVertices(BOOL inCutscene);
-static void Reset();
+static BOOL Reset();
 static void SetMaxFPS(int baseMaxFPS);
 static void Render();
 static void ReleaseDirect3D();
@@ -199,12 +199,15 @@ static void UpdateVertices(BOOL inCutscene)
     }
 }
 
-static void Reset()
+static BOOL Reset()
 {
     if (SUCCEEDED(D3ddev->lpVtbl->Reset(D3ddev, &D3dpp)))
     {
         SetStates();
+        return TRUE;
     }
+
+    return FALSE;
 }
 
 static void SetMaxFPS(int baseMaxFPS)
@@ -232,31 +235,7 @@ static void Render()
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
 #if _DEBUG
-        static DWORD tick_fps = 0;
-        static DWORD frame_count = 0;
-        static char debugText[512] = { 0 };
-        static double frameTime = 0;
-        RECT debugrc = { 0, 0, ddraw->width, ddraw->height };
-
-        if (ddraw->primary && ddraw->primary->palette)
-            DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);
-
-        tick_start = timeGetTime();
-        if (tick_start >= tick_fps)
-        {
-            snprintf(
-                debugText,
-                sizeof(debugText),
-                "FPS: %lu | Time: %2.2f ms  ",
-                frame_count,
-                frameTime);
-
-            frame_count = 0;
-            tick_fps = tick_start + 1000;
-
-            CounterStart();
-        }
-        frame_count++;
+        DrawFrameInfoStart();
 #endif
 
         if (MaxFPS > 0)
@@ -332,7 +311,7 @@ static void Render()
         }
 
 #if _DEBUG
-        if (frame_count == 1) frameTime = CounterStop();
+        DrawFrameInfoEnd();
 #endif
 
         if (MaxFPS > 0)

@@ -1,7 +1,11 @@
-#define WIN32_LEAN_AND_MEAN
+
 #include <windows.h>
 #include <stdio.h>
+#include "main.h"
+#include "surface.h"
 
+double DebugFrameTime = 0;
+DWORD DebugFrameCount = 0;
 
 static LONGLONG CounterStartTime = 0;
 static double CounterFreq = 0.0;
@@ -29,4 +33,39 @@ void DebugPrint(const char *format, ...)
 	char buffer[512];
 	_vsnprintf(buffer, sizeof(buffer), format, args);
 	OutputDebugStringA(buffer);
+}
+
+void DrawFrameInfoStart()
+{
+    static DWORD tick_fps = 0;
+    static char debugText[512] = { 0 };
+
+    RECT debugrc = { 0, 0, ddraw->width, ddraw->height };
+
+    if (ddraw->primary && ddraw->primary->palette)
+        DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);
+
+    DWORD tick_start = timeGetTime();
+    if (tick_start >= tick_fps)
+    {
+        snprintf(
+            debugText,
+            sizeof(debugText),
+            "FPS: %lu | Time: %2.2f ms  ",
+            DebugFrameCount,
+            DebugFrameTime);
+
+        DebugFrameCount = 0;
+        tick_fps = tick_start + 1000;
+
+        CounterStart();
+    }
+
+    DebugFrameCount++;
+}
+
+void DrawFrameInfoEnd()
+{
+    if (DebugFrameCount == 1) 
+        DebugFrameTime = CounterStop();
 }
