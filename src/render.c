@@ -171,9 +171,14 @@ static void BuildPrograms()
     if (OpenGL_GotVersion3)
     {
         PaletteProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
-        ScaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
+
+        if (PaletteProgram)
+            ScaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
+        else
+            OpenGL_GotVersion3 = FALSE;
     }
-    else if (OpenGL_GotVersion2)
+
+    if (OpenGL_GotVersion2 && !PaletteProgram)
     {
         PaletteProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PaletteFragShader110Src);
     }
