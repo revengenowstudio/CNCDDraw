@@ -63,19 +63,27 @@ static void UpdateVertices(BOOL inCutscene)
     }
 }
 
-static void InitDirect3D(BOOL reset)
+static void SetStates()
 {
-    if (reset)
-    {
-        D3dvb->lpVtbl->Release(D3dvb);
-        SurfaceTex->lpVtbl->Release(SurfaceTex);
-        PaletteTex->lpVtbl->Release(PaletteTex);
-        PixelShader->lpVtbl->Release(PixelShader);
+    D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
+    D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX));
+    D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex);
+    D3ddev->lpVtbl->SetTexture(D3ddev, 1, (IDirect3DBaseTexture9 *)PaletteTex);
+    D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader);
 
-        if (FAILED(D3ddev->lpVtbl->Reset(D3ddev, &D3dpp)))
-            return;
-    }
+    D3DVIEWPORT9 viewData = {
+        ddraw->render.viewport.x,
+        ddraw->render.viewport.y,
+        ddraw->render.viewport.width,
+        ddraw->render.viewport.height,
+        0.0f,
+        1.0f };
 
+    D3ddev->lpVtbl->SetViewport(D3ddev, &viewData);
+}
+
+static void CreateResources()
+{
     int width = ddraw->width;
     int height = ddraw->height;
 
@@ -90,32 +98,23 @@ static void InitDirect3D(BOOL reset)
     ScaleW = (float)width / texWidth;;
     ScaleH = (float)height / texHeight;
 
-    D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
     D3ddev->lpVtbl->CreateVertexBuffer(
         D3ddev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &D3dvb, NULL);
 
     UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
-
-    D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX));
-
     D3ddev->lpVtbl->CreateTexture(D3ddev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
-    D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex);
-
     D3ddev->lpVtbl->CreateTexture(D3ddev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0);
-    D3ddev->lpVtbl->SetTexture(D3ddev, 1, (IDirect3DBaseTexture9 *)PaletteTex);
-
     D3ddev->lpVtbl->CreatePixelShader(D3ddev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
-    D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader);
 
-    D3DVIEWPORT9 viewData = { 
-        ddraw->render.viewport.x,
-        ddraw->render.viewport.y,
-        ddraw->render.viewport.width,
-        ddraw->render.viewport.height,
-        0.0f, 
-        1.0f };
+    SetStates();
+}
 
-    D3ddev->lpVtbl->SetViewport(D3ddev, &viewData);
+static void Reset()
+{
+    if (SUCCEEDED(D3ddev->lpVtbl->Reset(D3ddev, &D3dpp)))
+    {
+        SetStates();
+    }
 }
 
 DWORD WINAPI render_d3d9_main(void)
@@ -166,6 +165,7 @@ DWORD WINAPI render_d3d9_main(void)
             
             DWORD behaviorFlags[] = {
                 D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
+                D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
                 D3DCREATE_HARDWARE_VERTEXPROCESSING,
                 D3DCREATE_MIXED_VERTEXPROCESSING,
                 D3DCREATE_SOFTWARE_VERTEXPROCESSING,
@@ -186,7 +186,7 @@ DWORD WINAPI render_d3d9_main(void)
             }
 
             if (D3ddev)
-                InitDirect3D(FALSE);
+                CreateResources();
         }
     }
 
@@ -283,7 +283,7 @@ DWORD WINAPI render_d3d9_main(void)
 
         if (hr == D3DERR_DEVICENOTRESET)
         {
-            InitDirect3D(TRUE);
+            Reset();
         }
         else if (SUCCEEDED(hr))
         {
