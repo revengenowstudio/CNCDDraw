@@ -508,11 +508,13 @@ void ToggleFullscreen()
         mouse_unlock();
         if(ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
         {
-            D3dpp.Windowed = ddraw->windowed = FALSE;
+            ddraw->windowed = FALSE;
             
             SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
             LastSetWindowPosTick = timeGetTime();
+
+            D3dpp.Windowed = FALSE;
             InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
         }
         mouse_lock();
@@ -520,6 +522,7 @@ void ToggleFullscreen()
     else
     {
         mouse_unlock();
+        D3dpp.Windowed = TRUE;
         if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
             if (!ddraw->border)
@@ -539,10 +542,13 @@ void ToggleFullscreen()
             SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             MoveWindow(ddraw->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
-            D3dpp.Windowed = ddraw->windowed = TRUE;
+            ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
             InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
         }
+        else
+            D3dpp.Windowed = FALSE;
+
         mouse_lock();
     }
 }
