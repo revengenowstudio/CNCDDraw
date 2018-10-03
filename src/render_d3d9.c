@@ -214,7 +214,7 @@ static void Render()
     DWORD tick_start = 0;
     DWORD tick_end = 0;
 
-    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
 #if _DEBUG
         DrawFrameInfoStart();
