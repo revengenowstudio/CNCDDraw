@@ -18,8 +18,8 @@
 #include <windowsx.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <d3d9.h>
 #include "ddraw.h"
-
 #include "main.h"
 #include "palette.h"
 #include "surface.h"
@@ -37,6 +37,9 @@ void mouse_unlock();
 #ifdef HAVE_LIBPNG
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 #endif
+
+extern HMODULE hD3D9;
+extern D3DPRESENT_PARAMETERS D3dpp;
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -237,6 +240,7 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     if(!ddraw->windowed)
     {
         ChangeDisplaySettings(&This->mode, 0);
+        InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
     }
 
     return DD_OK;
@@ -504,11 +508,12 @@ void ToggleFullscreen()
         mouse_unlock();
         if(ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
         {
-            ddraw->windowed = FALSE;
+            D3dpp.Windowed = ddraw->windowed = FALSE;
             
             SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
             LastSetWindowPosTick = timeGetTime();
+            InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
         }
         mouse_lock();
     }
@@ -534,8 +539,9 @@ void ToggleFullscreen()
             SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             MoveWindow(ddraw->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
-            ddraw->windowed = TRUE;
+            D3dpp.Windowed = ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
+            InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
         }
         mouse_lock();
     }
@@ -1224,28 +1230,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         DWORD version = GetVersion();
         DWORD major = (DWORD)(LOBYTE(LOWORD(version)));
         DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
-        BOOL useDirect3D = FALSE;
 
-        if (!This->wine && (major < 6 || (major == 6 && minor <= 1)))
-        {
-            BOOL dwmEnabled = TRUE;
-
-            HMODULE hDwmapi = LoadLibrary("Dwmapi.dll");
-            if (hDwmapi)
-            {
-                HRESULT(WINAPI *DwmIsCompositionEnabled)(BOOL*) =
-                    (HRESULT(WINAPI *)(BOOL*))GetProcAddress(hDwmapi, "DwmIsCompositionEnabled");
-
-                if (DwmIsCompositionEnabled)
-                    DwmIsCompositionEnabled(&dwmEnabled);
-
-                FreeLibrary(hDwmapi);
-            }
-
-            useDirect3D = !hDwmapi || !dwmEnabled;
-        }
-
-        if (useDirect3D && FreeLibrary(LoadLibrary("d3d9.dll")))
+        // Win 7 and below use Direct3D 9 - Win 8/10 and wine use OpenGL
+        if (!This->wine && (major < 6 || (major == 6 && minor <= 1)) && (hD3D9 = LoadLibrary("d3d9.dll")))
             This->renderer = render_d3d9_main;
         else
             This->renderer = render_main;

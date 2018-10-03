@@ -7,14 +7,14 @@
 
 typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
-static HMODULE hD3D9;
+HMODULE hD3D9;
+D3DPRESENT_PARAMETERS D3dpp;
 static LPDIRECT3D9 D3d;
 static LPDIRECT3DDEVICE9 D3ddev;
 static LPDIRECT3DVERTEXBUFFER9 D3dvb;
 static IDirect3DTexture9 *SurfaceTex;
 static IDirect3DTexture9 *PaletteTex;
 static IDirect3DPixelShader9 *PixelShader;
-static D3DPRESENT_PARAMETERS D3dpp;
 static float ScaleW;
 static float ScaleH;
 static int MaxFPS;
@@ -246,6 +246,7 @@ static void Render()
             if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
             {
                 RECT rc = { 0,0,ddraw->width,ddraw->height };
+
                 if (SUCCEEDED(SurfaceTex->lpVtbl->LockRect(SurfaceTex, 0, &lock_rc, &rc, 0)))
                 {
                     unsigned char *src = (unsigned char *)ddraw->primary->surface;
@@ -267,9 +268,11 @@ static void Render()
             if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
             {
                 RECT rc = { 0,0,256,1 };
+
                 if (SUCCEEDED(PaletteTex->lpVtbl->LockRect(PaletteTex, 0, &lock_rc, &rc, 0)))
                 {
                     memcpy(lock_rc.pBits, ddraw->primary->palette->data_rgb, 4 * 256);
+
                     PaletteTex->lpVtbl->UnlockRect(PaletteTex, 0);
                 }
             }
