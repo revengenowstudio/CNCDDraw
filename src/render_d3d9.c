@@ -27,7 +27,7 @@ static void UpdateVertices(BOOL inCutscene);
 static BOOL Reset();
 static void SetMaxFPS(int baseMaxFPS);
 static void Render();
-static void ReleaseDirect3D();
+static BOOL ReleaseDirect3D();
 
 BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
@@ -59,14 +59,12 @@ DWORD WINAPI render_d3d9_main(void)
 
 static BOOL CreateDirect3D()
 {
-    D3d = NULL;
-    D3ddev = NULL;
-    SurfaceTex = NULL;
-    PaletteTex = NULL;
-    D3dvb = NULL;
-    PixelShader = NULL;
+    if (!ReleaseDirect3D())
+        return FALSE;
 
-    hD3D9 = LoadLibrary("d3d9.dll");
+    if (!hD3D9)
+        hD3D9 = LoadLibrary("d3d9.dll");
+
     if (hD3D9)
     {
         IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
@@ -74,7 +72,7 @@ static BOOL CreateDirect3D()
 
         if (D3DCreate9 && (D3d = D3DCreate9(D3D_SDK_VERSION)))
         {
-            D3dpp.Windowed = TRUE;
+            D3dpp.Windowed = ddraw->windowed;
             D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             D3dpp.hDeviceWindow = ddraw->hWnd;
             D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
@@ -99,7 +97,7 @@ static BOOL CreateDirect3D()
                     D3DADAPTER_DEFAULT,
                     D3DDEVTYPE_HAL,
                     ddraw->hWnd,
-                    D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
+                    D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
                     &D3dpp,
                     &D3ddev)))
                     break;
@@ -281,7 +279,11 @@ static void Render()
 
         HRESULT hr = D3ddev->lpVtbl->TestCooperativeLevel(D3ddev);
 
-        if (hr == D3DERR_DEVICENOTRESET)
+        if (InterlockedExchange(&ddraw->resetDirect3D9, FALSE))
+        {
+            Reset();
+        }
+        else if (hr == D3DERR_DEVICENOTRESET && D3dpp.Windowed)
         {
             Reset();
         }
@@ -308,26 +310,47 @@ static void Render()
     }
 }
 
-static void ReleaseDirect3D()
+static BOOL ReleaseDirect3D()
 {
     if (D3dvb)
+    {
         D3dvb->lpVtbl->Release(D3dvb);
-
+        D3dvb = NULL;
+    }
+        
     if (SurfaceTex)
+    {
         SurfaceTex->lpVtbl->Release(SurfaceTex);
+        SurfaceTex = NULL;
+    }
 
     if (PaletteTex)
+    {
         PaletteTex->lpVtbl->Release(PaletteTex);
+        PaletteTex = NULL;
+    }
 
     if (PixelShader)
+    {
         PixelShader->lpVtbl->Release(PixelShader);
+        PixelShader = NULL;
+    }
 
     if (D3ddev)
-        D3ddev->lpVtbl->Release(D3ddev);
+    {
+        if (FAILED(D3ddev->lpVtbl->Release(D3ddev)))
+            return FALSE;
+
+        D3ddev = NULL;
+    }
 
     if (D3d)
-        D3d->lpVtbl->Release(D3d);
+    {
+        if (FAILED(D3d->lpVtbl->Release(D3d)))
+            return FALSE;
 
-    if (hD3D9)
-        FreeLibrary(hD3D9);
+        D3d = NULL;
+    }
+
+    return TRUE;
 }

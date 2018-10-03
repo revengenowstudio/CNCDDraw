@@ -98,6 +98,7 @@ typedef struct IDirectDrawImpl
     char shader[MAX_PATH];
     BOOL wine;
     int sleep;
+    BOOL resetDirect3D9;
     
 } IDirectDrawImpl;
 
