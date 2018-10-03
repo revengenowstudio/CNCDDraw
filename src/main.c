@@ -612,6 +612,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (!ddraw->windowed)
                 {
                     ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+
+                    D3dpp.Windowed = FALSE;
                     InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
 
                     if (wParam == WA_ACTIVE)
@@ -632,6 +634,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     ShowWindow(ddraw->hWnd, SW_MINIMIZE);
                     ChangeDisplaySettings(&ddraw->mode, 0);
+
+                    D3dpp.Windowed = TRUE;
                     InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
                 }
             }
