@@ -1,6 +1,6 @@
 // old
 
-static const char *PassthroughVertShader110Src =
+static const char PassthroughVertShader110Src[] =
     "#version 110\n"
     "varying vec2 TexCoord0; \n"
     "\n"
@@ -10,7 +10,7 @@ static const char *PassthroughVertShader110Src =
     "    TexCoord0 = gl_MultiTexCoord0.xy; \n"
     "}\n";
 
-static const char *PaletteFragShader110Src =
+static const char PaletteFragShader110Src[] =
     "#version 110\n"
     "uniform sampler2D SurfaceTex; \n"
     "uniform sampler2D PaletteTex; \n"
@@ -26,7 +26,7 @@ static const char *PaletteFragShader110Src =
 
 // new 
 
-static const char *PassthroughVertShaderSrc =
+static const char PassthroughVertShaderSrc[] =
     "#version 130\n"
     "in vec4 VertexCoord;\n"
     "in vec4 COLOR;\n"
@@ -43,7 +43,7 @@ static const char *PassthroughVertShaderSrc =
     "}\n";
 
 
-static const char *PaletteFragShaderSrc =
+static const char PaletteFragShaderSrc[] =
     "#version 130\n"
     "out vec4 FragColor;\n"
     "uniform sampler2D SurfaceTex;\n"
