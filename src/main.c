@@ -270,6 +270,18 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     {
         This->render.width = This->mode.dmPelsWidth;
         This->render.height = This->mode.dmPelsHeight;
+
+        if (This->windowed) //windowed-fullscreen aka borderless
+        {
+            This->border = FALSE;
+            WindowPosX = -1;
+            WindowPosY = -1;
+
+            // prevent OpenGL from going automatically into fullscreen exclusive mode
+            if (This->renderer == render_main)
+                This->render.height++;
+
+        }
     }
 
     if(This->render.width < This->width)
