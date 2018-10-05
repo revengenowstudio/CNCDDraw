@@ -1254,8 +1254,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
         LPDIRECT3D9 d3d = NULL;
 
-        // Win 7 and below use Direct3D 9 - Win 8/10 and wine use OpenGL
-        if (!This->wine && (major < 6 || (major == 6 && minor <= 1)) && (hD3D9 = LoadLibrary("d3d9.dll")))
+        // Win Vista/XP use Direct3D 9 - Win 7/8/10 and wine use OpenGL
+        if (!This->wine && (major < 6 || (major == 6 && minor == 0)) && (hD3D9 = LoadLibrary("d3d9.dll")))
         {
             IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
                 (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(hD3D9, "Direct3DCreate9");
