@@ -2,25 +2,24 @@
 
 static const char PassthroughVertShader110Src[] =
     "#version 110\n"
-    "varying vec2 TexCoord0; \n"
+    "varying vec2 TEX0; \n"
     "\n"
     "void main()\n"
     "{\n"
     "    gl_Position = ftransform(); \n"
-    "    TexCoord0 = gl_MultiTexCoord0.xy; \n"
+    "    TEX0 = gl_MultiTexCoord0.xy; \n"
     "}\n";
 
 static const char PaletteFragShader110Src[] =
     "#version 110\n"
     "uniform sampler2D SurfaceTex; \n"
     "uniform sampler2D PaletteTex; \n"
-    "varying vec2 TexCoord0; \n"
+    "varying vec2 TEX0; \n"
     "\n"
     "void main()\n"
     "{\n"
-    "   vec4 paletteIndex = texture2D(SurfaceTex, TexCoord0); \n"
-    "   vec4 outTexel = texture2D(PaletteTex, vec2(paletteIndex.r, 0)); \n"
-    "   gl_FragColor = outTexel;\n"
+    "   vec4 pIndex = texture2D(SurfaceTex, TEX0); \n"
+    "   gl_FragColor = texture2D(PaletteTex, vec2(pIndex.r * (255.0/256.0) + (0.5/256.0), 0)); \n"
     "}\n";
 
 
@@ -52,9 +51,8 @@ static const char PaletteFragShaderSrc[] =
     "\n"
     "void main()\n"
     "{\n"
-    "    vec4 paletteIndex = texture(SurfaceTex, TEX0.xy);\n"
-    "    vec4 outTexel = texture(PaletteTex, vec2(paletteIndex.r, 0));\n"
-    "    FragColor = outTexel;\n"
+    "    vec4 pIndex = texture(SurfaceTex, TEX0.xy);\n"
+    "    FragColor = texture(PaletteTex, vec2(pIndex.r * (255.0/256.0) + (0.5/256.0), 0));\n"
     "}\n";
 
 
