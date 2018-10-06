@@ -89,7 +89,10 @@
     <ClInclude Include="inc\opengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\paletteshader.h">
+    <ClInclude Include="inc\openglshader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\d3d9shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
 #include <d3d9.h>
 #include "main.h"
 #include "surface.h"
-#include "paletteshader.h"
+#include "d3d9shader.h"
 
 typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 

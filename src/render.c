@@ -20,7 +20,7 @@
 #include "opengl.h"
 #include "main.h"
 #include "surface.h"
-#include "paletteshader.h"
+#include "openglshader.h"
 
 #define TEXTURE_COUNT 4
 
