@@ -38,9 +38,8 @@ void mouse_unlock();
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 #endif
 
-extern HMODULE hD3D9;
-extern D3DPRESENT_PARAMETERS D3dpp;
-extern BOOL UseDirect3D9;
+extern BOOL D3D9_Enabled;
+extern HMODULE D3D9_hModule;
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -241,7 +240,7 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     if(!ddraw->windowed)
     {
         ChangeDisplaySettings(&This->mode, 0);
-        InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
+        InterlockedExchange(&ddraw->displayModeChanged, TRUE);
     }
 
     return DD_OK;
@@ -527,15 +526,14 @@ void ToggleFullscreen()
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
             LastSetWindowPosTick = timeGetTime();
 
-            D3dpp.Windowed = FALSE;
-            InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
+            InterlockedExchange(&ddraw->displayModeChanged, TRUE);
         }
         mouse_lock();
     }
     else
     {
         mouse_unlock();
-        D3dpp.Windowed = TRUE;
+        InterlockedExchange(&ddraw->displayModeChanged, TRUE);
         if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
             if (!ddraw->border)
@@ -557,11 +555,8 @@ void ToggleFullscreen()
 
             ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
-            InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
+            InterlockedExchange(&ddraw->displayModeChanged, TRUE);
         }
-        else
-            D3dpp.Windowed = FALSE;
-
         mouse_lock();
     }
 }
@@ -650,7 +645,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)
                 {
-                    if (!UseDirect3D9)
+                    if (!D3D9_Enabled)
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE); 
 
                     ChangeDisplaySettings(&ddraw->mode, 0);
@@ -1256,10 +1251,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         LPDIRECT3D9 d3d = NULL;
 
         // Win XP/Vista/7 use Direct3D 9 - Win 8/10 and wine use OpenGL
-        if (!This->wine && (major < 6 || (major == 6 && minor == 1)) && (hD3D9 = LoadLibrary("d3d9.dll")))
+        if (!This->wine && (major < 6 || (major == 6 && minor == 1)) && (D3D9_hModule = LoadLibrary("d3d9.dll")))
         {
             IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(hD3D9, "Direct3DCreate9");
+                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(D3D9_hModule, "Direct3DCreate9");
             
             if (D3DCreate9 && (d3d = D3DCreate9(D3D_SDK_VERSION)))
                 d3d->lpVtbl->Release(d3d);

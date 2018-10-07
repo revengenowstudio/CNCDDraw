@@ -7,10 +7,10 @@
 
 typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
-HMODULE hD3D9;
-D3DPRESENT_PARAMETERS D3dpp;
-BOOL UseDirect3D9;
+BOOL D3D9_Enabled;
+HMODULE D3D9_hModule;
 
+static D3DPRESENT_PARAMETERS D3dpp;
 static LPDIRECT3D9 D3d;
 static LPDIRECT3DDEVICE9 D3ddev;
 static LPDIRECT3DVERTEXBUFFER9 D3dvb;
@@ -38,8 +38,8 @@ DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
 
-    UseDirect3D9 = CreateDirect3D();
-    if (UseDirect3D9)
+    D3D9_Enabled = CreateDirect3D();
+    if (D3D9_Enabled)
     {
         SetMaxFPS();
 
@@ -48,7 +48,7 @@ DWORD WINAPI render_d3d9_main(void)
 
     ReleaseDirect3D();
 
-    if (!UseDirect3D9)
+    if (!D3D9_Enabled)
     {
         ShowDriverWarning = TRUE;
         ddraw->renderer = render_soft_main;
@@ -63,13 +63,13 @@ static BOOL CreateDirect3D()
     if (!ReleaseDirect3D())
         return FALSE;
 
-    if (!hD3D9)
-        hD3D9 = LoadLibrary("d3d9.dll");
+    if (!D3D9_hModule)
+        D3D9_hModule = LoadLibrary("d3d9.dll");
 
-    if (hD3D9)
+    if (D3D9_hModule)
     {
         IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(hD3D9, "Direct3DCreate9");
+            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(D3D9_hModule, "Direct3DCreate9");
 
         if (D3DCreate9 && (D3d = D3DCreate9(D3D_SDK_VERSION)))
         {
@@ -217,8 +217,8 @@ static void SetMaxFPS()
 
 static void Render()
 {
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
+    DWORD tickStart = 0;
+    DWORD tickEnd = 0;
     BOOL active = TRUE;
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
@@ -237,7 +237,7 @@ static void Render()
 #endif
 
         if (MaxFPS > 0)
-            tick_start = timeGetTime();
+            tickStart = timeGetTime();
 
         EnterCriticalSection(&ddraw->cs);
 
@@ -297,17 +297,17 @@ static void Render()
         LeaveCriticalSection(&ddraw->cs);
 
         HRESULT hr = D3ddev->lpVtbl->TestCooperativeLevel(D3ddev);
+        LONG modeChanged = InterlockedExchange(&ddraw->displayModeChanged, FALSE);
+        LONG minimized = InterlockedExchangeAdd(&ddraw->minimized, 0);
 
-        if (InterlockedExchangeAdd(&ddraw->minimized, 0))
+        if (minimized || modeChanged)
         {
             active = FALSE;
             ReleaseDirect3D();
             Sleep(200);
-            ShowWindow(ddraw->hWnd, SW_SHOWMINNOACTIVE);
-        }
-        else if (InterlockedExchange(&ddraw->resetDirect3D9, FALSE))
-        {
-            Reset();
+
+            if (minimized)
+                ShowWindow(ddraw->hWnd, SW_SHOWMINNOACTIVE);
         }
         else if (hr == D3DERR_DEVICENOTRESET && D3dpp.Windowed)
         {
@@ -328,10 +328,10 @@ static void Render()
 
         if (MaxFPS > 0)
         {
-            tick_end = timeGetTime();
+            tickEnd = timeGetTime();
 
-            if (tick_end - tick_start < FrameLength)
-                Sleep(FrameLength - (tick_end - tick_start));
+            if (tickEnd - tickStart < FrameLength)
+                Sleep(FrameLength - (tickEnd - tickStart));
         }
     }
 }
