@@ -9,6 +9,8 @@ typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
 HMODULE hD3D9;
 D3DPRESENT_PARAMETERS D3dpp;
+BOOL UseDirect3D9;
+
 static LPDIRECT3D9 D3d;
 static LPDIRECT3DDEVICE9 D3ddev;
 static LPDIRECT3DVERTEXBUFFER9 D3dvb;
@@ -22,10 +24,10 @@ static DWORD FrameLength;
 
 static BOOL CreateDirect3D();
 static BOOL CreateResources();
-static void SetStates();
+static BOOL SetStates();
 static void UpdateVertices(BOOL inCutscene);
 static BOOL Reset();
-static void SetMaxFPS(int baseMaxFPS);
+static void SetMaxFPS();
 static void Render();
 static BOOL ReleaseDirect3D();
 
@@ -36,18 +38,17 @@ DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
 
-    BOOL useDirect3D = CreateDirect3D() && CreateResources();
-    if (useDirect3D)
+    UseDirect3D9 = CreateDirect3D();
+    if (UseDirect3D9)
     {
-        SetMaxFPS(ddraw->render.maxfps);
-        SetStates();
+        SetMaxFPS();
 
         Render();
     }
 
     ReleaseDirect3D();
 
-    if (!useDirect3D)
+    if (!UseDirect3D9)
     {
         ShowDriverWarning = TRUE;
         ddraw->renderer = render_soft_main;
@@ -76,8 +77,8 @@ static BOOL CreateDirect3D()
             D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             D3dpp.hDeviceWindow = ddraw->hWnd;
             D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-            D3dpp.BackBufferWidth = ddraw->render.width;
-            D3dpp.BackBufferHeight = ddraw->render.height;
+            D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
+            D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
             D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
             D3dpp.BackBufferCount = 1;
 
@@ -105,7 +106,7 @@ static BOOL CreateDirect3D()
         }
     }
 
-    return D3d && D3ddev;
+    return D3d && D3ddev && CreateResources() && SetStates();
 }
 
 static BOOL CreateResources()
@@ -135,13 +136,15 @@ static BOOL CreateResources()
     return SurfaceTex && PaletteTex && D3dvb && PixelShader;
 }
 
-static void SetStates()
+static BOOL SetStates()
 {
-    D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1);
-    D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX));
-    D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex);
-    D3ddev->lpVtbl->SetTexture(D3ddev, 1, (IDirect3DBaseTexture9 *)PaletteTex);
-    D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader);
+    BOOL err = FALSE;
+
+    err = err || FAILED(D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1));
+    err = err || FAILED(D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX)));
+    err = err || FAILED(D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex));
+    err = err || FAILED(D3ddev->lpVtbl->SetTexture(D3ddev, 1, (IDirect3DBaseTexture9 *)PaletteTex));
+    err = err || FAILED(D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader));
 
     D3DVIEWPORT9 viewData = {
         ddraw->render.viewport.x,
@@ -151,7 +154,9 @@ static void SetStates()
         0.0f,
         1.0f };
 
-    D3ddev->lpVtbl->SetViewport(D3ddev, &viewData);
+    err = err || FAILED(D3ddev->lpVtbl->SetViewport(D3ddev, &viewData));
+
+    return !err;
 }
 
 static void UpdateVertices(BOOL inCutscene)
@@ -183,18 +188,19 @@ static void UpdateVertices(BOOL inCutscene)
 
 static BOOL Reset()
 {
+    D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
+    D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
+    D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+
     if (SUCCEEDED(D3ddev->lpVtbl->Reset(D3ddev, &D3dpp)))
-    {
-        SetStates();
-        return TRUE;
-    }
+        return SetStates();
 
     return FALSE;
 }
 
-static void SetMaxFPS(int baseMaxFPS)
+static void SetMaxFPS()
 {
-    MaxFPS = baseMaxFPS;
+    MaxFPS = ddraw->render.maxfps;
 
     if (MaxFPS < 0)
         MaxFPS = ddraw->mode.dmDisplayFrequency;
@@ -213,9 +219,19 @@ static void Render()
 {
     DWORD tick_start = 0;
     DWORD tick_end = 0;
+    BOOL active = TRUE;
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
+        if (!active)
+        {
+            if (!InterlockedExchangeAdd(&ddraw->minimized, 0) && CreateDirect3D())
+                active = TRUE;
+
+            Sleep(500);
+            continue;
+        }
+
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
@@ -282,7 +298,14 @@ static void Render()
 
         HRESULT hr = D3ddev->lpVtbl->TestCooperativeLevel(D3ddev);
 
-        if (InterlockedExchange(&ddraw->resetDirect3D9, FALSE))
+        if (InterlockedExchangeAdd(&ddraw->minimized, 0))
+        {
+            active = FALSE;
+            ReleaseDirect3D();
+            Sleep(200);
+            ShowWindow(ddraw->hWnd, SW_SHOWMINNOACTIVE);
+        }
+        else if (InterlockedExchange(&ddraw->resetDirect3D9, FALSE))
         {
             Reset();
         }

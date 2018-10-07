@@ -40,6 +40,7 @@ BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 
 extern HMODULE hD3D9;
 extern D3DPRESENT_PARAMETERS D3dpp;
+extern BOOL UseDirect3D9;
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -631,8 +632,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
 
-                    D3dpp.Windowed = FALSE;
-                    InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
+                    InterlockedExchange(&ddraw->minimized, FALSE);
 
                     if (wParam == WA_ACTIVE)
                     {
@@ -650,11 +650,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)
                 {
-                    ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+                    if (!UseDirect3D9)
+                        ShowWindow(ddraw->hWnd, SW_MINIMIZE); 
+
                     ChangeDisplaySettings(&ddraw->mode, 0);
 
-                    D3dpp.Windowed = TRUE;
-                    InterlockedExchange(&ddraw->resetDirect3D9, TRUE);
+                    InterlockedExchange(&ddraw->minimized, TRUE);
                 }
             }
             return 0;
@@ -1254,8 +1255,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
         LPDIRECT3D9 d3d = NULL;
 
-        // Win Vista/XP use Direct3D 9 - Win 7/8/10 and wine use OpenGL
-        if (!This->wine && (major < 6 || (major == 6 && minor == 0)) && (hD3D9 = LoadLibrary("d3d9.dll")))
+        // Win XP/Vista/7 use Direct3D 9 - Win 8/10 and wine use OpenGL
+        if (!This->wine && (major < 6 || (major == 6 && minor == 1)) && (hD3D9 = LoadLibrary("d3d9.dll")))
         {
             IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
                 (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(hD3D9, "Direct3DCreate9");

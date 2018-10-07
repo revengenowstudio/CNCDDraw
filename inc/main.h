@@ -99,6 +99,7 @@ typedef struct IDirectDrawImpl
     BOOL wine;
     int sleep;
     LONG resetDirect3D9;
+    LONG minimized;
     
 } IDirectDrawImpl;
 
