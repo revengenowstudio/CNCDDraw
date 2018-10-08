@@ -538,7 +538,7 @@ void ToggleFullscreen()
     {
         mouse_unlock();
         InterlockedExchange(&ddraw->displayModeChanged, TRUE);
-        if(ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
+        if(D3D9_Enabled || ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
             if (!ddraw->border)
             {
@@ -561,7 +561,6 @@ void ToggleFullscreen()
             ddraw->windowed_init = TRUE;
             InterlockedExchange(&ddraw->displayModeChanged, TRUE);
         }
-        mouse_lock();
     }
 }
 
