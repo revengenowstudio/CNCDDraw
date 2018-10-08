@@ -225,10 +225,11 @@ static void Render()
     {
         if (!active)
         {
+            Sleep(500);
+
             if (!InterlockedExchangeAdd(&ddraw->minimized, 0) && CreateDirect3D())
                 active = TRUE;
 
-            Sleep(500);
             continue;
         }
 
