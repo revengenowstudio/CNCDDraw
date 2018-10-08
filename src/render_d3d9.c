@@ -304,11 +304,11 @@ static void Render()
         {
             active = FALSE;
             BOOL released = ReleaseDirect3D();
-            Sleep(500);
+            Sleep(100);
 
             if (minimized)
             {
-                ShowWindow(ddraw->hWnd, SW_SHOWMINNOACTIVE);
+                ShowWindow(ddraw->hWnd, SW_MINIMIZE);
 
                 if (!released)
                     ChangeDisplaySettings(&ddraw->mode, 0);
