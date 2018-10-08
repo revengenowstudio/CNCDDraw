@@ -12,8 +12,8 @@ HMODULE D3D9_hModule;
 
 static D3DPRESENT_PARAMETERS D3dpp;
 static LPDIRECT3D9 D3d;
-static LPDIRECT3DDEVICE9 D3ddev;
-static LPDIRECT3DVERTEXBUFFER9 D3dvb;
+static LPDIRECT3DDEVICE9 D3dDev;
+static LPDIRECT3DVERTEXBUFFER9 VertexBuf;
 static IDirect3DTexture9 *SurfaceTex;
 static IDirect3DTexture9 *PaletteTex;
 static IDirect3DPixelShader9 *PixelShader;
@@ -100,13 +100,13 @@ static BOOL CreateDirect3D()
                     ddraw->hWnd,
                     D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
                     &D3dpp,
-                    &D3ddev)))
+                    &D3dDev)))
                     break;
             }
         }
     }
 
-    return D3d && D3ddev && CreateResources() && SetStates();
+    return D3d && D3dDev && CreateResources() && SetStates();
 }
 
 static BOOL CreateResources()
@@ -125,26 +125,26 @@ static BOOL CreateResources()
     ScaleW = (float)width / texWidth;;
     ScaleH = (float)height / texHeight;
 
-    D3ddev->lpVtbl->CreateVertexBuffer(
-        D3ddev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &D3dvb, NULL);
+    D3dDev->lpVtbl->CreateVertexBuffer(
+        D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL);
 
     UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
-    D3ddev->lpVtbl->CreateTexture(D3ddev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
-    D3ddev->lpVtbl->CreateTexture(D3ddev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0);
-    D3ddev->lpVtbl->CreatePixelShader(D3ddev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
+    D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
+    D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0);
+    D3dDev->lpVtbl->CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
 
-    return SurfaceTex && PaletteTex && D3dvb && PixelShader;
+    return SurfaceTex && PaletteTex && VertexBuf && PixelShader;
 }
 
 static BOOL SetStates()
 {
     BOOL err = FALSE;
 
-    err = err || FAILED(D3ddev->lpVtbl->SetFVF(D3ddev, D3DFVF_XYZRHW | D3DFVF_TEX1));
-    err = err || FAILED(D3ddev->lpVtbl->SetStreamSource(D3ddev, 0, D3dvb, 0, sizeof(CUSTOMVERTEX)));
-    err = err || FAILED(D3ddev->lpVtbl->SetTexture(D3ddev, 0, (IDirect3DBaseTexture9 *)SurfaceTex));
-    err = err || FAILED(D3ddev->lpVtbl->SetTexture(D3ddev, 1, (IDirect3DBaseTexture9 *)PaletteTex));
-    err = err || FAILED(D3ddev->lpVtbl->SetPixelShader(D3ddev, PixelShader));
+    err = err || FAILED(D3dDev->lpVtbl->SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
+    err = err || FAILED(D3dDev->lpVtbl->SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
+    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex));
+    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex));
+    err = err || FAILED(D3dDev->lpVtbl->SetPixelShader(D3dDev, PixelShader));
 
     D3DVIEWPORT9 viewData = {
         ddraw->render.viewport.x,
@@ -154,7 +154,7 @@ static BOOL SetStates()
         0.0f,
         1.0f };
 
-    err = err || FAILED(D3ddev->lpVtbl->SetViewport(D3ddev, &viewData));
+    err = err || FAILED(D3dDev->lpVtbl->SetViewport(D3dDev, &viewData));
 
     return !err;
 }
@@ -179,10 +179,10 @@ static void UpdateVertices(BOOL inCutscene)
     };
 
     void *data;
-    if (D3dvb && SUCCEEDED(D3dvb->lpVtbl->Lock(D3dvb, 0, 0, (void**)&data, 0)))
+    if (VertexBuf && SUCCEEDED(VertexBuf->lpVtbl->Lock(VertexBuf, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
-        D3dvb->lpVtbl->Unlock(D3dvb);
+        VertexBuf->lpVtbl->Unlock(VertexBuf);
     }
 }
 
@@ -192,7 +192,7 @@ static BOOL Reset()
     D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
     D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
 
-    if (SUCCEEDED(D3ddev->lpVtbl->Reset(D3ddev, &D3dpp)))
+    if (SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
         return SetStates();
 
     return FALSE;
@@ -296,18 +296,23 @@ static void Render()
 
         LeaveCriticalSection(&ddraw->cs);
 
-        HRESULT hr = D3ddev->lpVtbl->TestCooperativeLevel(D3ddev);
+        HRESULT hr = D3dDev->lpVtbl->TestCooperativeLevel(D3dDev);
         LONG modeChanged = InterlockedExchange(&ddraw->displayModeChanged, FALSE);
         LONG minimized = InterlockedExchangeAdd(&ddraw->minimized, 0);
 
         if (minimized || modeChanged)
         {
             active = FALSE;
-            ReleaseDirect3D();
-            Sleep(200);
+            BOOL released = ReleaseDirect3D();
+            Sleep(500);
 
             if (minimized)
+            {
                 ShowWindow(ddraw->hWnd, SW_SHOWMINNOACTIVE);
+
+                if (!released)
+                    ChangeDisplaySettings(&ddraw->mode, 0);
+            }
         }
         else if (hr == D3DERR_DEVICENOTRESET && D3dpp.Windowed)
         {
@@ -315,11 +320,11 @@ static void Render()
         }
         else if (SUCCEEDED(hr))
         {
-            D3ddev->lpVtbl->BeginScene(D3ddev);
-            D3ddev->lpVtbl->DrawPrimitive(D3ddev, D3DPT_TRIANGLESTRIP, 0, 2);
-            D3ddev->lpVtbl->EndScene(D3ddev);
+            D3dDev->lpVtbl->BeginScene(D3dDev);
+            D3dDev->lpVtbl->DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
+            D3dDev->lpVtbl->EndScene(D3dDev);
 
-            D3ddev->lpVtbl->Present(D3ddev, NULL, NULL, NULL, NULL);
+            D3dDev->lpVtbl->Present(D3dDev, NULL, NULL, NULL, NULL);
         }
 
 #if _DEBUG
@@ -338,10 +343,10 @@ static void Render()
 
 static BOOL ReleaseDirect3D()
 {
-    if (D3dvb)
+    if (VertexBuf)
     {
-        D3dvb->lpVtbl->Release(D3dvb);
-        D3dvb = NULL;
+        VertexBuf->lpVtbl->Release(VertexBuf);
+        VertexBuf = NULL;
     }
         
     if (SurfaceTex)
@@ -362,12 +367,12 @@ static BOOL ReleaseDirect3D()
         PixelShader = NULL;
     }
 
-    if (D3ddev)
+    if (D3dDev)
     {
-        if (FAILED(D3ddev->lpVtbl->Release(D3ddev)))
+        if (FAILED(D3dDev->lpVtbl->Release(D3dDev)))
             return FALSE;
 
-        D3ddev = NULL;
+        D3dDev = NULL;
     }
 
     if (D3d)

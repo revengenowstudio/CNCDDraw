@@ -239,8 +239,10 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     
     if(!ddraw->windowed)
     {
-        ChangeDisplaySettings(&This->mode, 0);
-        InterlockedExchange(&ddraw->displayModeChanged, TRUE);
+        if (!D3D9_Enabled)
+            ChangeDisplaySettings(&This->mode, 0);
+
+        InterlockedExchange(&ddraw->minimized, TRUE);
     }
 
     return DD_OK;
@@ -468,6 +470,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     {
         RedrawWindow(This->hWnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
+
+    InterlockedExchange(&ddraw->minimized, FALSE);
     
     if(This->render.thread == NULL)
     {
@@ -625,14 +629,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (!ddraw->windowed)
                 {
-                    ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+                    if (!D3D9_Enabled)
+                    {
+                        ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+
+                        if (wParam == WA_ACTIVE)
+                        {
+                            mouse_lock();
+                        }
+                    }
 
                     InterlockedExchange(&ddraw->minimized, FALSE);
-
-                    if (wParam == WA_ACTIVE)
-                    {
-                        mouse_lock();
-                    }
                 }
             }
             else if (wParam == WA_INACTIVE)
@@ -646,9 +653,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 if (!ddraw->windowed)
                 {
                     if (!D3D9_Enabled)
-                        ShowWindow(ddraw->hWnd, SW_MINIMIZE); 
-
-                    ChangeDisplaySettings(&ddraw->mode, 0);
+                    {
+                        ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+                        ChangeDisplaySettings(&ddraw->mode, 0);
+                    }
 
                     InterlockedExchange(&ddraw->minimized, TRUE);
                 }
