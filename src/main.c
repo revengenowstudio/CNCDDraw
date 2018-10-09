@@ -579,7 +579,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     GetForegroundWindow() == ddraw->hWnd)
                     mouse_lock();
             }
-            break;
+            return 0;
         }
         case WM_WINDOWPOSCHANGED:
         {
