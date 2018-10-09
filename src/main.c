@@ -570,6 +570,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
+        case WM_D3D9FULLSCREEN:
+        {
+            if (!ddraw->windowed)
+            {
+                if (GetSystemMetrics(SM_CYSCREEN) == ddraw->render.mode.dmPelsHeight &&
+                    GetSystemMetrics(SM_CXSCREEN) == ddraw->render.mode.dmPelsWidth &&
+                    GetForegroundWindow() == ddraw->hWnd)
+                    mouse_lock();
+            }
+            break;
+        }
         case WM_WINDOWPOSCHANGED:
         {
             WINDOWPOS *pos = (WINDOWPOS *)lParam;

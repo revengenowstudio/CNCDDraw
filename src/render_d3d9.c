@@ -242,7 +242,10 @@ static void Render()
             Sleep(500);
 
             if (!InterlockedExchangeAdd(&ddraw->minimized, 0) && CreateDirect3D())
+            {
                 active = TRUE;
+                PostMessage(ddraw->hWnd, WM_D3D9FULLSCREEN, 0, 0);
+            }
 
             continue;
         }
