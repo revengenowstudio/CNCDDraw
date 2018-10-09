@@ -25,7 +25,7 @@ static DWORD FrameLength;
 static BOOL CreateDirect3D();
 static BOOL CreateResources();
 static BOOL SetStates();
-static void UpdateVertices(BOOL inCutscene);
+static BOOL UpdateVertices(BOOL inCutscene);
 static BOOL Reset();
 static void SetMaxFPS();
 static void Render();
@@ -93,24 +93,27 @@ static BOOL CreateDirect3D()
             int i;
             for (i = 0; i < sizeof(behaviorFlags) / sizeof(behaviorFlags[0]); i++)
             {
-                if (SUCCEEDED(D3d->lpVtbl->CreateDevice(
-                    D3d,
-                    D3DADAPTER_DEFAULT,
-                    D3DDEVTYPE_HAL,
-                    ddraw->hWnd,
-                    D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
-                    &D3dpp,
-                    &D3dDev)))
-                    break;
+                if (SUCCEEDED(
+                    D3d->lpVtbl->CreateDevice(
+                        D3d,
+                        D3DADAPTER_DEFAULT,
+                        D3DDEVTYPE_HAL,
+                        ddraw->hWnd,
+                        D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
+                        &D3dpp,
+                        &D3dDev)))
+                    return D3dDev && CreateResources() && SetStates();
             }
         }
     }
 
-    return D3d && D3dDev && CreateResources() && SetStates();
+    return FALSE;
 }
 
 static BOOL CreateResources()
 {
+    BOOL err = FALSE;
+
     int width = ddraw->width;
     int height = ddraw->height;
 
@@ -125,15 +128,22 @@ static BOOL CreateResources()
     ScaleW = (float)width / texWidth;;
     ScaleH = (float)height / texHeight;
 
-    D3dDev->lpVtbl->CreateVertexBuffer(
-        D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL);
+    err = err || FAILED(
+        D3dDev->lpVtbl->CreateVertexBuffer(
+            D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL));
 
-    UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
-    D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0);
-    D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0);
-    D3dDev->lpVtbl->CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader);
+    err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
 
-    return SurfaceTex && PaletteTex && VertexBuf && PixelShader;
+    err = err || FAILED(
+        D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0));
+
+    err = err || FAILED(
+        D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0));
+
+    err = err || FAILED(
+        D3dDev->lpVtbl->CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
+
+    return SurfaceTex && PaletteTex && VertexBuf && PixelShader && !err;
 }
 
 static BOOL SetStates()
@@ -159,7 +169,7 @@ static BOOL SetStates()
     return !err;
 }
 
-static void UpdateVertices(BOOL inCutscene)
+static BOOL UpdateVertices(BOOL inCutscene)
 {
     float vpX = (float)ddraw->render.viewport.x;
     float vpY = (float)ddraw->render.viewport.y;
@@ -182,8 +192,12 @@ static void UpdateVertices(BOOL inCutscene)
     if (VertexBuf && SUCCEEDED(VertexBuf->lpVtbl->Lock(VertexBuf, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
+
         VertexBuf->lpVtbl->Unlock(VertexBuf);
+        return TRUE;
     }
+
+    return FALSE;
 }
 
 static BOOL Reset()
