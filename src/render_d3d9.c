@@ -21,6 +21,7 @@ static float ScaleW;
 static float ScaleH;
 static int MaxFPS;
 static DWORD FrameLength;
+static int BitsPerPixel;
 
 static BOOL CreateDirect3D();
 static BOOL CreateResources();
@@ -73,13 +74,15 @@ static BOOL CreateDirect3D()
 
         if (D3DCreate9 && (D3d = D3DCreate9(D3D_SDK_VERSION)))
         {
+            BitsPerPixel = ddraw->render.bpp ? ddraw->render.bpp : ddraw->mode.dmBitsPerPel;
+
             D3dpp.Windowed = ddraw->windowed;
             D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
             D3dpp.hDeviceWindow = ddraw->hWnd;
             D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
             D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
             D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
-            D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+            D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
             D3dpp.BackBufferCount = 1;
 
             DWORD behaviorFlags[] = {
@@ -204,7 +207,7 @@ static BOOL Reset()
 {
     D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
     D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
-    D3dpp.BackBufferFormat = D3DFMT_X8R8G8B8;
+    D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
 
     if (SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
         return SetStates();
