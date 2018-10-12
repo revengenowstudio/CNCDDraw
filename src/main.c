@@ -1263,13 +1263,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         printf("DirectDrawCreate: Using automatic renderer\n");
 
-        DWORD version = GetVersion();
-        DWORD major = (DWORD)(LOBYTE(LOWORD(version)));
-        DWORD minor = (DWORD)(HIBYTE(LOWORD(version)));
         LPDIRECT3D9 d3d = NULL;
 
-        // Win XP/Vista/7 use Direct3D 9 - Win 8/10 and wine use OpenGL
-        if (!This->wine && (major < 6 || (major == 6 && minor == 1)) && (D3D9_hModule = LoadLibrary("d3d9.dll")))
+        // Windows = Direct3D 9, Wine = OpenGL
+        if (!This->wine && (D3D9_hModule = LoadLibrary("d3d9.dll")))
         {
             IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
                 (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(D3D9_hModule, "Direct3DCreate9");
