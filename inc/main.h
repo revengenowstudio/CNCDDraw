@@ -26,7 +26,7 @@
 
 #define WM_AUTORENDERER WM_USER+111
 #define WM_WINEFULLSCREEN WM_USER+112
-#define WM_D3D9FULLSCREEN WM_USER+113
+#define WM_D3D9DEVICELOST WM_USER+113
 
 extern BOOL ShowDriverWarning;
 
@@ -99,7 +99,6 @@ typedef struct IDirectDrawImpl
     char shader[MAX_PATH];
     BOOL wine;
     int sleep;
-    LONG displayModeChanged;
     LONG minimized;
     
 } IDirectDrawImpl;

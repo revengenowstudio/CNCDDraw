@@ -7,7 +7,6 @@
 
 typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
-BOOL D3D9_Enabled;
 HMODULE D3D9_hModule;
 
 static D3DPRESENT_PARAMETERS D3dpp;
@@ -23,14 +22,16 @@ static int MaxFPS;
 static DWORD FrameLength;
 static int BitsPerPixel;
 
-static BOOL CreateDirect3D();
 static BOOL CreateResources();
 static BOOL SetStates();
 static BOOL UpdateVertices(BOOL inCutscene);
-static BOOL Reset();
 static void SetMaxFPS();
 static void Render();
-static BOOL ReleaseDirect3D();
+
+BOOL CreateDirect3D9();
+BOOL ResetDirect3D9();
+BOOL ReleaseDirect3D9();
+BOOL DeviceLostDirect3D9();
 
 BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
@@ -39,29 +40,15 @@ DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
 
-    D3D9_Enabled = CreateDirect3D();
-    if (D3D9_Enabled)
-    {
-        SetMaxFPS();
-
-        Render();
-    }
-
-    ReleaseDirect3D();
-
-    if (!D3D9_Enabled)
-    {
-        ShowDriverWarning = TRUE;
-        ddraw->renderer = render_soft_main;
-        render_soft_main();
-    }
+    SetMaxFPS();
+    Render();
 
     return 0;
 }
 
-static BOOL CreateDirect3D()
+BOOL CreateDirect3D9()
 {
-    if (!ReleaseDirect3D())
+    if (!ReleaseDirect3D9())
         return FALSE;
 
     if (!D3D9_hModule)
@@ -102,7 +89,7 @@ static BOOL CreateDirect3D()
                         D3DADAPTER_DEFAULT,
                         D3DDEVTYPE_HAL,
                         ddraw->hWnd,
-                        D3DCREATE_MULTITHREADED | D3DCREATE_NOWINDOWCHANGES | behaviorFlags[i],
+                        D3DCREATE_MULTITHREADED | behaviorFlags[i], //D3DCREATE_NOWINDOWCHANGES |
                         &D3dpp,
                         &D3dDev)))
                     return D3dDev && CreateResources() && SetStates();
@@ -203,8 +190,17 @@ static BOOL UpdateVertices(BOOL inCutscene)
     return FALSE;
 }
 
-static BOOL Reset()
+BOOL DeviceLostDirect3D9()
 {
+    if (D3dDev && D3dDev->lpVtbl->TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
+        return ResetDirect3D9();
+
+    return FALSE;
+}
+
+BOOL ResetDirect3D9()
+{
+    D3dpp.Windowed = ddraw->windowed;
     D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
     D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
     D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
@@ -236,25 +232,12 @@ static void Render()
 {
     DWORD tickStart = 0;
     DWORD tickEnd = 0;
-    BOOL active = TRUE;
-    BOOL released = TRUE;
-    LONG minimized = TRUE;
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
-        if (!active)
+        if (InterlockedExchangeAdd(&ddraw->minimized, 0))
         {
             Sleep(500);
-
-            if (!released && (released = ReleaseDirect3D()) && minimized)
-                ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-
-            if (!InterlockedExchangeAdd(&ddraw->minimized, 0) && CreateDirect3D())
-            {
-                active = TRUE;
-                PostMessage(ddraw->hWnd, WM_D3D9FULLSCREEN, 0, 0);
-            }
-
             continue;
         }
 
@@ -322,29 +305,14 @@ static void Render()
 
         LeaveCriticalSection(&ddraw->cs);
 
-        HRESULT hr = D3dDev->lpVtbl->TestCooperativeLevel(D3dDev);
-        LONG modeChanged = InterlockedExchange(&ddraw->displayModeChanged, FALSE);
-        minimized = InterlockedExchangeAdd(&ddraw->minimized, 0);
+        D3dDev->lpVtbl->BeginScene(D3dDev);
+        D3dDev->lpVtbl->DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
+        D3dDev->lpVtbl->EndScene(D3dDev);
 
-        if (minimized || modeChanged)
+        if (D3dDev->lpVtbl->Present(D3dDev, NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST)
         {
-            active = FALSE;
-            released = ReleaseDirect3D();
-
-            if (released && minimized)
-                ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-        }
-        else if (hr == D3DERR_DEVICENOTRESET && D3dpp.Windowed)
-        {
-            Reset();
-        }
-        else if (SUCCEEDED(hr))
-        {
-            D3dDev->lpVtbl->BeginScene(D3dDev);
-            D3dDev->lpVtbl->DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
-            D3dDev->lpVtbl->EndScene(D3dDev);
-
-            D3dDev->lpVtbl->Present(D3dDev, NULL, NULL, NULL, NULL);
+            DWORD_PTR dwResult;
+            SendMessageTimeout(ddraw->hWnd, WM_D3D9DEVICELOST, 0, 0, 0, 1000, &dwResult);
         }
 
 #if _DEBUG
@@ -361,7 +329,7 @@ static void Render()
     }
 }
 
-static BOOL ReleaseDirect3D()
+BOOL ReleaseDirect3D9()
 {
     if (VertexBuf)
     {

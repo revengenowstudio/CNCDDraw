@@ -38,8 +38,12 @@ void mouse_unlock();
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 #endif
 
-extern BOOL D3D9_Enabled;
 extern HMODULE D3D9_hModule;
+
+BOOL CreateDirect3D9();
+BOOL ResetDirect3D9();
+BOOL ReleaseDirect3D9();
+BOOL DeviceLostDirect3D9();
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -51,6 +55,7 @@ DWORD WINAPI render_d3d9_main(void);
 int WindowPosX;
 int WindowPosY;
 char SettingsIniPath[MAX_PATH];
+BOOL Direct3D9Active;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
 BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
@@ -226,7 +231,7 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     }
 
     /* only stop drawing in GL mode when minimized */
-    if (This->renderer == render_main)
+    if (This->renderer != render_soft_main)
     {
         EnterCriticalSection(&This->cs);
         This->render.run = FALSE;
@@ -235,17 +240,29 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
 
         WaitForSingleObject(This->render.thread, INFINITE);
         This->render.thread = NULL;
+
+        if (This->renderer == render_d3d9_main)
+            ReleaseDirect3D9();
     }
     
     if(!ddraw->windowed)
     {
-        if (!D3D9_Enabled)
+        if (!Direct3D9Active)
             ChangeDisplaySettings(&This->mode, 0);
-
-        InterlockedExchange(&ddraw->minimized, TRUE);
     }
 
     return DD_OK;
+}
+
+void InitDirect3D9()
+{
+    Direct3D9Active = CreateDirect3D9();
+    if (!Direct3D9Active)
+    {
+        ReleaseDirect3D9();
+        ShowDriverWarning = TRUE;
+        ddraw->renderer = render_soft_main;
+    }
 }
 
 HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp)
@@ -448,14 +465,23 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
             This->windowed_init = TRUE;
+
+            if (This->renderer == render_d3d9_main)
+                InitDirect3D9();
         }
     }
     else
     {
-        if(!This->devmode && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+        if (This->renderer == render_d3d9_main)
+            InitDirect3D9();
+
+        if(!This->devmode)
         {
-            This->render.run = FALSE;
-            return DDERR_INVALIDMODE;
+            if (!Direct3D9Active && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+            {
+                This->render.run = FALSE;
+                return DDERR_INVALIDMODE;
+            }
         }
 
         if (ddraw->wine)
@@ -522,7 +548,7 @@ void ToggleFullscreen()
     if (ddraw->windowed)
     {
         mouse_unlock();
-        if(ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN) == DISP_CHANGE_SUCCESSFUL)
+        if(ChangeDisplaySettings(&ddraw->render.mode, CDS_TEST) == DISP_CHANGE_SUCCESSFUL)
         {
             ddraw->windowed = FALSE;
             
@@ -530,15 +556,17 @@ void ToggleFullscreen()
             SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
             LastSetWindowPosTick = timeGetTime();
 
-            InterlockedExchange(&ddraw->displayModeChanged, TRUE);
+            if (Direct3D9Active)
+                ResetDirect3D9();
+            else
+                ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
         }
         mouse_lock();
     }
     else
     {
         mouse_unlock();
-        InterlockedExchange(&ddraw->displayModeChanged, TRUE);
-        if(D3D9_Enabled || ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
+        if(Direct3D9Active || ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
             if (!ddraw->border)
             {
@@ -559,8 +587,11 @@ void ToggleFullscreen()
 
             ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
-            InterlockedExchange(&ddraw->displayModeChanged, TRUE);
+
+            if (Direct3D9Active)
+                ResetDirect3D9();
         }
+        mouse_lock();
     }
 }
 
@@ -570,13 +601,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
-        case WM_D3D9FULLSCREEN:
+        case WM_D3D9DEVICELOST:
         {
-            if (!ddraw->windowed)
+            if (Direct3D9Active && DeviceLostDirect3D9())
             {
-                if (GetSystemMetrics(SM_CYSCREEN) == ddraw->render.mode.dmPelsHeight &&
-                    GetSystemMetrics(SM_CXSCREEN) == ddraw->render.mode.dmPelsWidth &&
-                    GetForegroundWindow() == ddraw->hWnd)
+                if (!ddraw->windowed)
                     mouse_lock();
             }
             return 0;
@@ -639,7 +668,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 if (!ddraw->windowed)
                 {
-                    if (!D3D9_Enabled)
+                    if (!Direct3D9Active)
                     {
                         ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
 
@@ -662,7 +691,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 /* minimize our window on defocus when in fullscreen */
                 if (!ddraw->windowed)
                 {
-                    if (!D3D9_Enabled)
+                    if (!Direct3D9Active)
                     {
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
                         ChangeDisplaySettings(&ddraw->mode, 0);
@@ -944,6 +973,9 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
 
             WaitForSingleObject(This->render.thread, INFINITE);
             This->render.thread = NULL;
+
+            if (This->renderer == render_d3d9_main)
+                ReleaseDirect3D9();
         }
 
         if(This->render.hDC)
