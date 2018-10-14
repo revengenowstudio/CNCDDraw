@@ -237,12 +237,17 @@ static void Render()
     DWORD tickStart = 0;
     DWORD tickEnd = 0;
     BOOL active = TRUE;
+    BOOL released = TRUE;
+    LONG minimized = TRUE;
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
         if (!active)
         {
             Sleep(500);
+
+            if (!released && (released = ReleaseDirect3D()) && minimized)
+                ShowWindow(ddraw->hWnd, SW_MINIMIZE);
 
             if (!InterlockedExchangeAdd(&ddraw->minimized, 0) && CreateDirect3D())
             {
@@ -319,21 +324,15 @@ static void Render()
 
         HRESULT hr = D3dDev->lpVtbl->TestCooperativeLevel(D3dDev);
         LONG modeChanged = InterlockedExchange(&ddraw->displayModeChanged, FALSE);
-        LONG minimized = InterlockedExchangeAdd(&ddraw->minimized, 0);
+        minimized = InterlockedExchangeAdd(&ddraw->minimized, 0);
 
         if (minimized || modeChanged)
         {
             active = FALSE;
-            BOOL released = ReleaseDirect3D();
-            Sleep(100);
+            released = ReleaseDirect3D();
 
-            if (minimized)
-            {
+            if (released && minimized)
                 ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-
-                if (!released)
-                    ChangeDisplaySettings(&ddraw->mode, 0);
-            }
         }
         else if (hr == D3DERR_DEVICENOTRESET && D3dpp.Windowed)
         {
