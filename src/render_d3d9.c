@@ -4,10 +4,10 @@
 #include "main.h"
 #include "surface.h"
 #include "d3d9shader.h"
+#include "d3d9renderer.h"
 
-typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
-HMODULE D3D9_hModule;
+HMODULE Direct3D9_hModule;
 
 static D3DPRESENT_PARAMETERS D3dpp;
 static LPDIRECT3D9 D3d;
@@ -28,14 +28,6 @@ static BOOL UpdateVertices(BOOL inCutscene);
 static void SetMaxFPS();
 static void Render();
 
-BOOL CreateDirect3D9();
-BOOL ResetDirect3D9();
-BOOL ReleaseDirect3D9();
-BOOL DeviceLostDirect3D9();
-
-BOOL detect_cutscene();
-DWORD WINAPI render_soft_main(void);
-
 DWORD WINAPI render_d3d9_main(void)
 {
     Sleep(500);
@@ -46,18 +38,18 @@ DWORD WINAPI render_d3d9_main(void)
     return 0;
 }
 
-BOOL CreateDirect3D9()
+BOOL Direct3D9_Create()
 {
-    if (!ReleaseDirect3D9())
+    if (!Direct3D9_Release())
         return FALSE;
 
-    if (!D3D9_hModule)
-        D3D9_hModule = LoadLibrary("d3d9.dll");
+    if (!Direct3D9_hModule)
+        Direct3D9_hModule = LoadLibrary("d3d9.dll");
 
-    if (D3D9_hModule)
+    if (Direct3D9_hModule)
     {
         IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(D3D9_hModule, "Direct3DCreate9");
+            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
 
         if (D3DCreate9 && (D3d = D3DCreate9(D3D_SDK_VERSION)))
         {
@@ -98,6 +90,72 @@ BOOL CreateDirect3D9()
     }
 
     return FALSE;
+}
+
+BOOL Direct3D9_DeviceLost()
+{
+    if (D3dDev && D3dDev->lpVtbl->TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
+        return Direct3D9_Reset();
+
+    return FALSE;
+}
+
+BOOL Direct3D9_Reset()
+{
+    D3dpp.Windowed = ddraw->windowed;
+    D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
+    D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
+    D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+
+    if (SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
+        return SetStates();
+
+    return FALSE;
+}
+
+BOOL Direct3D9_Release()
+{
+    if (VertexBuf)
+    {
+        VertexBuf->lpVtbl->Release(VertexBuf);
+        VertexBuf = NULL;
+    }
+
+    if (SurfaceTex)
+    {
+        SurfaceTex->lpVtbl->Release(SurfaceTex);
+        SurfaceTex = NULL;
+    }
+
+    if (PaletteTex)
+    {
+        PaletteTex->lpVtbl->Release(PaletteTex);
+        PaletteTex = NULL;
+    }
+
+    if (PixelShader)
+    {
+        PixelShader->lpVtbl->Release(PixelShader);
+        PixelShader = NULL;
+    }
+
+    if (D3dDev)
+    {
+        if (FAILED(D3dDev->lpVtbl->Release(D3dDev)))
+            return FALSE;
+
+        D3dDev = NULL;
+    }
+
+    if (D3d)
+    {
+        if (FAILED(D3d->lpVtbl->Release(D3d)))
+            return FALSE;
+
+        D3d = NULL;
+    }
+
+    return TRUE;
 }
 
 static BOOL CreateResources()
@@ -186,27 +244,6 @@ static BOOL UpdateVertices(BOOL inCutscene)
         VertexBuf->lpVtbl->Unlock(VertexBuf);
         return TRUE;
     }
-
-    return FALSE;
-}
-
-BOOL DeviceLostDirect3D9()
-{
-    if (D3dDev && D3dDev->lpVtbl->TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
-        return ResetDirect3D9();
-
-    return FALSE;
-}
-
-BOOL ResetDirect3D9()
-{
-    D3dpp.Windowed = ddraw->windowed;
-    D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
-    D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
-    D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
-
-    if (SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
-        return SetStates();
 
     return FALSE;
 }
@@ -327,49 +364,4 @@ static void Render()
                 Sleep(FrameLength - (tickEnd - tickStart));
         }
     }
-}
-
-BOOL ReleaseDirect3D9()
-{
-    if (VertexBuf)
-    {
-        VertexBuf->lpVtbl->Release(VertexBuf);
-        VertexBuf = NULL;
-    }
-        
-    if (SurfaceTex)
-    {
-        SurfaceTex->lpVtbl->Release(SurfaceTex);
-        SurfaceTex = NULL;
-    }
-
-    if (PaletteTex)
-    {
-        PaletteTex->lpVtbl->Release(PaletteTex);
-        PaletteTex = NULL;
-    }
-
-    if (PixelShader)
-    {
-        PixelShader->lpVtbl->Release(PixelShader);
-        PixelShader = NULL;
-    }
-
-    if (D3dDev)
-    {
-        if (FAILED(D3dDev->lpVtbl->Release(D3dDev)))
-            return FALSE;
-
-        D3dDev = NULL;
-    }
-
-    if (D3d)
-    {
-        if (FAILED(D3d->lpVtbl->Release(D3d)))
-            return FALSE;
-
-        D3d = NULL;
-    }
-
-    return TRUE;
 }

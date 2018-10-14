@@ -26,6 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\clipper.h" />
+    <ClInclude Include="inc\d3d9renderer.h" />
     <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\debug.h" />
     <ClInclude Include="inc\glext.h" />

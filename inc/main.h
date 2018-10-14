@@ -30,6 +30,9 @@
 
 extern BOOL ShowDriverWarning;
 
+BOOL detect_cutscene();
+DWORD WINAPI render_soft_main(void);
+
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
 struct IDirectDrawSurfaceImpl;

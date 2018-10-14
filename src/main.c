@@ -24,6 +24,7 @@
 #include "palette.h"
 #include "surface.h"
 #include "clipper.h"
+#include "d3d9renderer.h"
 
 #define IDR_MYMENU 93
 
@@ -38,19 +39,11 @@ void mouse_unlock();
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 #endif
 
-extern HMODULE D3D9_hModule;
-
-BOOL CreateDirect3D9();
-BOOL ResetDirect3D9();
-BOOL ReleaseDirect3D9();
-BOOL DeviceLostDirect3D9();
-
 IDirectDrawImpl *ddraw = NULL;
 
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 DWORD WINAPI render_dummy_main(void);
-DWORD WINAPI render_d3d9_main(void);
 
 int WindowPosX;
 int WindowPosY;
@@ -242,7 +235,7 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
         This->render.thread = NULL;
 
         if (This->renderer == render_d3d9_main)
-            ReleaseDirect3D9();
+            Direct3D9_Release();
     }
     
     if(!ddraw->windowed)
@@ -256,10 +249,10 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
 
 void InitDirect3D9()
 {
-    Direct3D9Active = CreateDirect3D9();
+    Direct3D9Active = Direct3D9_Create();
     if (!Direct3D9Active)
     {
-        ReleaseDirect3D9();
+        Direct3D9_Release();
         ShowDriverWarning = TRUE;
         ddraw->renderer = render_soft_main;
     }
@@ -557,7 +550,7 @@ void ToggleFullscreen()
             LastSetWindowPosTick = timeGetTime();
 
             if (Direct3D9Active)
-                ResetDirect3D9();
+                Direct3D9_Reset();
             else
                 ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
         }
@@ -589,7 +582,7 @@ void ToggleFullscreen()
             ddraw->windowed_init = TRUE;
 
             if (Direct3D9Active)
-                ResetDirect3D9();
+                Direct3D9_Reset();
         }
         mouse_lock();
     }
@@ -603,7 +596,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_D3D9DEVICELOST:
         {
-            if (Direct3D9Active && DeviceLostDirect3D9())
+            if (Direct3D9Active && Direct3D9_DeviceLost())
             {
                 if (!ddraw->windowed)
                     mouse_lock();
@@ -975,7 +968,7 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             This->render.thread = NULL;
 
             if (This->renderer == render_d3d9_main)
-                ReleaseDirect3D9();
+                Direct3D9_Release();
         }
 
         if(This->render.hDC)
@@ -1298,10 +1291,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         LPDIRECT3D9 d3d = NULL;
 
         // Windows = Direct3D 9, Wine = OpenGL
-        if (!This->wine && (D3D9_hModule = LoadLibrary("d3d9.dll")))
+        if (!This->wine && (Direct3D9_hModule = LoadLibrary("d3d9.dll")))
         {
             IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(D3D9_hModule, "Direct3DCreate9");
+                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
             
             if (D3DCreate9 && (d3d = D3DCreate9(D3D_SDK_VERSION)))
                 d3d->lpVtbl->Release(d3d);
