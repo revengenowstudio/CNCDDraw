@@ -24,7 +24,7 @@
 #include "palette.h"
 #include "surface.h"
 #include "clipper.h"
-#include "d3d9renderer.h"
+#include "render_d3d9.h"
 
 #define IDR_MYMENU 93
 

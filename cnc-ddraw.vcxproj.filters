@@ -95,7 +95,7 @@
     <ClInclude Include="inc\d3d9shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\d3d9renderer.h">
+    <ClInclude Include="inc\render_d3d9.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

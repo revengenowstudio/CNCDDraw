@@ -4,7 +4,7 @@
 #include "main.h"
 #include "surface.h"
 #include "d3d9shader.h"
-#include "d3d9renderer.h"
+#include "render_d3d9.h"
 
 
 HMODULE Direct3D9_hModule;
@@ -107,7 +107,7 @@ BOOL Direct3D9_Reset()
     D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
     D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
 
-    if (SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
+    if (D3dDev && SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
         return SetStates();
 
     return FALSE;
