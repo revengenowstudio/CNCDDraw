@@ -26,17 +26,6 @@ static BOOL CreateResources();
 static BOOL SetStates();
 static BOOL UpdateVertices(BOOL inCutscene);
 static void SetMaxFPS();
-static void Render();
-
-DWORD WINAPI render_d3d9_main(void)
-{
-    Sleep(500);
-
-    SetMaxFPS();
-    Render();
-
-    return 0;
-}
 
 BOOL Direct3D9_Create()
 {
@@ -265,8 +254,12 @@ static void SetMaxFPS()
         FrameLength = 1000.0f / MaxFPS;
 }
 
-static void Render()
+DWORD WINAPI render_d3d9_main(void)
 {
+    Sleep(500);
+
+    SetMaxFPS();
+
     DWORD tickStart = 0;
     DWORD tickEnd = 0;
 
@@ -364,4 +357,5 @@ static void Render()
                 Sleep(FrameLength - (tickEnd - tickStart));
         }
     }
+    return 0;
 }

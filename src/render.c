@@ -517,7 +517,8 @@ static void Render()
         ddraw->render.viewport.x, ddraw->render.viewport.y,
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
-    glUseProgram(PaletteProgram);
+    if (PaletteProgram)
+        glUseProgram(PaletteProgram);
 
     while (UseOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
@@ -798,12 +799,9 @@ static BOOL TextureUploadTest()
             GL_UNSIGNED_BYTE,
             SurfaceTex);
 
-        glFinish();
-
         memset(SurfaceTex, 0, sizeof(testData));
 
         glGetTexImage(GL_TEXTURE_2D, 0, SurfaceFormat, GL_UNSIGNED_BYTE, SurfaceTex);
-        glFinish();
 
         if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
             return FALSE;
@@ -824,12 +822,9 @@ static BOOL TextureUploadTest()
             GL_UNSIGNED_BYTE,
             SurfaceTex);
 
-        glFinish();
-
         memset(SurfaceTex, 0, sizeof(testData));
 
         glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
-        glFinish();
 
         if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
             return FALSE;
@@ -909,12 +904,8 @@ static BOOL ShaderTest()
             glBindTexture(GL_TEXTURE_2D, 0);
             glActiveTexture(GL_TEXTURE0);
 
-            glFinish();
-
             glBindTexture(GL_TEXTURE_2D, fboTexId);
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
-
-            glFinish();
 
             int i;
             for (i = 0; i < SurfaceTexHeight * SurfaceTexWidth; i++)
