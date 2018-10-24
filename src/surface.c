@@ -560,6 +560,12 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
         Surface->bmi->bmiHeader.biBitCount = Surface->bpp;
         Surface->bmi->bmiHeader.biCompression = BI_RGB;
 
+        WORD cClrBits = (WORD)(Surface->bmi->bmiHeader.biPlanes * Surface->bmi->bmiHeader.biBitCount);
+        if (cClrBits < 24)
+            Surface->bmi->bmiHeader.biClrUsed = (1 << cClrBits);
+
+        Surface->bmi->bmiHeader.biSizeImage = ((Surface->width * cClrBits + 31) & ~31) / 8 * Surface->height;
+
         int i;
         for (i = 0; i < 256; i++)
         {

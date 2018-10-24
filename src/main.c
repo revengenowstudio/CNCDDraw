@@ -36,9 +36,7 @@ void mouse_lock();
 void mouse_unlock();
 
 /* from screenshot.c */
-#ifdef HAVE_LIBPNG
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
-#endif
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -761,7 +759,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
             }
-#ifdef HAVE_LIBPNG
+
             if(wParam == VK_CONTROL || wParam == ddraw->screenshotKey)
             {
                 if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(ddraw->screenshotKey) & 0x8000)
@@ -770,16 +768,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
             }
-#endif
             break;
 
-#ifdef HAVE_LIBPNG
         case WM_KEYUP:
             if (wParam == VK_SNAPSHOT)
                 screenshot(ddraw->primary);
 
             break;
-#endif
             
 
         /* button up messages reactivate cursor lock */
