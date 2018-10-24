@@ -2,28 +2,28 @@
 #include <stdio.h>
 #include "opengl.h"
 
-PFNWGLCREATECONTEXT xwglCreateContext;
-PFNWGLDELETECONTEXT xwglDeleteContext;
-PFNWGLGETPROCADDRESS xwglGetProcAddress;
-PFNWGLMAKECURRENT xwglMakeCurrent;
+PFNWGLCREATECONTEXTPROC xwglCreateContext;
+PFNWGLDELETECONTEXTPROC xwglDeleteContext;
+PFNWGLGETPROCADDRESSPROC xwglGetProcAddress;
+PFNWGLMAKECURRENTPROC xwglMakeCurrent;
 
-PFNGLVIEWPORT glViewport;
-PFNGLBINDTEXTURE glBindTexture;
-PFNGLGENTEXTURES glGenTextures;
-PFNGLTEXPARAMETERI glTexParameteri;
-PFNGLDELETETEXTURES glDeleteTextures;
-PFNGLTEXIMAGE2D glTexImage2D;
-PFNGLDRAWELEMENTS glDrawElements;
-PFNGLTEXSUBIMAGE2D glTexSubImage2D;
-PFNGLGETERROR glGetError;
-PFNGLGETSTRING glGetString;
-PFNGLGETTEXIMAGE glGetTexImage;
-PFNGLPIXELSTOREI glPixelStorei;
+PFNGLVIEWPORTPROC glViewport;
+PFNGLBINDTEXTUREPROC glBindTexture;
+PFNGLGENTEXTURESPROC glGenTextures;
+PFNGLTEXPARAMETERIPROC glTexParameteri;
+PFNGLDELETETEXTURESPROC glDeleteTextures;
+PFNGLTEXIMAGE2DPROC glTexImage2D;
+PFNGLDRAWELEMENTSPROC glDrawElements;
+PFNGLTEXSUBIMAGE2DPROC glTexSubImage2D;
+PFNGLGETERRORPROC glGetError;
+PFNGLGETSTRINGPROC glGetString;
+PFNGLGETTEXIMAGEPROC glGetTexImage;
+PFNGLPIXELSTOREIPROC glPixelStorei;
 
-PFNGLBEGIN glBegin;
-PFNGLEND glEnd;
-PFNGLTEXCOORD2F glTexCoord2f;
-PFNGLVERTEX2F glVertex2f;
+PFNGLBEGINPROC glBegin;
+PFNGLENDPROC glEnd;
+PFNGLTEXCOORD2FPROC glTexCoord2f;
+PFNGLVERTEX2FPROC glVertex2f;
 
 // Program
 PFNGLCREATEPROGRAMPROC glCreateProgram;
@@ -85,7 +85,7 @@ PFNGLDRAWBUFFERSPROC glDrawBuffers;
 PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 
-PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
+PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
 PFNGLTEXBUFFERPROC glTexBuffer;
@@ -104,28 +104,28 @@ BOOL OpenGL_LoadDll()
 
     if (OpenGL_hModule)
     {
-        xwglCreateContext = (PFNWGLCREATECONTEXT)GetProcAddress(OpenGL_hModule, "wglCreateContext");
-        xwglDeleteContext = (PFNWGLDELETECONTEXT)GetProcAddress(OpenGL_hModule, "wglDeleteContext");
-        xwglGetProcAddress = (PFNWGLGETPROCADDRESS)GetProcAddress(OpenGL_hModule, "wglGetProcAddress");
-        xwglMakeCurrent = (PFNWGLMAKECURRENT)GetProcAddress(OpenGL_hModule, "wglMakeCurrent");
+        xwglCreateContext = (PFNWGLCREATECONTEXTPROC)GetProcAddress(OpenGL_hModule, "wglCreateContext");
+        xwglDeleteContext = (PFNWGLDELETECONTEXTPROC)GetProcAddress(OpenGL_hModule, "wglDeleteContext");
+        xwglGetProcAddress = (PFNWGLGETPROCADDRESSPROC)GetProcAddress(OpenGL_hModule, "wglGetProcAddress");
+        xwglMakeCurrent = (PFNWGLMAKECURRENTPROC)GetProcAddress(OpenGL_hModule, "wglMakeCurrent");
 
-        glViewport = (PFNGLVIEWPORT)GetProcAddress(OpenGL_hModule, "glViewport");
-        glBindTexture = (PFNGLBINDTEXTURE)GetProcAddress(OpenGL_hModule, "glBindTexture");
-        glGenTextures = (PFNGLGENTEXTURES)GetProcAddress(OpenGL_hModule, "glGenTextures");
-        glTexParameteri = (PFNGLTEXPARAMETERI)GetProcAddress(OpenGL_hModule, "glTexParameteri");
-        glDeleteTextures = (PFNGLDELETETEXTURES)GetProcAddress(OpenGL_hModule, "glDeleteTextures");
-        glTexImage2D = (PFNGLTEXIMAGE2D)GetProcAddress(OpenGL_hModule, "glTexImage2D");
-        glDrawElements = (PFNGLDRAWELEMENTS)GetProcAddress(OpenGL_hModule, "glDrawElements");
-        glTexSubImage2D = (PFNGLTEXSUBIMAGE2D)GetProcAddress(OpenGL_hModule, "glTexSubImage2D");
-        glGetError = (PFNGLGETERROR)GetProcAddress(OpenGL_hModule, "glGetError");
-        glGetString = (PFNGLGETSTRING)GetProcAddress(OpenGL_hModule, "glGetString");
-        glGetTexImage = (PFNGLGETTEXIMAGE)GetProcAddress(OpenGL_hModule, "glGetTexImage");
-        glPixelStorei = (PFNGLPIXELSTOREI)GetProcAddress(OpenGL_hModule, "glPixelStorei");
+        glViewport = (PFNGLVIEWPORTPROC)GetProcAddress(OpenGL_hModule, "glViewport");
+        glBindTexture = (PFNGLBINDTEXTUREPROC)GetProcAddress(OpenGL_hModule, "glBindTexture");
+        glGenTextures = (PFNGLGENTEXTURESPROC)GetProcAddress(OpenGL_hModule, "glGenTextures");
+        glTexParameteri = (PFNGLTEXPARAMETERIPROC)GetProcAddress(OpenGL_hModule, "glTexParameteri");
+        glDeleteTextures = (PFNGLDELETETEXTURESPROC)GetProcAddress(OpenGL_hModule, "glDeleteTextures");
+        glTexImage2D = (PFNGLTEXIMAGE2DPROC)GetProcAddress(OpenGL_hModule, "glTexImage2D");
+        glDrawElements = (PFNGLDRAWELEMENTSPROC)GetProcAddress(OpenGL_hModule, "glDrawElements");
+        glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)GetProcAddress(OpenGL_hModule, "glTexSubImage2D");
+        glGetError = (PFNGLGETERRORPROC)GetProcAddress(OpenGL_hModule, "glGetError");
+        glGetString = (PFNGLGETSTRINGPROC)GetProcAddress(OpenGL_hModule, "glGetString");
+        glGetTexImage = (PFNGLGETTEXIMAGEPROC)GetProcAddress(OpenGL_hModule, "glGetTexImage");
+        glPixelStorei = (PFNGLPIXELSTOREIPROC)GetProcAddress(OpenGL_hModule, "glPixelStorei");
 
-        glBegin = (PFNGLBEGIN)GetProcAddress(OpenGL_hModule, "glBegin");
-        glEnd = (PFNGLEND)GetProcAddress(OpenGL_hModule, "glEnd");
-        glTexCoord2f = (PFNGLTEXCOORD2F)GetProcAddress(OpenGL_hModule, "glTexCoord2f");
-        glVertex2f = (PFNGLVERTEX2F)GetProcAddress(OpenGL_hModule, "glVertex2f");
+        glBegin = (PFNGLBEGINPROC)GetProcAddress(OpenGL_hModule, "glBegin");
+        glEnd = (PFNGLENDPROC)GetProcAddress(OpenGL_hModule, "glEnd");
+        glTexCoord2f = (PFNGLTEXCOORD2FPROC)GetProcAddress(OpenGL_hModule, "glTexCoord2f");
+        glVertex2f = (PFNGLVERTEX2FPROC)GetProcAddress(OpenGL_hModule, "glVertex2f");
     }
 
     return xwglCreateContext && xwglDeleteContext && xwglGetProcAddress && xwglMakeCurrent && glViewport &&
@@ -194,7 +194,7 @@ void OpenGL_Init()
     glCheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC)xwglGetProcAddress("glCheckFramebufferStatus");
     glDeleteFramebuffers = (PFNGLDELETEFRAMEBUFFERSPROC)xwglGetProcAddress("glDeleteFramebuffers");
 
-    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXT)xwglGetProcAddress("wglSwapIntervalEXT");
+    wglSwapIntervalEXT = (PFNWGLSWAPINTERVALEXTPROC)xwglGetProcAddress("wglSwapIntervalEXT");
     wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)xwglGetProcAddress("wglGetExtensionsStringARB");
 
     glTexBuffer = (PFNGLTEXBUFFERPROC)xwglGetProcAddress("glTexBuffer");

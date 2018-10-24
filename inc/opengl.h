@@ -1,54 +1,34 @@
 #pragma once
 #include "glcorearb.h"
 
-typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXT)(HDC);
-typedef BOOL (APIENTRYP PFNWGLDELETECONTEXT)(HGLRC);
-typedef PROC (APIENTRYP PFNWGLGETPROCADDRESS)(LPCSTR);
-typedef BOOL (APIENTRYP PFNWGLMAKECURRENT)(HDC, HGLRC);
+// wgl
+typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXTPROC)(HDC);
+typedef BOOL (APIENTRYP PFNWGLDELETECONTEXTPROC)(HGLRC);
+typedef PROC (APIENTRYP PFNWGLGETPROCADDRESSPROC)(LPCSTR);
+typedef BOOL (APIENTRYP PFNWGLMAKECURRENTPROC)(HDC, HGLRC);
+typedef void (APIENTRYP PFNWGLSWAPINTERVALEXTPROC) (int interval);
+typedef const char* (APIENTRYP PFNWGLGETEXTENSIONSSTRINGARBPROC)(HDC hdc);
 
-extern PFNWGLCREATECONTEXT xwglCreateContext;
-extern PFNWGLDELETECONTEXT xwglDeleteContext;
-extern PFNWGLGETPROCADDRESS xwglGetProcAddress;
-extern PFNWGLMAKECURRENT xwglMakeCurrent;
+extern PFNWGLCREATECONTEXTPROC xwglCreateContext;
+extern PFNWGLDELETECONTEXTPROC xwglDeleteContext;
+extern PFNWGLGETPROCADDRESSPROC xwglGetProcAddress;
+extern PFNWGLMAKECURRENTPROC xwglMakeCurrent;
+extern PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
+extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
-typedef void (APIENTRYP PFNGLVIEWPORT)(GLint x, GLint y, GLsizei width, GLsizei height);
-typedef void (APIENTRYP PFNGLBINDTEXTURE)(GLenum target, GLuint texture);
-typedef void (APIENTRYP PFNGLGENTEXTURES)(GLsizei n, GLuint *textures);
-typedef void (APIENTRYP PFNGLTEXPARAMETERI)(GLenum target, GLenum pname, GLint param);
-typedef void (APIENTRYP PFNGLDELETETEXTURES)(GLsizei n, const GLuint *textures);
-typedef void (APIENTRYP PFNGLTEXIMAGE2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
-typedef void (APIENTRYP PFNGLDRAWELEMENTS)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
-typedef void (APIENTRYP PFNGLTEXSUBIMAGE2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
-typedef GLenum (APIENTRYP PFNGLGETERROR)(void);
-typedef const GLubyte * (APIENTRYP PFNGLGETSTRING)(GLenum name);
-typedef void (APIENTRYP PFNGLGETTEXIMAGE)(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
-typedef void (APIENTRYP PFNGLPIXELSTOREI)(GLenum pname, GLint param);
-
-extern PFNGLVIEWPORT glViewport;
-extern PFNGLBINDTEXTURE glBindTexture;
-extern PFNGLGENTEXTURES glGenTextures;
-extern PFNGLTEXPARAMETERI glTexParameteri;
-extern PFNGLDELETETEXTURES glDeleteTextures;
-extern PFNGLTEXIMAGE2D glTexImage2D;
-extern PFNGLDRAWELEMENTS glDrawElements;
-extern PFNGLTEXSUBIMAGE2D glTexSubImage2D;
-extern PFNGLGETERROR glGetError;
-extern PFNGLGETSTRING glGetString;
-extern PFNGLGETTEXIMAGE glGetTexImage;
-extern PFNGLPIXELSTOREI glPixelStorei;
 
 //compat profile only --->
 #define GL_LUMINANCE                      0x1909
 #define GL_LUMINANCE8                     0x8040
-typedef void (APIENTRYP PFNGLBEGIN)(GLenum mode);
-typedef void (APIENTRYP PFNGLEND)(void);
-typedef void (APIENTRYP PFNGLTEXCOORD2F)(GLfloat s, GLfloat t);
-typedef void (APIENTRYP PFNGLVERTEX2F)(GLfloat x, GLfloat y);
+typedef void (APIENTRYP PFNGLBEGINPROC)(GLenum mode);
+typedef void (APIENTRYP PFNGLENDPROC)(void);
+typedef void (APIENTRYP PFNGLTEXCOORD2FPROC)(GLfloat s, GLfloat t);
+typedef void (APIENTRYP PFNGLVERTEX2FPROC)(GLfloat x, GLfloat y);
 
-extern PFNGLBEGIN glBegin;
-extern PFNGLEND glEnd;
-extern PFNGLTEXCOORD2F glTexCoord2f;
-extern PFNGLVERTEX2F glVertex2f;
+extern PFNGLBEGINPROC glBegin;
+extern PFNGLENDPROC glEnd;
+extern PFNGLTEXCOORD2FPROC glTexCoord2f;
+extern PFNGLVERTEX2FPROC glVertex2f;
 // <--- compat profile only
 
 
@@ -58,8 +38,18 @@ BOOL OpenGL_ExtExists(char *ext, HDC hdc);
 GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
 GLuint OpenGL_BuildProgramFromFile(const char *filePath);
 
-typedef void (APIENTRYP PFNWGLSWAPINTERVALEXT) (int interval);
-typedef const char* (WINAPI *PFNWGLGETEXTENSIONSSTRINGARBPROC)(HDC hdc);
+extern PFNGLVIEWPORTPROC glViewport;
+extern PFNGLBINDTEXTUREPROC glBindTexture;
+extern PFNGLGENTEXTURESPROC glGenTextures;
+extern PFNGLTEXPARAMETERIPROC glTexParameteri;
+extern PFNGLDELETETEXTURESPROC glDeleteTextures;
+extern PFNGLTEXIMAGE2DPROC glTexImage2D;
+extern PFNGLDRAWELEMENTSPROC glDrawElements;
+extern PFNGLTEXSUBIMAGE2DPROC glTexSubImage2D;
+extern PFNGLGETERRORPROC glGetError;
+extern PFNGLGETSTRINGPROC glGetString;
+extern PFNGLGETTEXIMAGEPROC glGetTexImage;
+extern PFNGLPIXELSTOREIPROC glPixelStorei;
 
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
 extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
@@ -119,9 +109,6 @@ extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
 extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
-
-extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
-extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
 extern PFNGLTEXBUFFERPROC glTexBuffer;
 
