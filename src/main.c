@@ -21,6 +21,7 @@
 #include <d3d9.h>
 #include "ddraw.h"
 #include "main.h"
+#include "opengl.h"
 #include "palette.h"
 #include "surface.h"
 #include "clipper.h"
@@ -983,11 +984,6 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             ddraw->render.ev = NULL;
         }
 
-        if(This->real_dll)
-        {
-            FreeLibrary(This->real_dll);
-        }
-
         DeleteCriticalSection(&This->cs);
 
         /* restore old wndproc, subsequent ddraw creation will otherwise fail */
@@ -1068,14 +1064,17 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
 
     ddraw = This;
 
-    This->real_dll = LoadLibrary("system32\\ddraw.dll");
+    if (!This->real_dll)
+        This->real_dll = LoadLibrary("system32\\ddraw.dll");
+
     if(!This->real_dll)
     {
         ddraw_Release(This);
         return DDERR_GENERIC;
     }
 
-    This->DirectDrawCreate = (HRESULT (WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
+    This->DirectDrawCreate = 
+        (HRESULT (WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
 
     if(!This->DirectDrawCreate)
     {
@@ -1301,9 +1300,18 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         }
 
         if (d3d)
+        {
             This->renderer = render_d3d9_main;
-        else
+        }
+        else if (OpenGL_LoadDll())
+        {
             This->renderer = render_main;
+        }
+        else
+        {
+            ShowDriverWarning = TRUE;
+            This->renderer = render_soft_main;
+        }
         
     }
     else if (tolower(tmp[0]) == 'd')
@@ -1314,7 +1322,15 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     else
     {
         printf("DirectDrawCreate: Using OpenGL renderer\n");
-        This->renderer = render_main;
+        if (OpenGL_LoadDll())
+        {
+            This->renderer = render_main;
+        }
+        else
+        {
+            ShowDriverWarning = TRUE;
+            This->renderer = render_soft_main;
+        }
     }
 
     // to do: read .glslp config file instead of the shader and apply the correct settings

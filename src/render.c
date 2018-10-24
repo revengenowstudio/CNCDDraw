@@ -26,7 +26,6 @@
 
 static HGLRC OpenGLContext;
 static int MaxFPS;
-static BOOL VSyncEnabled;
 static DWORD FrameLength;
 static GLuint PaletteProgram;
 static GLuint ScaleProgram;
@@ -100,15 +99,15 @@ DWORD WINAPI render_main(void)
 
 static HGLRC CreateContext(HDC hdc)
 {
-    HGLRC context = wglCreateContext(hdc);
-    BOOL madeCurrent = context && wglMakeCurrent(hdc, context);
+    HGLRC context = xwglCreateContext(hdc);
+    BOOL madeCurrent = context && xwglMakeCurrent(hdc, context);
 
     if (!madeCurrent || glGetError() != GL_NO_ERROR)
     {
         if (madeCurrent)
         {
-            wglMakeCurrent(NULL, NULL);
-            wglDeleteContext(context);
+            xwglMakeCurrent(NULL, NULL);
+            xwglDeleteContext(context);
         }
 
         context = 0;
@@ -120,7 +119,6 @@ static HGLRC CreateContext(HDC hdc)
 static void SetMaxFPS(int baseMaxFPS)
 {
     MaxFPS = baseMaxFPS;
-    VSyncEnabled = FALSE;
 
     if (OpenGL_ExtExists("WGL_EXT_swap_control_tear", ddraw->render.hDC))
     {
@@ -130,7 +128,6 @@ static void SetMaxFPS(int baseMaxFPS)
             {
                 wglSwapIntervalEXT(-1);
                 MaxFPS = 1000;
-                VSyncEnabled = TRUE;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -144,7 +141,6 @@ static void SetMaxFPS(int baseMaxFPS)
             {
                 wglSwapIntervalEXT(1);
                 MaxFPS = 1000;
-                VSyncEnabled = TRUE;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -602,10 +598,9 @@ static void Render()
             }
 
             static int errorCheckCount = 0;
-            if (errorCheckCount < 3)
+            if (errorCheckCount < 20)
             {
                 errorCheckCount++;
-                glFinish();
 
                 if (glGetError() != GL_NO_ERROR)
                     UseOpenGL = FALSE;
@@ -712,9 +707,6 @@ static void Render()
 
         SwapBuffers(ddraw->render.hDC);
 
-        if (VSyncEnabled)
-            glFinish();
-
 #if _DEBUG
         DrawFrameInfoEnd();
 #endif
@@ -773,8 +765,8 @@ static void DeleteContext(HGLRC context)
         }
     }
 
-    wglMakeCurrent(NULL, NULL);
-    wglDeleteContext(context);
+    xwglMakeCurrent(NULL, NULL);
+    xwglDeleteContext(context);
 }
 
 static BOOL TextureUploadTest()

@@ -1,8 +1,58 @@
 #pragma once
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include "glext.h"
+#include "glcorearb.h"
 
+typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXT)(HDC);
+typedef BOOL (APIENTRYP PFNWGLDELETECONTEXT)(HGLRC);
+typedef PROC (APIENTRYP PFNWGLGETPROCADDRESS)(LPCSTR);
+typedef BOOL (APIENTRYP PFNWGLMAKECURRENT)(HDC, HGLRC);
+
+extern PFNWGLCREATECONTEXT xwglCreateContext;
+extern PFNWGLDELETECONTEXT xwglDeleteContext;
+extern PFNWGLGETPROCADDRESS xwglGetProcAddress;
+extern PFNWGLMAKECURRENT xwglMakeCurrent;
+
+typedef void (APIENTRYP PFNGLVIEWPORT)(GLint x, GLint y, GLsizei width, GLsizei height);
+typedef void (APIENTRYP PFNGLBINDTEXTURE)(GLenum target, GLuint texture);
+typedef void (APIENTRYP PFNGLGENTEXTURES)(GLsizei n, GLuint *textures);
+typedef void (APIENTRYP PFNGLTEXPARAMETERI)(GLenum target, GLenum pname, GLint param);
+typedef void (APIENTRYP PFNGLDELETETEXTURES)(GLsizei n, const GLuint *textures);
+typedef void (APIENTRYP PFNGLTEXIMAGE2D)(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
+typedef void (APIENTRYP PFNGLDRAWELEMENTS)(GLenum mode, GLsizei count, GLenum type, const GLvoid *indices);
+typedef void (APIENTRYP PFNGLTEXSUBIMAGE2D)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *pixels);
+typedef GLenum (APIENTRYP PFNGLGETERROR)(void);
+typedef const GLubyte * (APIENTRYP PFNGLGETSTRING)(GLenum name);
+typedef void (APIENTRYP PFNGLGETTEXIMAGE)(GLenum target, GLint level, GLenum format, GLenum type, GLvoid *pixels);
+typedef void (APIENTRYP PFNGLPIXELSTOREI)(GLenum pname, GLint param);
+
+extern PFNGLVIEWPORT glViewport;
+extern PFNGLBINDTEXTURE glBindTexture;
+extern PFNGLGENTEXTURES glGenTextures;
+extern PFNGLTEXPARAMETERI glTexParameteri;
+extern PFNGLDELETETEXTURES glDeleteTextures;
+extern PFNGLTEXIMAGE2D glTexImage2D;
+extern PFNGLDRAWELEMENTS glDrawElements;
+extern PFNGLTEXSUBIMAGE2D glTexSubImage2D;
+extern PFNGLGETERROR glGetError;
+extern PFNGLGETSTRING glGetString;
+extern PFNGLGETTEXIMAGE glGetTexImage;
+extern PFNGLPIXELSTOREI glPixelStorei;
+
+//compat profile only --->
+#define GL_LUMINANCE                      0x1909
+#define GL_LUMINANCE8                     0x8040
+typedef void (APIENTRYP PFNGLBEGIN)(GLenum mode);
+typedef void (APIENTRYP PFNGLEND)(void);
+typedef void (APIENTRYP PFNGLTEXCOORD2F)(GLfloat s, GLfloat t);
+typedef void (APIENTRYP PFNGLVERTEX2F)(GLfloat x, GLfloat y);
+
+extern PFNGLBEGIN glBegin;
+extern PFNGLEND glEnd;
+extern PFNGLTEXCOORD2F glTexCoord2f;
+extern PFNGLVERTEX2F glVertex2f;
+// <--- compat profile only
+
+
+BOOL OpenGL_LoadDll();
 void OpenGL_Init();
 BOOL OpenGL_ExtExists(char *ext, HDC hdc);
 GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
@@ -74,6 +124,8 @@ extern PFNWGLSWAPINTERVALEXT wglSwapIntervalEXT;
 extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 
 extern PFNGLTEXBUFFERPROC glTexBuffer;
+
+extern HMODULE OpenGL_hModule;
 
 extern BOOL OpenGL_GotVersion2;
 extern BOOL OpenGL_GotVersion3;

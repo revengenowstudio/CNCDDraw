@@ -62,9 +62,6 @@
     <ClInclude Include="inc\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\glext.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -96,6 +93,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\render_d3d9.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\glcorearb.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\KHR\khrplatform.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

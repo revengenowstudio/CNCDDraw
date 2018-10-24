@@ -1,10 +1,10 @@
 CC=gcc
 WINDRES=windres
 CFLAGS=-DHAVE_LIBPNG -Iinc -Wall -Wl,--enable-stdcall-fixup -s
-LIBS=lib/libpng14.a lib/libz.a -lgdi32 -lopengl32 -lwinmm
+LIBS=lib/libpng14.a lib/libz.a -lgdi32 -lwinmm
 
 #CFLAGS=-Iinc -Wall -Wl,--enable-stdcall-fixup -O3 -s
-#LIBS=-lgdi32 -lopengl32 -lwinmm
+#LIBS=-lgdi32 -lwinmm
 
 FILES = src/debug.c \
         src/main.c \
