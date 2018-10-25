@@ -70,31 +70,12 @@ DWORD WINAPI render_soft_main(void)
     else
         Sleep(500);
 
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
-    DWORD frame_len = 0;
-    int maxfps = ddraw->render.maxfps;
-
-    if(maxfps < 0)
-       maxfps = ddraw->mode.dmDisplayFrequency;
-
-    if (maxfps >= 1000)
-        maxfps = 0;
-
-    if(maxfps > 0)
-        frame_len = 1000.0f / maxfps;
-
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
 
-        if(maxfps > 0)
-        {
-            tick_start = timeGetTime();
-        }
-        
         EnterCriticalSection(&ddraw->cs);
 
         if (ddraw->primary && ddraw->primary->palette && ddraw->primary->palette->data_rgb)
@@ -173,16 +154,6 @@ DWORD WINAPI render_soft_main(void)
         DrawFrameInfoEnd();
 #endif
 
-        if(maxfps > 0)
-        {
-            tick_end = timeGetTime();
-
-            if(tick_end - tick_start < frame_len)
-            {
-                Sleep( frame_len - (tick_end - tick_start));
-            }
-        }
-        
         SetEvent(ddraw->render.ev);
     }
 
