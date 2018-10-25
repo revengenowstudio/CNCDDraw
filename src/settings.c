@@ -6,8 +6,7 @@
 #include "opengl.h"
 #include "render_d3d9.h"
 
-char SettingsIniPath[MAX_PATH];
-
+static char SettingsIniPath[MAX_PATH];
 static char ProcessFileName[96];
 
 static BOOL GetBool(LPCSTR key, BOOL defaultValue);
@@ -28,7 +27,7 @@ void Settings_Load()
 
     //get process filename
     char ProcessFilePath[MAX_PATH] = { 0 };
-	GetModuleFileNameA(NULL, ProcessFilePath, MAX_PATH);
+    GetModuleFileNameA(NULL, ProcessFilePath, MAX_PATH);
     _splitpath(ProcessFilePath, NULL, NULL, ProcessFileName, NULL);
 
     //load settings from ini
@@ -122,11 +121,18 @@ void Settings_Load()
 void Settings_SaveWindowPos(int x, int y)
 {
     char buf[16];
-    sprintf(buf, "%d", x);
-    WritePrivateProfileString(ProcessFileName, "posX", buf, SettingsIniPath);
 
-    sprintf(buf, "%d", y);
-    WritePrivateProfileString(ProcessFileName, "posY", buf, SettingsIniPath);
+    if (x != -32000)
+    {
+        sprintf(buf, "%d", x);
+        WritePrivateProfileString(ProcessFileName, "posX", buf, SettingsIniPath);
+    }
+
+    if (y != -32000)
+    {
+        sprintf(buf, "%d", y);
+        WritePrivateProfileString(ProcessFileName, "posY", buf, SettingsIniPath);
+    }
 }
 
 static void CreateSettingsIni()
