@@ -1101,15 +1101,15 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "fullscreen=false\n"
             "; bits per pixel, possible values: 16, 24 and 32, 0 = auto\n"
             "bpp=0\n"
+            "; Run in windowed mode rather than going fullscreen\n"
             "windowed=false\n"
             "; show window borders in windowed mode\n"
             "border=true\n"
             "; maintain aspect ratio\n"
             "maintas=false\n"
-            "; use letter- or windowboxing to make a best fit\n"
+            "; use letter- or windowboxing to make a best fit (Integer Scaling)\n"
             "boxing=false\n"
-            "; real rendering rate, -1 = screen rate, 0 = unlimited (GDI), 0 = 125 (OpenGL / Direct3D), n = cap\n"
-            "; Note: maxfps+GDI renderer can be used to slow the game speed down, maxfps+OpenGL/Direct3D will not slow it down\n"
+            "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap (OpenGL / Direct3D only)\n"
             "maxfps=0\n"
             "; vertical synchronization, enable if you get tearing (OpenGL / Direct3D only)\n"
             "vsync=false\n"
@@ -1134,6 +1134,8 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
             "devmode=false\n"
             "; preliminary libretro shader support - e.g. cubic.glsl (OpenGL only) https://github.com/libretro/glsl-shaders\n"
             "shader=\n"
+            "; Sleep for X ms after drawing each frame (Slows down scrollrate on C&C95 / Prevents visual glitches on Carmageddon)\n"
+            "sleep=0\n"
             
         , fh);
         fclose(fh);

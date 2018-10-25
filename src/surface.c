@@ -179,11 +179,11 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         }
         else
         {
-            if (ddraw->sleep > 0)
-                Sleep(ddraw->sleep);
-            else
-                SwitchToThread();
+            SwitchToThread();
         }
+
+        if (ddraw->sleep > 0)
+            Sleep(ddraw->sleep);
     }
 
     return DD_OK;
@@ -271,12 +271,11 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
         }
         else
         {
-            if (ddraw->sleep > 0)
-                Sleep(ddraw->sleep);
-            else
-                SwitchToThread();
+            SwitchToThread();
         }
-            
+
+        if (ddraw->sleep > 0)
+            Sleep(ddraw->sleep);
     }
 
     return DD_OK;
