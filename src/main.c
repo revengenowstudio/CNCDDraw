@@ -110,6 +110,36 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     return TRUE;
 }
 
+static unsigned char getPixel(int x, int y)
+{
+    return ((unsigned char *)ddraw->primary->surface)[y*ddraw->primary->lPitch + x*ddraw->primary->lXPitch];
+}
+
+int* InMovie = (int*)0x00665F58;
+int* IsVQA640 = (int*)0x0065D7BC;
+BYTE* ShouldStretch = (BYTE*)0x00607D78;
+
+BOOL detect_cutscene()
+{
+    if (ddraw->width <= CUTSCENE_WIDTH || ddraw->height <= CUTSCENE_HEIGHT)
+        return FALSE;
+
+    if (ddraw->isredalert)
+    {
+        if ((*InMovie && !*IsVQA640) || *ShouldStretch)
+        {
+            return TRUE;
+        }
+        return FALSE;
+    }
+    else if (ddraw->iscnc1)
+    {
+        return getPixel(CUTSCENE_WIDTH + 1, 0) == 0 || getPixel(CUTSCENE_WIDTH + 5, 1) == 0 ? TRUE : FALSE;
+    }
+
+    return FALSE;
+}
+
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
     printf("DirectDraw::Compact(This=%p)\n", This);

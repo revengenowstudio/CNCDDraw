@@ -59,7 +59,6 @@ static void DeleteContext(HGLRC context);
 static BOOL TextureUploadTest();
 static BOOL ShaderTest();
 
-BOOL detect_cutscene();
 DWORD WINAPI render_soft_main(void);
 
 DWORD WINAPI render_main(void)
