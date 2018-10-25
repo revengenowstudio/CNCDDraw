@@ -44,7 +44,7 @@ void Settings_Load()
     ddraw->vhack = GetBool("vhack", FALSE);
 
     ddraw->sleep = GetInt("sleep", 0);
-    ddraw->render.maxfps = GetInt("maxfps", 0);
+    ddraw->render.maxfps = GetInt("maxfps", 125);
     ddraw->render.width = GetInt("width", 0);
     ddraw->render.height = GetInt("height", 0);
     WindowPosX = GetInt("posX", -32000);
@@ -152,7 +152,7 @@ static void CreateSettingsIni()
             "; use letter- or windowboxing to make a best fit (Integer Scaling)\n"
             "boxing=false\n"
             "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap (OpenGL / Direct3D only)\n"
-            "maxfps=0\n"
+            "maxfps=125\n"
             "; vertical synchronization, enable if you get tearing (OpenGL / Direct3D only)\n"
             "vsync=false\n"
             "; automatic mouse sensitivity scaling\n"
