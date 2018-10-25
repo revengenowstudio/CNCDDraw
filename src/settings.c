@@ -186,7 +186,7 @@ static void CreateSettingsIni()
             "\n"
             "[C&C95]\n"
             "sleep=10\n"
-
+            "\n"
 
             , fh);
         fclose(fh);
