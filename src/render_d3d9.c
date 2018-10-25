@@ -244,9 +244,6 @@ static void SetMaxFPS()
     if (MaxFPS < 0)
         MaxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (MaxFPS == 0)
-        MaxFPS = 125;
-
     if (MaxFPS >= 1000 || ddraw->vsync)
         MaxFPS = 0;
 
