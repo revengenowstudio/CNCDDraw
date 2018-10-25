@@ -37,16 +37,13 @@ void mouse_unlock();
 
 /* from screenshot.c */
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
+void Settings_Load();
+void Settings_SaveWindowPos(int x, int y);
 
 IDirectDrawImpl *ddraw = NULL;
 
-DWORD WINAPI render_main(void);
-DWORD WINAPI render_soft_main(void);
-DWORD WINAPI render_dummy_main(void);
-
-int WindowPosX;
-int WindowPosY;
-char SettingsIniPath[MAX_PATH];
+int WindowPosX = -32000;
+int WindowPosY = -32000;
 BOOL Direct3D9Active;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
@@ -95,13 +92,8 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         {
             printf("cnc-ddraw DLL_PROCESS_DETACH");
             
-            char buf[16];
-            sprintf(buf, "%d", WindowPosX);
-            WritePrivateProfileString("ddraw", "posX", buf, SettingsIniPath); 
+            Settings_SaveWindowPos(WindowPosX, WindowPosY);
 
-            sprintf(buf, "%d", WindowPosY);
-            WritePrivateProfileString("ddraw", "posY", buf, SettingsIniPath); 
-            
             timeEndPeriod(1);
             break;
         }
@@ -315,8 +307,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if (This->windowed) //windowed-fullscreen aka borderless
         {
             This->border = FALSE;
-            WindowPosX = -1;
-            WindowPosY = -1;
+            WindowPosX = -32000;
+            WindowPosY = -32000;
 
             // prevent OpenGL from going automatically into fullscreen exclusive mode
             if (This->renderer == render_main)
@@ -336,16 +328,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
     This->render.run = TRUE;
     
-    if (This->renderer == render_dummy_main)
-    {
-        if(This->render.thread == NULL)
-        {
-            This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-            //SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
-        }
-        return DD_OK;
-    }
-
     mouse_unlock();
 	
 	const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
@@ -480,8 +462,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             }
 
             /* center the window with correct dimensions */
-            int x = (WindowPosX != -1) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
-            int y = (WindowPosY != -1) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
+            int x = (WindowPosX != -32000) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
+            int y = (WindowPosY != -32000) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
             RECT dst = { x, y, This->render.width+x, This->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
             SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -599,8 +581,8 @@ void ToggleFullscreen()
                 SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
             }
             
-            int x = (WindowPosX != -1) ? WindowPosX : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
-            int y = (WindowPosY != -1) ? WindowPosY : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
+            int x = (WindowPosX != -32000) ? WindowPosX : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
+            int y = (WindowPosY != -32000) ? WindowPosY : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
             RECT dst = { x, y, ddraw->render.width+x, ddraw->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
 
@@ -905,16 +887,6 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
     This->WndProc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
 
-    if (This->renderer == render_dummy_main)
-    {
-        This->render.hDC = GetDC(This->hWnd);
-        SetWindowLong(hWnd, GWL_WNDPROC, (LONG)dummy_WndProc);
-        ShowWindow(hWnd, SW_HIDE);
-        PostMessage(hWnd, WM_ACTIVATEAPP, TRUE, TRUE);
-        PostMessage(This->hWnd, WM_USER, 0, (LPARAM)hWnd);
-        return DD_OK;
-    }
-
     SetWindowLong(This->hWnd, GWL_WNDPROC, (LONG)WndProc);
 
     if(!This->render.hDC)
@@ -978,11 +950,6 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
 
     if(This->Ref == 0)
     {
-        if (This->hWnd && This->renderer == render_dummy_main)
-        {
-            PostMessage(This->hWnd, WM_USER, 0, 0);
-        }
-        
         if(This->render.run)
         {
             EnterCriticalSection(&This->cs);
@@ -1113,283 +1080,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
 
     This->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
 
-    /* load configuration options from ddraw.ini */
-    char cwd[MAX_PATH];
-    char tmp[256];
-    GetCurrentDirectoryA(sizeof(cwd), cwd);
-    _snprintf(SettingsIniPath, sizeof(SettingsIniPath), "%s\\ddraw.ini", cwd);
-
-    if(GetFileAttributes(SettingsIniPath) == 0xFFFFFFFF)
-    {
-        FILE *fh = fopen(SettingsIniPath, "w");
-        fputs(
-            "[ddraw]\n"
-            "; stretch to custom resolution, 0 = defaults to the size game requests\n"
-            "width=0\n"
-            "height=0\n"
-            "; override width/height and always stretch to fullscreen\n"
-            "fullscreen=false\n"
-            "; bits per pixel, possible values: 16, 24 and 32, 0 = auto\n"
-            "bpp=0\n"
-            "; Run in windowed mode rather than going fullscreen\n"
-            "windowed=false\n"
-            "; show window borders in windowed mode\n"
-            "border=true\n"
-            "; maintain aspect ratio\n"
-            "maintas=false\n"
-            "; use letter- or windowboxing to make a best fit (Integer Scaling)\n"
-            "boxing=false\n"
-            "; real rendering rate, -1 = screen rate, 0 = unlimited, n = cap (OpenGL / Direct3D only)\n"
-            "maxfps=0\n"
-            "; vertical synchronization, enable if you get tearing (OpenGL / Direct3D only)\n"
-            "vsync=false\n"
-            "; automatic mouse sensitivity scaling\n"
-            "adjmouse=false\n"
-            "; enable C&C video resize hack\n"
-            "vhack=false\n"
-            "; auto, opengl, gdi, direct3d9 (auto = try opengl/direct3d9, fallback = gdi)\n"
-            "renderer=auto\n"
-            "; force CPU0 affinity, avoids crashes with RA, *might* have a performance impact\n"
-            "singlecpu=true\n"
-            "; Window position, -1 = center to screen\n"
-            "posX=-1\n"
-            "posY=-1\n"
-            "; Screenshot Hotkey, default = CTRL + G\n"
-            "screenshotKey=G\n"
-            "; Fake cursor position for games that use GetCursorPos and expect to be in fullscreen\n"
-            "fakecursorpos=true\n"
-            "; Hide WM_ACTIVATEAPP messages to prevent freezing on alt+tab (Carmageddon)\n"
-            "noactivateapp=false\n"
-            "; developer mode (don't lock the cursor)\n"
-            "devmode=false\n"
-            "; preliminary libretro shader support - e.g. cubic.glsl (OpenGL only) https://github.com/libretro/glsl-shaders\n"
-            "shader=\n"
-            "; Sleep for X ms after drawing each frame (Slows down scrollrate on C&C95 / Prevents visual glitches on Carmageddon)\n"
-            "sleep=0\n"
-            
-        , fh);
-        fclose(fh);
-    }
-    
-    GetPrivateProfileStringA("ddraw", "windowed", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->windowed = FALSE;
-    }
-    else
-    {
-        This->windowed = TRUE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "border", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->border = FALSE;
-    }
-    else
-    {
-        This->border = TRUE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "boxing", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->boxing = FALSE;
-    }
-    else
-    {
-        This->boxing = TRUE;
-    }
-    
-    GetPrivateProfileStringA("ddraw", "maintas", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->maintas = FALSE;
-    }
-    else
-    {
-        This->maintas = TRUE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "screenshotKey", "G", tmp, sizeof(tmp), SettingsIniPath);
-    ddraw->screenshotKey = toupper(tmp[0]);
-    
-    This->sleep = GetPrivateProfileIntA("ddraw", "sleep", 0, SettingsIniPath);
-    This->render.maxfps = GetPrivateProfileIntA("ddraw", "maxfps", 0, SettingsIniPath);
-    This->render.width = GetPrivateProfileIntA("ddraw", "width", 0, SettingsIniPath);
-    This->render.height = GetPrivateProfileIntA("ddraw", "height", 0, SettingsIniPath);
-    WindowPosX = GetPrivateProfileIntA("ddraw", "posX", -1, SettingsIniPath);
-    WindowPosY = GetPrivateProfileIntA("ddraw", "posY", -1, SettingsIniPath);
-    
-    GetPrivateProfileStringA("ddraw", "fullscreen", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'n' || tolower(tmp[0]) == 'f' || tolower(tmp[0]) == 'd' || tmp[0] == '0')
-    {
-        This->fullscreen = FALSE;
-    }
-    else
-    {
-        This->fullscreen = TRUE;
-        WindowPosX = -1;
-        WindowPosY = -1;
-    }
-
-    This->render.bpp = GetPrivateProfileIntA("ddraw", "bpp", 32, SettingsIniPath);
-    if (This->render.bpp != 16 && This->render.bpp != 24 && This->render.bpp != 32)
-    {
-        This->render.bpp = 0;
-    }
-
-    GetPrivateProfileStringA("ddraw", "adjmouse", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->adjmouse = TRUE;
-    }
-    else
-    {
-        This->adjmouse = FALSE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "devmode", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->devmode = TRUE;
-    }
-    else
-    {
-        This->devmode = FALSE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "vsync", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->vsync = TRUE;
-    }
-    else
-    {
-        This->vsync = FALSE;
-    }
-
-    GetPrivateProfileStringA("ddraw", "fakecursorpos", "TRUE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->fakecursorpos = TRUE;
-    }
-    else
-    {
-        This->fakecursorpos = FALSE;
-    }
-    
-    GetPrivateProfileStringA("ddraw", "noactivateapp", "FALSE", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        This->noactivateapp = TRUE;
-    }
-    else
-    {
-        This->noactivateapp = FALSE;
-    }
-    
-    GetPrivateProfileStringA("ddraw", "vhack", "false", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tolower(tmp[0]) == 'a' || tmp[0] == '1')
-    {
-        This->vhack = 1;
-    }
-    else
-    {
-        This->vhack = 0;
-    }
-
-    GetPrivateProfileStringA("ddraw", "renderer", "auto", tmp, sizeof(tmp), SettingsIniPath);
-    if(tolower(tmp[0]) == 'd' && tolower(tmp[1]) == 'u')
-    {
-        printf("DirectDrawCreate: Using dummy renderer\n");
-        This->renderer = render_dummy_main;
-    }
-    else if(tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g')
-    {
-        printf("DirectDrawCreate: Using software renderer\n");
-        This->renderer = render_soft_main;
-    }
-    else if (tolower(tmp[0]) == 'a')
-    {
-        printf("DirectDrawCreate: Using automatic renderer\n");
-
-        LPDIRECT3D9 d3d = NULL;
-
-        // Windows = Direct3D 9, Wine = OpenGL
-        if (!This->wine && (Direct3D9_hModule = LoadLibrary("d3d9.dll")))
-        {
-            IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
-            
-            if (D3DCreate9 && (d3d = D3DCreate9(D3D_SDK_VERSION)))
-                d3d->lpVtbl->Release(d3d);
-        }
-
-        if (d3d)
-        {
-            This->renderer = render_d3d9_main;
-        }
-        else if (OpenGL_LoadDll())
-        {
-            This->renderer = render_main;
-        }
-        else
-        {
-            ShowDriverWarning = TRUE;
-            This->renderer = render_soft_main;
-        }
-        
-    }
-    else if (tolower(tmp[0]) == 'd')
-    {
-        printf("DirectDrawCreate: Using Direct3D 9 renderer\n");
-        This->renderer = render_d3d9_main;
-    }
-    else
-    {
-        printf("DirectDrawCreate: Using OpenGL renderer\n");
-        if (OpenGL_LoadDll())
-        {
-            This->renderer = render_main;
-        }
-        else
-        {
-            ShowDriverWarning = TRUE;
-            This->renderer = render_soft_main;
-        }
-    }
-
-    // to do: read .glslp config file instead of the shader and apply the correct settings
-    GetPrivateProfileStringA("ddraw", "shader", "", This->shader, sizeof(This->shader), SettingsIniPath);
-
-    GetPrivateProfileStringA("ddraw", "singlecpu", "true", tmp, sizeof(tmp), SettingsIniPath);
-    if (tolower(tmp[0]) == 'y' || tolower(tmp[0]) == 't' || tolower(tmp[0]) == 'e' || tmp[0] == '1')
-    {
-        printf("DirectDrawCreate: Setting CPU0 affinity\n");
-        SetProcessAffinityMask(GetCurrentProcess(), 1);
-    }
-
-    /* last minute check for cnc-plugin */
-    if (GetEnvironmentVariable("DDRAW_WINDOW", tmp, sizeof(tmp)) > 0)
-    {
-        This->hWnd = (HWND)atoi(tmp);
-        This->renderer = render_dummy_main;
-        This->windowed = TRUE;
-
-        if (GetEnvironmentVariable("DDRAW_WIDTH", tmp, sizeof(tmp)) > 0)
-        {
-            This->render.width = atoi(tmp);
-        }
-
-        if (GetEnvironmentVariable("DDRAW_HEIGHT", tmp, sizeof(tmp)) > 0)
-        {
-            This->render.height = atoi(tmp);
-        }
-
-        printf("DirectDrawCreate: Detected cnc-plugin at window %08X in %dx%d\n", (unsigned int)This->hWnd, This->render.width, This->render.height);
-    }
-
+    Settings_Load();
 
     return DD_OK;
 }

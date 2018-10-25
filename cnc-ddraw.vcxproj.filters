@@ -33,9 +33,6 @@
     <ClCompile Include="src\render.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\render_dummy.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\render_soft.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -49,6 +46,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\render_d3d9.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\settings.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

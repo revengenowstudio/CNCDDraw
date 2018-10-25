@@ -59,8 +59,6 @@ static void DeleteContext(HGLRC context);
 static BOOL TextureUploadTest();
 static BOOL ShaderTest();
 
-DWORD WINAPI render_soft_main(void);
-
 DWORD WINAPI render_main(void)
 {
     Sleep(500);
