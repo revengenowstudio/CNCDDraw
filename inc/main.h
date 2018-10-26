@@ -102,6 +102,7 @@ typedef struct IDirectDrawImpl
     BOOL maintas;
     BOOL fakecursorpos;
     BOOL noactivateapp;
+    BOOL hidemouse;
     char shader[MAX_PATH];
     BOOL wine;
     int sleep;

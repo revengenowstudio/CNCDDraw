@@ -41,6 +41,7 @@ void Settings_Load()
     ddraw->fakecursorpos = GetBool("fakecursorpos", TRUE);
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
+    ddraw->hidemouse = GetBool("hidemouse", TRUE);
 
     ddraw->sleep = GetInt("sleep", 0);
     ddraw->render.maxfps = GetInt("maxfps", 125);
@@ -184,6 +185,8 @@ static void CreateSettingsIni()
             "shader=\n"
             "; Sleep for X ms after drawing each frame (Slows down scrollrate on C&C95 / Prevents visual glitches on Carmageddon)\n"
             "sleep=0\n"
+            "; Hide/Show the mouse cursor on lock/unlock (Ctrl+Tab)\n"
+            "hidemouse=true\n"
             "\n"
             "[CARMA95]\n"
             "fakecursorpos=false\n"
@@ -192,6 +195,11 @@ static void CreateSettingsIni()
             "\n"
             "[C&C95]\n"
             "sleep=10\n"
+            "\n"
+            "[EMPIRES2]\n"
+            "renderer=gdi\n"
+            "hidemouse=false\n"
+            "border=false\n"
             "\n"
 
             , fh);

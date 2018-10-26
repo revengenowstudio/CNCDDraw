@@ -104,68 +104,48 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if (This->surface && (dwFlags & DDBLT_COLORFILL))
     {
-        int dst_w = lpDestRect->right - lpDestRect->left;
-        int dst_h = lpDestRect->bottom - lpDestRect->top;
+        int dst_w = lpDestRect ? lpDestRect->right - lpDestRect->left : This->width;
+        int dst_h = lpDestRect ? lpDestRect->bottom - lpDestRect->top : This->height;
+        int dst_x = lpDestRect ? lpDestRect->left : 0;
+        int dst_y = lpDestRect ? lpDestRect->top : 0;
 
         int y, x;
         for (y = 0; y < dst_h; y++)
         {
-            int ydst = This->width * (y + lpDestRect->top);
+            int ydst = This->width * (y + dst_y);
 
             for (x = 0; x < dst_w; x++)
             {
-                ((unsigned char *)This->surface)[x + lpDestRect->left + ydst] = lpDDBltFx->dwFillColor;
+                ((unsigned char *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
             }
         }
     }
 
-    if(Source)
+    if (Source)
     {
-        //BitBlt(This->hDC, lpDestRect->left, lpDestRect->top, lpDestRect->right, lpDestRect->bottom,
-        //    Source->hDC, lpSrcRect->left, lpSrcRect->top, SRCCOPY);
-
-        int dst_w = lpDestRect->right - lpDestRect->left;
-        int dst_h = lpDestRect->bottom - lpDestRect->top;
-        int src_w = lpSrcRect->right - lpSrcRect->left;
-        int src_h = lpSrcRect->bottom - lpSrcRect->top;
-
-        if (dst_w != src_w || dst_h != src_h)
+        int dx = 0, dy = 0;
+        if (lpDestRect)
         {
-            StretchBlt(This->hDC, lpDestRect->left, lpDestRect->top, lpDestRect->right, lpDestRect->bottom,
-                Source->hDC, lpSrcRect->left, lpSrcRect->top, lpSrcRect->right, lpSrcRect->bottom, SRCCOPY);
+            dx = lpDestRect->left;
+            dy = lpDestRect->top;
         }
-        else if (dst_w == This->width && dst_h == This->height &&
-                 src_w == Source->width && src_h == Source->height)
+        int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
+        if (lpSrcRect)
         {
-            memcpy(This->surface, Source->surface, This->width * This->height * This->lXPitch);
+            x0 = max(x0, lpSrcRect->left);
+            x1 = min(x1, lpSrcRect->right);
+            y0 = max(y0, lpSrcRect->top);
+            y1 = min(y1, lpSrcRect->bottom);
         }
-        else
+        unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
+        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
+        int s = x1 - x0;
+
+        int y;
+        for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
         {
-            int dx=0,dy=0;
-            if (lpDestRect)
-            {
-                dx=lpDestRect->left;
-                dy=lpDestRect->top;
-            }
-            int x0=0,y0=0,x1=Source->width,y1=Source->height;
-            if (lpSrcRect)
-            {
-                x0 = max(x0, lpSrcRect->left);
-                x1 = min(x1, lpSrcRect->right);
-                y0 = max(y0, lpSrcRect->top);
-                y1 = min(y1, lpSrcRect->bottom);
-            }
-            unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
-            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-            int s = x1-x0;
-
-            int y;
-            for(y=y0; y<y1; ++y, to+=This->width, from+=Source->width)
-            {
-                memcpy(to, from, s);
-            }
+            memcpy(to, from, s);
         }
-
     }
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
@@ -195,9 +175,38 @@ HRESULT __stdcall ddraw_surface_BltBatch(IDirectDrawSurfaceImpl *This, LPDDBLTBA
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD a, DWORD b, LPDIRECTDRAWSURFACE c, LPRECT d, DWORD e)
+HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD x, DWORD y, LPDIRECTDRAWSURFACE lpDDSrcSurface, LPRECT lpSrcRect, DWORD flags)
 {
     printf("IDirectDrawSurface::BltFast(This=%p, ...)\n", This);
+    IDirectDrawSurfaceImpl *Source = (IDirectDrawSurfaceImpl *)lpDDSrcSurface;
+
+    if (Source)
+    {
+        int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
+        if (lpSrcRect)
+        {
+            x0 = max(x0, lpSrcRect->left);
+            x1 = min(x1, lpSrcRect->right);
+            y0 = max(y0, lpSrcRect->top);
+            y1 = min(y1, lpSrcRect->bottom);
+        }
+        unsigned char* to = (unsigned char *)This->surface + y*This->width + x;
+        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
+        int s = x1 - x0;
+
+        int y;
+        for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+        {
+            memcpy(to, from, s);
+        }
+    }
+
+    if (This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
+    {
+        InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+    }
+
     return DD_OK;
 }
 
@@ -317,6 +326,7 @@ HRESULT __stdcall ddraw_surface_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD 
 HRESULT __stdcall ddraw_surface_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 {
     printf("IDirectDrawSurface::GetDC(This=%p, ...)\n", This);
+    *a = This->hDC;
     return DD_OK;
 }
 
