@@ -184,13 +184,19 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
 #endif
 
     if (flags & DDBLTFAST_NOCOLORKEY)
+    {
         printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_NOCOLORKEY\n", This);
+    }
 
     if (flags & DDBLTFAST_SRCCOLORKEY)
+    {
         printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_SRCCOLORKEY\n", This);
+    }
 
     if (flags & DDBLTFAST_DESTCOLORKEY)
+    {
         printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_DESTCOLORKEY\n", This);
+    }
 
     if (Source)
     {
@@ -204,12 +210,13 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
             unsigned char* dstSurface = (unsigned char *)This->surface;
             unsigned char* srcSurface = (unsigned char *)Source->surface;
 
-            for (int y1 = 0; y1 < src_h; y1++)
+            int y1, x1;
+            for (y1 = 0; y1 < src_h; y1++)
             {
                 int ydst = This->width * (y1 + dst_y);
                 int ysrc = Source->width * (y1 + src_y);
 
-                for (int x1 = 0; x1 < src_w; x1++)
+                for (x1 = 0; x1 < src_w; x1++)
                 {
                     unsigned char index = srcSurface[x1 + src_x + ysrc];
 
