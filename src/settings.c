@@ -200,6 +200,8 @@ static void CreateSettingsIni()
             "renderer=gdi\n"
             "hidemouse=false\n"
             "border=false\n"
+            "posX=0\n"
+            "posY=0\n"
             "\n"
 
             , fh);
