@@ -160,8 +160,9 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
 
     while (EnumDisplaySettings(NULL, i, &m))
     {
+#if _DEBUG_X
         printf("  %d: %dx%d@%d %d bpp\n", (int)i, (int)m.dmPelsWidth, (int)m.dmPelsHeight, (int)m.dmDisplayFrequency, (int)m.dmBitsPerPel);
-
+#endif
         memset(&s, 0, sizeof(DDSURFACEDESC));
         s.dwSize = sizeof(DDSURFACEDESC);
         s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;

@@ -181,22 +181,22 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
 
 #if _DEBUG_X
     printf("IDirectDrawSurface::BltFast(This=%p, ...)\n", This);
-#endif
 
     if (flags & DDBLTFAST_NOCOLORKEY)
     {
-        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_NOCOLORKEY\n", This);
+        printf("  DDBLTFAST_NOCOLORKEY\n");
     }
 
     if (flags & DDBLTFAST_SRCCOLORKEY)
     {
-        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_SRCCOLORKEY\n", This);
+        printf("  DDBLTFAST_SRCCOLORKEY\n");
     }
 
     if (flags & DDBLTFAST_DESTCOLORKEY)
     {
-        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_DESTCOLORKEY\n", This);
+        printf("  DDBLTFAST_DESTCOLORKEY\n");
     }
+#endif
 
     if (Source)
     {
@@ -359,7 +359,9 @@ HRESULT __stdcall ddraw_surface_GetCaps(IDirectDrawSurfaceImpl *This, LPDDSCAPS 
 
 HRESULT __stdcall ddraw_surface_GetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER FAR *a)
 {
+#if _DEBUG_X
     printf("IDirectDrawSurface::GetClipper(This=%p, ...) ???\n", This);
+#endif
     return DD_OK;
 }
 
@@ -371,7 +373,9 @@ HRESULT __stdcall ddraw_surface_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD 
 
 HRESULT __stdcall ddraw_surface_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 {
+#if _DEBUG_X
     printf("IDirectDrawSurface::GetDC(This=%p, ...)\n", This);
+#endif
     *a = This->hDC;
     return DD_OK;
 }
@@ -447,7 +451,9 @@ HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDest
 
 HRESULT __stdcall ddraw_surface_ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
 {
+#if _DEBUG_X
     printf("DirectDrawSurface::ReleaseDC(This=%p, ...)\n", This);
+#endif
     return DD_OK;
 }
 
@@ -465,8 +471,16 @@ HRESULT __stdcall ddraw_surface_SetClipper(IDirectDrawSurfaceImpl *This, LPDIREC
 
 HRESULT __stdcall ddraw_surface_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
 {
-    printf("DirectDrawSurface::SetColorKey(This=%p, ...) ???\n", This);
-    
+#if _DEBUG_X
+    printf("DirectDrawSurface::SetColorKey(This=%p, flags=0x%08X, colorKey=%p) ???\n", This, flags, colorKey);
+
+    if (colorKey)
+    {
+        printf("  dwColorSpaceHighValue=%d\n", colorKey->dwColorSpaceHighValue);
+        printf("  dwColorSpaceLowValue=%d\n", colorKey->dwColorSpaceLowValue);
+    }
+#endif
+
     This->colorKey.dwColorSpaceHighValue = colorKey->dwColorSpaceHighValue;
     This->colorKey.dwColorSpaceLowValue = colorKey->dwColorSpaceLowValue;
 
