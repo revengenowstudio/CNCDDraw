@@ -53,7 +53,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     {
         case DLL_PROCESS_ATTACH:
         {
-            printf("cnc-ddraw DLL_PROCESS_ATTACH");
+            printf("cnc-ddraw DLL_PROCESS_ATTACH\n");
             
             //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
             
@@ -90,7 +90,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         }
         case DLL_PROCESS_DETACH:
         {
-            printf("cnc-ddraw DLL_PROCESS_DETACH");
+            printf("cnc-ddraw DLL_PROCESS_DETACH\n");
             
             Settings_SaveWindowPos(WindowPosX, WindowPosY);
 
@@ -134,14 +134,14 @@ BOOL detect_cutscene()
 
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
-    printf("DirectDraw::Compact(This=%p)\n", This);
+    printf("DirectDraw::Compact(This=%p) ???\n", This);
 
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_DuplicateSurface(IDirectDrawImpl *This, LPDIRECTDRAWSURFACE src, LPDIRECTDRAWSURFACE *dest)
 {
-    printf("DirectDraw::DuplicateSurface(This=%p, ...)\n", This);
+    printf("DirectDraw::DuplicateSurface(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
@@ -185,13 +185,13 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
 
 HRESULT __stdcall ddraw_EnumSurfaces(IDirectDrawImpl *This, DWORD a, LPDDSURFACEDESC b, LPVOID c, LPDDENUMSURFACESCALLBACK d)
 {
-    printf("DirectDraw::EnumSurfaces(This=%p, ...)\n", This);
+    printf("DirectDraw::EnumSurfaces(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_FlipToGDISurface(IDirectDrawImpl *This)
 {
-    printf("DirectDraw::FlipToGDISurface(This=%p)\n", This);
+    printf("DirectDraw::FlipToGDISurface(This=%p) ???\n", This);
 
     return DD_OK;
 }
@@ -227,43 +227,43 @@ HRESULT __stdcall ddraw_GetCaps(IDirectDrawImpl *This, LPDDCAPS lpDDDriverCaps, 
 
 HRESULT __stdcall ddraw_GetDisplayMode(IDirectDrawImpl *This, LPDDSURFACEDESC a)
 {
-    printf("DirectDraw::GetDisplayMode(This=%p, ...)\n", This);
+    printf("DirectDraw::GetDisplayMode(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetFourCCCodes(IDirectDrawImpl *This, LPDWORD a, LPDWORD b)
 {
-    printf("DirectDraw::GetFourCCCodes(This=%p, ...)\n", This);
+    printf("DirectDraw::GetFourCCCodes(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetGDISurface(IDirectDrawImpl *This, LPDIRECTDRAWSURFACE *a)
 {
-    printf("DirectDraw::GetGDISurface(This=%p, ...)\n", This);
+    printf("DirectDraw::GetGDISurface(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetMonitorFrequency(IDirectDrawImpl *This, LPDWORD a)
 {
-    printf("DirectDraw::GetMonitorFrequency(This=%p, ...)\n", This);
+    printf("DirectDraw::GetMonitorFrequency(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetScanLine(IDirectDrawImpl *This, LPDWORD a)
 {
-    printf("DirectDraw::GetScanLine(This=%p, ...)\n", This);
+    printf("DirectDraw::GetScanLine(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetVerticalBlankStatus(IDirectDrawImpl *This, LPBOOL a)
 {
-    printf("DirectDraw::GetVerticalBlankStatus(This=%p, ...)\n", This);
+    printf("DirectDraw::GetVerticalBlankStatus(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_Initialize(IDirectDrawImpl *This, GUID *a)
 {
-    printf("DirectDraw::Initialize(This=%p, ...)\n", This);
+    printf("DirectDraw::Initialize(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
@@ -959,7 +959,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HANDLE b)
 {
 #if _DEBUG_X
-    printf("DirectDraw::WaitForVerticalBlank(This=%p, ...)\n", This);
+    printf("DirectDraw::WaitForVerticalBlank(This=%p, ...) ???\n", This);
 #endif
     return DD_OK;
 }
@@ -1059,6 +1059,7 @@ struct IDirectDrawImplVtbl iface =
 
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
 {
+    printf("DirectDrawEnumerateA(lpCallback=%p, lpContext=%p) ???\n", lpCallback, lpContext);
     return DD_OK;
 }
 

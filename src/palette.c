@@ -70,7 +70,7 @@ HRESULT __stdcall ddraw_palette_SetEntries(IDirectDrawPaletteImpl *This, DWORD d
 
 HRESULT __stdcall ddraw_palette_QueryInterface(IDirectDrawPaletteImpl *This, REFIID riid, void **obj)
 {
-    printf("DirectDrawPalette::QueryInterface(This=%p, riid=%08X, obj=%p)\n", This, (unsigned int)riid, obj);
+    printf("DirectDrawPalette::QueryInterface(This=%p, riid=%08X, obj=%p) ???\n", This, (unsigned int)riid, obj);
     return S_OK;
 }
 
@@ -100,13 +100,13 @@ ULONG __stdcall ddraw_palette_Release(IDirectDrawPaletteImpl *This)
 
 HRESULT __stdcall ddraw_palette_GetCaps(IDirectDrawPaletteImpl *This, LPDWORD caps)
 {
-    printf("DirectDrawPalette::GetCaps(This=%p, caps=%p)\n", This, caps);
+    printf("DirectDrawPalette::GetCaps(This=%p, caps=%p) ???\n", This, caps);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_palette_Initialize(IDirectDrawPaletteImpl *This, LPDIRECTDRAW lpDD, DWORD dw, LPPALETTEENTRY paent)
 {
-    printf("DirectDrawPalette::Initialize(This=%p, ...)\n", This);
+    printf("DirectDrawPalette::Initialize(This=%p, ...) ???\n", This);
     return DD_OK;
 }
 
