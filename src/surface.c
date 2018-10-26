@@ -175,7 +175,7 @@ HRESULT __stdcall ddraw_surface_BltBatch(IDirectDrawSurfaceImpl *This, LPDDBLTBA
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD x, DWORD y, LPDIRECTDRAWSURFACE lpDDSrcSurface, LPRECT lpSrcRect, DWORD flags)
+HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDIRECTDRAWSURFACE lpDDSrcSurface, LPRECT lpSrcRect, DWORD flags)
 {
     IDirectDrawSurfaceImpl *Source = (IDirectDrawSurfaceImpl *)lpDDSrcSurface;
 
@@ -183,24 +183,60 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD x, D
     printf("IDirectDrawSurface::BltFast(This=%p, ...)\n", This);
 #endif
 
+    if (flags & DDBLTFAST_NOCOLORKEY)
+        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_NOCOLORKEY\n", This);
+
+    if (flags & DDBLTFAST_SRCCOLORKEY)
+        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_SRCCOLORKEY\n", This);
+
+    if (flags & DDBLTFAST_DESTCOLORKEY)
+        printf("IDirectDrawSurface::BltFast(This=%p, ...) ??? DDBLTFAST_DESTCOLORKEY\n", This);
+
     if (Source)
     {
-        int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
-        if (lpSrcRect)
+        if (flags & DDBLTFAST_SRCCOLORKEY)
         {
-            x0 = max(x0, lpSrcRect->left);
-            x1 = min(x1, lpSrcRect->right);
-            y0 = max(y0, lpSrcRect->top);
-            y1 = min(y1, lpSrcRect->bottom);
-        }
-        unsigned char* to = (unsigned char *)This->surface + y*This->width + x;
-        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-        int s = x1 - x0;
+            int src_w = lpSrcRect ? lpSrcRect->right - lpSrcRect->left : Source->width;
+            int src_h = lpSrcRect ? lpSrcRect->bottom - lpSrcRect->top : Source->height;
+            int src_x = lpSrcRect ? lpSrcRect->left : 0;
+            int src_y = lpSrcRect ? lpSrcRect->top : 0;
 
-        int y;
-        for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+            unsigned char* dstSurface = (unsigned char *)This->surface;
+            unsigned char* srcSurface = (unsigned char *)Source->surface;
+
+            for (int y1 = 0; y1 < src_h; y1++)
+            {
+                int ydst = This->width * (y1 + dst_y);
+                int ysrc = Source->width * (y1 + src_y);
+
+                for (int x1 = 0; x1 < src_w; x1++)
+                {
+                    unsigned char index = srcSurface[x1 + src_x + ysrc];
+
+                    if (index != Source->colorKey.dwColorSpaceLowValue)
+                        dstSurface[x1 + dst_x + ydst] = index;
+                }
+            }
+        }
+        else
         {
-            memcpy(to, from, s);
+            int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
+            if (lpSrcRect)
+            {
+                x0 = max(x0, lpSrcRect->left);
+                x1 = min(x1, lpSrcRect->right);
+                y0 = max(y0, lpSrcRect->top);
+                y1 = min(y1, lpSrcRect->bottom);
+            }
+            unsigned char* to = (unsigned char *)This->surface + dst_y*This->width + dst_x;
+            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
+            int s = x1 - x0;
+
+            int y;
+            for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+            {
+                memcpy(to, from, s);
+            }
         }
     }
 
@@ -320,7 +356,7 @@ HRESULT __stdcall ddraw_surface_GetClipper(IDirectDrawSurfaceImpl *This, LPDIREC
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD a, LPDDCOLORKEY b)
+HRESULT __stdcall ddraw_surface_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
 {
     printf("IDirectDrawSurface::GetColorKey(This=%p, ...) ???\n", This);
     return DD_OK;
@@ -420,9 +456,13 @@ HRESULT __stdcall ddraw_surface_SetClipper(IDirectDrawSurfaceImpl *This, LPDIREC
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD a, LPDDCOLORKEY b)
+HRESULT __stdcall ddraw_surface_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
 {
     printf("DirectDrawSurface::SetColorKey(This=%p, ...) ???\n", This);
+    
+    This->colorKey.dwColorSpaceHighValue = colorKey->dwColorSpaceHighValue;
+    This->colorKey.dwColorSpaceLowValue = colorKey->dwColorSpaceLowValue;
+
     return DD_OK;
 }
 
