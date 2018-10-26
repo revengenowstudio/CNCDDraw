@@ -203,6 +203,13 @@ static void CreateSettingsIni()
             "posX=0\n"
             "posY=0\n"
             "\n"
+            "[age2_x1]\n"
+            "renderer=gdi\n"
+            "hidemouse=false\n"
+            "border=false\n"
+            "posX=0\n"
+            "posY=0\n"
+            "\n"
 
             , fh);
         fclose(fh);
