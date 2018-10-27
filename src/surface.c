@@ -376,6 +376,15 @@ HRESULT __stdcall ddraw_surface_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 #if _DEBUG_X
     printf("IDirectDrawSurface::GetDC(This=%p, ...)\n", This);
 #endif
+
+    RGBQUAD *data = 
+        This->palette && This->palette->data_rgb ? This->palette->data_rgb :
+        ddraw->primary && ddraw->primary->palette ? ddraw->primary->palette->data_rgb :
+        NULL;
+
+    if (data)
+        SetDIBColorTable(This->hDC, 0, 256, data);
+
     *a = This->hDC;
     return DD_OK;
 }
@@ -647,12 +656,6 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
             Surface->bmi->bmiColors[i].rgbBlue = i;
             Surface->bmi->bmiColors[i].rgbReserved = 0;
         }
-
-#if _DEBUG
-        Surface->bmi->bmiColors[255].rgbRed = 250;
-        Surface->bmi->bmiColors[255].rgbGreen = 250;
-        Surface->bmi->bmiColors[255].rgbBlue = 250;
-#endif
 
         Surface->lXPitch = Surface->bpp / 8;
         Surface->lPitch = Surface->width * Surface->lXPitch;
