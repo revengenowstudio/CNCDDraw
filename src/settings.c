@@ -45,16 +45,16 @@ void Settings_Load()
 
     ddraw->sleep = GetInt("sleep", 0);
     ddraw->render.maxfps = GetInt("maxfps", 125);
-    ddraw->render.width = GetInt("width", 0);
-    ddraw->render.height = GetInt("height", 0);
-    WindowPosX = GetInt("posX", -32000);
-    WindowPosY = GetInt("posY", -32000);
+    WindowRect.right = GetInt("width", 0);
+    WindowRect.bottom = GetInt("height", 0);
+    WindowRect.left = GetInt("posX", -32000);
+    WindowRect.top = GetInt("posY", -32000);
 
     GetString("screenshotKey", "G", tmp, sizeof(tmp));
     ddraw->screenshotKey = toupper(tmp[0]);
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
-        WindowPosX = WindowPosY = -32000;
+        WindowRect.left = WindowRect.top = -32000;
 
     if (GetBool("singlecpu", TRUE))
         SetProcessAffinityMask(GetCurrentProcess(), 1);
@@ -119,19 +119,31 @@ void Settings_Load()
     }
 }
 
-void Settings_SaveWindowPos(int x, int y)
+void Settings_SaveWindowRect(RECT *lpRect)
 {
     char buf[16];
 
-    if (x != -32000)
+    if (lpRect->right)
     {
-        sprintf(buf, "%d", x);
+        sprintf(buf, "%ld", lpRect->right);
+        WritePrivateProfileString(ProcessFileName, "width", buf, SettingsIniPath);
+    }
+    
+    if (lpRect->bottom)
+    {
+        sprintf(buf, "%ld", lpRect->bottom);
+        WritePrivateProfileString(ProcessFileName, "height", buf, SettingsIniPath);
+    }
+
+    if (lpRect->left != -32000)
+    {
+        sprintf(buf, "%ld", lpRect->left);
         WritePrivateProfileString(ProcessFileName, "posX", buf, SettingsIniPath);
     }
 
-    if (y != -32000)
+    if (lpRect->top != -32000)
     {
-        sprintf(buf, "%d", y);
+        sprintf(buf, "%ld", lpRect->top);
         WritePrivateProfileString(ProcessFileName, "posY", buf, SettingsIniPath);
     }
 }

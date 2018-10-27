@@ -29,8 +29,7 @@
 #define WM_D3D9DEVICELOST WM_USER+113
 
 extern BOOL ShowDriverWarning;
-extern int WindowPosX;
-extern int WindowPosY;
+extern RECT WindowRect;
 
 BOOL detect_cutscene();
 DWORD WINAPI render_main(void);

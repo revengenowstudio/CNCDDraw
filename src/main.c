@@ -38,12 +38,11 @@ void mouse_unlock();
 /* from screenshot.c */
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
-void Settings_SaveWindowPos(int x, int y);
+void Settings_SaveWindowRect(RECT *lpRect);
 
 IDirectDrawImpl *ddraw = NULL;
 
-int WindowPosX = -32000;
-int WindowPosY = -32000;
+RECT WindowRect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 };
 BOOL Direct3D9Active;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
@@ -92,7 +91,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         {
             printf("cnc-ddraw DLL_PROCESS_DETACH\n");
             
-            Settings_SaveWindowPos(WindowPosX, WindowPosY);
+            Settings_SaveWindowRect(&WindowRect);
 
             timeEndPeriod(1);
             break;
@@ -341,12 +340,18 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             /* not expected */
             return DDERR_UNSUPPORTED;
         }
+
+        const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
+        if (hbicon)
+            SendMessage(This->hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
+
+        const HANDLE hsicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+        if (hsicon)
+            SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
-    else //resolution changed twice during runtime, disable stretching for these cases for now
-    {
-        This->render.width = 0;
-        This->render.height = 0;
-    }
+
+    This->render.width = WindowRect.right;
+    This->render.height = WindowRect.bottom;
 
     This->width = width;
     This->height = height;
@@ -363,8 +368,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if (This->windowed) //windowed-fullscreen aka borderless
         {
             This->border = FALSE;
-            WindowPosX = -32000;
-            WindowPosY = -32000;
+            WindowRect.left = -32000;
+            WindowRect.top = -32000;
 
             // prevent OpenGL from going automatically into fullscreen exclusive mode
             if (This->renderer == render_main)
@@ -386,15 +391,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     
     mouse_unlock();
 	
-	const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
-	if (hbicon)
-		SendMessage(This->hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
-
-	const HANDLE hsicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
-	if (hsicon)
-		SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
-
-    
     memset(&This->render.mode, 0, sizeof(DEVMODE));
     This->render.mode.dmSize = sizeof(DEVMODE);
     This->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
@@ -512,12 +508,12 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
         else
         {
-            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW);
         }
 
         /* center the window with correct dimensions */
-        int x = (WindowPosX != -32000) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
-        int y = (WindowPosY != -32000) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
+        int x = (WindowRect.left != -32000) ? WindowRect.left : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
+        int y = (WindowRect.top != -32000) ? WindowRect.top : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
         RECT dst = { x, y, This->render.width + x, This->render.height + y };
         AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
         SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -624,17 +620,23 @@ void ToggleFullscreen()
         mouse_unlock();
         if(Direct3D9Active || ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
         {
+            if (Direct3D9Active)
+            {
+                ddraw->windowed = TRUE;
+                Direct3D9_Reset();
+            }
+                
             if (!ddraw->border)
             {
                 SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
             }
             else
             {
-                SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+                SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW);
             }
             
-            int x = (WindowPosX != -32000) ? WindowPosX : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
-            int y = (WindowPosY != -32000) ? WindowPosY : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
+            int x = (WindowRect.left != -32000) ? WindowRect.left : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
+            int y = (WindowRect.top != -32000) ? WindowRect.top : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
             RECT dst = { x, y, ddraw->render.width+x, ddraw->render.height+y };
             AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
 
@@ -643,9 +645,6 @@ void ToggleFullscreen()
 
             ddraw->windowed = TRUE;
             ddraw->windowed_init = TRUE;
-
-            if (Direct3D9Active)
-                Direct3D9_Reset();
         }
         mouse_lock();
     }
@@ -654,6 +653,7 @@ void ToggleFullscreen()
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
+    static BOOL inSizeMove = FALSE;
     
     switch(uMsg)
     {
@@ -685,9 +685,54 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             return 0;
         }
+        case WM_ENTERSIZEMOVE:
+        {
+            if (ddraw->windowed)
+            {
+                inSizeMove = TRUE;
+            }
+            break;
+        }
+        case WM_EXITSIZEMOVE:
+        {
+            if (ddraw->windowed)
+            {
+                inSizeMove = FALSE;
 
+                if (!ddraw->render.thread)
+                    ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+            }
+            break;
+        }
+        case WM_SIZING:
+        {
+            if (ddraw->windowed)
+            {
+                if (ddraw->render.thread && inSizeMove)
+                {
+                    EnterCriticalSection(&ddraw->cs);
+                    ddraw->render.run = FALSE;
+                    ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+                    LeaveCriticalSection(&ddraw->cs);
+
+                    WaitForSingleObject(ddraw->render.thread, INFINITE);
+                    ddraw->render.thread = NULL;
+                }
+            }
+            break;
+        }
         case WM_SIZE: 
+        {
+            if (ddraw->windowed)
+            {
+                if (wParam == SIZE_RESTORED && inSizeMove && !ddraw->render.thread)
+                {
+                    WindowRect.right = LOWORD(lParam);
+                    WindowRect.bottom = HIWORD(lParam);
+                }
+            }
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
+        }
         case WM_MOVE:
         {
             if (ddraw->windowed && ddraw->windowed_init)
@@ -696,10 +741,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int y = (int)(short)HIWORD(lParam);
                 
                 if (x != -32000) 
-                    WindowPosX = x; // -32000 = Exit/Minimize
+                    WindowRect.left = x; // -32000 = Exit/Minimize
                 
                 if (y != -32000)
-                    WindowPosY = y;
+                    WindowRect.top = y;
             }
             
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
