@@ -91,7 +91,35 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     IDirectDrawSurfaceImpl *Source = (IDirectDrawSurfaceImpl *)lpDDSrcSurface;
 
 #if _DEBUG_X
-    printf("DirectDrawSurface::Blt(This=%p, lpDestRect=%p, lpDDSrcSurface=%p, lpSrcRect=%p, dwFlags=%d, lpDDBltFx=%p)\n", This, lpDestRect, lpDDSrcSurface, lpSrcRect, (int)dwFlags, lpDDBltFx);
+    printf("DirectDrawSurface::Blt(This=%p, lpDestRect=%p, lpDDSrcSurface=%p, lpSrcRect=%p, dwFlags=%08X, lpDDBltFx=%p)\n", This, lpDestRect, lpDDSrcSurface, lpSrcRect, (int)dwFlags, lpDDBltFx);
+
+    if (dwFlags & DDBLT_ALPHADEST) printf("  DDBLT_ALPHADEST\n");
+    if (dwFlags & DDBLT_ALPHADESTCONSTOVERRIDE) printf("  DDBLT_ALPHADESTCONSTOVERRIDE\n");
+    if (dwFlags & DDBLT_ALPHADESTNEG) printf("  DDBLT_ALPHADESTNEG\n");
+    if (dwFlags & DDBLT_ALPHADESTSURFACEOVERRIDE) printf("  DDBLT_ALPHADESTSURFACEOVERRIDE\n");
+    if (dwFlags & DDBLT_ALPHAEDGEBLEND) printf("  DDBLT_ALPHAEDGEBLEND\n");
+    if (dwFlags & DDBLT_ALPHASRC) printf("  DDBLT_ALPHASRC\n");
+    if (dwFlags & DDBLT_ALPHASRCCONSTOVERRIDE) printf("  DDBLT_ALPHASRCCONSTOVERRIDE\n");
+    if (dwFlags & DDBLT_ALPHASRCNEG) printf("  DDBLT_ALPHASRCNEG\n");
+    if (dwFlags & DDBLT_ALPHASRCSURFACEOVERRIDE) printf("  DDBLT_ALPHASRCSURFACEOVERRIDE\n");
+    if (dwFlags & DDBLT_ASYNC) printf("  DDBLT_ASYNC\n");
+    if (dwFlags & DDBLT_COLORFILL) printf("  DDBLT_COLORFILL\n");
+    if (dwFlags & DDBLT_DDFX) printf("  DDBLT_DDFX\n");
+    if (dwFlags & DDBLT_DDROPS) printf("  DDBLT_DDROPS\n");
+    if (dwFlags & DDBLT_KEYDEST) printf("  DDBLT_KEYDEST\n");
+    if (dwFlags & DDBLT_KEYDESTOVERRIDE) printf("  DDBLT_KEYDESTOVERRIDE\n");
+    if (dwFlags & DDBLT_KEYSRC) printf("  DDBLT_KEYSRC\n");
+    if (dwFlags & DDBLT_KEYSRCOVERRIDE) printf("  DDBLT_KEYSRCOVERRIDE\n");
+    if (dwFlags & DDBLT_ROP) printf("  DDBLT_ROP\n");
+    if (dwFlags & DDBLT_ROTATIONANGLE) printf("  DDBLT_ROTATIONANGLE\n");
+    if (dwFlags & DDBLT_ZBUFFER) printf("  DDBLT_ZBUFFER\n");
+    if (dwFlags & DDBLT_ZBUFFERDESTCONSTOVERRIDE) printf("  DDBLT_ZBUFFERDESTCONSTOVERRIDE\n");
+    if (dwFlags & DDBLT_ZBUFFERDESTOVERRIDE) printf("  DDBLT_ZBUFFERDESTOVERRIDE\n");
+    if (dwFlags & DDBLT_ZBUFFERSRCCONSTOVERRIDE) printf("  DDBLT_ZBUFFERSRCCONSTOVERRIDE\n");
+    if (dwFlags & DDBLT_ZBUFFERSRCOVERRIDE) printf("  DDBLT_ZBUFFERSRCOVERRIDE\n");
+    if (dwFlags & DDBLT_WAIT) printf("  DDBLT_WAIT\n");
+    if (dwFlags & DDBLT_DEPTHFILL) printf("  DDBLT_DEPTHFILL\n");
+    
     if(lpDestRect)
     {
         printf(" dest: l: %d t: %d r: %d b: %d\n", (int)lpDestRect->left, (int)lpDestRect->top, (int)lpDestRect->right, (int)lpDestRect->bottom);
@@ -123,28 +151,58 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if (Source)
     {
-        int dx = 0, dy = 0;
-        if (lpDestRect)
+        if (dwFlags & DDBLT_KEYSRC)
         {
-            dx = lpDestRect->left;
-            dy = lpDestRect->top;
-        }
-        int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
-        if (lpSrcRect)
-        {
-            x0 = max(x0, lpSrcRect->left);
-            x1 = min(x1, lpSrcRect->right);
-            y0 = max(y0, lpSrcRect->top);
-            y1 = min(y1, lpSrcRect->bottom);
-        }
-        unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
-        unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-        int s = x1 - x0;
+            int src_w = lpSrcRect ? lpSrcRect->right - lpSrcRect->left : Source->width;
+            int src_h = lpSrcRect ? lpSrcRect->bottom - lpSrcRect->top : Source->height;
+            int src_x = lpSrcRect ? lpSrcRect->left : 0;
+            int src_y = lpSrcRect ? lpSrcRect->top : 0;
+            int dst_x = lpDestRect ? lpDestRect->left : 0;
+            int dst_y = lpDestRect ? lpDestRect->top : 0;
 
-        int y;
-        for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+            unsigned char* dstSurface = (unsigned char *)This->surface;
+            unsigned char* srcSurface = (unsigned char *)Source->surface;
+
+            int y1, x1;
+            for (y1 = 0; y1 < src_h; y1++)
+            {
+                int ydst = This->width * (y1 + dst_y);
+                int ysrc = Source->width * (y1 + src_y);
+
+                for (x1 = 0; x1 < src_w; x1++)
+                {
+                    unsigned char index = srcSurface[x1 + src_x + ysrc];
+
+                    if (index != Source->colorKey.dwColorSpaceLowValue)
+                        dstSurface[x1 + dst_x + ydst] = index;
+                }
+            }
+        }
+        else
         {
-            memcpy(to, from, s);
+            int dx = 0, dy = 0;
+            if (lpDestRect)
+            {
+                dx = lpDestRect->left;
+                dy = lpDestRect->top;
+            }
+            int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
+            if (lpSrcRect)
+            {
+                x0 = max(x0, lpSrcRect->left);
+                x1 = min(x1, lpSrcRect->right);
+                y0 = max(y0, lpSrcRect->top);
+                y1 = min(y1, lpSrcRect->bottom);
+            }
+            unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
+            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
+            int s = x1 - x0;
+
+            int y;
+            for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+            {
+                memcpy(to, from, s);
+            }
         }
     }
 
@@ -258,7 +316,7 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
 
 HRESULT __stdcall ddraw_surface_DeleteAttachedSurface(IDirectDrawSurfaceImpl *This, DWORD dwFlags, LPDIRECTDRAWSURFACE lpDDSurface)
 {
-    printf("IDirectDrawSurface::DeleteAttachedSurface(This=%p, dwFlags=%d, lpDDSurface=%p)\n", This, (int)dwFlags, lpDDSurface);
+    printf("IDirectDrawSurface::DeleteAttachedSurface(This=%p, dwFlags=%08X, lpDDSurface=%p)\n", This, (int)dwFlags, lpDDSurface);
     IDirectDrawSurface_Release(lpDDSurface);
     return DD_OK;
 }
@@ -431,7 +489,7 @@ HRESULT __stdcall ddraw_surface_IsLost(IDirectDrawSurfaceImpl *This)
 HRESULT __stdcall ddraw_surface_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDDSURFACEDESC lpDDSurfaceDesc, DWORD dwFlags, HANDLE hEvent)
 {
 #if _DEBUG_X
-    printf("DirectDrawSurface::Lock(This=%p, lpDestRect=%p, lpDDSurfaceDesc=%p, dwFlags=%d, hEvent=%p)\n", This, lpDestRect, lpDDSurfaceDesc, (int)dwFlags, hEvent);
+    printf("DirectDrawSurface::Lock(This=%p, lpDestRect=%p, lpDDSurfaceDesc=%p, dwFlags=%08X, hEvent=%p)\n", This, lpDestRect, lpDDSurfaceDesc, (int)dwFlags, hEvent);
 
     if(dwFlags & DDLOCK_SURFACEMEMORYPTR)
     {

@@ -23,7 +23,7 @@ HRESULT __stdcall ddraw_palette_GetEntries(IDirectDrawPaletteImpl *This, DWORD d
 {
     int i;
 
-    printf("DirectDrawPalette::GetEntries(This=%p, dwFlags=%d, dwBase=%d, dwNumEntries=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwBase, (int)dwNumEntries, lpEntries);
+    printf("DirectDrawPalette::GetEntries(This=%p, dwFlags=%08X, dwBase=%d, dwNumEntries=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwBase, (int)dwNumEntries, lpEntries);
 
     for(i=dwBase;i<dwBase+dwNumEntries;i++)
     {
@@ -43,7 +43,7 @@ HRESULT __stdcall ddraw_palette_SetEntries(IDirectDrawPaletteImpl *This, DWORD d
     int i;
 
 #if _DEBUG_X
-    printf("DirectDrawPalette::SetEntries(This=%p, dwFlags=%d, dwStartingEntry=%d, dwCount=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwStartingEntry, (int)dwCount, lpEntries);
+    printf("DirectDrawPalette::SetEntries(This=%p, dwFlags=%08X, dwStartingEntry=%d, dwCount=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwStartingEntry, (int)dwCount, lpEntries);
 #endif
 
     for(i=dwStartingEntry;i<dwStartingEntry+dwCount;i++)
@@ -125,7 +125,7 @@ struct IDirectDrawPaletteImplVtbl piface =
 
 HRESULT __stdcall ddraw_CreatePalette(IDirectDrawImpl *This, DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, LPDIRECTDRAWPALETTE FAR * lpDDPalette, IUnknown FAR * unkOuter)
 {
-    printf("DirectDraw::CreatePalette(This=%p, dwFlags=%d, DDColorArray=%p, DDPalette=%p, unkOuter=%p)\n", This, (int)dwFlags, lpDDColorArray, lpDDPalette, unkOuter);
+    printf("DirectDraw::CreatePalette(This=%p, dwFlags=%08X, DDColorArray=%p, DDPalette=%p, unkOuter=%p)\n", This, (int)dwFlags, lpDDColorArray, lpDDPalette, unkOuter);
 
     IDirectDrawPaletteImpl *Palette = (IDirectDrawPaletteImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawPaletteImpl));
     Palette->lpVtbl = &piface;

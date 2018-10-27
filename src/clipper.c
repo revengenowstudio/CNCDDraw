@@ -101,7 +101,7 @@ struct IDirectDrawClipperImplVtbl ciface =
 
 HRESULT __stdcall ddraw_CreateClipper(IDirectDrawImpl *This, DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR *lplpDDClipper, IUnknown FAR *pUnkOuter )
 {
-    printf("DirectDraw::CreateClipper(This=%p, dwFlags=%d, DDClipper=%p, unkOuter=%p)\n", This, (int)dwFlags, lplpDDClipper, pUnkOuter);
+    printf("DirectDraw::CreateClipper(This=%p, dwFlags=%08X, DDClipper=%p, unkOuter=%p)\n", This, (int)dwFlags, lplpDDClipper, pUnkOuter);
 
     IDirectDrawClipperImpl *Clipper = (IDirectDrawClipperImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawClipperImpl));
     Clipper->lpVtbl = &ciface;

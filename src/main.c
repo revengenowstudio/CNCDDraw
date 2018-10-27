@@ -151,7 +151,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
     DEVMODE m;
     DDSURFACEDESC s;
 
-    printf("DirectDraw::EnumDisplayModes(This=%p, dwFlags=%d, lpDDSurfaceDesc=%p, lpContext=%p, lpEnumModesCallback=%p)\n", This, (unsigned int)dwFlags, lpDDSurfaceDesc, lpContext, lpEnumModesCallback);
+    printf("DirectDraw::EnumDisplayModes(This=%p, dwFlags=%08X, lpDDSurfaceDesc=%p, lpContext=%p, lpEnumModesCallback=%p)\n", This, (unsigned int)dwFlags, lpDDSurfaceDesc, lpContext, lpEnumModesCallback);
 
     if (lpDDSurfaceDesc != NULL)
     {
