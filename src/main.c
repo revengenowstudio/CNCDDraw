@@ -554,6 +554,10 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     
     if(This->render.thread == NULL)
     {
+        InterlockedExchange(&ddraw->render.paletteUpdated, TRUE);
+        InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
     }
 
