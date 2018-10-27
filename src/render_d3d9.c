@@ -130,17 +130,13 @@ BOOL Direct3D9_Release()
 
     if (D3dDev)
     {
-        if (FAILED(D3dDev->lpVtbl->Release(D3dDev)))
-            return FALSE;
-
+        D3dDev->lpVtbl->Release(D3dDev);
         D3dDev = NULL;
     }
 
     if (D3d)
     {
-        if (FAILED(D3d->lpVtbl->Release(D3d)))
-            return FALSE;
-
+        D3d->lpVtbl->Release(D3d);
         D3d = NULL;
     }
 

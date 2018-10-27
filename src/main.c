@@ -285,8 +285,11 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
         LeaveCriticalSection(&This->cs);
 
-        WaitForSingleObject(This->render.thread, INFINITE);
-        This->render.thread = NULL;
+        if (This->render.thread)
+        {
+            WaitForSingleObject(This->render.thread, INFINITE);
+            This->render.thread = NULL;
+        }
 
         if (This->renderer == render_d3d9_main)
             Direct3D9_Release();
@@ -315,6 +318,18 @@ void InitDirect3D9()
 HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp)
 {
     printf("DirectDraw::SetDisplayMode(This=%p, width=%d, height=%d, bpp=%d)\n", This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp);
+
+    if (This->render.thread)
+    {
+        EnterCriticalSection(&This->cs);
+        This->render.run = FALSE;
+        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+        LeaveCriticalSection(&This->cs);
+
+        WaitForSingleObject(This->render.thread, INFINITE);
+        This->render.thread = NULL;
+        Sleep(500);
+    }
 
     if (!This->mode.dmPelsWidth)
     {
@@ -486,34 +501,31 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.viewport.x = This->render.width / 2 - This->render.viewport.width / 2;
     }
     
-    if(This->windowed)
+    if (This->windowed)
     {
-        if(!This->windowed_init)
+        if (!This->border)
         {
-            if (!This->border)
-            {
-                SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
-                
-                if (ddraw->wine)
-                    SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
-            }
-            else
-            {
-                SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
-            }
+            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
 
-            /* center the window with correct dimensions */
-            int x = (WindowPosX != -32000) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
-            int y = (WindowPosY != -32000) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
-            RECT dst = { x, y, This->render.width+x, This->render.height+y };
-            AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
-            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
-            This->windowed_init = TRUE;
-
-            if (This->renderer == render_d3d9_main)
-                InitDirect3D9();
+            if (ddraw->wine)
+                SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
         }
+        else
+        {
+            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_CAPTION | WS_BORDER | WS_SYSMENU | WS_MINIMIZEBOX | WS_MAXIMIZEBOX);
+        }
+
+        /* center the window with correct dimensions */
+        int x = (WindowPosX != -32000) ? WindowPosX : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
+        int y = (WindowPosY != -32000) ? WindowPosY : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
+        RECT dst = { x, y, This->render.width + x, This->render.height + y };
+        AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
+        SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
+        This->windowed_init = TRUE;
+
+        if (This->renderer == render_d3d9_main)
+            InitDirect3D9();
     }
     else
     {
@@ -547,7 +559,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     if(This->render.thread == NULL)
     {
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
-        //SetThreadPriority(This->render.thread, THREAD_PRIORITY_BELOW_NORMAL);
     }
 
     return DD_OK;
@@ -998,8 +1009,11 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             LeaveCriticalSection(&This->cs);
 
-            WaitForSingleObject(This->render.thread, INFINITE);
-            This->render.thread = NULL;
+            if (This->render.thread)
+            {
+                WaitForSingleObject(This->render.thread, INFINITE);
+                This->render.thread = NULL;
+            }
 
             if (This->renderer == render_d3d9_main)
                 Direct3D9_Release();
