@@ -790,6 +790,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 case WMSZ_TOPRIGHT:
                                 case WMSZ_BOTTOMRIGHT:
                                 case WMSZ_RIGHT:
+                                case WMSZ_BOTTOM:
+                                case WMSZ_TOP:
                                 {
                                     windowrc->right += ddraw->width - clientrc.right; 
                                     break;
@@ -811,6 +813,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 case WMSZ_BOTTOMLEFT:
                                 case WMSZ_BOTTOMRIGHT:
                                 case WMSZ_BOTTOM:
+                                case WMSZ_RIGHT:
+                                case WMSZ_LEFT:
                                 {
                                     windowrc->bottom += ddraw->height - clientrc.bottom; 
                                     break;
