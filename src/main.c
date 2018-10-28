@@ -654,6 +654,23 @@ void ToggleFullscreen()
     }
 }
 
+BOOL UnadjustWindowRectEx(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwExStyle)
+{
+    RECT rc;
+    SetRectEmpty(&rc);
+
+    BOOL fRc = AdjustWindowRectEx(&rc, dwStyle, fMenu, dwExStyle);
+    if (fRc)
+    {
+        prc->left -= rc.left;
+        prc->top -= rc.top;
+        prc->right -= rc.right;
+        prc->bottom -= rc.bottom;
+    }
+
+    return fRc;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
@@ -708,19 +725,77 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
         }
+        case WM_GETMINMAXINFO:
+        {
+            LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+            if (ddraw)
+            {
+                RECT rect = { 0, 0, ddraw->width, ddraw->height };
+                AdjustWindowRectEx(&rect, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE));
+
+                lpMMI->ptMinTrackSize.x = rect.right - rect.left;
+                lpMMI->ptMinTrackSize.y = rect.bottom - rect.top;
+
+                return 0;
+            }
+            break;
+        }
         case WM_SIZING:
         {
+            RECT *windowrc = (RECT *)lParam;
+
             if (ddraw->windowed)
             {
-                if (ddraw->render.thread && inSizeMove)
+                if (inSizeMove)
                 {
-                    EnterCriticalSection(&ddraw->cs);
-                    ddraw->render.run = FALSE;
-                    ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-                    LeaveCriticalSection(&ddraw->cs);
+                    if (ddraw->render.thread)
+                    {
+                        EnterCriticalSection(&ddraw->cs);
+                        ddraw->render.run = FALSE;
+                        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+                        LeaveCriticalSection(&ddraw->cs);
 
-                    WaitForSingleObject(ddraw->render.thread, INFINITE);
-                    ddraw->render.thread = NULL;
+                        WaitForSingleObject(ddraw->render.thread, INFINITE);
+                        ddraw->render.thread = NULL;
+                    }
+
+                    RECT clientrc = { 0 };
+
+                    if (ddraw->maintas && 
+                        CopyRect(&clientrc, windowrc) &&
+                        UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
+                        SetRect(&clientrc, 0, 0, clientrc.right - clientrc.left, clientrc.bottom - clientrc.top))
+                    {
+                        float scaleH = (float)ddraw->height / ddraw->width;
+                        float scaleW = (float)ddraw->width / ddraw->height;
+
+                        switch (wParam)
+                        {
+                            case WMSZ_BOTTOMLEFT:
+                            case WMSZ_BOTTOMRIGHT:
+                            case WMSZ_LEFT:
+                            case WMSZ_RIGHT:
+                            {
+                                windowrc->bottom += scaleH * clientrc.right - clientrc.bottom;
+                                break;
+                            }
+                            case WMSZ_TOP:
+                            case WMSZ_BOTTOM:
+                            {
+                                windowrc->right += scaleW * clientrc.bottom - clientrc.right;
+                                break;
+                            }
+                            case WMSZ_TOPRIGHT:
+                            case WMSZ_TOPLEFT:
+                            {
+                                windowrc->top -= scaleH * clientrc.right - clientrc.bottom;
+                                break;
+                            }
+                        }
+
+                        return TRUE;
+                    }
+
                 }
             }
             break;
