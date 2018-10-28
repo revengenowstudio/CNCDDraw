@@ -777,10 +777,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 break;
                             }
                         }
-
-                        return TRUE;
                     }
 
+                    if (CopyRect(&clientrc, windowrc) &&
+                        UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
+                        SetRect(&clientrc, 0, 0, clientrc.right - clientrc.left, clientrc.bottom - clientrc.top))
+                    {
+                        if (clientrc.right < ddraw->width)
+                        {
+                            switch (wParam)
+                            {
+                                case WMSZ_TOPRIGHT:
+                                case WMSZ_BOTTOMRIGHT:
+                                case WMSZ_RIGHT:
+                                    windowrc->right += ddraw->width - clientrc.right; break;
+                                case WMSZ_TOPLEFT:
+                                case WMSZ_BOTTOMLEFT:
+                                case WMSZ_LEFT:
+                                    windowrc->left -= ddraw->width - clientrc.right; break;
+                            }
+                        }
+                            
+                        if (clientrc.bottom < ddraw->height)
+                        {
+                            switch (wParam)
+                            {
+                                case WMSZ_BOTTOMLEFT:
+                                case WMSZ_BOTTOMRIGHT:
+                                case WMSZ_BOTTOM:
+                                {
+                                    windowrc->bottom += ddraw->height - clientrc.bottom; break;
+                                }
+                                case WMSZ_TOPLEFT:
+                                case WMSZ_TOPRIGHT:
+                                case WMSZ_TOP:
+                                {
+                                    windowrc->top -= ddraw->height - clientrc.bottom; break;
+                                }
+                            }
+                        }
+                    }
+
+                    return TRUE;
                 }
             }
             break;
