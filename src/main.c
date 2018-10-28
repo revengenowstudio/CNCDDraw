@@ -790,11 +790,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 case WMSZ_TOPRIGHT:
                                 case WMSZ_BOTTOMRIGHT:
                                 case WMSZ_RIGHT:
-                                    windowrc->right += ddraw->width - clientrc.right; break;
+                                {
+                                    windowrc->right += ddraw->width - clientrc.right; 
+                                    break;
+                                }
                                 case WMSZ_TOPLEFT:
                                 case WMSZ_BOTTOMLEFT:
                                 case WMSZ_LEFT:
-                                    windowrc->left -= ddraw->width - clientrc.right; break;
+                                {
+                                    windowrc->left -= ddraw->width - clientrc.right; 
+                                    break;
+                                }
                             }
                         }
                             
@@ -806,13 +812,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                                 case WMSZ_BOTTOMRIGHT:
                                 case WMSZ_BOTTOM:
                                 {
-                                    windowrc->bottom += ddraw->height - clientrc.bottom; break;
+                                    windowrc->bottom += ddraw->height - clientrc.bottom; 
+                                    break;
                                 }
                                 case WMSZ_TOPLEFT:
                                 case WMSZ_TOPRIGHT:
                                 case WMSZ_TOP:
                                 {
-                                    windowrc->top -= ddraw->height - clientrc.bottom; break;
+                                    windowrc->top -= ddraw->height - clientrc.bottom; 
+                                    break;
                                 }
                             }
                         }
