@@ -725,21 +725,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
         }
-        case WM_GETMINMAXINFO:
-        {
-            LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
-            if (ddraw)
-            {
-                RECT rect = { 0, 0, ddraw->width, ddraw->height };
-                AdjustWindowRectEx(&rect, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE));
-
-                lpMMI->ptMinTrackSize.x = rect.right - rect.left;
-                lpMMI->ptMinTrackSize.y = rect.bottom - rect.top;
-
-                return 0;
-            }
-            break;
-        }
         case WM_SIZING:
         {
             RECT *windowrc = (RECT *)lParam;
