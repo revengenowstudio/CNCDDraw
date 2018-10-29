@@ -564,38 +564,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     return DD_OK;
 }
 
-/* minimal window proc for dummy renderer as everything is emulated */
-LRESULT CALLBACK dummy_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    switch(uMsg)
-    {
-        /* if the plugin window changes */
-        case WM_USER:
-            ddraw->hWnd = (HWND)lParam;
-            ddraw->render.hDC = GetDC(ddraw->hWnd);
-        case WM_ACTIVATEAPP:
-            if (wParam == TRUE)
-            {
-                break;
-            }
-        case WM_SIZE:
-        case WM_NCACTIVATE:
-            return DefWindowProc(hWnd, uMsg, wParam, lParam);
-        case WM_MOUSEMOVE:
-        case WM_NCMOUSEMOVE:
-            ddraw->cursor.x = GET_X_LPARAM(lParam);
-            ddraw->cursor.y = GET_Y_LPARAM(lParam);
-            break;
-    }
-
-    if (ddraw->WndProc)
-    {
-        return ddraw->WndProc(hWnd, uMsg, wParam, lParam);
-    }
-
-    return DefWindowProc(hWnd, uMsg, wParam, lParam);
-}
-
 // LastSetWindowPosTick = Workaround for a wine+gnome bug where each SetWindowPos call triggers a WA_INACTIVE message
 DWORD LastSetWindowPosTick;
 
@@ -1094,35 +1062,38 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
         This->hWnd = hWnd;
     }
 
-    mouse_init();
-
-    This->WndProc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
-
-    SetWindowLong(This->hWnd, GWL_WNDPROC, (LONG)WndProc);
-
-    if(!This->render.hDC)
+    if (!This->WndProc)
     {
-        This->render.hDC = GetDC(This->hWnd);
+        mouse_init();
 
-        memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
-        pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-        pfd.nVersion = 1;
-        pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | (This->renderer == render_main ? PFD_SUPPORT_OPENGL : 0);
-        pfd.iPixelType = PFD_TYPE_RGBA;
-        pfd.cColorBits = ddraw->render.bpp ? ddraw->render.bpp : ddraw->mode.dmBitsPerPel;
-        pfd.iLayerType = PFD_MAIN_PLANE;
-        SetPixelFormat( This->render.hDC, ChoosePixelFormat( This->render.hDC, &pfd ), &pfd );
+        This->WndProc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
+
+        SetWindowLong(This->hWnd, GWL_WNDPROC, (LONG)WndProc);
+
+        if (!This->render.hDC)
+        {
+            This->render.hDC = GetDC(This->hWnd);
+
+            memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+            pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+            pfd.nVersion = 1;
+            pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | (This->renderer == render_main ? PFD_SUPPORT_OPENGL : 0);
+            pfd.iPixelType = PFD_TYPE_RGBA;
+            pfd.cColorBits = ddraw->render.bpp ? ddraw->render.bpp : ddraw->mode.dmBitsPerPel;
+            pfd.iLayerType = PFD_MAIN_PLANE;
+            SetPixelFormat(This->render.hDC, ChoosePixelFormat(This->render.hDC, &pfd), &pfd);
+        }
+
+        SetCursor(LoadCursor(NULL, IDC_ARROW));
+
+        GetWindowText(This->hWnd, (LPTSTR)&This->title, sizeof(This->title));
+
+        ddraw->isredalert = strcmp(This->title, "Red Alert") == 0;
+        ddraw->iscnc1 = strcmp(This->title, "Command & Conquer") == 0;
+
+        if (This->vhack && !ddraw->isredalert && !ddraw->iscnc1)
+            This->vhack = 0;
     }
-
-    SetCursor(LoadCursor(NULL, IDC_ARROW));
-
-    GetWindowText(This->hWnd, (LPTSTR)&This->title, sizeof(This->title));
-
-    ddraw->isredalert = strcmp(This->title, "Red Alert") == 0;
-    ddraw->iscnc1 = strcmp(This->title, "Command & Conquer") == 0;
-    
-    if (This->vhack && !ddraw->isredalert && !ddraw->iscnc1)
-        This->vhack = 0;
 
     return DD_OK;
 }

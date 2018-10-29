@@ -67,7 +67,7 @@ void Settings_Load()
     GetString("shader", "", ddraw->shader, sizeof(ddraw->shader));
 
     GetString("renderer", "auto", tmp, sizeof(tmp));
-    printf("DirectDrawCreate: Using %s renderer\n", tmp);
+    printf("Using %s renderer\n", tmp);
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
     {
@@ -207,6 +207,18 @@ static void CreateSettingsIni()
             "\n"
             "[C&C95]\n"
             "sleep=10\n"
+            "\n"
+            "[empires]\n"
+            "hidemouse=false\n"
+            "border=false\n"
+            "posX=0\n"
+            "posY=0\n"
+            "\n"
+            "[empiresx]\n"
+            "hidemouse=false\n"
+            "border=false\n"
+            "posX=0\n"
+            "posY=0\n"
             "\n"
             "[EMPIRES2]\n"
             "hidemouse=false\n"
