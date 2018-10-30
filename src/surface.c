@@ -561,6 +561,15 @@ HRESULT __stdcall ddraw_surface_SetPalette(IDirectDrawSurfaceImpl *This, LPDIREC
     This->palette = (IDirectDrawPaletteImpl *)lpDDPalette;
     This->palette->data_rgb = &This->bmi->bmiColors[0];
 
+    int i;
+    for (i = 0; i < 256; i++)
+    {
+        This->palette->data_rgb[i].rgbRed = This->palette->data_bgr[i] & 0xFF;
+        This->palette->data_rgb[i].rgbGreen = (This->palette->data_bgr[i] >> 8) & 0xFF;
+        This->palette->data_rgb[i].rgbBlue = (This->palette->data_bgr[i] >> 16) & 0xFF;
+        This->palette->data_rgb[i].rgbReserved = 0;
+    }
+
     LeaveCriticalSection(&ddraw->cs);
 
     return DD_OK;
