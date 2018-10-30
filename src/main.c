@@ -354,6 +354,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
 
+    //lock mouse in windowed mode if resolution changed during runtime
+    BOOL lockMouse = (This->width || This->height) && (This->width != width || This->height != height);
+
     This->render.width = WindowRect.right;
     This->render.height = WindowRect.bottom;
 
@@ -526,6 +529,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
         if (This->renderer == render_d3d9_main)
             InitDirect3D9();
+
+        if (lockMouse)
+            mouse_lock();
     }
     else
     {
