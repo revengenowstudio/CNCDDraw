@@ -46,7 +46,7 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
 
     if(This->Ref == 0)
     {
-        if(This->caps == DDSCAPS_PRIMARYSURFACE)
+        if(This->caps & DDSCAPS_PRIMARYSURFACE)
         {
             EnterCriticalSection(&ddraw->cs);
             ddraw->primary = NULL;
