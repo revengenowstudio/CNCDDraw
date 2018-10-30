@@ -28,6 +28,9 @@ DWORD WINAPI render_soft_main(void);
 HRESULT __stdcall ddraw_surface_QueryInterface(IDirectDrawSurfaceImpl *This, REFIID riid, void **obj)
 {
     printf("DirectDrawSurface::QueryInterface(This=%p, riid=%08X, obj=%p) ???\n", This, (unsigned int)riid, obj);
+
+    *obj = This;
+
     return S_OK;
 }
 

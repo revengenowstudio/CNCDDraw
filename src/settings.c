@@ -241,6 +241,9 @@ static void CreateSettingsIni()
             "posX=0\n"
             "posY=0\n"
             "\n"
+            "[DKReign]\n"
+            "sleep=10\n"
+            "\n"
 
             , fh);
         fclose(fh);
