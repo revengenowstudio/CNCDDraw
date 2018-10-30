@@ -299,7 +299,7 @@ HRESULT __stdcall ddraw_surface_DeleteAttachedSurface(IDirectDrawSurfaceImpl *Th
 
 HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSurfaceDesc)
 {
-#if DEBUG_X
+#if _DEBUG_X
     printf("IDirectDrawSurface::GetSurfaceDesc(This=%p, lpDDSurfaceDesc=%p)\n", This, lpDDSurfaceDesc);
 #endif
 
