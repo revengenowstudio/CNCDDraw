@@ -1263,6 +1263,10 @@ HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContex
         FreeLibrary(hddraw);
     }
     */
+
+    if (lpCallback)
+        lpCallback(NULL, "display", "(null)", lpContext);
+
     return DD_OK;
 }
 

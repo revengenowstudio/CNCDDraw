@@ -232,6 +232,10 @@ static void CreateSettingsIni()
             "posX=0\n"
             "posY=0\n"
             "\n"
+            "[olwin]\n"
+            "noactivateapp=true\n"
+            "sleep=10\n"
+            "\n"
 
             , fh);
         fclose(fh);

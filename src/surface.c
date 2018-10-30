@@ -309,7 +309,7 @@ HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPD
     lpDDSurfaceDesc->dwHeight = This->height;
     lpDDSurfaceDesc->lPitch = This->lPitch;
     lpDDSurfaceDesc->lpSurface = This->surface;
-    lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
+    lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
     lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
 
     if (This->bpp == 16)
