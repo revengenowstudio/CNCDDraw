@@ -451,10 +451,24 @@ HRESULT __stdcall ddraw_surface_GetPalette(IDirectDrawSurfaceImpl *This, LPDIREC
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT a)
+HRESULT __stdcall ddraw_surface_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT ddpfPixelFormat)
 {
-    printf("IDirectDrawSurface::GetPixelFormat(This=%p, ...) ???\n", This);
-    return DD_OK;
+    printf("IDirectDrawSurface::GetPixelFormat(This=%p, ...)\n", This);
+
+    DWORD size = ddpfPixelFormat->dwSize;
+
+    if (size == sizeof(DDPIXELFORMAT))
+    {
+        memset(ddpfPixelFormat, 0, sizeof(DDPIXELFORMAT));
+
+        ddpfPixelFormat->dwSize = size;
+        ddpfPixelFormat->dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+        ddpfPixelFormat->dwRGBBitCount = 8;
+
+        return DD_OK;
+    }
+
+    return DDERR_INVALIDPARAMS;
 }
 
 HRESULT __stdcall ddraw_surface_Initialize(IDirectDrawSurfaceImpl *This, LPDIRECTDRAW a, LPDDSURFACEDESC b)

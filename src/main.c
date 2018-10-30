@@ -147,7 +147,6 @@ HRESULT __stdcall ddraw_DuplicateSurface(IDirectDrawImpl *This, LPDIRECTDRAWSURF
 HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback)
 {
     DWORD i = 0;
-    DEVMODE m;
     DDSURFACEDESC s;
 
     printf("DirectDraw::EnumDisplayModes(This=%p, dwFlags=%08X, lpDDSurfaceDesc=%p, lpContext=%p, lpEnumModesCallback=%p)\n", This, (unsigned int)dwFlags, lpDDSurfaceDesc, lpContext, lpEnumModesCallback);
@@ -157,6 +156,41 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         return DDERR_UNSUPPORTED;
     }
 
+    SIZE resolutions[] =
+    {
+        { 320, 200 },
+        { 640, 400 },
+        { 640, 480 },
+        { 800, 600 },
+        { 1024, 768 },
+        { 1280, 960 },
+        { 1280, 1024 },
+        { 1280, 720 },
+        { 1600, 900 },
+        { 1920, 1080 },
+    };
+
+    for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
+    {
+        memset(&s, 0, sizeof(DDSURFACEDESC));
+        s.dwSize = sizeof(DDSURFACEDESC);
+        s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
+        s.dwHeight = resolutions[i].cy;
+        s.dwWidth = resolutions[i].cx;
+        s.dwRefreshRate = 60;
+        s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+        s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+        s.ddpfPixelFormat.dwRGBBitCount = 8;
+
+        if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+        {
+            printf("    DDENUMRET_CANCEL returned, stopping\n");
+            break;
+        }
+    }
+
+    /* Some games crash when you feed them with too many resolutions...
+    DEVMODE m;
     while (EnumDisplaySettings(NULL, i, &m))
     {
 #if _DEBUG_X
@@ -179,7 +213,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         }
         i++;
     }
-
+    */
     return DD_OK;
 }
 
@@ -1064,7 +1098,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
     /* Red Alert for some weird reason does this on Windows XP */
     if(hWnd == NULL)
     {
-        return DDERR_INVALIDPARAMS;
+        return DD_OK;
     }
 
     if (This->hWnd == NULL)
