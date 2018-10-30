@@ -20,6 +20,7 @@
 #include "main.h"
 #include "surface.h"
 
+void dump_ddbltflags(DWORD dwFlags);
 void dump_ddscaps(DWORD dwCaps);
 void dump_ddsd(DWORD dwFlags);
 DWORD WINAPI render_soft_main(void);
@@ -93,32 +94,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 #if _DEBUG_X
     printf("DirectDrawSurface::Blt(This=%p, lpDestRect=%p, lpDDSrcSurface=%p, lpSrcRect=%p, dwFlags=%08X, lpDDBltFx=%p)\n", This, lpDestRect, lpDDSrcSurface, lpSrcRect, (int)dwFlags, lpDDBltFx);
 
-    if (dwFlags & DDBLT_ALPHADEST) printf("  DDBLT_ALPHADEST\n");
-    if (dwFlags & DDBLT_ALPHADESTCONSTOVERRIDE) printf("  DDBLT_ALPHADESTCONSTOVERRIDE\n");
-    if (dwFlags & DDBLT_ALPHADESTNEG) printf("  DDBLT_ALPHADESTNEG\n");
-    if (dwFlags & DDBLT_ALPHADESTSURFACEOVERRIDE) printf("  DDBLT_ALPHADESTSURFACEOVERRIDE\n");
-    if (dwFlags & DDBLT_ALPHAEDGEBLEND) printf("  DDBLT_ALPHAEDGEBLEND\n");
-    if (dwFlags & DDBLT_ALPHASRC) printf("  DDBLT_ALPHASRC\n");
-    if (dwFlags & DDBLT_ALPHASRCCONSTOVERRIDE) printf("  DDBLT_ALPHASRCCONSTOVERRIDE\n");
-    if (dwFlags & DDBLT_ALPHASRCNEG) printf("  DDBLT_ALPHASRCNEG\n");
-    if (dwFlags & DDBLT_ALPHASRCSURFACEOVERRIDE) printf("  DDBLT_ALPHASRCSURFACEOVERRIDE\n");
-    if (dwFlags & DDBLT_ASYNC) printf("  DDBLT_ASYNC\n");
-    if (dwFlags & DDBLT_COLORFILL) printf("  DDBLT_COLORFILL\n");
-    if (dwFlags & DDBLT_DDFX) printf("  DDBLT_DDFX\n");
-    if (dwFlags & DDBLT_DDROPS) printf("  DDBLT_DDROPS\n");
-    if (dwFlags & DDBLT_KEYDEST) printf("  DDBLT_KEYDEST\n");
-    if (dwFlags & DDBLT_KEYDESTOVERRIDE) printf("  DDBLT_KEYDESTOVERRIDE\n");
-    if (dwFlags & DDBLT_KEYSRC) printf("  DDBLT_KEYSRC\n");
-    if (dwFlags & DDBLT_KEYSRCOVERRIDE) printf("  DDBLT_KEYSRCOVERRIDE\n");
-    if (dwFlags & DDBLT_ROP) printf("  DDBLT_ROP\n");
-    if (dwFlags & DDBLT_ROTATIONANGLE) printf("  DDBLT_ROTATIONANGLE\n");
-    if (dwFlags & DDBLT_ZBUFFER) printf("  DDBLT_ZBUFFER\n");
-    if (dwFlags & DDBLT_ZBUFFERDESTCONSTOVERRIDE) printf("  DDBLT_ZBUFFERDESTCONSTOVERRIDE\n");
-    if (dwFlags & DDBLT_ZBUFFERDESTOVERRIDE) printf("  DDBLT_ZBUFFERDESTOVERRIDE\n");
-    if (dwFlags & DDBLT_ZBUFFERSRCCONSTOVERRIDE) printf("  DDBLT_ZBUFFERSRCCONSTOVERRIDE\n");
-    if (dwFlags & DDBLT_ZBUFFERSRCOVERRIDE) printf("  DDBLT_ZBUFFERSRCOVERRIDE\n");
-    if (dwFlags & DDBLT_WAIT) printf("  DDBLT_WAIT\n");
-    if (dwFlags & DDBLT_DEPTHFILL) printf("  DDBLT_DEPTHFILL\n");
+    dump_ddbltflags(dwFlags);
     
     if(lpDestRect)
     {
@@ -238,7 +214,7 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
     IDirectDrawSurfaceImpl *Source = (IDirectDrawSurfaceImpl *)lpDDSrcSurface;
 
 #if _DEBUG_X
-    printf("IDirectDrawSurface::BltFast(This=%p, ...)\n", This);
+    printf("IDirectDrawSurface::BltFast(This=%p, x=%d, y=%d, lpDDSrcSurface=%p, lpSrcRect=%p, flags=%08X)\n", This, dst_x, dst_y, lpDDSrcSurface, lpSrcRect, flags);
 
     if (flags & DDBLTFAST_NOCOLORKEY)
     {
@@ -367,10 +343,10 @@ HRESULT __stdcall ddraw_surface_EnumOverlayZOrders(IDirectDrawSurfaceImpl *This,
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE a, DWORD b)
+HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE surface, DWORD flags)
 {
 #if _DEBUG_X
-    printf("IDirectDrawSurface::Flip(This=%p, ...)\n", This);
+    printf("IDirectDrawSurface::Flip(This=%p, surface=%p, flags=%08X)\n", This, surface, flags);
 #endif
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
@@ -394,9 +370,16 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_surface_GetAttachedSurface(IDirectDrawSurfaceImpl *This, LPDDSCAPS a, LPDIRECTDRAWSURFACE FAR *b)
+HRESULT __stdcall ddraw_surface_GetAttachedSurface(IDirectDrawSurfaceImpl *This, LPDDSCAPS lpDdsCaps, LPDIRECTDRAWSURFACE FAR *surface)
 {
-    printf("IDirectDrawSurface::GetAttachedSurface(This=%p, ...) ???\n", This);
+    printf("IDirectDrawSurface::GetAttachedSurface(This=%p, dwCaps=%08X, surface=%p) ???\n", This, lpDdsCaps->dwCaps, surface);
+    
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && (lpDdsCaps->dwCaps & DDSCAPS_BACKBUFFER))
+    {
+        This->Ref++;
+        *surface = (LPDIRECTDRAWSURFACE)This;
+    }
+
     return DD_OK;
 }
 
@@ -741,8 +724,114 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
     return DD_OK;
 }
 
+void dump_ddbltflags(DWORD dwFlags)
+{
+    if (dwFlags & DDBLT_ALPHADEST) {
+        printf("  DDBLT_ALPHADEST\n");
+    }
+    if (dwFlags & DDBLT_ALPHADESTCONSTOVERRIDE) {
+        printf("  DDBLT_ALPHADESTCONSTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ALPHADESTNEG) {
+        printf("  DDBLT_ALPHADESTNEG\n");
+    }
+    if (dwFlags & DDBLT_ALPHADESTSURFACEOVERRIDE) {
+        printf("  DDBLT_ALPHADESTSURFACEOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ALPHAEDGEBLEND) {
+        printf("  DDBLT_ALPHAEDGEBLEND\n");
+    }
+    if (dwFlags & DDBLT_ALPHASRC) {
+        printf("  DDBLT_ALPHASRC\n");
+    }
+    if (dwFlags & DDBLT_ALPHASRCCONSTOVERRIDE) {
+        printf("  DDBLT_ALPHASRCCONSTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ALPHASRCNEG) {
+        printf("  DDBLT_ALPHASRCNEG\n");
+    }
+    if (dwFlags & DDBLT_ALPHASRCSURFACEOVERRIDE) {
+        printf("  DDBLT_ALPHASRCSURFACEOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ASYNC) {
+        printf("  DDBLT_ASYNC\n");
+    }
+    if (dwFlags & DDBLT_COLORFILL) {
+        printf("  DDBLT_COLORFILL\n");
+    }
+    if (dwFlags & DDBLT_DDFX) {
+        printf("  DDBLT_DDFX\n");
+    }
+    if (dwFlags & DDBLT_DDROPS) {
+        printf("  DDBLT_DDROPS\n");
+    }
+    if (dwFlags & DDBLT_KEYDEST) {
+        printf("  DDBLT_KEYDEST\n");
+    }
+    if (dwFlags & DDBLT_KEYDESTOVERRIDE) {
+        printf("  DDBLT_KEYDESTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_KEYSRC) {
+        printf("  DDBLT_KEYSRC\n");
+    }
+    if (dwFlags & DDBLT_KEYSRCOVERRIDE) {
+        printf("  DDBLT_KEYSRCOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ROP) {
+        printf("  DDBLT_ROP\n");
+    }
+    if (dwFlags & DDBLT_ROTATIONANGLE) {
+        printf("  DDBLT_ROTATIONANGLE\n");
+    }
+    if (dwFlags & DDBLT_ZBUFFER) {
+        printf("  DDBLT_ZBUFFER\n");
+    }
+    if (dwFlags & DDBLT_ZBUFFERDESTCONSTOVERRIDE) {
+        printf("  DDBLT_ZBUFFERDESTCONSTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ZBUFFERDESTOVERRIDE) {
+        printf("  DDBLT_ZBUFFERDESTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ZBUFFERSRCCONSTOVERRIDE) {
+        printf("  DDBLT_ZBUFFERSRCCONSTOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_ZBUFFERSRCOVERRIDE) {
+        printf("  DDBLT_ZBUFFERSRCOVERRIDE\n");
+    }
+    if (dwFlags & DDBLT_WAIT) {
+        printf("  DDBLT_WAIT\n");
+    }
+    if (dwFlags & DDBLT_DEPTHFILL) {
+        printf("  DDBLT_DEPTHFILL\n");
+    }
+}
+
 void dump_ddscaps(DWORD dwCaps)
 {
+    if (dwCaps & DDSCAPS_ALPHA)
+    {
+        printf("    DDSCAPS_ALPHA\n");
+    }
+    if (dwCaps & DDSCAPS_BACKBUFFER)
+    {
+        printf("    DDSCAPS_BACKBUFFER\n");
+    }
+    if (dwCaps & DDSCAPS_FLIP)
+    {
+        printf("    DDSCAPS_FLIP\n");
+    }
+    if (dwCaps & DDSCAPS_FRONTBUFFER)
+    {
+        printf("    DDSCAPS_FRONTBUFFER\n");
+    }
+    if (dwCaps & DDSCAPS_PALETTE)
+    {
+        printf("    DDSCAPS_PALETTE\n");
+    }
+    if (dwCaps & DDSCAPS_TEXTURE)
+    {
+        printf("    DDSCAPS_TEXTURE\n");
+    }
     if(dwCaps & DDSCAPS_PRIMARYSURFACE)
     {
         printf("    DDSCAPS_PRIMARYSURFACE\n");

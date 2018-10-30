@@ -169,8 +169,8 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         s.dwWidth = m.dmPelsWidth;
         s.dwRefreshRate = m.dmDisplayFrequency;
         s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-        s.ddpfPixelFormat.dwFlags = m.dmBitsPerPel == 8 ? DDPF_PALETTEINDEXED8 : DDPF_RGB;
-        s.ddpfPixelFormat.dwRGBBitCount = m.dmBitsPerPel;
+        s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+        s.ddpfPixelFormat.dwRGBBitCount = 8;
 
         if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
         {
@@ -255,9 +255,10 @@ HRESULT __stdcall ddraw_GetScanLine(IDirectDrawImpl *This, LPDWORD a)
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_GetVerticalBlankStatus(IDirectDrawImpl *This, LPBOOL a)
+HRESULT __stdcall ddraw_GetVerticalBlankStatus(IDirectDrawImpl *This, LPBOOL lpbIsInVB)
 {
     printf("DirectDraw::GetVerticalBlankStatus(This=%p, ...) ???\n", This);
+    *lpbIsInVB = TRUE;
     return DD_OK;
 }
 
@@ -317,6 +318,9 @@ void InitDirect3D9()
 HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp)
 {
     printf("DirectDraw::SetDisplayMode(This=%p, width=%d, height=%d, bpp=%d)\n", This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp);
+
+    if (bpp != 8)
+        return DDERR_INVALIDMODE;
 
     if (This->render.thread)
     {
@@ -1205,6 +1209,20 @@ struct IDirectDrawImplVtbl iface =
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
 {
     printf("DirectDrawEnumerateA(lpCallback=%p, lpContext=%p) ???\n", lpCallback, lpContext);
+    /*
+    HMODULE hddraw = LoadLibrary("system32\\ddraw.dll");
+
+    if (hddraw)
+    {
+        HRESULT(WINAPI *DDrawEnumerateA)(LPDDENUMCALLBACK, LPVOID) = 
+            (HRESULT(WINAPI *)(LPDDENUMCALLBACK, LPVOID))GetProcAddress(hddraw, "DirectDrawEnumerateA");
+
+        if (DDrawEnumerateA)
+            return DDrawEnumerateA(lpCallback, lpContext);
+
+        FreeLibrary(hddraw);
+    }
+    */
     return DD_OK;
 }
 
