@@ -236,6 +236,11 @@ static void CreateSettingsIni()
             "noactivateapp=true\n"
             "sleep=10\n"
             "\n"
+            "[KEEPER95]\n"
+            "border=false\n"
+            "posX=0\n"
+            "posY=0\n"
+            "\n"
 
             , fh);
         fclose(fh);

@@ -51,5 +51,6 @@ struct IDirectDrawPaletteImplVtbl
 } IDirectDrawPaletteImplVtbl;
 
 HRESULT __stdcall ddraw_CreatePalette(IDirectDrawImpl *This, DWORD dwFlags, LPPALETTEENTRY DDColorArray, LPDIRECTDRAWPALETTE FAR * DDPalette, IUnknown FAR * unkOuter);
+extern IDirectDrawPaletteImpl *LastFreedPalette;
 
 #endif

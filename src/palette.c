@@ -19,6 +19,8 @@
 #include "palette.h"
 #include "surface.h"
 
+IDirectDrawPaletteImpl *LastFreedPalette; // Dungeon Keeper hack
+
 HRESULT __stdcall ddraw_palette_GetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwBase, DWORD dwNumEntries, LPPALETTEENTRY lpEntries)
 {
     int i, x;
@@ -91,6 +93,7 @@ ULONG __stdcall ddraw_palette_Release(IDirectDrawPaletteImpl *This)
 
     if(This->Ref == 0)
     {
+        LastFreedPalette = This;
         HeapFree(GetProcessHeap(), 0, This);
         return 0;
     }
