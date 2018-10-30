@@ -21,17 +21,17 @@
 
 HRESULT __stdcall ddraw_palette_GetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwBase, DWORD dwNumEntries, LPPALETTEENTRY lpEntries)
 {
-    int i;
+    int i, x;
 
     printf("DirectDrawPalette::GetEntries(This=%p, dwFlags=%08X, dwBase=%d, dwNumEntries=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwBase, (int)dwNumEntries, lpEntries);
 
-    for(i=dwBase;i<dwBase+dwNumEntries;i++)
+    for (i = dwBase, x = 0; i < dwBase + dwNumEntries; i++, x++)
     {
         if (This->data_rgb)
         {
-            lpEntries[i].peRed = This->data_rgb[i].rgbRed;
-            lpEntries[i].peGreen = This->data_rgb[i].rgbGreen;
-            lpEntries[i].peBlue = This->data_rgb[i].rgbBlue;
+            lpEntries[x].peRed = This->data_rgb[i].rgbRed;
+            lpEntries[x].peGreen = This->data_rgb[i].rgbGreen;
+            lpEntries[x].peBlue = This->data_rgb[i].rgbBlue;
         }
     }
 
@@ -40,26 +40,26 @@ HRESULT __stdcall ddraw_palette_GetEntries(IDirectDrawPaletteImpl *This, DWORD d
 
 HRESULT __stdcall ddraw_palette_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStartingEntry, DWORD dwCount, LPPALETTEENTRY lpEntries)
 {
-    int i;
+    int i, x;
 
 #if _DEBUG_X
     printf("DirectDrawPalette::SetEntries(This=%p, dwFlags=%08X, dwStartingEntry=%d, dwCount=%d, lpEntries=%p)\n", This, (int)dwFlags, (int)dwStartingEntry, (int)dwCount, lpEntries);
 #endif
 
-    for(i=dwStartingEntry;i<dwStartingEntry+dwCount;i++)
+    for (i = dwStartingEntry, x = 0; i < dwStartingEntry + dwCount; i++, x++)
     {
-        This->data_bgr[i] = (lpEntries[i].peBlue<<16)|(lpEntries[i].peGreen<<8)|lpEntries[i].peRed;
+        This->data_bgr[i] = (lpEntries[x].peBlue << 16) | (lpEntries[x].peGreen << 8) | lpEntries[x].peRed;
 
         if (This->data_rgb)
         {
-            This->data_rgb[i].rgbRed = lpEntries[i].peRed;
-            This->data_rgb[i].rgbGreen = lpEntries[i].peGreen;
-            This->data_rgb[i].rgbBlue = lpEntries[i].peBlue;
+            This->data_rgb[i].rgbRed = lpEntries[x].peRed;
+            This->data_rgb[i].rgbGreen = lpEntries[x].peGreen;
+            This->data_rgb[i].rgbBlue = lpEntries[x].peBlue;
             This->data_rgb[i].rgbReserved = 0;
         }
     }
-    
-    if(ddraw->primary && ddraw->primary->palette == This && ddraw->render.run)
+
+    if (ddraw->primary && ddraw->primary->palette == This && ddraw->render.run)
     {
         InterlockedExchange(&ddraw->render.paletteUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
