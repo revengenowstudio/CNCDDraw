@@ -32,6 +32,7 @@ extern BOOL ShowDriverWarning;
 extern RECT WindowRect;
 
 BOOL detect_cutscene();
+void LimitGameTicks();
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 
@@ -104,8 +105,8 @@ typedef struct IDirectDrawImpl
     BOOL hidemouse;
     char shader[MAX_PATH];
     BOOL wine;
-    int sleep;
     LONG minimized;
+    DWORD ticklength;
     
 } IDirectDrawImpl;
 

@@ -131,6 +131,24 @@ BOOL detect_cutscene()
     return FALSE;
 }
 
+void LimitGameTicks()
+{
+    static DWORD nextGameTick;
+    if (!nextGameTick)
+    {
+        nextGameTick = timeGetTime();
+        return;
+    }
+    nextGameTick += ddraw->ticklength;
+    DWORD tickCount = timeGetTime();
+
+    int sleepTime = nextGameTick - tickCount;
+    if (sleepTime <= 0 || sleepTime > ddraw->ticklength)
+        nextGameTick = tickCount;
+    else
+        Sleep(sleepTime);
+}
+
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
     printf("DirectDraw::Compact(This=%p) ???\n", This);

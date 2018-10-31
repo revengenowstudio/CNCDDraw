@@ -43,12 +43,15 @@ void Settings_Load()
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->hidemouse = GetBool("hidemouse", TRUE);
 
-    ddraw->sleep = GetInt("sleep", 0);
     ddraw->render.maxfps = GetInt("maxfps", 125);
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
+
+    int maxTicks = GetInt("maxgameticks", 0);
+    if (maxTicks > 0 && maxTicks < 1000)
+        ddraw->ticklength = 1000.0f / maxTicks;
 
     GetString("screenshotKey", "G", tmp, sizeof(tmp));
     ddraw->screenshotKey = toupper(tmp[0]);
@@ -195,18 +198,18 @@ static void CreateSettingsIni()
             "devmode=false\n"
             "; preliminary libretro shader support - e.g. cubic.glsl (OpenGL only) https://github.com/libretro/glsl-shaders\n"
             "shader=\n"
-            "; Sleep for X ms after drawing each frame (Slows down scrollrate on C&C95 / Prevents visual glitches on Carmageddon)\n"
-            "sleep=0\n"
+            "; Max game ticks per second (Can be used to slow down a too fast running game)\n"
+            "maxgameticks=0\n"
             "; Hide/Show the mouse cursor on lock/unlock (Ctrl+Tab)\n"
             "hidemouse=true\n"
             "\n"
             "[CARMA95]\n"
             "fakecursorpos=false\n"
             "noactivateapp=true\n"
-            "sleep=33\n"
+            "maxgameticks=30\n"
             "\n"
             "[C&C95]\n"
-            "sleep=10\n"
+            "maxgameticks=60\n"
             "\n"
             "[empires]\n"
             "hidemouse=false\n"
@@ -234,7 +237,7 @@ static void CreateSettingsIni()
             "\n"
             "[olwin]\n"
             "noactivateapp=true\n"
-            "sleep=10\n"
+            "maxgameticks=60\n"
             "\n"
             "[KEEPER95]\n"
             "border=false\n"
@@ -242,7 +245,7 @@ static void CreateSettingsIni()
             "posY=0\n"
             "\n"
             "[DKReign]\n"
-            "sleep=10\n"
+            "maxgameticks=60\n"
             "\n"
 
             , fh);

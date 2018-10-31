@@ -199,8 +199,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             SwitchToThread();
         }
 
-        if (ddraw->sleep > 0)
-            Sleep(ddraw->sleep);
+        if (ddraw->ticklength > 0)
+            LimitGameTicks();
     }
 
     return DD_OK;
@@ -366,8 +366,8 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             SwitchToThread();
         }
 
-        if (ddraw->sleep > 0)
-            Sleep(ddraw->sleep);
+        if (ddraw->ticklength > 0)
+            LimitGameTicks();
     }
 
     return DD_OK;
