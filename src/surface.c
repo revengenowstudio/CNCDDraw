@@ -355,14 +355,16 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+        
         if (ddraw->renderer == render_soft_main)
         {
             ResetEvent(ddraw->render.ev);
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             WaitForSingleObject(ddraw->render.ev, INFINITE);
         }
         else
         {
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             SwitchToThread();
         }
 
