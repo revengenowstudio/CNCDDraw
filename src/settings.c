@@ -204,6 +204,7 @@ static void CreateSettingsIni()
             "hidemouse=true\n"
             "\n"
             "[CARMA95]\n"
+            "renderer=opengl\n"
             "fakecursorpos=false\n"
             "noactivateapp=true\n"
             "maxgameticks=30\n"
