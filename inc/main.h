@@ -54,7 +54,6 @@ typedef struct IDirectDrawImpl
     BOOL windowed;
     BOOL border;
     BOOL boxing;
-    BOOL windowed_init;
     DEVMODE mode;
     struct IDirectDrawSurfaceImpl *primary;
     char title[128];
@@ -100,7 +99,6 @@ typedef struct IDirectDrawImpl
     char screenshotKey;
     BOOL fullscreen;
     BOOL maintas;
-    BOOL fakecursorpos;
     BOOL noactivateapp;
     BOOL hidemouse;
     char shader[MAX_PATH];

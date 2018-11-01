@@ -104,18 +104,16 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
     if (lpPoint)
     {
-        if (ddraw->fakecursorpos)
-        {
-            lpPoint->x = (int)ddraw->cursor.x;
-            lpPoint->y = (int)ddraw->cursor.y;
-        }
-        else if (ddraw->locked || ddraw->devmode)
+        if (ddraw->devmode)
         {
             lpPoint->x = realpt.x;
             lpPoint->y = realpt.y;
         }
         else
-            return FALSE;
+        {
+            lpPoint->x = (int)ddraw->cursor.x;
+            lpPoint->y = (int)ddraw->cursor.y;
+        }
     }
     
     return TRUE;
@@ -319,11 +317,124 @@ void mouse_unlock()
     }
 }
 
+BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
+{
+    if (lpRect && ddraw && ddraw->hWnd == hWnd)
+    {
+        lpRect->bottom = ddraw->height;
+        lpRect->left = 0;
+        lpRect->right = ddraw->width;
+        lpRect->top = 0;
+
+        return TRUE;
+    }
+
+    return GetWindowRect(hWnd, lpRect);
+}
+
+BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
+{
+    if (lpRect && ddraw && ddraw->hWnd == hWnd)
+    {
+        lpRect->bottom = ddraw->height;
+        lpRect->left = 0;
+        lpRect->right = ddraw->width;
+        lpRect->top = 0;
+
+        return TRUE;
+    }
+
+    return GetClientRect(hWnd, lpRect);
+}
+
+BOOL WINAPI fake_ClientToScreen(HWND hWnd, LPPOINT lpPoint)
+{
+    return TRUE;
+}
+
+BOOL WINAPI fake_ScreenToClient(HWND hWnd, LPPOINT lpPoint)
+{
+    return TRUE;
+}
+
+BOOL WINAPI fake_SetCursorPos(int X, int Y)
+{
+    POINT pt = { X, Y };
+    return ddraw && ClientToScreen(ddraw->hWnd, &pt) && SetCursorPos(pt.x, pt.y);
+}
+
+HWND WINAPI fake_WindowFromPoint(POINT Point)
+{
+    POINT pt = { Point.x, Point.y };
+    return ddraw && ClientToScreen(ddraw->hWnd, &pt) ? WindowFromPoint(pt) : NULL;
+}
+
+BOOL WINAPI fake_GetClipCursor(LPRECT lpRect)
+{
+    if (lpRect && ddraw)
+    {
+        lpRect->bottom = ddraw->height;
+        lpRect->left = 0;
+        lpRect->right = ddraw->width;
+        lpRect->top = 0;
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL WINAPI fake_GetCursorInfo(PCURSORINFO pci)
+{
+    return pci && ddraw && GetCursorInfo(pci) && ScreenToClient(ddraw->hWnd, &pci->ptScreenPos);
+}
+
+int WINAPI fake_GetSystemMetrics(int nIndex)
+{
+    if (ddraw)
+    {
+        if (nIndex == SM_CXSCREEN)
+            return ddraw->width;
+
+        if (nIndex == SM_CYSCREEN)
+            return ddraw->height;
+    }
+
+    return GetSystemMetrics(nIndex);
+}
+
+BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
+{
+    if (ddraw && ddraw->hWnd == hWnd)
+        return TRUE;
+
+    return SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
+}
+
+BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
+{
+    if (ddraw && ddraw->hWnd == hWnd)
+        return TRUE;
+
+    return MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
+}
+
 void mouse_init()
 {
     HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "ClipCursor", (PROC)fake_ClipCursor);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "ShowCursor", (PROC)fake_ShowCursor);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "SetCursor", (PROC)fake_SetCursor);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetClientRect", (PROC)fake_GetClientRect);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "MoveWindow", (PROC)fake_MoveWindow);
     mouse_active = TRUE;
 }

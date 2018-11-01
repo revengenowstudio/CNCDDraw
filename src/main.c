@@ -406,9 +406,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
 
-    //lock mouse in windowed mode if resolution changed during runtime
-    BOOL lockMouse = (This->width || This->height) && (This->width != width || This->height != height);
-
     This->render.width = WindowRect.right;
     This->render.height = WindowRect.bottom;
 
@@ -448,6 +445,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
     This->render.run = TRUE;
     
+    BOOL lockMouse = ddraw->locked;
     mouse_unlock();
 	
     memset(&This->render.mode, 0, sizeof(DEVMODE));
@@ -577,7 +575,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
         SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
-        This->windowed_init = TRUE;
 
         if (This->renderer == render_d3d9_main)
             InitDirect3D9();
@@ -678,7 +675,6 @@ void ToggleFullscreen()
             MoveWindow(ddraw->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
             ddraw->windowed = TRUE;
-            ddraw->windowed_init = TRUE;
         }
         mouse_lock();
     }
@@ -776,6 +772,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     RECT clientrc = { 0 };
 
+                    // maintain aspect ratio
                     if (ddraw->maintas && 
                         CopyRect(&clientrc, windowrc) &&
                         UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
@@ -809,6 +806,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                     }
 
+                    //enforce minimum window size
                     if (CopyRect(&clientrc, windowrc) &&
                         UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
                         SetRect(&clientrc, 0, 0, clientrc.right - clientrc.left, clientrc.bottom - clientrc.top))
@@ -860,6 +858,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         }
                     }
 
+                    //save new window position
+                    if (CopyRect(&clientrc, windowrc) &&
+                        UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)))
+                    {
+                        WindowRect.left = clientrc.left;
+                        WindowRect.top = clientrc.top;
+                        WindowRect.right = clientrc.right - clientrc.left;
+                        WindowRect.bottom = clientrc.bottom - clientrc.top;
+                    }
+
                     return TRUE;
                 }
             }
@@ -879,16 +887,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_MOVE:
         {
-            if (ddraw->windowed && ddraw->windowed_init)
+            if (ddraw->windowed)
             {
-                int x = (int)(short)LOWORD(lParam);
-                int y = (int)(short)HIWORD(lParam);
-                
-                if (x != -32000) 
-                    WindowRect.left = x; // -32000 = Exit/Minimize
-                
-                if (y != -32000)
-                    WindowRect.top = y;
+                if (inSizeMove)
+                {
+                    int x = (int)(short)LOWORD(lParam);
+                    int y = (int)(short)HIWORD(lParam);
+
+                    if (x != -32000)
+                        WindowRect.left = x; // -32000 = Exit/Minimize
+
+                    if (y != -32000)
+                        WindowRect.top = y;
+                }
             }
             
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
