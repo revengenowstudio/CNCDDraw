@@ -52,9 +52,6 @@ void Settings_Load()
     if (maxTicks > 0 && maxTicks < 1000)
         ddraw->ticklength = 1000.0f / maxTicks;
 
-    GetString("screenshotKey", "G", tmp, sizeof(tmp));
-    ddraw->screenshotKey = toupper(tmp[0]);
-
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;
 
@@ -187,8 +184,6 @@ static void CreateSettingsIni()
             "; Window position, -32000 = center to screen\n"
             "posX=-32000\n"
             "posY=-32000\n"
-            "; Screenshot Hotkey, default = CTRL + G\n"
-            "screenshotKey=G\n"
             "; Hide WM_ACTIVATEAPP messages to prevent freezing on alt+tab (Carmageddon)\n"
             "noactivateapp=false\n"
             "; developer mode (don't lock the cursor)\n"

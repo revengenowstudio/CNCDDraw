@@ -96,7 +96,6 @@ typedef struct IDirectDrawImpl
 	BOOL iscnc1;
     LONG incutscene;
     DWORD (WINAPI *renderer)(void);
-    char screenshotKey;
     BOOL fullscreen;
     BOOL maintas;
     BOOL noactivateapp;

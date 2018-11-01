@@ -1023,15 +1023,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     return 0;
                 }
             }
-
-            if(wParam == VK_CONTROL || wParam == ddraw->screenshotKey)
-            {
-                if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(ddraw->screenshotKey) & 0x8000)
-                {
-                    screenshot(ddraw->primary);
-                    return 0;
-                }
-            }
             break;
 
         case WM_KEYUP:
