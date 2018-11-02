@@ -1176,18 +1176,6 @@ HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HAN
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void **obj)
-{
-    printf("DirectDraw::QueryInterface(This=%p, riid=%08X, obj=%p)\n", This, (unsigned int)riid, obj);
-
-    if (riid && !IsEqualGUID(&IID_IDirectDraw, riid))
-        This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
-
-    *obj = This;
-
-    return S_OK;
-}
-
 ULONG __stdcall ddraw_AddRef(IDirectDrawImpl *This)
 {
     printf("DirectDraw::AddRef(This=%p)\n", This);
@@ -1195,6 +1183,23 @@ ULONG __stdcall ddraw_AddRef(IDirectDrawImpl *This)
     This->Ref++;
 
     return This->Ref;
+}
+
+HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void **obj)
+{
+    printf("DirectDraw::QueryInterface(This=%p, riid=%08X, obj=%p)\n", This, (unsigned int)riid, obj);
+
+    if (riid && !IsEqualGUID(&IID_IDirectDraw, riid))
+    {
+        printf("  IID_IDirectDrawX\n");
+
+        ddraw_AddRef(This);
+        This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
+    }
+
+    *obj = This;
+
+    return S_OK;
 }
 
 ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
