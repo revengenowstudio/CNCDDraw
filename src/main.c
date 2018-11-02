@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <d3d9.h>
+#include <InitGuid.h>
 #include "ddraw.h"
 #include "main.h"
 #include "opengl.h"
@@ -623,6 +624,11 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     return DD_OK;
 }
 
+HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp, DWORD refreshRate, DWORD flags)
+{
+    return ddraw_SetDisplayMode(This, width, height, bpp);
+}
+
 // LastSetWindowPosTick = Workaround for a wine+gnome bug where each SetWindowPos call triggers a WA_INACTIVE message
 DWORD LastSetWindowPosTick;
 
@@ -1173,6 +1179,9 @@ HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HAN
 HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void **obj)
 {
     printf("DirectDraw::QueryInterface(This=%p, riid=%08X, obj=%p)\n", This, (unsigned int)riid, obj);
+
+    if (riid && !IsEqualGUID(&IID_IDirectDraw, riid))
+        This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
 
     *obj = This;
 

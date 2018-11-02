@@ -228,6 +228,11 @@ static void CreateSettingsIni()
             "[battlegrounds_x1]\n"
             "hidemouse=false\n"
             "\n"
+            "[Carma2_SW]\n"
+            "renderer=opengl\n"
+            "noactivateapp=true\n"
+            "maxgameticks=60\n"
+            "\n"
 
             , fh);
         fclose(fh);

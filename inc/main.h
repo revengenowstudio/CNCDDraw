@@ -133,7 +133,12 @@ struct IDirectDrawImplVtbl
     HRESULT(__stdcall *Initialize)(IDirectDrawImpl *, GUID *);
     HRESULT(__stdcall *RestoreDisplayMode)(IDirectDrawImpl *);
     HRESULT(__stdcall *SetCooperativeLevel)(IDirectDrawImpl *, HWND, DWORD);
-    HRESULT(__stdcall *SetDisplayMode)(IDirectDrawImpl *, DWORD, DWORD,DWORD);
+    union
+    {
+        HRESULT(__stdcall *SetDisplayMode1)(IDirectDrawImpl *, DWORD, DWORD, DWORD);
+        HRESULT(__stdcall *SetDisplayMode2)(IDirectDrawImpl *, DWORD, DWORD, DWORD, DWORD, DWORD);
+    };
+    
     HRESULT(__stdcall *WaitForVerticalBlank)(IDirectDrawImpl *, DWORD, HANDLE);
 };
 
