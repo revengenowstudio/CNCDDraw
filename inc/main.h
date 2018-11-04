@@ -104,6 +104,7 @@ typedef struct IDirectDrawImpl
     BOOL wine;
     LONG minimized;
     DWORD ticklength;
+    BOOL altenter;
     
 } IDirectDrawImpl;
 

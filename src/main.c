@@ -368,6 +368,9 @@ void InitDirect3D9()
     }
 }
 
+// LastSetWindowPosTick = Workaround for a wine+gnome bug where each SetWindowPos call triggers a WA_INACTIVE message
+DWORD LastSetWindowPosTick;
+
 HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp)
 {
     printf("DirectDraw::SetDisplayMode(This=%p, width=%d, height=%d, bpp=%d)\n", This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp);
@@ -407,8 +410,17 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
 
-    This->render.width = WindowRect.right;
-    This->render.height = WindowRect.bottom;
+    if (ddraw->altenter)
+    {
+        ddraw->altenter = FALSE;
+        This->render.width = ddraw->width;
+        This->render.height = ddraw->height;
+    }
+    else
+    {
+        This->render.width = WindowRect.right;
+        This->render.height = WindowRect.bottom;
+    }
 
     This->width = width;
     This->height = height;
@@ -601,7 +613,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
 
         SetWindowPos(This->hWnd, HWND_TOPMOST, 0, 0, This->render.width, This->render.height, SWP_SHOWWINDOW);
-        
+        LastSetWindowPosTick = timeGetTime();
+
         mouse_lock();
     }
     
@@ -629,59 +642,28 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
     return ddraw_SetDisplayMode(This, width, height, bpp);
 }
 
-// LastSetWindowPosTick = Workaround for a wine+gnome bug where each SetWindowPos call triggers a WA_INACTIVE message
-DWORD LastSetWindowPosTick;
-
 void ToggleFullscreen()
 {
     if (ddraw->windowed)
     {
         mouse_unlock();
-        if(ChangeDisplaySettings(&ddraw->render.mode, CDS_TEST) == DISP_CHANGE_SUCCESSFUL)
-        {
-            ddraw->windowed = FALSE;
-            
-            SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
-            SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
-            LastSetWindowPosTick = timeGetTime();
-
-            if (Direct3D9Active)
-                Direct3D9_Reset();
-            else
-                ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
-        }
+        ddraw->windowed = FALSE;
+        SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+        ddraw->altenter = TRUE;
+        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, 8);
         mouse_lock();
     }
     else
     {
         mouse_unlock();
-        if(Direct3D9Active || ChangeDisplaySettings(&ddraw->mode, 0) == DISP_CHANGE_SUCCESSFUL)
-        {
-            if (Direct3D9Active)
-            {
-                ddraw->windowed = TRUE;
-                Direct3D9_Reset();
-            }
-                
-            if (!ddraw->border)
-            {
-                SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
-            }
-            else
-            {
-                SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW);
-            }
-            
-            int x = (WindowRect.left != -32000) ? WindowRect.left : (ddraw->mode.dmPelsWidth / 2) - (ddraw->render.width / 2);
-            int y = (WindowRect.top != -32000) ? WindowRect.top : (ddraw->mode.dmPelsHeight / 2) - (ddraw->render.height / 2);
-            RECT dst = { x, y, ddraw->render.width+x, ddraw->render.height+y };
-            AdjustWindowRect(&dst, GetWindowLong(ddraw->hWnd, GWL_STYLE), FALSE);
+        ddraw->windowed = TRUE;
 
-            SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            MoveWindow(ddraw->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
+        if (Direct3D9Active)
+            Direct3D9_Reset();
+        else
+            ChangeDisplaySettings(&ddraw->mode, 0);
 
-            ddraw->windowed = TRUE;
-        }
+        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, 8);
         mouse_lock();
     }
 }
