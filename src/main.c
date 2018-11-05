@@ -572,14 +572,14 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if (!This->border)
         {
             SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
-
-            if (ddraw->wine)
-                SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
         }
         else
         {
             SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW);
         }
+
+        if (ddraw->wine)
+            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~WS_MAXIMIZEBOX);
 
         /* center the window with correct dimensions */
         int x = (WindowRect.left != -32000) ? WindowRect.left : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
@@ -865,10 +865,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (ddraw->windowed)
             {
-                if (wParam == SIZE_RESTORED && inSizeMove && !ddraw->render.thread)
+                if (wParam == SIZE_RESTORED)
                 {
-                    WindowRect.right = LOWORD(lParam);
-                    WindowRect.bottom = HIWORD(lParam);
+                    if (inSizeMove && !ddraw->render.thread)
+                    {
+                        WindowRect.right = LOWORD(lParam);
+                        WindowRect.bottom = HIWORD(lParam);
+                    }
+                    else if (ddraw->wine)
+                    {
+                        WindowRect.right = LOWORD(lParam);
+                        WindowRect.bottom = HIWORD(lParam);
+                        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+                    }
                 }
             }
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
