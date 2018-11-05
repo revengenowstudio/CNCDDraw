@@ -472,6 +472,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.mode.dmBitsPerPel = This->render.bpp;
     }
     
+    BOOL maintas = ddraw->maintas;
+
     if(!This->windowed)
     {
         // Making sure the chosen resolution is valid
@@ -519,7 +521,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                             This->windowed = TRUE;
                         }
                         else
-                            This->maintas = TRUE;
+                            maintas = TRUE;
                     }
                 }
             }
@@ -550,7 +552,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.viewport.y = This->render.height / 2 - This->render.viewport.height / 2;
         This->render.viewport.x = This->render.width / 2 - This->render.viewport.width / 2;
     }
-    else if (This->maintas)
+    else if (maintas)
     {
         This->render.viewport.width = This->render.width;
         This->render.viewport.height = ((float)This->height / This->width) * This->render.viewport.width;
