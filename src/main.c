@@ -876,7 +876,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     {
                         WindowRect.right = LOWORD(lParam);
                         WindowRect.bottom = HIWORD(lParam);
-                        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+                        if (WindowRect.right != ddraw->render.width || WindowRect.bottom != ddraw->render.height)
+                            ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
                     }
                 }
             }
