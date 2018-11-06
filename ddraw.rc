@@ -1,8 +1,13 @@
-#define vstr(v) vxstr(v)
-#define vxstr(a,b,c,d) str(a##.##b##.##c##.##d)
 #define str(s) #s
+#define ver_str(a,b,c,d) str(a) "." str(b) "." str(c) "." str(d)
 
-#define VERSION 1,2,3,1
+#define VERSION_MAJOR    1
+#define VERSION_MINOR    2
+#define VERSION_BUILD    3
+#define VERSION_REVISION 1  
+
+#define VERSION          VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_REVISION
+#define VERSION_STRING   ver_str(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_REVISION)
 
 1 VERSIONINFO
 FILEVERSION VERSION
@@ -14,13 +19,13 @@ PRODUCTVERSION VERSION
         {
             VALUE "CompanyName", "cncnet.org"
             VALUE "FileDescription", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "FileVersion", vstr(VERSION)
+            VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "ddraw"
             VALUE "LegalCopyright", "Copyright (c) 2010-2018"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFileName", "ddraw.dll"
             VALUE "ProductName", "DirectDraw replacement for C&C95 and Red Alert"
-            VALUE "ProductVersion", vstr(VERSION)
+            VALUE "ProductVersion", VERSION_STRING
             VALUE "Comments", "https://cncnet.org"
         }
     }
