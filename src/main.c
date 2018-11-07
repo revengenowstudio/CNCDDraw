@@ -387,7 +387,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
         WaitForSingleObject(This->render.thread, INFINITE);
         This->render.thread = NULL;
-        Sleep(500);
     }
 
     if (!This->mode.dmPelsWidth)
