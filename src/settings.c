@@ -120,7 +120,7 @@ void Settings_Load()
     }
 }
 
-void Settings_SaveWindowRect(RECT *lpRect)
+void Settings_Save(RECT *lpRect, int windowState)
 {
     char buf[16];
 
@@ -146,6 +146,11 @@ void Settings_SaveWindowRect(RECT *lpRect)
     {
         sprintf(buf, "%ld", lpRect->top);
         WritePrivateProfileString(ProcessFileName, "posY", buf, SettingsIniPath);
+    }
+
+    if (windowState != -1)
+    {
+        WritePrivateProfileString(ProcessFileName, "windowed", windowState ? "true" : "false", SettingsIniPath);
     }
 }
 

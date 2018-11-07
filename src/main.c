@@ -39,11 +39,12 @@ void mouse_unlock();
 /* from screenshot.c */
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
-void Settings_SaveWindowRect(RECT *lpRect);
+void Settings_Save(RECT *lpRect, int windowState);
 
 IDirectDrawImpl *ddraw = NULL;
 
 RECT WindowRect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 };
+int WindowState = -1;
 BOOL Direct3D9Active;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
@@ -92,7 +93,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         {
             printf("cnc-ddraw DLL_PROCESS_DETACH\n");
             
-            Settings_SaveWindowRect(&WindowRect);
+            Settings_Save(&WindowRect, WindowState);
 
             timeEndPeriod(1);
             break;
@@ -648,7 +649,7 @@ void ToggleFullscreen()
     if (ddraw->windowed)
     {
         mouse_unlock();
-        ddraw->windowed = FALSE;
+        WindowState = ddraw->windowed = FALSE;
         SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         ddraw->altenter = TRUE;
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, 8);
@@ -657,7 +658,7 @@ void ToggleFullscreen()
     else
     {
         mouse_unlock();
-        ddraw->windowed = TRUE;
+        WindowState = ddraw->windowed = TRUE;
 
         if (Direct3D9Active)
             Direct3D9_Reset();
