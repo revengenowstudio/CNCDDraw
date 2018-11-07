@@ -40,7 +40,6 @@ void Settings_Load()
     ddraw->vsync = GetBool("vsync", FALSE);
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
-    ddraw->hidemouse = GetBool("hidemouse", TRUE);
 
     ddraw->render.maxfps = GetInt("maxfps", 125);
     WindowRect.right = GetInt("width", 0);
@@ -54,6 +53,9 @@ void Settings_Load()
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;
+
+    if (!(ddraw->hidemouse = GetBool("hidemouse", TRUE)))
+        ddraw->adjmouse = TRUE;
 
     if (GetBool("singlecpu", TRUE))
         SetProcessAffinityMask(GetCurrentProcess(), 1);
