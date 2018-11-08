@@ -104,16 +104,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
     if (lpPoint)
     {
-        if (ddraw->devmode)
-        {
-            lpPoint->x = realpt.x;
-            lpPoint->y = realpt.y;
-        }
-        else
-        {
-            lpPoint->x = (int)ddraw->cursor.x;
-            lpPoint->y = (int)ddraw->cursor.y;
-        }
+        lpPoint->x = (int)ddraw->cursor.x;
+        lpPoint->y = (int)ddraw->cursor.y;
     }
     
     return TRUE;
