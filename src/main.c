@@ -889,7 +889,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (ddraw->windowed)
             {
-                if (inSizeMove)
+                if (inSizeMove || ddraw->wine)
                 {
                     int x = (int)(short)LOWORD(lParam);
                     int y = (int)(short)HIWORD(lParam);
