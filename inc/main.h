@@ -32,7 +32,7 @@ extern BOOL ShowDriverWarning;
 extern RECT WindowRect;
 
 BOOL detect_cutscene();
-void LimitGameTicks();
+void LimitGameTicks(BOOL isBltOrFlip);
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 

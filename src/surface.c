@@ -200,7 +200,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         }
 
         if (ddraw->ticklength > 0)
-            LimitGameTicks();
+            LimitGameTicks(TRUE);
     }
 
     return DD_OK;
@@ -369,7 +369,7 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
         }
 
         if (ddraw->ticklength > 0)
-            LimitGameTicks();
+            LimitGameTicks(TRUE);
     }
 
     return DD_OK;
@@ -604,6 +604,9 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+
+        if (ddraw->ticklength > 0)
+            LimitGameTicks(FALSE);
     }
 
     return DD_OK;

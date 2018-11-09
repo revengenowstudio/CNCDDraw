@@ -240,6 +240,9 @@ static void CreateSettingsIni()
             "noactivateapp=true\n"
             "maxgameticks=60\n"
             "\n"
+            "[BM]\n"
+            "maxgameticks=60\n"
+            "\n"
 
             , fh);
         fclose(fh);

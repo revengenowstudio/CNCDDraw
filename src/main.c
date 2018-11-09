@@ -133,18 +133,26 @@ BOOL detect_cutscene()
     return FALSE;
 }
 
-void LimitGameTicks()
+void LimitGameTicks(BOOL isBltOrFlip)
 {
     static DWORD nextGameTick;
+    static DWORD lastBltOrFlipTick;
     if (!nextGameTick)
     {
         nextGameTick = timeGetTime();
         return;
     }
-    nextGameTick += ddraw->ticklength;
+
     DWORD tickCount = timeGetTime();
 
+    if (isBltOrFlip)
+        lastBltOrFlipTick = tickCount;
+    else if (lastBltOrFlipTick + ddraw->ticklength >= tickCount)
+        return;
+
+    nextGameTick += ddraw->ticklength;
     int sleepTime = nextGameTick - tickCount;
+
     if (sleepTime <= 0 || sleepTime > ddraw->ticklength)
         nextGameTick = tickCount;
     else
