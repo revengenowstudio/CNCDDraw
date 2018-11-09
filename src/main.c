@@ -147,7 +147,7 @@ void LimitGameTicks(BOOL isBltOrFlip)
 
     if (isBltOrFlip)
         lastBltOrFlipTick = tickCount;
-    else if (lastBltOrFlipTick + ddraw->ticklength >= tickCount)
+    else if (lastBltOrFlipTick + (ddraw->ticklength * 2) >= tickCount)
         return;
 
     nextGameTick += ddraw->ticklength;
