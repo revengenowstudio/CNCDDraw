@@ -6,6 +6,7 @@
 #include "d3d9shader.h"
 #include "render_d3d9.h"
 
+#define TEXTURE_COUNT 2
 
 HMODULE Direct3D9_hModule;
 
@@ -13,8 +14,8 @@ static D3DPRESENT_PARAMETERS D3dpp;
 static LPDIRECT3D9 D3d;
 static LPDIRECT3DDEVICE9 D3dDev;
 static LPDIRECT3DVERTEXBUFFER9 VertexBuf;
-static IDirect3DTexture9 *SurfaceTex;
-static IDirect3DTexture9 *PaletteTex;
+static IDirect3DTexture9 *SurfaceTex[TEXTURE_COUNT];
+static IDirect3DTexture9 *PaletteTex[TEXTURE_COUNT];
 static IDirect3DPixelShader9 *PixelShader;
 static float ScaleW;
 static float ScaleH;
@@ -70,7 +71,7 @@ BOOL Direct3D9_Create()
                         D3DADAPTER_DEFAULT,
                         D3DDEVTYPE_HAL,
                         ddraw->hWnd,
-                        D3DCREATE_MULTITHREADED | behaviorFlags[i], //D3DCREATE_NOWINDOWCHANGES |
+                        D3DCREATE_MULTITHREADED | behaviorFlags[i],
                         &D3dpp,
                         &D3dDev)))
                     return D3dDev && CreateResources() && SetStates();
@@ -110,16 +111,20 @@ BOOL Direct3D9_Release()
         VertexBuf = NULL;
     }
 
-    if (SurfaceTex)
+    int i;
+    for (i = 0; i < TEXTURE_COUNT; i++)
     {
-        SurfaceTex->lpVtbl->Release(SurfaceTex);
-        SurfaceTex = NULL;
-    }
+        if (SurfaceTex[i])
+        {
+            SurfaceTex[i]->lpVtbl->Release(SurfaceTex[i]);
+            SurfaceTex[i] = NULL;
+        }
 
-    if (PaletteTex)
-    {
-        PaletteTex->lpVtbl->Release(PaletteTex);
-        PaletteTex = NULL;
+        if (PaletteTex[i])
+        {
+            PaletteTex[i]->lpVtbl->Release(PaletteTex[i]);
+            PaletteTex[i] = NULL;
+        }
     }
 
     if (PixelShader)
@@ -167,16 +172,24 @@ static BOOL CreateResources()
 
     err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
 
-    err = err || FAILED(
-        D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex, 0));
+    int i;
+    for (i = 0; i < TEXTURE_COUNT; i++)
+    {
+        err = err || FAILED(
+            D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex[i], 0));
 
-    err = err || FAILED(
-        D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex, 0));
+        err = err || !SurfaceTex[i];
+
+        err = err || FAILED(
+            D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex[i], 0));
+    
+        err = err || !PaletteTex[i];
+    }
 
     err = err || FAILED(
         D3dDev->lpVtbl->CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
 
-    return SurfaceTex && PaletteTex && VertexBuf && PixelShader && !err;
+    return VertexBuf && PixelShader && !err;
 }
 
 static BOOL SetStates()
@@ -185,8 +198,8 @@ static BOOL SetStates()
 
     err = err || FAILED(D3dDev->lpVtbl->SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
     err = err || FAILED(D3dDev->lpVtbl->SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
-    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex));
-    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex));
+    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[0]));
+    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
     err = err || FAILED(D3dDev->lpVtbl->SetPixelShader(D3dDev, PixelShader));
 
     D3DVIEWPORT9 viewData = {
@@ -268,6 +281,8 @@ DWORD WINAPI render_d3d9_main(void)
         DrawFrameInfoStart();
 #endif
 
+        static int texIndex = 0, palIndex = 0;
+
         if (MaxFPS > 0)
             tickStart = timeGetTime();
 
@@ -293,9 +308,13 @@ DWORD WINAPI render_d3d9_main(void)
 
             if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
             {
+                if (++texIndex >= TEXTURE_COUNT)
+                    texIndex = 0;
+
                 RECT rc = { 0,0,ddraw->width,ddraw->height };
 
-                if (SUCCEEDED(SurfaceTex->lpVtbl->LockRect(SurfaceTex, 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[texIndex])) &&
+                    SUCCEEDED(SurfaceTex[texIndex]->lpVtbl->LockRect(SurfaceTex[texIndex], 0, &lock_rc, &rc, 0)))
                 {
                     unsigned char *src = (unsigned char *)ddraw->primary->surface;
                     unsigned char *dst = (unsigned char *)lock_rc.pBits;
@@ -309,19 +328,23 @@ DWORD WINAPI render_d3d9_main(void)
                         dst += lock_rc.Pitch;
                     }
 
-                    SurfaceTex->lpVtbl->UnlockRect(SurfaceTex, 0);
+                    SurfaceTex[texIndex]->lpVtbl->UnlockRect(SurfaceTex[texIndex], 0);
                 }
             }
 
             if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
             {
+                if (++palIndex >= TEXTURE_COUNT)
+                    palIndex = 0;
+
                 RECT rc = { 0,0,256,1 };
 
-                if (SUCCEEDED(PaletteTex->lpVtbl->LockRect(PaletteTex, 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[palIndex])) &&
+                    SUCCEEDED(PaletteTex[palIndex]->lpVtbl->LockRect(PaletteTex[palIndex], 0, &lock_rc, &rc, 0)))
                 {
-                    memcpy(lock_rc.pBits, ddraw->primary->palette->data_rgb, 4 * 256);
+                    memcpy(lock_rc.pBits, ddraw->primary->palette->data_rgb, 256 * sizeof(int));
 
-                    PaletteTex->lpVtbl->UnlockRect(PaletteTex, 0);
+                    PaletteTex[palIndex]->lpVtbl->UnlockRect(PaletteTex[palIndex], 0);
                 }
             }
         }
