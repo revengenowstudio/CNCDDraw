@@ -48,7 +48,7 @@ void Settings_Load()
     WindowRect.top = GetInt("posY", -32000);
 
     int maxTicks = GetInt("maxgameticks", 0);
-    if (maxTicks > 0 && maxTicks < 1000)
+    if (maxTicks > 0 && maxTicks <= 1000)
         ddraw->ticklength = 1000.0f / maxTicks;
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
