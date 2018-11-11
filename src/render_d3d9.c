@@ -66,7 +66,7 @@ BOOL Direct3D9_Create()
             for (i = 0; i < sizeof(behaviorFlags) / sizeof(behaviorFlags[0]); i++)
             {
                 if (SUCCEEDED(
-                    D3d->lpVtbl->CreateDevice(
+                    IDirect3D9_CreateDevice(
                         D3d,
                         D3DADAPTER_DEFAULT,
                         D3DDEVTYPE_HAL,
@@ -82,9 +82,9 @@ BOOL Direct3D9_Create()
     return FALSE;
 }
 
-BOOL Direct3D9_DeviceLost()
+BOOL Direct3D9_OnDeviceLost()
 {
-    if (D3dDev && D3dDev->lpVtbl->TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
+    if (D3dDev && IDirect3DDevice9_TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
         return Direct3D9_Reset();
 
     return FALSE;
@@ -97,7 +97,7 @@ BOOL Direct3D9_Reset()
     D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
     D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
 
-    if (D3dDev && SUCCEEDED(D3dDev->lpVtbl->Reset(D3dDev, &D3dpp)))
+    if (D3dDev && SUCCEEDED(IDirect3DDevice9_Reset(D3dDev, &D3dpp)))
         return SetStates();
 
     return FALSE;
@@ -107,41 +107,41 @@ BOOL Direct3D9_Release()
 {
     if (VertexBuf)
     {
-        VertexBuf->lpVtbl->Release(VertexBuf);
+        IDirect3DVertexBuffer9_Release(VertexBuf);
         VertexBuf = NULL;
     }
-
+    
     int i;
     for (i = 0; i < TEXTURE_COUNT; i++)
     {
         if (SurfaceTex[i])
         {
-            SurfaceTex[i]->lpVtbl->Release(SurfaceTex[i]);
+            IDirect3DTexture9_Release(SurfaceTex[i]);
             SurfaceTex[i] = NULL;
         }
 
         if (PaletteTex[i])
         {
-            PaletteTex[i]->lpVtbl->Release(PaletteTex[i]);
+            IDirect3DTexture9_Release(PaletteTex[i]);
             PaletteTex[i] = NULL;
         }
     }
-
+    
     if (PixelShader)
     {
-        PixelShader->lpVtbl->Release(PixelShader);
+        IDirect3DPixelShader9_Release(PixelShader);
         PixelShader = NULL;
     }
 
     if (D3dDev)
     {
-        D3dDev->lpVtbl->Release(D3dDev);
+        IDirect3DDevice9_Release(D3dDev);
         D3dDev = NULL;
     }
 
     if (D3d)
     {
-        D3d->lpVtbl->Release(D3d);
+        IDirect3D9_Release(D3d);
         D3d = NULL;
     }
 
@@ -167,7 +167,7 @@ static BOOL CreateResources()
     ScaleH = (float)height / texHeight;
 
     err = err || FAILED(
-        D3dDev->lpVtbl->CreateVertexBuffer(
+        IDirect3DDevice9_CreateVertexBuffer(
             D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL));
 
     err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
@@ -176,18 +176,18 @@ static BOOL CreateResources()
     for (i = 0; i < TEXTURE_COUNT; i++)
     {
         err = err || FAILED(
-            D3dDev->lpVtbl->CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex[i], 0));
+            IDirect3DDevice9_CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex[i], 0));
 
         err = err || !SurfaceTex[i];
 
         err = err || FAILED(
-            D3dDev->lpVtbl->CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex[i], 0));
+            IDirect3DDevice9_CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex[i], 0));
     
         err = err || !PaletteTex[i];
     }
 
     err = err || FAILED(
-        D3dDev->lpVtbl->CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
+        IDirect3DDevice9_CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
 
     return VertexBuf && PixelShader && !err;
 }
@@ -196,11 +196,11 @@ static BOOL SetStates()
 {
     BOOL err = FALSE;
 
-    err = err || FAILED(D3dDev->lpVtbl->SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
-    err = err || FAILED(D3dDev->lpVtbl->SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
-    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[0]));
-    err = err || FAILED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
-    err = err || FAILED(D3dDev->lpVtbl->SetPixelShader(D3dDev, PixelShader));
+    err = err || FAILED(IDirect3DDevice9_SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
+    err = err || FAILED(IDirect3DDevice9_SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
+    err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[0]));
+    err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
+    err = err || FAILED(IDirect3DDevice9_SetPixelShader(D3dDev, PixelShader));
 
     D3DVIEWPORT9 viewData = {
         ddraw->render.viewport.x,
@@ -210,7 +210,7 @@ static BOOL SetStates()
         0.0f,
         1.0f };
 
-    err = err || FAILED(D3dDev->lpVtbl->SetViewport(D3dDev, &viewData));
+    err = err || FAILED(IDirect3DDevice9_SetViewport(D3dDev, &viewData));
 
     return !err;
 }
@@ -235,11 +235,11 @@ static BOOL UpdateVertices(BOOL inCutscene)
     };
 
     void *data;
-    if (VertexBuf && SUCCEEDED(VertexBuf->lpVtbl->Lock(VertexBuf, 0, 0, (void**)&data, 0)))
+    if (VertexBuf && SUCCEEDED(IDirect3DVertexBuffer9_Lock(VertexBuf, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
 
-        VertexBuf->lpVtbl->Unlock(VertexBuf);
+        IDirect3DVertexBuffer9_Unlock(VertexBuf);
         return TRUE;
     }
 
@@ -313,8 +313,8 @@ DWORD WINAPI render_d3d9_main(void)
 
                 RECT rc = { 0,0,ddraw->width,ddraw->height };
 
-                if (SUCCEEDED(D3dDev->lpVtbl->SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[texIndex])) &&
-                    SUCCEEDED(SurfaceTex[texIndex]->lpVtbl->LockRect(SurfaceTex[texIndex], 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[texIndex])) &&
+                    SUCCEEDED(IDirect3DTexture9_LockRect(SurfaceTex[texIndex], 0, &lock_rc, &rc, 0)))
                 {
                     unsigned char *src = (unsigned char *)ddraw->primary->surface;
                     unsigned char *dst = (unsigned char *)lock_rc.pBits;
@@ -328,7 +328,7 @@ DWORD WINAPI render_d3d9_main(void)
                         dst += lock_rc.Pitch;
                     }
 
-                    SurfaceTex[texIndex]->lpVtbl->UnlockRect(SurfaceTex[texIndex], 0);
+                    IDirect3DTexture9_UnlockRect(SurfaceTex[texIndex], 0);
                 }
             }
 
@@ -339,23 +339,23 @@ DWORD WINAPI render_d3d9_main(void)
 
                 RECT rc = { 0,0,256,1 };
 
-                if (SUCCEEDED(D3dDev->lpVtbl->SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[palIndex])) &&
-                    SUCCEEDED(PaletteTex[palIndex]->lpVtbl->LockRect(PaletteTex[palIndex], 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[palIndex])) &&
+                    SUCCEEDED(IDirect3DTexture9_LockRect(PaletteTex[palIndex], 0, &lock_rc, &rc, 0)))
                 {
                     memcpy(lock_rc.pBits, ddraw->primary->palette->data_rgb, 256 * sizeof(int));
 
-                    PaletteTex[palIndex]->lpVtbl->UnlockRect(PaletteTex[palIndex], 0);
+                    IDirect3DTexture9_UnlockRect(PaletteTex[palIndex], 0);
                 }
             }
         }
 
         LeaveCriticalSection(&ddraw->cs);
 
-        D3dDev->lpVtbl->BeginScene(D3dDev);
-        D3dDev->lpVtbl->DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
-        D3dDev->lpVtbl->EndScene(D3dDev);
+        IDirect3DDevice9_BeginScene(D3dDev);
+        IDirect3DDevice9_DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
+        IDirect3DDevice9_EndScene(D3dDev);
 
-        if (D3dDev->lpVtbl->Present(D3dDev, NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST)
+        if (IDirect3DDevice9_Present(D3dDev, NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST)
         {
             DWORD_PTR dwResult;
             SendMessageTimeout(ddraw->hWnd, WM_D3D9DEVICELOST, 0, 0, 0, 1000, &dwResult);

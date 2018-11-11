@@ -101,7 +101,7 @@ void Settings_Load()
                 (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
 
             if (D3DCreate9 && (d3d = D3DCreate9(D3D_SDK_VERSION)))
-                d3d->lpVtbl->Release(d3d);
+                IDirect3D9_Release(d3d);
         }
 
         if (d3d)

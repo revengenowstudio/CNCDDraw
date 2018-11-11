@@ -704,7 +704,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         case WM_D3D9DEVICELOST:
         {
-            if (Direct3D9Active && Direct3D9_DeviceLost())
+            if (Direct3D9Active && Direct3D9_OnDeviceLost())
             {
                 if (!ddraw->windowed)
                     mouse_lock();
