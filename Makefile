@@ -1,10 +1,7 @@
 CC=gcc
 WINDRES=windres
-CFLAGS=-DHAVE_LIBPNG -Iinc -Wall -Wl,--enable-stdcall-fixup -s
-LIBS=lib/libpng14.a lib/libz.a -lgdi32 -lwinmm
-
-#CFLAGS=-Iinc -Wall -Wl,--enable-stdcall-fixup -O3 -s
-#LIBS=-lgdi32 -lwinmm
+CFLAGS=-Iinc -Wall -Wl,--enable-stdcall-fixup -s
+LIBS=-lgdi32 -lwinmm
 
 FILES = src/debug.c \
         src/main.c \
@@ -17,6 +14,7 @@ FILES = src/debug.c \
         src/render_d3d9.c \
         src/screenshot.c \
         src/settings.c \
+        src/lodepng.c \
         src/opengl.c
 
 all:

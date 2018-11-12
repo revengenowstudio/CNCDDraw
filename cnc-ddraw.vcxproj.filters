@@ -51,6 +51,9 @@
     <ClCompile Include="src\settings.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\lodepng.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\clipper.h">
@@ -68,19 +71,7 @@
     <ClInclude Include="inc\palette.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\png.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\pngconf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\zconf.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\zlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\opengl.h">
@@ -99,6 +90,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\KHR\khrplatform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\lodepng.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

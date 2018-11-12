@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="src\clipper.c" />
     <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\lodepng.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\mouse.c" />
     <ClCompile Include="src\opengl.c" />
@@ -28,6 +29,7 @@
     <ClInclude Include="inc\clipper.h" />
     <ClInclude Include="inc\glcorearb.h" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
+    <ClInclude Include="inc\lodepng.h" />
     <ClInclude Include="inc\render_d3d9.h" />
     <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\debug.h" />
@@ -36,11 +38,7 @@
     <ClInclude Include="inc\palette.h" />
     <ClInclude Include="inc\openglshader.h" />
     <ClInclude Include="inc\d3d9shader.h" />
-    <ClInclude Include="inc\png.h" />
-    <ClInclude Include="inc\pngconf.h" />
     <ClInclude Include="inc\surface.h" />
-    <ClInclude Include="inc\zconf.h" />
-    <ClInclude Include="inc\zlib.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc" />

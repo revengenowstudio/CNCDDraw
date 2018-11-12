@@ -16,31 +16,22 @@
 #include <windows.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <time.h>
 #include "ddraw.h"
-
 #include "palette.h"
 #include "surface.h"
-
-#ifndef HAVE_LIBPNG
-
-//https://docs.microsoft.com/en-us/windows/desktop/gdi/storing-an-image
+#include "lodepng.h"
 
 BOOL screenshot(struct IDirectDrawSurfaceImpl *src)
 {
-    HANDLE hf;                 // file handle  
-    BITMAPFILEHEADER hdr;       // bitmap file-header  
-    PBITMAPINFOHEADER pbih;     // bitmap info-header  
-    LPBYTE lpBits;              // memory pointer  
-    DWORD dwTotal;              // total count of bytes  
-    DWORD cb;                   // incremental count of bytes  
-    BYTE *hp;                   // byte pointer  
-    DWORD dwTmp;
+    if (!src || !src->palette || !src->surface)
+        return FALSE;
+
     int i;
     char title[128];
     char filename[128];
     char str_time[64];
     time_t t = time(NULL);
-    BOOL result = TRUE;
 
     strncpy(title, ddraw->title, sizeof(ddraw->title));
 
@@ -56,144 +47,32 @@ BOOL screenshot(struct IDirectDrawSurfaceImpl *src)
     }
 
     strftime(str_time, 64, "%Y-%m-%d-%H_%M_%S", localtime(&t));
-    _snprintf(filename, 128, "%s-%s.bmp", title, str_time);
-
-    pbih = (PBITMAPINFOHEADER)src->bmi;
-    lpBits = (LPBYTE)src->surface;
-
-    if (!lpBits)
-        return FALSE;
-
-    // Create the .BMP file.  
-    hf = CreateFile(filename,
-        GENERIC_READ | GENERIC_WRITE,
-        (DWORD)0,
-        NULL,
-        CREATE_ALWAYS,
-        FILE_ATTRIBUTE_NORMAL,
-        (HANDLE)NULL);
-
-    if (hf == INVALID_HANDLE_VALUE)
-        return FALSE;
-
-    hdr.bfType = 0x4d42;        // 0x42 = "B" 0x4d = "M"  
-                                // Compute the size of the entire file.  
-    hdr.bfSize = (DWORD)(sizeof(BITMAPFILEHEADER) +
-        pbih->biSize + pbih->biClrUsed
-        * sizeof(RGBQUAD) + pbih->biSizeImage);
-    hdr.bfReserved1 = 0;
-    hdr.bfReserved2 = 0;
-
-    // Compute the offset to the array of color indices.  
-    hdr.bfOffBits = (DWORD) sizeof(BITMAPFILEHEADER) +
-        pbih->biSize + pbih->biClrUsed
-        * sizeof(RGBQUAD);
-
-    // Copy the BITMAPFILEHEADER into the .BMP file.  
-    if (!WriteFile(hf, (LPVOID)&hdr, sizeof(BITMAPFILEHEADER),
-        (LPDWORD)&dwTmp, NULL))
-    {
-        result = FALSE;
-    }
-
-    // Copy the BITMAPINFOHEADER and RGBQUAD array into the file.  
-    if (!WriteFile(hf, (LPVOID)pbih, sizeof(BITMAPINFOHEADER)
-        + pbih->biClrUsed * sizeof(RGBQUAD),
-        (LPDWORD)&dwTmp, (NULL)))
-        result = FALSE;
-
-    // Copy the array of color indices into the .BMP file.  
-    dwTotal = cb = pbih->biSizeImage;
-    hp = lpBits;
-    if (!WriteFile(hf, (LPSTR)hp, (int)cb, (LPDWORD)&dwTmp, NULL))
-        result = FALSE;
-
-    // Close the .BMP file.  
-    if (!CloseHandle(hf))
-        result = FALSE;
-
-    return result;
-}
-
-#else
-
-#include <png.h>
-
-BOOL screenshot(struct IDirectDrawSurfaceImpl *src)
-{
-    int i;
-    FILE *fh;
-    char title[128];
-    char filename[128];
-
-    png_structp png_ptr;
-    png_infop info_ptr;
-    png_bytep *row_pointers;
-    png_color palette[256];
-
-    char str_time[64];
-    time_t t = time(NULL);
-
-    strncpy(title, ddraw->title, sizeof(ddraw->title));
-
-    for(i=0;i<strlen(title);i++) {
-        if(title[i] == ' ')
-        {
-            title[i] = '_';
-        }
-        else
-        {
-            title[i] = tolower(title[i]);
-        }
-    }
-
-    strftime(str_time, 64, "%Y-%m-%d-%H_%M_%S", localtime(&t));
     _snprintf(filename, 128, "%s-%s.png", title, str_time);
 
-    if(!src || !src->palette)
+    unsigned char* png;
+    size_t pngsize;
+    LodePNGState state;
+
+    lodepng_state_init(&state);
+    
+    for (i = 0; i < 256; i++)
     {
-        return FALSE;
+        RGBQUAD *c = &src->palette->data_rgb[i];
+        lodepng_palette_add(&state.info_png.color, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
+        lodepng_palette_add(&state.info_raw, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
     }
 
-    if( !(fh = fopen(filename, "wb")) )
-    {
-        return FALSE;
-    }
+    state.info_png.color.colortype = LCT_PALETTE;
+    state.info_png.color.bitdepth = 8;
+    state.info_raw.colortype = LCT_PALETTE;
+    state.info_raw.bitdepth = 8;
+    state.encoder.auto_convert = 0;
 
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    if(!png_ptr)
-    {
-        return FALSE;
-    }
+    unsigned int error = lodepng_encode(&png, &pngsize, src->surface, src->width, src->height, &state);
+    if (!error) lodepng_save_file(png, pngsize, filename);
 
-    info_ptr = png_create_info_struct(png_ptr);
+    lodepng_state_cleanup(&state);
+    free(png);
 
-    for(i=0;i<256;i++) {
-        palette[i].red = src->palette->data_bgr[i];
-        palette[i].green = src->palette->data_bgr[i] >> 8;
-        palette[i].blue = src->palette->data_bgr[i] >> 16;
-    }
-
-    setjmp(png_jmpbuf(png_ptr));
-
-    png_init_io(png_ptr, fh);
-
-    png_set_IHDR(png_ptr, info_ptr, src->width, src->height, 8, PNG_COLOR_TYPE_PALETTE, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
-    png_set_PLTE(png_ptr, info_ptr, (png_colorp)&palette, 256);
-
-    row_pointers = (png_bytep *)png_malloc(png_ptr, sizeof(png_bytep) * src->height);
-
-    for(i=0;i<src->height;i++) {
-        row_pointers[i] = src->surface + (src->width * i);
-    }
-
-    png_set_rows(png_ptr, info_ptr, row_pointers);
-
-    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
-
-    fclose(fh);
-
-    return TRUE;
+    return !error;
 }
-
-#endif
