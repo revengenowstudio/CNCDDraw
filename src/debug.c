@@ -53,7 +53,7 @@ void DrawFrameInfoStart()
     DWORD tick_start = timeGetTime();
     if (tick_start >= tick_fps)
     {
-        snprintf(
+        _snprintf(
             debugText,
             sizeof(debugText),
             "FPS: %lu | Time: %2.2f ms  ",

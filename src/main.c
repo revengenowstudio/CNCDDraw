@@ -1323,12 +1323,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     if(ddraw)
     {
         /* FIXME: check the calling module before passing the call! */
-        return ddraw->DirectDrawCreate(lpGUID, lplpDD, pUnkOuter);
+        if (ddraw->DirectDrawCreate)
+            return ddraw->DirectDrawCreate(lpGUID, lplpDD, pUnkOuter);
 
-        /*
-        printf(" returning DDERR_DIRECTDRAWALREADYCREATED\n");
         return DDERR_DIRECTDRAWALREADYCREATED;
-        */
     } 
 
     IDirectDrawImpl *This = (IDirectDrawImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
@@ -1343,19 +1341,10 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     if (!This->real_dll)
         This->real_dll = LoadLibrary("system32\\ddraw.dll");
 
-    if(!This->real_dll)
+    if(This->real_dll && !This->DirectDrawCreate)
     {
-        ddraw_Release(This);
-        return DDERR_GENERIC;
-    }
-
-    This->DirectDrawCreate = 
-        (HRESULT (WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
-
-    if(!This->DirectDrawCreate)
-    {
-        ddraw_Release(This);
-        return DDERR_GENERIC;
+        This->DirectDrawCreate =
+            (HRESULT(WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
     }
 
     InitializeCriticalSection(&This->cs);
