@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <d3d9.h>
-#include <InitGuid.h>
+#include <initguid.h>
 #include "ddraw.h"
 #include "main.h"
 #include "opengl.h"
