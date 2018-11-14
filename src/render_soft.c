@@ -48,7 +48,7 @@ DWORD WINAPI render_soft_main(void)
 
         EnterCriticalSection(&ddraw->cs);
 
-        if (ddraw->primary && ddraw->primary->palette && ddraw->primary->palette->data_rgb)
+        if (ddraw->primary && (ddraw->bpp == 16 || (ddraw->primary->palette && ddraw->primary->palette->data_rgb)))
         {
             if (warningText[0])
             {

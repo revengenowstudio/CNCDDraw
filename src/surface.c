@@ -109,21 +109,68 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     }
 #endif
 
+    RECT srcRect = { 0, 0, Source ? Source->width : 0, Source ? Source->height : 0 };
+    RECT dstRect = { 0, 0, This->width, This->height };
+
+    if (lpSrcRect && Source)
+    {
+        memcpy(&srcRect, lpSrcRect, sizeof(srcRect));
+
+        if (srcRect.right > Source->width)
+            srcRect.right = Source->width;
+
+        if (srcRect.bottom > Source->height)
+            srcRect.bottom = Source->height;
+    }
+
+    if (lpDestRect)
+    {
+        memcpy(&dstRect, lpDestRect, sizeof(dstRect));
+
+        if (dstRect.right > This->width)
+            dstRect.right = This->width;
+
+        if (dstRect.bottom > This->height)
+            dstRect.bottom = This->height;
+    }
+
+    int src_w = srcRect.right - srcRect.left;
+    int src_h = srcRect.bottom - srcRect.top;
+    int src_x = srcRect.left;
+    int src_y = srcRect.top;
+
+    int dst_w = dstRect.right - dstRect.left;
+    int dst_h = dstRect.bottom - dstRect.top;
+    int dst_x = dstRect.left;
+    int dst_y = dstRect.top;
+
+
     if (This->surface && (dwFlags & DDBLT_COLORFILL))
     {
-        int dst_w = lpDestRect ? lpDestRect->right - lpDestRect->left : This->width;
-        int dst_h = lpDestRect ? lpDestRect->bottom - lpDestRect->top : This->height;
-        int dst_x = lpDestRect ? lpDestRect->left : 0;
-        int dst_y = lpDestRect ? lpDestRect->top : 0;
-
-        int y, x;
-        for (y = 0; y < dst_h; y++)
+        if (This->bpp == 8)
         {
-            int ydst = This->width * (y + dst_y);
-
-            for (x = 0; x < dst_w; x++)
+            int y, x;
+            for (y = 0; y < dst_h; y++)
             {
-                ((unsigned char *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
+                int ydst = This->width * (y + dst_y);
+
+                for (x = 0; x < dst_w; x++)
+                {
+                    ((unsigned char *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
+                }
+            }
+        }
+        else if (This->bpp == 16)
+        {
+            int y, x;
+            for (y = 0; y < dst_h; y++)
+            {
+                int ydst = This->width * (y + dst_y);
+
+                for (x = 0; x < dst_w; x++)
+                {
+                    ((unsigned short *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
+                }
             }
         }
     }
@@ -132,56 +179,74 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     {
         if (dwFlags & DDBLT_KEYSRC)
         {
-            int src_w = lpSrcRect ? lpSrcRect->right - lpSrcRect->left : Source->width;
-            int src_h = lpSrcRect ? lpSrcRect->bottom - lpSrcRect->top : Source->height;
-            int src_x = lpSrcRect ? lpSrcRect->left : 0;
-            int src_y = lpSrcRect ? lpSrcRect->top : 0;
-            int dst_x = lpDestRect ? lpDestRect->left : 0;
-            int dst_y = lpDestRect ? lpDestRect->top : 0;
-
-            unsigned char* dstSurface = (unsigned char *)This->surface;
-            unsigned char* srcSurface = (unsigned char *)Source->surface;
-
-            int y1, x1;
-            for (y1 = 0; y1 < src_h; y1++)
+            if (dst_w == src_w && dst_h == src_h)
             {
-                int ydst = This->width * (y1 + dst_y);
-                int ysrc = Source->width * (y1 + src_y);
-
-                for (x1 = 0; x1 < src_w; x1++)
+                if (This->bpp == 8)
                 {
-                    unsigned char index = srcSurface[x1 + src_x + ysrc];
+                    int y1, x1;
+                    for (y1 = 0; y1 < dst_h; y1++)
+                    {
+                        int ydst = This->width * (y1 + dst_y);
+                        int ysrc = Source->width * (y1 + src_y);
 
-                    if (index != Source->colorKey.dwColorSpaceLowValue)
-                        dstSurface[x1 + dst_x + ydst] = index;
+                        for (x1 = 0; x1 < dst_w; x1++)
+                        {
+                            unsigned char c = ((unsigned char *)Source->surface)[x1 + src_x + ysrc];
+
+                            if (c != Source->colorKey.dwColorSpaceLowValue)
+                            {
+                                ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
+                            }
+                        }
+                    }
                 }
+                else if (This->bpp == 16)
+                {
+                    int y1, x1;
+                    for (y1 = 0; y1 < dst_h; y1++)
+                    {
+                        int ydst = This->width * (y1 + dst_y);
+                        int ysrc = Source->width * (y1 + src_y);
+
+                        for (x1 = 0; x1 < dst_w; x1++)
+                        {
+                            unsigned short c = ((unsigned short *)Source->surface)[x1 + src_x + ysrc];
+
+                            if (c != Source->colorKey.dwColorSpaceLowValue)
+                            {
+                                ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                printf("   DDBLT_KEYSRC does not support stretching");
             }
         }
         else
         {
-            int dx = 0, dy = 0;
-            if (lpDestRect)
+            if (dst_w == src_w && dst_h == src_h)
             {
-                dx = lpDestRect->left;
-                dy = lpDestRect->top;
-            }
-            int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
-            if (lpSrcRect)
-            {
-                x0 = max(x0, lpSrcRect->left);
-                x1 = min(x1, lpSrcRect->right);
-                y0 = max(y0, lpSrcRect->top);
-                y1 = min(y1, lpSrcRect->bottom);
-            }
-            unsigned char* to = (unsigned char *)This->surface + dy*This->width + dx;
-            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-            int s = x1 - x0;
+                unsigned char *src = 
+                    (unsigned char *)Source->surface + ((src_x + (Source->width * src_y)) * Source->lXPitch);
 
-            int y;
-            for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
-            {
-                memcpy(to, from, s);
+                unsigned char *dst = 
+                    (unsigned char *)This->surface + ((dst_x + (This->width * dst_y)) * This->lXPitch);
+
+                int i;
+                for (i = 0; i < dst_h; i++)
+                {
+                    memcpy(dst, src, dst_w * This->lXPitch);
+
+                    src += Source->lPitch;
+                    dst += This->lPitch;
+                }
             }
+            else
+                StretchBlt(This->hDC, dst_x, dst_y, dst_w, dst_h, Source->hDC, src_x, src_y, src_w, src_h, SRCCOPY);
+
         }
     }
 
@@ -235,51 +300,93 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
     }
 #endif
 
+    RECT srcRect = { 0, 0, Source ? Source->width : 0, Source ? Source->height : 0 };
+
+    if (lpSrcRect && Source)
+    {
+        memcpy(&srcRect, lpSrcRect, sizeof(srcRect));
+
+        if (srcRect.right > Source->width)
+            srcRect.right = Source->width;
+
+        if (srcRect.bottom > Source->height)
+            srcRect.bottom = Source->height;
+    }
+
+    int src_w = srcRect.right - srcRect.left;
+    int src_h = srcRect.bottom - srcRect.top;
+    int src_x = srcRect.left;
+    int src_y = srcRect.top;
+
+    RECT dstRect = { dst_x, dst_y, src_w + dst_x, src_h + dst_y };
+
+    if (dstRect.right > This->width)
+        dstRect.right = This->width;
+
+    if (dstRect.bottom > This->height)
+        dstRect.bottom = This->height;
+
+    int dst_w = dstRect.right - dstRect.left;
+    int dst_h = dstRect.bottom - dstRect.top;
+
     if (Source)
     {
         if (flags & DDBLTFAST_SRCCOLORKEY)
         {
-            int src_w = lpSrcRect ? lpSrcRect->right - lpSrcRect->left : Source->width;
-            int src_h = lpSrcRect ? lpSrcRect->bottom - lpSrcRect->top : Source->height;
-            int src_x = lpSrcRect ? lpSrcRect->left : 0;
-            int src_y = lpSrcRect ? lpSrcRect->top : 0;
-
-            unsigned char* dstSurface = (unsigned char *)This->surface;
-            unsigned char* srcSurface = (unsigned char *)Source->surface;
-
-            int y1, x1;
-            for (y1 = 0; y1 < src_h; y1++)
+            if (This->bpp == 8)
             {
-                int ydst = This->width * (y1 + dst_y);
-                int ysrc = Source->width * (y1 + src_y);
-
-                for (x1 = 0; x1 < src_w; x1++)
+                int y1, x1;
+                for (y1 = 0; y1 < dst_h; y1++)
                 {
-                    unsigned char index = srcSurface[x1 + src_x + ysrc];
+                    int ydst = This->width * (y1 + dst_y);
+                    int ysrc = Source->width * (y1 + src_y);
 
-                    if (index != Source->colorKey.dwColorSpaceLowValue)
-                        dstSurface[x1 + dst_x + ydst] = index;
+                    for (x1 = 0; x1 < dst_w; x1++)
+                    {
+                        unsigned char c = ((unsigned char *)Source->surface)[x1 + src_x + ysrc];
+
+                        if (c != Source->colorKey.dwColorSpaceLowValue)
+                        {
+                            ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
+                        }
+                    }
+                }
+            }
+            else if (This->bpp == 16)
+            {
+                int y1, x1;
+                for (y1 = 0; y1 < dst_h; y1++)
+                {
+                    int ydst = This->width * (y1 + dst_y);
+                    int ysrc = Source->width * (y1 + src_y);
+
+                    for (x1 = 0; x1 < dst_w; x1++)
+                    {
+                        unsigned short c = ((unsigned short *)Source->surface)[x1 + src_x + ysrc];
+                        
+                        if (c != Source->colorKey.dwColorSpaceLowValue)
+                        {
+                            ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
+                        }
+                    }
                 }
             }
         }
         else
         {
-            int x0 = 0, y0 = 0, x1 = Source->width, y1 = Source->height;
-            if (lpSrcRect)
-            {
-                x0 = max(x0, lpSrcRect->left);
-                x1 = min(x1, lpSrcRect->right);
-                y0 = max(y0, lpSrcRect->top);
-                y1 = min(y1, lpSrcRect->bottom);
-            }
-            unsigned char* to = (unsigned char *)This->surface + dst_y*This->width + dst_x;
-            unsigned char* from = (unsigned char *)Source->surface + y0*Source->width + x0;
-            int s = x1 - x0;
+            unsigned char *src =
+                (unsigned char *)Source->surface + ((src_x + (Source->width * src_y)) * Source->lXPitch);
 
-            int y;
-            for (y = y0; y < y1; ++y, to += This->width, from += Source->width)
+            unsigned char *dst =
+                (unsigned char *)This->surface + ((dst_x + (This->width * dst_y)) * This->lXPitch);
+
+            int i;
+            for (i = 0; i < dst_h; i++)
             {
-                memcpy(to, from, s);
+                memcpy(dst, src, dst_w * This->lXPitch);
+
+                src += Source->lPitch;
+                dst += This->lPitch;
             }
         }
     }
@@ -312,14 +419,18 @@ HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPD
     lpDDSurfaceDesc->dwHeight = This->height;
     lpDDSurfaceDesc->lPitch = This->lPitch;
     lpDDSurfaceDesc->lpSurface = This->surface;
-    lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+    lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+    lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
     lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
 
-    if (This->bpp == 16)
+    if (This->bpp == 8)
     {
-        /* RGB 555 */
-        lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0x7C00;
-        lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x03E0;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwFlags |= DDPF_PALETTEINDEXED8;
+    }
+    else if (This->bpp == 16)
+    {
+        lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
         lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
     }
 
@@ -467,8 +578,19 @@ HRESULT __stdcall ddraw_surface_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPD
         memset(ddpfPixelFormat, 0, sizeof(DDPIXELFORMAT));
 
         ddpfPixelFormat->dwSize = size;
-        ddpfPixelFormat->dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
-        ddpfPixelFormat->dwRGBBitCount = 8;
+        ddpfPixelFormat->dwFlags = DDPF_RGB;
+        ddpfPixelFormat->dwRGBBitCount = This->bpp;
+
+        if (This->bpp == 8)
+        {
+            ddpfPixelFormat->dwFlags |= DDPF_PALETTEINDEXED8;
+        }
+        else if (This->bpp == 16)
+        {
+            ddpfPixelFormat->dwRBitMask = 0xF800;
+            ddpfPixelFormat->dwGBitMask = 0x07E0;
+            ddpfPixelFormat->dwBBitMask = 0x001F;
+        }
 
         return DD_OK;
     }
@@ -530,7 +652,9 @@ HRESULT __stdcall ddraw_surface_ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
 
 HRESULT __stdcall ddraw_surface_Restore(IDirectDrawSurfaceImpl *This)
 {
+#if _DEBUG_X
     printf("DirectDrawSurface::Restore(This=%p) ???\n", This);
+#endif
     return DD_OK;
 }
 
@@ -682,6 +806,8 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
     Surface->lpVtbl = &siface;
 
+    lpDDSurfaceDesc->dwFlags |= DDSD_CAPS;
+
     /* private stuff */
     Surface->bpp = This->bpp;
     Surface->flags = lpDDSurfaceDesc->dwFlags;
@@ -716,7 +842,7 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
         Surface->bmi->bmiHeader.biHeight = -Surface->height;
         Surface->bmi->bmiHeader.biPlanes = 1;
         Surface->bmi->bmiHeader.biBitCount = Surface->bpp;
-        Surface->bmi->bmiHeader.biCompression = BI_RGB;
+        Surface->bmi->bmiHeader.biCompression = Surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
 
         WORD cClrBits = (WORD)(Surface->bmi->bmiHeader.biPlanes * Surface->bmi->bmiHeader.biBitCount);
         if (cClrBits < 24)
@@ -724,13 +850,22 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
         Surface->bmi->bmiHeader.biSizeImage = ((Surface->width * cClrBits + 31) & ~31) / 8 * Surface->height;
 
-        int i;
-        for (i = 0; i < 256; i++)
+        if (Surface->bpp == 8)
         {
-            Surface->bmi->bmiColors[i].rgbRed = i;
-            Surface->bmi->bmiColors[i].rgbGreen = i;
-            Surface->bmi->bmiColors[i].rgbBlue = i;
-            Surface->bmi->bmiColors[i].rgbReserved = 0;
+            int i;
+            for (i = 0; i < 256; i++)
+            {
+                Surface->bmi->bmiColors[i].rgbRed = i;
+                Surface->bmi->bmiColors[i].rgbGreen = i;
+                Surface->bmi->bmiColors[i].rgbBlue = i;
+                Surface->bmi->bmiColors[i].rgbReserved = 0;
+            }
+        }
+        else if (Surface->bpp == 16)
+        {
+            ((DWORD *)Surface->bmi->bmiColors)[0] = 0xF800;
+            ((DWORD *)Surface->bmi->bmiColors)[1] = 0x07E0;
+            ((DWORD *)Surface->bmi->bmiColors)[2] = 0x001F;
         }
 
         Surface->lXPitch = Surface->bpp / 8;

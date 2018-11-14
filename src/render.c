@@ -27,13 +27,14 @@
 static HGLRC OpenGLContext;
 static int MaxFPS;
 static DWORD FrameLength;
-static GLuint PaletteProgram;
+static GLuint MainProgram;
 static GLuint ScaleProgram;
 static BOOL GotError;
 static int SurfaceTexWidth;
 static int SurfaceTexHeight;
 static int *SurfaceTex;
 static GLenum SurfaceFormat = GL_LUMINANCE;
+static GLenum SurfaceType = GL_UNSIGNED_BYTE;
 static GLuint SurfaceTexIds[TEXTURE_COUNT];
 static GLuint PaletteTexIds[TEXTURE_COUNT];
 static float ScaleW;
@@ -52,7 +53,7 @@ static HGLRC CreateContext(HDC hdc);
 static void SetMaxFPS(int baseMaxFPS);
 static void BuildPrograms();
 static void CreateTextures(int width, int height);
-static void InitPaletteProgram();
+static void InitMainProgram();
 static void InitScaleProgram();
 static void Render();
 static void DeleteContext(HGLRC context);
@@ -71,13 +72,13 @@ DWORD WINAPI render_main(void)
         SetMaxFPS(ddraw->render.maxfps);
         BuildPrograms();
         CreateTextures(ddraw->width, ddraw->height);
-        InitPaletteProgram();
+        InitMainProgram();
         InitScaleProgram();
 
         GotError = GotError || !TextureUploadTest();
         GotError = GotError || !ShaderTest();
         GotError = GotError || glGetError() != GL_NO_ERROR;
-        UseOpenGL = PaletteProgram && !GotError;
+        UseOpenGL = MainProgram && !GotError;
 
         Render();
 
@@ -156,21 +157,27 @@ static void SetMaxFPS(int baseMaxFPS)
 
 static void BuildPrograms()
 {
-    PaletteProgram = ScaleProgram = 0;
+    MainProgram = ScaleProgram = 0;
 
     if (OpenGL_GotVersion3)
     {
-        PaletteProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
+        if (ddraw->bpp == 8)
+            MainProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PaletteFragShaderSrc);
+        else if (ddraw->bpp == 16)
+            MainProgram = OpenGL_BuildProgram(PassthroughVertShaderSrc, PassthroughFragShaderSrc);
 
-        if (PaletteProgram)
+        if (MainProgram)
             ScaleProgram = OpenGL_BuildProgramFromFile(ddraw->shader);
         else
             OpenGL_GotVersion3 = FALSE;
     }
 
-    if (OpenGL_GotVersion2 && !PaletteProgram)
+    if (OpenGL_GotVersion2 && !MainProgram)
     {
-        PaletteProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PaletteFragShader110Src);
+        if (ddraw->bpp == 8)
+            MainProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PaletteFragShader110Src);
+        else if (ddraw->bpp == 16)
+            MainProgram = OpenGL_BuildProgram(PassthroughVertShader110Src, PassthroughFragShader110Src);
     }
 }
 
@@ -202,74 +209,110 @@ static void CreateTextures(int width, int height)
 
         while (glGetError() != GL_NO_ERROR);
 
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_LUMINANCE8,
-            SurfaceTexWidth,
-            SurfaceTexHeight,
-            0,
-            SurfaceFormat = GL_LUMINANCE,
-            GL_UNSIGNED_BYTE,
-            0);
-
-
-        if (glGetError() != GL_NO_ERROR)
+        if (ddraw->bpp == 16)
         {
             glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_R8,
+                GL_RGB565,
                 SurfaceTexWidth,
                 SurfaceTexHeight,
                 0,
-                SurfaceFormat = GL_RED,
-                GL_UNSIGNED_BYTE,
+                SurfaceFormat = GL_RGB,
+                SurfaceType = GL_UNSIGNED_SHORT_5_6_5,
                 0);
+
+
+            if (glGetError() != GL_NO_ERROR)
+            {
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGB5,
+                    SurfaceTexWidth,
+                    SurfaceTexHeight,
+                    0,
+                    SurfaceFormat = GL_RGB,
+                    SurfaceType = GL_UNSIGNED_SHORT_5_6_5,
+                    0);
+            }
         }
-
-        if (glGetError() != GL_NO_ERROR)
+        else if (ddraw->bpp == 8)
         {
             glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
+                GL_LUMINANCE8,
                 SurfaceTexWidth,
                 SurfaceTexHeight,
                 0,
-                SurfaceFormat = GL_RED,
-                GL_UNSIGNED_BYTE,
+                SurfaceFormat = GL_LUMINANCE,
+                SurfaceType = GL_UNSIGNED_BYTE,
                 0);
+
+
+            if (glGetError() != GL_NO_ERROR)
+            {
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_R8,
+                    SurfaceTexWidth,
+                    SurfaceTexHeight,
+                    0,
+                    SurfaceFormat = GL_RED,
+                    SurfaceType = GL_UNSIGNED_BYTE,
+                    0);
+            }
+
+            if (glGetError() != GL_NO_ERROR)
+            {
+                glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RED,
+                    SurfaceTexWidth,
+                    SurfaceTexHeight,
+                    0,
+                    SurfaceFormat = GL_RED,
+                    SurfaceType = GL_UNSIGNED_BYTE,
+                    0);
+            }
         }
     }
 
-    glGenTextures(TEXTURE_COUNT, PaletteTexIds);
-
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    if (ddraw->bpp == 8)
     {
-        glBindTexture(GL_TEXTURE_2D, PaletteTexIds[i]);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        glGenTextures(TEXTURE_COUNT, PaletteTexIds);
+
+        for (i = 0; i < TEXTURE_COUNT; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, PaletteTexIds[i]);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        }
     }
 }
 
-static void InitPaletteProgram()
+static void InitMainProgram()
 {
-    if (!PaletteProgram)
+    if (!MainProgram)
         return;
 
-    glUseProgram(PaletteProgram);
+    glUseProgram(MainProgram);
 
-    glUniform1i(glGetUniformLocation(PaletteProgram, "SurfaceTex"), 0);
-    glUniform1i(glGetUniformLocation(PaletteProgram, "PaletteTex"), 1);
+    glUniform1i(glGetUniformLocation(MainProgram, "SurfaceTex"), 0);
+    
+    if (ddraw->bpp == 8)
+        glUniform1i(glGetUniformLocation(MainProgram, "PaletteTex"), 1);
 
     if (OpenGL_GotVersion3)
     {
-        MainVertexCoordAttrLoc = glGetAttribLocation(PaletteProgram, "VertexCoord");
-        MainTexCoordAttrLoc = glGetAttribLocation(PaletteProgram, "TexCoord");
+        MainVertexCoordAttrLoc = glGetAttribLocation(MainProgram, "VertexCoord");
+        MainTexCoordAttrLoc = glGetAttribLocation(MainProgram, "TexCoord");
 
         glGenBuffers(3, MainVBOs);
 
@@ -347,7 +390,7 @@ static void InitPaletteProgram()
             0,0,1,0,
             0,0,0,1,
         };
-        glUniformMatrix4fv(glGetUniformLocation(PaletteProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
+        glUniformMatrix4fv(glGetUniformLocation(MainProgram, "MVPMatrix"), 1, GL_FALSE, mvpMatrix);
 
     }
 }
@@ -463,7 +506,7 @@ static void InitScaleProgram()
         if (glDeleteVertexArrays)
             glDeleteVertexArrays(1, &ScaleVAO);
 
-        if (PaletteProgram)
+        if (MainProgram)
         {
             glBindVertexArray(MainVAO);
             glBindBuffer(GL_ARRAY_BUFFER, MainVBOs[0]);
@@ -507,8 +550,8 @@ static void Render()
         ddraw->render.viewport.x, ddraw->render.viewport.y,
         ddraw->render.viewport.width, ddraw->render.viewport.height);
 
-    if (PaletteProgram)
-        glUseProgram(PaletteProgram);
+    if (MainProgram)
+        glUseProgram(MainProgram);
 
     while (UseOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
@@ -528,7 +571,7 @@ static void Render()
 
         EnterCriticalSection(&ddraw->cs);
 
-        if (ddraw->primary && ddraw->primary->palette)
+        if (ddraw->primary && (ddraw->bpp == 16 || ddraw->primary->palette))
         {
             if (ddraw->vhack)
             {
@@ -547,7 +590,7 @@ static void Render()
                 }
             }
 
-            if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
+            if (ddraw->bpp == 8 && InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
             {
                 if (++palIndex >= TEXTURE_COUNT)
                     palIndex = 0;
@@ -584,7 +627,7 @@ static void Render()
                     ddraw->width,
                     ddraw->height,
                     SurfaceFormat,
-                    GL_UNSIGNED_BYTE,
+                    SurfaceType,
                     ddraw->primary->surface);
 
                 if (AdjustAlignment)
@@ -605,7 +648,7 @@ static void Render()
 
         if (scaleChanged)
         {
-            if (ScaleProgram && PaletteProgram)
+            if (ScaleProgram && MainProgram)
             {
                 glBindVertexArray(MainVAO);
                 glBindBuffer(GL_ARRAY_BUFFER, MainVBOs[1]);
@@ -621,7 +664,7 @@ static void Render()
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
             }
-            else if (OpenGL_GotVersion3 && PaletteProgram)
+            else if (OpenGL_GotVersion3 && MainProgram)
             {
                 glBindVertexArray(MainVAO);
                 glBindBuffer(GL_ARRAY_BUFFER, MainVBOs[1]);
@@ -642,15 +685,18 @@ static void Render()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, SurfaceTexIds[texIndex]);
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, PaletteTexIds[palIndex]);
+        if (ddraw->bpp == 8)
+        {
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, PaletteTexIds[palIndex]);
+        }
 
         glActiveTexture(GL_TEXTURE0);
 
-        if (ScaleProgram && PaletteProgram)
+        if (ScaleProgram && MainProgram)
         {
             // draw surface into framebuffer
-            glUseProgram(PaletteProgram);
+            glUseProgram(MainProgram);
 
             glViewport(0, 0, ddraw->width, ddraw->height);
 
@@ -683,7 +729,7 @@ static void Render()
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
             glBindVertexArray(0);
         }
-        else if (OpenGL_GotVersion3 && PaletteProgram)
+        else if (OpenGL_GotVersion3 && MainProgram)
         {
             glBindVertexArray(MainVAO);
             glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
@@ -719,7 +765,9 @@ static void DeleteContext(HGLRC context)
 {
     HeapFree(GetProcessHeap(), 0, SurfaceTex);
     glDeleteTextures(TEXTURE_COUNT, SurfaceTexIds);
-    glDeleteTextures(TEXTURE_COUNT, PaletteTexIds);
+
+    if (ddraw->bpp == 8)
+        glDeleteTextures(TEXTURE_COUNT, PaletteTexIds);
 
     if (glUseProgram)
         glUseProgram(0);
@@ -740,8 +788,8 @@ static void DeleteContext(HGLRC context)
 
     if (glDeleteProgram)
     {
-        if (PaletteProgram)
-            glDeleteProgram(PaletteProgram);
+        if (MainProgram)
+            glDeleteProgram(MainProgram);
 
         if (ScaleProgram)
             glDeleteProgram(ScaleProgram);
@@ -749,7 +797,7 @@ static void DeleteContext(HGLRC context)
 
     if (OpenGL_GotVersion3)
     {
-        if (PaletteProgram)
+        if (MainProgram)
         {
             if (glDeleteBuffers)
                 glDeleteBuffers(3, MainVBOs);
@@ -782,40 +830,42 @@ static BOOL TextureUploadTest()
             ddraw->width,
             ddraw->height,
             SurfaceFormat,
-            GL_UNSIGNED_BYTE,
+            SurfaceType,
             SurfaceTex);
 
         memset(SurfaceTex, 0, sizeof(testData));
 
-        glGetTexImage(GL_TEXTURE_2D, 0, SurfaceFormat, GL_UNSIGNED_BYTE, SurfaceTex);
+        glGetTexImage(GL_TEXTURE_2D, 0, SurfaceFormat, SurfaceType, SurfaceTex);
 
         if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
             return FALSE;
     }
 
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    if (ddraw->bpp == 8)
     {
-        glBindTexture(GL_TEXTURE_2D, PaletteTexIds[i]);
+        for (i = 0; i < TEXTURE_COUNT; i++)
+        {
+            glBindTexture(GL_TEXTURE_2D, PaletteTexIds[i]);
 
-        glTexSubImage2D(
-            GL_TEXTURE_2D,
-            0,
-            0,
-            0,
-            256,
-            1,
-            GL_RGBA,
-            GL_UNSIGNED_BYTE,
-            SurfaceTex);
+            glTexSubImage2D(
+                GL_TEXTURE_2D,
+                0,
+                0,
+                0,
+                256,
+                1,
+                GL_RGBA,
+                GL_UNSIGNED_BYTE,
+                SurfaceTex);
 
-        memset(SurfaceTex, 0, sizeof(testData));
+            memset(SurfaceTex, 0, sizeof(testData));
 
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, SurfaceTex);
 
-        if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
-            return FALSE;
+            if (memcmp(SurfaceTex, testData, sizeof(testData)) != 0)
+                return FALSE;
+        }
     }
-
     return TRUE;
 }
 
@@ -823,7 +873,10 @@ static BOOL ShaderTest()
 {
     BOOL result = TRUE;
 
-    if (OpenGL_GotVersion3 && PaletteProgram)
+    if (ddraw->bpp != 8)
+        return result;
+
+    if (OpenGL_GotVersion3 && MainProgram)
     {
         memset(SurfaceTex, 0, SurfaceTexHeight * SurfaceTexWidth * sizeof(int));
 
@@ -876,7 +929,7 @@ static BOOL ShaderTest()
 
             glViewport(0, 0, SurfaceTexWidth, SurfaceTexHeight);
 
-            glUseProgram(PaletteProgram);
+            glUseProgram(MainProgram);
 
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, PaletteTexIds[0]);

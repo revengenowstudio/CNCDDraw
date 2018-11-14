@@ -215,6 +215,18 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
             printf("    DDENUMRET_CANCEL returned, stopping\n");
             break;
         }
+
+        s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+        s.ddpfPixelFormat.dwRGBBitCount = 16;
+        s.ddpfPixelFormat.dwRBitMask = 0xF800;
+        s.ddpfPixelFormat.dwGBitMask = 0x07E0;
+        s.ddpfPixelFormat.dwBBitMask = 0x001F;
+
+        if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+        {
+            printf("    DDENUMRET_CANCEL returned, stopping\n");
+            break;
+        }
     }
 
     /* Some games crash when you feed them with too many resolutions...
@@ -384,7 +396,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 {
     printf("DirectDraw::SetDisplayMode(This=%p, width=%d, height=%d, bpp=%d)\n", This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp);
 
-    if (bpp != 8)
+    if (bpp != 8 && bpp != 16)
         return DDERR_INVALIDMODE;
 
     if (This->render.thread)
@@ -660,7 +672,7 @@ void ToggleFullscreen()
         WindowState = ddraw->windowed = FALSE;
         SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         ddraw->altenter = TRUE;
-        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, 8);
+        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
     }
     else
@@ -673,7 +685,7 @@ void ToggleFullscreen()
         else
             ChangeDisplaySettings(&ddraw->mode, 0);
 
-        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, 8);
+        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
     }
 }

@@ -42,9 +42,9 @@ void DrawFrameInfoStart()
 
     RECT debugrc = { 0, 0, ddraw->width, ddraw->height };
 
-    if (ddraw->primary && ddraw->primary->palette)
+    if (ddraw->primary)
     {
-        if (ddraw->primary->palette->data_rgb)
+        if (ddraw->primary->palette && ddraw->primary->palette->data_rgb)
             SetDIBColorTable(ddraw->primary->hDC, 0, 256, ddraw->primary->palette->data_rgb);
 
         DrawText(ddraw->primary->hDC, debugText, -1, &debugrc, DT_NOCLIP);

@@ -176,20 +176,44 @@ static BOOL CreateResources()
     for (i = 0; i < TEXTURE_COUNT; i++)
     {
         err = err || FAILED(
-            IDirect3DDevice9_CreateTexture(D3dDev, texWidth, texHeight, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &SurfaceTex[i], 0));
+            IDirect3DDevice9_CreateTexture(
+                D3dDev,
+                texWidth,
+                texHeight,
+                1,
+                0,
+                ddraw->bpp == 16 ? D3DFMT_R5G6B5 : D3DFMT_L8,
+                D3DPOOL_MANAGED,
+                &SurfaceTex[i],
+                0));
 
         err = err || !SurfaceTex[i];
 
-        err = err || FAILED(
-            IDirect3DDevice9_CreateTexture(D3dDev, 256, 256, 1, 0, D3DFMT_X8R8G8B8, D3DPOOL_MANAGED, &PaletteTex[i], 0));
-    
-        err = err || !PaletteTex[i];
+        if (ddraw->bpp == 8)
+        {
+            err = err || FAILED(
+                IDirect3DDevice9_CreateTexture(
+                    D3dDev,
+                    256,
+                    256,
+                    1,
+                    0,
+                    D3DFMT_X8R8G8B8,
+                    D3DPOOL_MANAGED,
+                    &PaletteTex[i],
+                    0));
+
+            err = err || !PaletteTex[i];
+        }
     }
 
-    err = err || FAILED(
-        IDirect3DDevice9_CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
+    if (ddraw->bpp == 8)
+    {
+        err = err || FAILED(
+            IDirect3DDevice9_CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
+    }
 
-    return VertexBuf && PixelShader && !err;
+    return VertexBuf && (PixelShader || ddraw->bpp == 16) && !err;
 }
 
 static BOOL SetStates()
@@ -199,8 +223,12 @@ static BOOL SetStates()
     err = err || FAILED(IDirect3DDevice9_SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
     err = err || FAILED(IDirect3DDevice9_SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
     err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[0]));
-    err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
-    err = err || FAILED(IDirect3DDevice9_SetPixelShader(D3dDev, PixelShader));
+
+    if (ddraw->bpp == 8)
+    {
+        err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
+        err = err || FAILED(IDirect3DDevice9_SetPixelShader(D3dDev, PixelShader));
+    }
 
     D3DVIEWPORT9 viewData = {
         ddraw->render.viewport.x,
@@ -288,7 +316,7 @@ DWORD WINAPI render_d3d9_main(void)
 
         EnterCriticalSection(&ddraw->cs);
 
-        if (ddraw->primary && ddraw->primary->palette && ddraw->primary->palette->data_rgb)
+        if (ddraw->primary && (ddraw->bpp == 16 || (ddraw->primary->palette && ddraw->primary->palette->data_rgb)))
         {
             if (ddraw->vhack)
             {
@@ -322,9 +350,9 @@ DWORD WINAPI render_d3d9_main(void)
                     int i;
                     for (i = 0; i < ddraw->height; i++)
                     {
-                        memcpy(dst, src, ddraw->width);
+                        memcpy(dst, src, ddraw->width * ddraw->primary->lXPitch);
 
-                        src += ddraw->width;
+                        src += ddraw->primary->lPitch;
                         dst += lock_rc.Pitch;
                     }
 
@@ -332,7 +360,7 @@ DWORD WINAPI render_d3d9_main(void)
                 }
             }
 
-            if (InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
+            if (ddraw->bpp == 8 && InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
             {
                 if (++palIndex >= TEXTURE_COUNT)
                     palIndex = 0;
