@@ -191,10 +191,8 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         { 640, 480 },
         { 800, 600 },
         { 1024, 768 },
-        { 1280, 960 },
         { 1280, 1024 },
         { 1280, 720 },
-        { 1600, 900 },
         { 1920, 1080 },
     };
 
