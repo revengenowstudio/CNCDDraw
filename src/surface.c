@@ -230,10 +230,10 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             if (dst_w == src_w && dst_h == src_h)
             {
                 unsigned char *src = 
-                    (unsigned char *)Source->surface + ((src_x + (Source->width * src_y)) * Source->lXPitch);
+                    (unsigned char *)Source->surface + (src_x * Source->lXPitch) + (Source->lPitch * src_y);
 
                 unsigned char *dst = 
-                    (unsigned char *)This->surface + ((dst_x + (This->width * dst_y)) * This->lXPitch);
+                    (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
 
                 int i;
                 for (i = 0; i < dst_h; i++)
@@ -375,10 +375,10 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
         else
         {
             unsigned char *src =
-                (unsigned char *)Source->surface + ((src_x + (Source->width * src_y)) * Source->lXPitch);
+                (unsigned char *)Source->surface + (src_x * Source->lXPitch) + (Source->lPitch * src_y);
 
             unsigned char *dst =
-                (unsigned char *)This->surface + ((dst_x + (This->width * dst_y)) * This->lXPitch);
+                (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
 
             int i;
             for (i = 0; i < dst_h; i++)

@@ -19,6 +19,7 @@ PFNGLGETERRORPROC glGetError;
 PFNGLGETSTRINGPROC glGetString;
 PFNGLGETTEXIMAGEPROC glGetTexImage;
 PFNGLPIXELSTOREIPROC glPixelStorei;
+PFNGLENABLEPROC glEnable;
 
 PFNGLBEGINPROC glBegin;
 PFNGLENDPROC glEnd;
@@ -121,6 +122,7 @@ BOOL OpenGL_LoadDll()
         glGetString = (PFNGLGETSTRINGPROC)GetProcAddress(OpenGL_hModule, "glGetString");
         glGetTexImage = (PFNGLGETTEXIMAGEPROC)GetProcAddress(OpenGL_hModule, "glGetTexImage");
         glPixelStorei = (PFNGLPIXELSTOREIPROC)GetProcAddress(OpenGL_hModule, "glPixelStorei");
+        glEnable = (PFNGLENABLEPROC)GetProcAddress(OpenGL_hModule, "glEnable");
 
         glBegin = (PFNGLBEGINPROC)GetProcAddress(OpenGL_hModule, "glBegin");
         glEnd = (PFNGLENDPROC)GetProcAddress(OpenGL_hModule, "glEnd");
@@ -131,7 +133,7 @@ BOOL OpenGL_LoadDll()
     return xwglCreateContext && xwglDeleteContext && xwglGetProcAddress && xwglMakeCurrent && glViewport &&
         glBindTexture && glGenTextures && glTexParameteri && glDeleteTextures && glTexImage2D &&
         glDrawElements && glTexSubImage2D && glGetError && glGetString && glGetTexImage && glPixelStorei &&
-        glBegin && glEnd && glTexCoord2f && glVertex2f;
+        glEnable && glBegin && glEnd && glTexCoord2f && glVertex2f;
 }
 
 void OpenGL_Init()

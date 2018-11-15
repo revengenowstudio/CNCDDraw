@@ -78,7 +78,7 @@ DWORD WINAPI render_main(void)
         GotError = GotError || !TextureUploadTest();
         GotError = GotError || !ShaderTest();
         GotError = GotError || glGetError() != GL_NO_ERROR;
-        UseOpenGL = MainProgram && !GotError;
+        UseOpenGL = (MainProgram || ddraw->bpp == 16) && !GotError;
 
         Render();
 
@@ -552,6 +552,8 @@ static void Render()
 
     if (MainProgram)
         glUseProgram(MainProgram);
+    else if (ddraw->bpp == 16)
+        glEnable(GL_TEXTURE_2D);
 
     while (UseOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
@@ -689,9 +691,9 @@ static void Render()
         {
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, PaletteTexIds[palIndex]);
-        }
 
-        glActiveTexture(GL_TEXTURE0);
+            glActiveTexture(GL_TEXTURE0);
+        }
 
         if (ScaleProgram && MainProgram)
         {
