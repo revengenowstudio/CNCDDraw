@@ -421,6 +421,20 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
     return MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
 }
 
+LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
+{
+    LRESULT result = SendMessageA(hWnd, Msg, wParam, lParam);
+
+    if (result && ddraw && Msg == CB_GETDROPPEDCONTROLRECT)
+    {
+        RECT *rc = (RECT *)lParam;
+        if (rc)
+            MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)rc, 2);
+    }
+
+    return result;
+}
+
 void mouse_init()
 {
     HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
@@ -438,5 +452,6 @@ void mouse_init()
     HookIAT(GetModuleHandle(NULL), "user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "MoveWindow", (PROC)fake_MoveWindow);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "SendMessageA", (PROC)fake_SendMessageA);
     mouse_active = TRUE;
 }
