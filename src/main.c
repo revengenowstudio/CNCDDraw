@@ -925,6 +925,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
+        case WM_MOVING:
+        {
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
         case WM_MOVE:
         {
             if (ddraw->windowed)
