@@ -35,6 +35,7 @@ BOOL detect_cutscene();
 void LimitGameTicks(BOOL isBltOrFlip);
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
+BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
 
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;

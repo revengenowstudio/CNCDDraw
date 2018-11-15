@@ -644,6 +644,9 @@ static void Render()
                 if (glGetError() != GL_NO_ERROR)
                     UseOpenGL = FALSE;
             }
+
+            if (!ddraw->hidemouse)
+                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
         }
 
         LeaveCriticalSection(&ddraw->cs);

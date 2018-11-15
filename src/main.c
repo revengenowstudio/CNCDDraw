@@ -103,6 +103,27 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     return TRUE;
 }
 
+BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
+{
+    IDirectDrawSurfaceImpl *this = (IDirectDrawSurfaceImpl *)lParam;
+
+    HDC hDC = GetDC(hWnd);
+
+    RECT size;
+    GetClientRect(hWnd, &size);
+
+    RECT pos;
+    GetWindowRect(hWnd, &pos);
+
+    MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)&pos, 2);
+
+    BitBlt(hDC, 0, 0, size.right, size.bottom, this->hDC, pos.left, pos.top, SRCCOPY);
+
+    ReleaseDC(hWnd, hDC);
+
+    return FALSE;
+}
+
 static unsigned char getPixel(int x, int y)
 {
     return ((unsigned char *)ddraw->primary->surface)[y*ddraw->primary->lPitch + x*ddraw->primary->lXPitch];
@@ -709,6 +730,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
     static BOOL inSizeMove = FALSE;
+    static int redrawCount = 0;
     
     switch(uMsg)
     {
@@ -920,6 +942,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
             
+            if (!ddraw->hidemouse)
+                RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
 
@@ -954,6 +979,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                     InterlockedExchange(&ddraw->minimized, FALSE);
                 }
+
+                if (!ddraw->hidemouse)
+                    RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
             }
             else if (wParam == WA_INACTIVE)
             {
@@ -1109,19 +1137,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-        /* make sure we redraw when WM_PAINT is requested */
+        //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
+        case WM_PARENTNOTIFY:
+        {
+            if (!ddraw->hidemouse && LOWORD(wParam) == WM_DESTROY)
+                redrawCount = 2;
+            break;
+        }
         case WM_PAINT:
-            EnterCriticalSection(&ddraw->cs);
-            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-            LeaveCriticalSection(&ddraw->cs);
-            break;
+        {
+            if (!ddraw->hidemouse && redrawCount > 0)
+            {
+                redrawCount--;
+                RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+            }
 
-        case WM_ERASEBKGND:
             EnterCriticalSection(&ddraw->cs);
-            FillRect(ddraw->render.hDC, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             LeaveCriticalSection(&ddraw->cs);
             break;
+        }
+        case WM_ERASEBKGND:
+        {
+            EnterCriticalSection(&ddraw->cs);
+            FillRect(ddraw->render.hDC, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+            LeaveCriticalSection(&ddraw->cs);
+            break;
+        }
     }
 
     return ddraw->WndProc(hWnd, uMsg, wParam, lParam);

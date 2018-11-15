@@ -375,6 +375,9 @@ DWORD WINAPI render_d3d9_main(void)
                     IDirect3DTexture9_UnlockRect(PaletteTex[palIndex], 0);
                 }
             }
+
+            if (!ddraw->hidemouse)
+                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
         }
 
         LeaveCriticalSection(&ddraw->cs);

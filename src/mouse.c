@@ -311,14 +311,21 @@ void mouse_unlock()
 
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
 {
-    if (lpRect && ddraw && ddraw->hWnd == hWnd)
+    if (lpRect && ddraw)
     {
-        lpRect->bottom = ddraw->height;
-        lpRect->left = 0;
-        lpRect->right = ddraw->width;
-        lpRect->top = 0;
+        if (ddraw->hWnd == hWnd)
+        {
+            lpRect->bottom = ddraw->height;
+            lpRect->left = 0;
+            lpRect->right = ddraw->width;
+            lpRect->top = 0;
 
-        return TRUE;
+            return TRUE;
+        }
+        else
+        {
+            return GetWindowRect(hWnd, lpRect) && MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+        }
     }
 
     return GetWindowRect(hWnd, lpRect);

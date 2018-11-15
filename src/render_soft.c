@@ -116,6 +116,9 @@ DWORD WINAPI render_soft_main(void)
                     ddraw->primary->bmi, 
                     DIB_RGB_COLORS);
             }
+
+            if (!ddraw->hidemouse)
+                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
         }
 
         LeaveCriticalSection(&ddraw->cs);
