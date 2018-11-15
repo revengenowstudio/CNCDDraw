@@ -293,6 +293,22 @@ static void CreateSettingsIni()
             "[dune2000-spawn]\n"
             "maxgameticks=60\n"
             "\n"
+            "; Command & Conquer: Tiberian Sun\n"
+            "[game]\n"
+            "hidemouse=false\n"
+            "\n"
+            "; Command & Conquer: Tiberian Sun Online\n"
+            "[ts-spawn]\n"
+            "hidemouse=false\n"
+            "\n"
+            "; Command & Conquer: Red Alert 2: Yuri's Revenge\n"
+            "[gamemd]\n"
+            "hidemouse=false\n"
+            "\n"
+            "; Command & Conquer: Red Alert 2: Yuri's Revenge Online\n"
+            "[gamemd-spawn]\n"
+            "hidemouse=false\n"
+            "\n"
 
             , fh);
         fclose(fh);

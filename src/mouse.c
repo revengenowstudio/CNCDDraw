@@ -250,11 +250,14 @@ void mouse_lock()
             SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
         }
 
-        SetCapture(ddraw->hWnd);
-        ClipCursor(&rc);
-
         if (ddraw->hidemouse)
-            while(ShowCursor(FALSE) > 0);
+        {
+            SetCapture(ddraw->hWnd);
+            ClipCursor(&rc);
+            while (ShowCursor(FALSE) > 0);
+        }
+        else
+            ClipCursor(&rc);
 
         ddraw->locked = TRUE;
     }
