@@ -620,7 +620,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
 
         if (ddraw->wine)
-            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~WS_MAXIMIZEBOX);
+            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
 
         /* center the window with correct dimensions */
         int x = (WindowRect.left != -32000) ? WindowRect.left : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
@@ -914,6 +914,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         WindowRect.right = LOWORD(lParam);
                         WindowRect.bottom = HIWORD(lParam);
                     }
+                    /*
                     else if (ddraw->wine)
                     {
                         WindowRect.right = LOWORD(lParam);
@@ -921,6 +922,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         if (WindowRect.right != ddraw->render.width || WindowRect.bottom != ddraw->render.height)
                             ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
                     }
+                    */
                 }
             }
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
