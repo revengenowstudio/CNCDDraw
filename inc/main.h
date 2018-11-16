@@ -30,6 +30,7 @@
 
 extern BOOL ShowDriverWarning;
 extern RECT WindowRect;
+extern BOOL ChildWindowExists;
 
 BOOL detect_cutscene();
 void LimitGameTicks(BOOL isBltOrFlip);

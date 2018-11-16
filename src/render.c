@@ -646,7 +646,23 @@ static void Render()
             }
 
             if (!ddraw->hidemouse)
+            {
+                ChildWindowExists = FALSE;
                 EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
+                
+                if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
+                {
+                    if (ChildWindowExists)
+                    {
+                        glClear(GL_COLOR_BUFFER_BIT);
+                        glViewport(0, ddraw->render.height - ddraw->height, ddraw->width, ddraw->height);
+                    }
+                    else
+                        glViewport(
+                            ddraw->render.viewport.x, ddraw->render.viewport.y,
+                            ddraw->render.viewport.width, ddraw->render.viewport.height);
+                }
+            }
         }
 
         LeaveCriticalSection(&ddraw->cs);
@@ -716,9 +732,12 @@ static void Render()
             glActiveTexture(GL_TEXTURE1);
             glBindTexture(GL_TEXTURE_2D, 0);
 
-            glViewport(
-                ddraw->render.viewport.x, ddraw->render.viewport.y,
-                ddraw->render.viewport.width, ddraw->render.viewport.height);
+            if (ChildWindowExists)
+                glViewport(0, ddraw->render.height - ddraw->height, ddraw->width, ddraw->height);
+            else
+                glViewport(
+                    ddraw->render.viewport.x, ddraw->render.viewport.y,
+                    ddraw->render.viewport.width, ddraw->render.viewport.height);
 
             // apply filter
 

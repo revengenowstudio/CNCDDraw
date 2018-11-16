@@ -25,7 +25,7 @@ static int BitsPerPixel;
 
 static BOOL CreateResources();
 static BOOL SetStates();
-static BOOL UpdateVertices(BOOL inCutscene);
+static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch);
 static void SetMaxFPS();
 
 BOOL Direct3D9_Create()
@@ -170,7 +170,7 @@ static BOOL CreateResources()
         IDirect3DDevice9_CreateVertexBuffer(
             D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL));
 
-    err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0));
+    err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0), TRUE);
 
     int i;
     for (i = 0; i < TEXTURE_COUNT; i++)
@@ -243,13 +243,13 @@ static BOOL SetStates()
     return !err;
 }
 
-static BOOL UpdateVertices(BOOL inCutscene)
+static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch)
 {
-    float vpX = (float)ddraw->render.viewport.x;
-    float vpY = (float)ddraw->render.viewport.y;
+    float vpX = stretch ? (float)ddraw->render.viewport.x : 0.0f;
+    float vpY = stretch ? (float)ddraw->render.viewport.y : 0.0f;
 
-    float vpW = (float)(ddraw->render.viewport.width + ddraw->render.viewport.x);
-    float vpH = (float)(ddraw->render.viewport.height + ddraw->render.viewport.y);
+    float vpW = stretch ? (float)(ddraw->render.viewport.width + ddraw->render.viewport.x) : (float)ddraw->width;
+    float vpH = stretch ? (float)(ddraw->render.viewport.height + ddraw->render.viewport.y) : (float)ddraw->height;
 
     float sH = inCutscene ? ScaleH * ((float)CUTSCENE_HEIGHT / ddraw->height) : ScaleH;
     float sW = inCutscene ? ScaleW * ((float)CUTSCENE_WIDTH / ddraw->width) : ScaleW;
@@ -323,12 +323,12 @@ DWORD WINAPI render_d3d9_main(void)
                 if (detect_cutscene())
                 {
                     if (!InterlockedExchange(&ddraw->incutscene, TRUE))
-                        UpdateVertices(TRUE);
+                        UpdateVertices(TRUE, TRUE);
                 }
                 else
                 {
                     if (InterlockedExchange(&ddraw->incutscene, FALSE))
-                        UpdateVertices(FALSE);
+                        UpdateVertices(FALSE, TRUE);
                 }
             }
 
@@ -377,7 +377,21 @@ DWORD WINAPI render_d3d9_main(void)
             }
 
             if (!ddraw->hidemouse)
+            {
+                ChildWindowExists = FALSE;
                 EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
+
+                if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
+                {
+                    if (ChildWindowExists)
+                    {
+                        IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+                        UpdateVertices(FALSE, FALSE);
+                    }
+                    else
+                        UpdateVertices(FALSE, TRUE);
+                }
+            }
         }
 
         LeaveCriticalSection(&ddraw->cs);

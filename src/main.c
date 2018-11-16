@@ -47,6 +47,7 @@ RECT WindowRect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 };
 int WindowState = -1;
 BOOL Direct3D9Active;
 BOOL GameHandlesClose;
+BOOL ChildWindowExists;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
 BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
@@ -106,6 +107,8 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 
 BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
 {
+    ChildWindowExists = TRUE;
+
     IDirectDrawSurfaceImpl *this = (IDirectDrawSurfaceImpl *)lParam;
 
     HDC hDC = GetDC(hWnd);
@@ -567,6 +570,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             }
         }
     }
+
+    if (!ddraw->hidemouse)
+        This->boxing = This->maintas = maintas = FALSE;
     
     This->render.viewport.width = This->render.width;
     This->render.viewport.height = This->render.height;

@@ -66,6 +66,12 @@ DWORD WINAPI render_soft_main(void)
             if (ddraw->vhack)
                 InterlockedExchange(&ddraw->incutscene, scaleCutscene);
 
+            if (!ddraw->hidemouse)
+            {
+                ChildWindowExists = FALSE;
+                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
+            }
+
             if (scaleCutscene)
             {
                 StretchDIBits(
@@ -83,7 +89,7 @@ DWORD WINAPI render_soft_main(void)
                     DIB_RGB_COLORS, 
                     SRCCOPY);
             }
-            else if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
+            else if (!ChildWindowExists && (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height))
             {
                 StretchDIBits(
                     ddraw->render.hDC, 
@@ -115,10 +121,7 @@ DWORD WINAPI render_soft_main(void)
                     ddraw->primary->surface, 
                     ddraw->primary->bmi, 
                     DIB_RGB_COLORS);
-            }
-
-            if (!ddraw->hidemouse)
-                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
+            } 
         }
 
         LeaveCriticalSection(&ddraw->cs);
