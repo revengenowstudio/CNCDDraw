@@ -312,7 +312,7 @@ void mouse_unlock()
             if (GetCursorInfo(&ci) && ci.flags == 0)
             {
                 ddraw->hidecursor = TRUE;
-                ShowCursor(TRUE);
+                while (ShowCursor(TRUE) < 0);
             }
         }
 
