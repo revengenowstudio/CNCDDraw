@@ -383,13 +383,20 @@ DWORD WINAPI render_d3d9_main(void)
 
                 if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
                 {
+                    static BOOL needsUpdate;
+
                     if (ChildWindowExists)
                     {
                         IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
-                        UpdateVertices(FALSE, FALSE);
+
+                        if (!needsUpdate && UpdateVertices(FALSE, FALSE))
+                            needsUpdate = TRUE;
                     }
-                    else
-                        UpdateVertices(FALSE, TRUE);
+                    else if (needsUpdate)
+                    {
+                        if (UpdateVertices(FALSE, TRUE))
+                            needsUpdate = FALSE;
+                    }
                 }
             }
         }

@@ -652,15 +652,26 @@ static void Render()
                 
                 if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
                 {
+                    static BOOL needsUpdate;
+
                     if (ChildWindowExists)
                     {
                         glClear(GL_COLOR_BUFFER_BIT);
-                        glViewport(0, ddraw->render.height - ddraw->height, ddraw->width, ddraw->height);
+
+                        if (!needsUpdate)
+                        {
+                            glViewport(0, ddraw->render.height - ddraw->height, ddraw->width, ddraw->height);
+                            needsUpdate = TRUE;
+                        }
                     }
-                    else
+                    else if (needsUpdate)
+                    {
                         glViewport(
                             ddraw->render.viewport.x, ddraw->render.viewport.y,
                             ddraw->render.viewport.width, ddraw->render.viewport.height);
+
+                        needsUpdate = FALSE;
+                    }
                 }
             }
         }
