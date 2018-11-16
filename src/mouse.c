@@ -71,8 +71,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
         if(ddraw->adjmouse)
         {
-            ddraw->cursor.x = pt.x * ((float)ddraw->width / ddraw->render.viewport.width);
-            ddraw->cursor.y = pt.y * ((float)ddraw->height / ddraw->render.viewport.height);
+            ddraw->cursor.x = pt.x * ddraw->render.unScaleW;
+            ddraw->cursor.y = pt.y * ddraw->render.unScaleH;
         }
         else
         {
@@ -237,13 +237,13 @@ void mouse_lock()
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
-        rc.bottom -= (yAdjust * 2) * ((float)ddraw->render.viewport.height / ddraw->height);
+        rc.bottom -= (yAdjust * 2) * ddraw->render.scaleH;
 
         if(ddraw->adjmouse)
         {
             SetCursorPos(
-                rc.left + (ddraw->cursor.x * ((float)ddraw->render.viewport.width / ddraw->width)), 
-                rc.top + ((ddraw->cursor.y - yAdjust) * ((float)ddraw->render.viewport.height / ddraw->height)));
+                rc.left + (ddraw->cursor.x * ddraw->render.scaleW), 
+                rc.top + ((ddraw->cursor.y - yAdjust) * ddraw->render.scaleH));
         }
         else
         {
@@ -304,11 +304,8 @@ void mouse_unlock()
         ReleaseCapture();
         
         SetCursorPos(
-            rc.left + ddraw->render.viewport.x + 
-                (ddraw->cursor.x * ((float)ddraw->render.viewport.width / ddraw->width)), 
-            rc.top + ddraw->render.viewport.y + 
-                ((ddraw->cursor.y + yAdjust) * ((float)ddraw->render.viewport.height / ddraw->height)));
-
+            rc.left + ddraw->render.viewport.x + (ddraw->cursor.x * ddraw->render.scaleW), 
+            rc.top + ddraw->render.viewport.y + ((ddraw->cursor.y + yAdjust) * ddraw->render.scaleH));
     }
 }
 

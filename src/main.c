@@ -609,6 +609,11 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.viewport.x = This->render.width / 2 - This->render.viewport.width / 2;
     }
     
+    This->render.scaleW = ((float)This->render.viewport.width / This->width);
+    This->render.scaleH = ((float)This->render.viewport.height / This->height);
+    This->render.unScaleW = ((float)This->width / This->render.viewport.width);
+    This->render.unScaleH = ((float)This->height / This->render.viewport.height);
+
     if (This->windowed)
     {
         if (!This->border)
@@ -1104,11 +1109,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }    
                 else
                 {
-                    ddraw->cursor.x = 
-                        (x - ddraw->render.viewport.x) * ((float)ddraw->width / ddraw->render.viewport.width);
-                        
-                    ddraw->cursor.y = 
-                        (y - ddraw->render.viewport.y) * ((float)ddraw->height / ddraw->render.viewport.height);
+                    ddraw->cursor.x = (x - ddraw->render.viewport.x) * ddraw->render.unScaleW;
+                    ddraw->cursor.y = (y - ddraw->render.viewport.y) * ddraw->render.unScaleH;
                 }
 
                 mouse_lock();

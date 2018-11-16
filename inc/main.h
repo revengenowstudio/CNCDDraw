@@ -83,6 +83,11 @@ typedef struct IDirectDrawImpl
 
         LONG paletteUpdated;
         LONG surfaceUpdated;
+
+        float scaleW;
+        float scaleH;
+        float unScaleW;
+        float unScaleH;
     } render;
 
     HWND hWnd;
