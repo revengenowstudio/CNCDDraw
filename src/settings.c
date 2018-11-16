@@ -226,7 +226,7 @@ static void CreateSettingsIni()
             "maxgameticks=0\n"
             "\n"
             "; Gives cnc-ddraw full control over the mouse cursor (required for adjmouse/boxing/maintas)\n"
-            "; Note: This option only works for games that draw their own cursor and must be disabled for all other games\n"
+            "; Note: This option only works for games that draw their own cursor and it must be disabled for all other games\n"
             "handlemouse=true\n"
             "\n"
             "\n"
