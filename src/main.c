@@ -1003,7 +1003,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else if (wParam == WA_INACTIVE)
             {
-                if (!ddraw->windowed && !ddraw->locked)
+                if (!ddraw->windowed && !ddraw->locked && ddraw->noactivateapp)
                     return 0;
 
                 mouse_unlock();
