@@ -1003,6 +1003,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else if (wParam == WA_INACTIVE)
             {
+                if (!ddraw->windowed && !ddraw->locked)
+                    return 0;
+
                 mouse_unlock();
 
                 if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
