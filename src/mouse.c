@@ -124,7 +124,7 @@ BOOL WINAPI fake_ClipCursor(const RECT *lpRect)
 
 int WINAPI fake_ShowCursor(BOOL bShow)
 {
-    if (ddraw && !ddraw->hidemouse)
+    if (ddraw && !ddraw->handlemouse)
         return ShowCursor(bShow);
 
     return TRUE;
@@ -132,7 +132,7 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
-    if (ddraw && !ddraw->hidemouse)
+    if (ddraw && !ddraw->handlemouse)
         return SetCursor(hCursor); 
     
     return NULL;
@@ -207,7 +207,7 @@ void mouse_lock()
 
     if (ddraw->devmode)
     {
-        if (ddraw->hidemouse)
+        if (ddraw->handlemouse)
             while(ShowCursor(FALSE) > 0);
 
         return;
@@ -250,7 +250,7 @@ void mouse_lock()
             SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
         }
 
-        if (ddraw->hidemouse)
+        if (ddraw->handlemouse)
         {
             SetCapture(ddraw->hWnd);
             ClipCursor(&rc);
@@ -276,7 +276,7 @@ void mouse_unlock()
 
     if (ddraw->devmode)
     {
-        if (ddraw->hidemouse)
+        if (ddraw->handlemouse)
             while(ShowCursor(TRUE) < 0);
 
         return;
@@ -301,7 +301,7 @@ void mouse_unlock()
         ClientToScreen(ddraw->hWnd, &pt2);
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
        
-        if (ddraw->hidemouse)
+        if (ddraw->handlemouse)
         {
             while (ShowCursor(TRUE) < 0);
             SetCursor(LoadCursor(NULL, IDC_ARROW));

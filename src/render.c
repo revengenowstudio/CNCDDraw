@@ -645,7 +645,7 @@ static void Render()
                     UseOpenGL = FALSE;
             }
 
-            if (!ddraw->hidemouse)
+            if (!ddraw->handlemouse)
             {
                 ChildWindowExists = FALSE;
                 EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);

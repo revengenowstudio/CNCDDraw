@@ -66,7 +66,7 @@ DWORD WINAPI render_soft_main(void)
             if (ddraw->vhack)
                 InterlockedExchange(&ddraw->incutscene, scaleCutscene);
 
-            if (!ddraw->hidemouse)
+            if (!ddraw->handlemouse)
             {
                 ChildWindowExists = FALSE;
                 EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);

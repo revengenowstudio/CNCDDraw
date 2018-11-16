@@ -106,7 +106,7 @@ typedef struct IDirectDrawImpl
     BOOL fullscreen;
     BOOL maintas;
     BOOL noactivateapp;
-    BOOL hidemouse;
+    BOOL handlemouse;
     char shader[MAX_PATH];
     BOOL wine;
     LONG minimized;

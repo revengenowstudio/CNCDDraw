@@ -571,7 +571,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
     }
 
-    if (!ddraw->hidemouse)
+    if (!ddraw->handlemouse)
         This->boxing = This->maintas = maintas = FALSE;
     
     This->render.viewport.width = This->render.width;
@@ -960,7 +960,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 }
             }
             
-            if (!ddraw->hidemouse)
+            if (!ddraw->handlemouse)
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
@@ -998,7 +998,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     InterlockedExchange(&ddraw->minimized, FALSE);
                 }
 
-                if (!ddraw->hidemouse)
+                if (!ddraw->handlemouse)
                     RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
             }
             else if (wParam == WA_INACTIVE)
@@ -1053,7 +1053,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 // let it pass through once (tiberian sun)
                 static BOOL oneTime;
-                if (wParam && !oneTime && !ddraw->hidemouse && ddraw->noactivateapp)
+                if (wParam && !oneTime && !ddraw->handlemouse && ddraw->noactivateapp)
                 {
                     oneTime = TRUE;
                     break;
@@ -1166,13 +1166,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
         case WM_PARENTNOTIFY:
         {
-            if (!ddraw->hidemouse && LOWORD(wParam) == WM_DESTROY)
+            if (!ddraw->handlemouse && LOWORD(wParam) == WM_DESTROY)
                 redrawCount = 2;
             break;
         }
         case WM_PAINT:
         {
-            if (!ddraw->hidemouse && redrawCount > 0)
+            if (!ddraw->handlemouse && redrawCount > 0)
             {
                 redrawCount--;
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
