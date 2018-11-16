@@ -1051,6 +1051,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             /* C&C and RA stop drawing when they receive this with FALSE wParam, disable in windowed mode */
             if (ddraw->windowed || ddraw->noactivateapp)
             {
+                // let it pass through once (tiberian sun)
+                static BOOL oneTime;
+                if (wParam && !oneTime)
+                {
+                    oneTime = TRUE;
+                    break;
+                }
+
                 return 0;
             }
             break;
