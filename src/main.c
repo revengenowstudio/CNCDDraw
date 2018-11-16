@@ -46,6 +46,7 @@ IDirectDrawImpl *ddraw = NULL;
 RECT WindowRect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 };
 int WindowState = -1;
 BOOL Direct3D9Active;
+BOOL GameHandlesClose;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
 BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
@@ -956,7 +957,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
         /* C&C and RA really don't want to close down */
         case WM_SYSCOMMAND:
-            if (wParam == SC_CLOSE)
+            if (wParam == SC_CLOSE && !GameHandlesClose)
             {
                 exit(0);
             }
