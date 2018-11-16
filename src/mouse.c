@@ -257,7 +257,14 @@ void mouse_lock()
             while (ShowCursor(FALSE) > 0);
         }
         else
+        {
+            if (ddraw->hidecursor)
+            {
+                ddraw->hidecursor = FALSE;
+                ShowCursor(FALSE);
+            }
             ClipCursor(&rc);
+        }
 
         ddraw->locked = TRUE;
     }
@@ -298,6 +305,15 @@ void mouse_unlock()
         {
             while (ShowCursor(TRUE) < 0);
             SetCursor(LoadCursor(NULL, IDC_ARROW));
+        }
+        else
+        {
+            CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
+            if (GetCursorInfo(&ci) && ci.flags == 0)
+            {
+                ddraw->hidecursor = TRUE;
+                ShowCursor(TRUE);
+            }
         }
 
         ClipCursor(NULL);

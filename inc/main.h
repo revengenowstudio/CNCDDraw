@@ -112,6 +112,7 @@ typedef struct IDirectDrawImpl
     LONG minimized;
     DWORD ticklength;
     BOOL altenter;
+    BOOL hidecursor;
     
 } IDirectDrawImpl;
 
