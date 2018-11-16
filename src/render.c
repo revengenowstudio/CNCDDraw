@@ -545,6 +545,7 @@ static void Render()
 {
     DWORD tick_start = 0;
     DWORD tick_end = 0;
+    BOOL needsUpdate = FALSE;
 
     glViewport(
         ddraw->render.viewport.x, ddraw->render.viewport.y,
@@ -652,8 +653,6 @@ static void Render()
                 
                 if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
                 {
-                    static BOOL needsUpdate;
-
                     if (ChildWindowExists)
                     {
                         glClear(GL_COLOR_BUFFER_BIT);

@@ -296,6 +296,7 @@ DWORD WINAPI render_d3d9_main(void)
 
     DWORD tickStart = 0;
     DWORD tickEnd = 0;
+    BOOL needsUpdate = FALSE;
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
@@ -383,8 +384,6 @@ DWORD WINAPI render_d3d9_main(void)
 
                 if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
                 {
-                    static BOOL needsUpdate;
-
                     if (ChildWindowExists)
                     {
                         IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
