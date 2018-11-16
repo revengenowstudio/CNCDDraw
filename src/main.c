@@ -572,7 +572,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     }
 
     if (!ddraw->handlemouse)
-        This->boxing = This->maintas = maintas = FALSE;
+        This->boxing = maintas = FALSE;
     
     This->render.viewport.width = This->render.width;
     This->render.viewport.height = This->render.height;

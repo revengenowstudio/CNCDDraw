@@ -182,7 +182,7 @@ static void CreateSettingsIni()
             "border=true\n"
             "\n"
             "; Maintain aspect ratio\n"
-            "; Note: Works only for games that support 'handlemouse=true'\n"
+            "; Note: Works only for games that support 'handlemouse=true' (Windowed mode is an exception)\n"
             "maintas=false\n"
             "\n"
             "; Windowboxing / Integer Scaling\n"
