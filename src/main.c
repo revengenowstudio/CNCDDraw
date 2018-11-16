@@ -1053,7 +1053,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 // let it pass through once (tiberian sun)
                 static BOOL oneTime;
-                if (wParam && !oneTime && !ddraw->hidemouse)
+                if (wParam && !oneTime && !ddraw->hidemouse && ddraw->noactivateapp)
                 {
                     oneTime = TRUE;
                     break;
