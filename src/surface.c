@@ -266,7 +266,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                     pattern[pattern_idx] = (scale_pattern) { ONCE, 0, 0, 1 };
 
                     /* Build the pattern! */
-                    for (int x = 1; x < dst_w; x++) {
+                    int x;
+                    for (x = 1; x < dst_w; x++) {
                         s_src_x = (x * x_ratio) >> 16;
                         if (s_src_x == last_src_x)
                         {
@@ -305,10 +306,10 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
 
                     /* Do the actual blitting */
-                    void *d, *s;
                     int count = 0;
+                    int y;
 
-                    for (int y = 0; y < dst_h; y++) {
+                    for (y = 0; y < dst_h; y++) {
 
                         dest_base = dst_x + This->width * (y + dst_y);
 
@@ -322,6 +323,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                             switch (current->type)
                             {
                             case ONCE:
+                            {
                                 if (This->bpp == 8)
                                 {
                                     ((unsigned char *)This->surface)[dest_base + current->dst_index] =
@@ -333,30 +335,34 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                                         ((unsigned short *)Source->surface)[source_base + current->src_index];
                                 }
                                 break;
-
+                            }
                             case REPEAT:
+                            {
                                 if (This->bpp == 8)
                                 {
-                                    d = ((unsigned char *)This->surface + dest_base + current->dst_index);
+                                    unsigned char *d = ((unsigned char *)This->surface + dest_base + current->dst_index);
                                     unsigned char v = ((unsigned char *)Source->surface)[source_base + current->src_index];
 
                                     count = current->count;
                                     while (count-- > 0)
-                                        *((unsigned char *)d)++ = v;
+                                        *d++ = v;
                                 }
                                 else if (This->bpp == 16)
                                 {
-                                    d = ((unsigned short *)This->surface + dest_base + current->dst_index);
+                                    unsigned short *d = ((unsigned short *)This->surface + dest_base + current->dst_index);
                                     unsigned short v = ((unsigned short *)Source->surface)[source_base + current->src_index];
 
                                     count = current->count;
                                     while (count-- > 0)
-                                        *((unsigned short *)d)++ = v;
+                                        *d++ = v;
                                 }
 
                                 break;
-
+                            }
                             case SEQUENCE:
+                            {
+                                void *d, *s;
+
                                 if (This->bpp == 8)
                                 {
                                     d = ((unsigned char *)This->surface) + dest_base + current->dst_index;
@@ -370,7 +376,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
                                 memcpy(d, s, current->count * This->lXPitch);
                                 break;
-
+                            }
                             case END:
                             default:
                                 break;
