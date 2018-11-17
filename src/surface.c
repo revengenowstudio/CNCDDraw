@@ -153,13 +153,18 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
         if (This->bpp == 8)
         {
+            unsigned char color = (unsigned char)lpDDBltFx->dwFillColor;
+
             for (x = 0; x < dst_w; x++)
-                ((unsigned char *)dst)[x] = lpDDBltFx->dwFillColor;
+                dst[x] = color;
         }
         else if (This->bpp == 16)
         {
+            unsigned short *row1 = (unsigned short *)dst;
+            unsigned short color = (unsigned short)lpDDBltFx->dwFillColor;
+
             for (x = 0; x < dst_w; x++)
-                ((unsigned short *)dst)[x] = lpDDBltFx->dwFillColor;
+                row1[x] = color;
         }
 
         for (i = 1; i < dst_h; i++)
