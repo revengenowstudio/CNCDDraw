@@ -319,71 +319,85 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
                         pattern_idx = 0;
                         scale_pattern *current = &pattern[pattern_idx];
-                        do {
-                            switch (current->type)
-                            {
-                            case ONCE:
-                            {
-                                if (This->bpp == 8)
+
+                        if (This->bpp == 8)
+                        {
+                            unsigned char *d, *s, v;
+                            unsigned char *src = (unsigned char *)Source->surface;
+                            unsigned char *dst = (unsigned char *)This->surface;
+
+                            do {
+                                switch (current->type)
                                 {
-                                    ((unsigned char *)This->surface)[dest_base + current->dst_index] =
-                                        ((unsigned char *)Source->surface)[source_base + current->src_index];
-                                }
-                                else if (This->bpp == 16)
-                                {
-                                    ((unsigned short *)This->surface)[dest_base + current->dst_index] =
-                                        ((unsigned short *)Source->surface)[source_base + current->src_index];
-                                }
-                                break;
-                            }
-                            case REPEAT:
-                            {
-                                if (This->bpp == 8)
-                                {
-                                    unsigned char *d = ((unsigned char *)This->surface + dest_base + current->dst_index);
-                                    unsigned char v = ((unsigned char *)Source->surface)[source_base + current->src_index];
+                                case ONCE:
+                                    dst[dest_base + current->dst_index] =
+                                        src[source_base + current->src_index];
+                                    break;
+
+                                case REPEAT:
+                                    d = (dst + dest_base + current->dst_index);
+                                    v = src[source_base + current->src_index];
 
                                     count = current->count;
                                     while (count-- > 0)
                                         *d++ = v;
+
+                                    break;
+
+                                case SEQUENCE:
+                                    d = dst + dest_base + current->dst_index;
+                                    s = src + source_base + current->src_index;
+
+                                    memcpy((void *)d, (void *)s, current->count * This->lXPitch);
+                                    break;
+
+                                case END:
+                                default:
+                                    break;
                                 }
-                                else if (This->bpp == 16)
+
+                                current = &pattern[++pattern_idx];
+                            } while (current->type != END);
+                        }
+                        else if (This->bpp == 16)
+                        {
+                            unsigned short *d, *s, v;
+                            unsigned short *src = (unsigned short *)Source->surface;
+                            unsigned short *dst = (unsigned short *)This->surface;
+
+                            do {
+                                switch (current->type)
                                 {
-                                    unsigned short *d = ((unsigned short *)This->surface + dest_base + current->dst_index);
-                                    unsigned short v = ((unsigned short *)Source->surface)[source_base + current->src_index];
+                                case ONCE:
+                                    dst[dest_base + current->dst_index] =
+                                        src[source_base + current->src_index];
+                                    break;
+
+                                case REPEAT:
+                                    d = (dst + dest_base + current->dst_index);
+                                    v = src[source_base + current->src_index];
 
                                     count = current->count;
                                     while (count-- > 0)
                                         *d++ = v;
+
+                                    break;
+
+                                case SEQUENCE:
+                                    d = dst + dest_base + current->dst_index;
+                                    s = src + source_base + current->src_index;
+
+                                    memcpy((void *)d, (void *)s, current->count * This->lXPitch);
+                                    break;
+
+                                case END:
+                                default:
+                                    break;
                                 }
 
-                                break;
-                            }
-                            case SEQUENCE:
-                            {
-                                void *d, *s;
-
-                                if (This->bpp == 8)
-                                {
-                                    d = ((unsigned char *)This->surface) + dest_base + current->dst_index;
-                                    s = ((unsigned char *)Source->surface) + source_base + current->src_index;
-                                }
-                                else if (This->bpp == 16)
-                                {
-                                    d = ((unsigned short *)This->surface) + dest_base + current->dst_index;
-                                    s = ((unsigned short *)Source->surface) + source_base + current->src_index;
-                                }
-
-                                memcpy(d, s, current->count * This->lXPitch);
-                                break;
-                            }
-                            case END:
-                            default:
-                                break;
-                            }
-
-                            current = &pattern[++pattern_idx];
-                        } while (current->type != END);
+                                current = &pattern[++pattern_idx];
+                            } while (current->type != END);
+                        }
                     }
                     free(pattern);
                 }
