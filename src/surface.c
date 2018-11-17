@@ -114,9 +114,18 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     RECT dstRect = { 0, 0, This->width, This->height };
 
     if (lpSrcRect && Source)
-    {
         memcpy(&srcRect, lpSrcRect, sizeof(srcRect));
 
+    if (lpDestRect)
+        memcpy(&dstRect, lpDestRect, sizeof(dstRect));
+
+    // stretch or clip?
+    BOOL isStretchBlt = 
+        ((srcRect.right - srcRect.left) != (dstRect.right - dstRect.left)) ||
+        ((srcRect.bottom - srcRect.top) != (dstRect.bottom - dstRect.top));
+
+    if (Source)
+    {
         if (srcRect.right > Source->width)
             srcRect.right = Source->width;
 
@@ -124,16 +133,11 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             srcRect.bottom = Source->height;
     }
 
-    if (lpDestRect)
-    {
-        memcpy(&dstRect, lpDestRect, sizeof(dstRect));
+    if (dstRect.right > This->width)
+        dstRect.right = This->width;
 
-        if (dstRect.right > This->width)
-            dstRect.right = This->width;
-
-        if (dstRect.bottom > This->height)
-            dstRect.bottom = This->height;
-    }
+    if (dstRect.bottom > This->height)
+        dstRect.bottom = This->height;
 
     int src_w = srcRect.right - srcRect.left;
     int src_h = srcRect.bottom - srcRect.top;
@@ -179,17 +183,20 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     {
         if (dwFlags & DDBLT_KEYSRC)
         {
-            if (dst_w == src_w && dst_h == src_h)
+            if (!isStretchBlt)
             {
+                int width = dst_w > src_w ? src_w : dst_w;
+                int height = dst_h > src_h ? src_h : dst_h;
+
                 if (This->bpp == 8)
                 {
                     int y1, x1;
-                    for (y1 = 0; y1 < dst_h; y1++)
+                    for (y1 = 0; y1 < height; y1++)
                     {
                         int ydst = This->width * (y1 + dst_y);
                         int ysrc = Source->width * (y1 + src_y);
 
-                        for (x1 = 0; x1 < dst_w; x1++)
+                        for (x1 = 0; x1 < width; x1++)
                         {
                             unsigned char c = ((unsigned char *)Source->surface)[x1 + src_x + ysrc];
 
@@ -203,12 +210,12 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                 else if (This->bpp == 16)
                 {
                     int y1, x1;
-                    for (y1 = 0; y1 < dst_h; y1++)
+                    for (y1 = 0; y1 < height; y1++)
                     {
                         int ydst = This->width * (y1 + dst_y);
                         int ysrc = Source->width * (y1 + src_y);
 
-                        for (x1 = 0; x1 < dst_w; x1++)
+                        for (x1 = 0; x1 < width; x1++)
                         {
                             unsigned short c = ((unsigned short *)Source->surface)[x1 + src_x + ysrc];
 
@@ -227,8 +234,11 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         }
         else
         {
-            if (dst_w == src_w && dst_h == src_h)
+            if (!isStretchBlt)
             {
+                int width = dst_w > src_w ? src_w : dst_w;
+                int height = dst_h > src_h ? src_h : dst_h;
+
                 unsigned char *src = 
                     (unsigned char *)Source->surface + (src_x * Source->lXPitch) + (Source->lPitch * src_y);
 
@@ -236,9 +246,9 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                     (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
 
                 int i;
-                for (i = 0; i < dst_h; i++)
+                for (i = 0; i < height; i++)
                 {
-                    memcpy(dst, src, dst_w * This->lXPitch);
+                    memcpy(dst, src, width * This->lXPitch);
 
                     src += Source->lPitch;
                     dst += This->lPitch;
