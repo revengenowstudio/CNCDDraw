@@ -977,8 +977,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 ToggleFullscreen();
                 return 0;
             }
-                
-            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+            if (!GameHandlesClose)
+                return DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+            break;
 
         case WM_ACTIVATE:
             if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
