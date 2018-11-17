@@ -147,31 +147,25 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if (This->surface && (dwFlags & DDBLT_COLORFILL))
     {
+        unsigned char *dst = (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
+        unsigned char *firstRow = dst;
+        int x, i;
+
         if (This->bpp == 8)
         {
-            int y, x;
-            for (y = 0; y < dst_h; y++)
-            {
-                int ydst = This->width * (y + dst_y);
-
-                for (x = 0; x < dst_w; x++)
-                {
-                    ((unsigned char *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
-                }
-            }
+            for (x = 0; x < dst_w; x++)
+                ((unsigned char *)dst)[x] = lpDDBltFx->dwFillColor;
         }
         else if (This->bpp == 16)
         {
-            int y, x;
-            for (y = 0; y < dst_h; y++)
-            {
-                int ydst = This->width * (y + dst_y);
+            for (x = 0; x < dst_w; x++)
+                ((unsigned short *)dst)[x] = lpDDBltFx->dwFillColor;
+        }
 
-                for (x = 0; x < dst_w; x++)
-                {
-                    ((unsigned short *)This->surface)[x + dst_x + ydst] = lpDDBltFx->dwFillColor;
-                }
-            }
+        for (i = 1; i < dst_h; i++)
+        {
+            dst += This->lPitch;
+            memcpy(dst, firstRow, dst_w * This->lXPitch);
         }
     }
 
