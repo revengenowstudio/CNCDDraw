@@ -30,6 +30,13 @@ HRESULT __stdcall ddraw_surface_QueryInterface(IDirectDrawSurfaceImpl *This, REF
 {
     printf("DirectDrawSurface::QueryInterface(This=%p, riid=%08X, obj=%p) ???\n", This, (unsigned int)riid, obj);
 
+    if (riid && !IsEqualGUID(&IID_IDirectDrawSurface, riid))
+    {
+        printf("  IID_IDirectDrawSurfaceX\n");
+
+        IDirectDrawSurface_AddRef(This);
+    }
+
     *obj = This;
 
     return S_OK;
