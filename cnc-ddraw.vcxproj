@@ -38,6 +38,7 @@
     <ClInclude Include="inc\palette.h" />
     <ClInclude Include="inc\openglshader.h" />
     <ClInclude Include="inc\d3d9shader.h" />
+    <ClInclude Include="inc\scale_pattern.h" />
     <ClInclude Include="inc\surface.h" />
   </ItemGroup>
   <ItemGroup>

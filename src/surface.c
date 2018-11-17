@@ -19,6 +19,7 @@
 
 #include "main.h"
 #include "surface.h"
+#include "scale_pattern.h"
 
 void dump_ddbltflags(DWORD dwFlags);
 void dump_ddscaps(DWORD dwCaps);
@@ -244,7 +245,143 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                 }
             }
             else
-                StretchBlt(This->hDC, dst_x, dst_y, dst_w, dst_h, Source->hDC, src_x, src_y, src_w, src_h, SRCCOPY);
+            {
+                /* Linear scaling using integer math
+                * Since the scaling pattern for x will aways be the same, the pattern itself gets pre-calculated
+                * and stored in an array.
+                * Y scaling pattern gets calculated during the blit loop
+                */
+                unsigned int x_ratio = (unsigned int)((src_w << 16) / dst_w) + 1;
+                unsigned int y_ratio = (unsigned int)((src_h << 16) / dst_h) + 1;
+
+                unsigned int s_src_x, s_src_y;
+                unsigned int dest_base, source_base;
+
+                scale_pattern *pattern = malloc((dst_w + 1) * (sizeof(scale_pattern)));
+                int pattern_idx = 0;
+                unsigned int last_src_x = 0;
+
+                if (pattern != NULL)
+                {
+                    pattern[pattern_idx] = (scale_pattern) { ONCE, 0, 0, 1 };
+
+                    /* Build the pattern! */
+                    for (int x = 1; x < dst_w; x++) {
+                        s_src_x = (x * x_ratio) >> 16;
+                        if (s_src_x == last_src_x)
+                        {
+                            if (pattern[pattern_idx].type == REPEAT || pattern[pattern_idx].type == ONCE)
+                            {
+                                pattern[pattern_idx].type = REPEAT;
+                                pattern[pattern_idx].count++;
+                            }
+                            else if (pattern[pattern_idx].type == SEQUENCE)
+                            {
+                                pattern_idx++;
+                                pattern[pattern_idx] = (scale_pattern) { REPEAT, x, s_src_x, 1 };
+                            }
+                        }
+                        else if (s_src_x == last_src_x + 1)
+                        {
+                            if (pattern[pattern_idx].type == SEQUENCE || pattern[pattern_idx].type == ONCE)
+                            {
+                                pattern[pattern_idx].type = SEQUENCE;
+                                pattern[pattern_idx].count++;
+                            }
+                            else if (pattern[pattern_idx].type == REPEAT)
+                            {
+                                pattern_idx++;
+                                pattern[pattern_idx] = (scale_pattern) { ONCE, x, s_src_x, 1 };
+                            }
+                        }
+                        else
+                        {
+                            pattern_idx++;
+                            pattern[pattern_idx] = (scale_pattern) { ONCE, x, s_src_x, 1 };
+                        }
+                        last_src_x = s_src_x;
+                    }
+                    pattern[pattern_idx + 1] = (scale_pattern) { END, 0, 0, 0 };
+
+
+                    /* Do the actual blitting */
+                    void *d, *s;
+                    int count = 0;
+
+                    for (int y = 0; y < dst_h; y++) {
+
+                        dest_base = dst_x + This->width * (y + dst_y);
+
+                        s_src_y = (y * y_ratio) >> 16;
+
+                        source_base = src_x + Source->width * (s_src_y + src_y);
+
+                        pattern_idx = 0;
+                        scale_pattern *current = &pattern[pattern_idx];
+                        do {
+                            switch (current->type)
+                            {
+                            case ONCE:
+                                if (This->bpp == 8)
+                                {
+                                    ((unsigned char *)This->surface)[dest_base + current->dst_index] =
+                                        ((unsigned char *)Source->surface)[source_base + current->src_index];
+                                }
+                                else if (This->bpp == 16)
+                                {
+                                    ((unsigned short *)This->surface)[dest_base + current->dst_index] =
+                                        ((unsigned short *)Source->surface)[source_base + current->src_index];
+                                }
+                                break;
+
+                            case REPEAT:
+                                if (This->bpp == 8)
+                                {
+                                    d = ((unsigned char *)This->surface + dest_base + current->dst_index);
+                                    unsigned char v = ((unsigned char *)Source->surface)[source_base + current->src_index];
+
+                                    count = current->count;
+                                    while (count-- > 0)
+                                        *((unsigned char *)d)++ = v;
+                                }
+                                else if (This->bpp == 16)
+                                {
+                                    d = ((unsigned short *)This->surface + dest_base + current->dst_index);
+                                    unsigned short v = ((unsigned short *)Source->surface)[source_base + current->src_index];
+
+                                    count = current->count;
+                                    while (count-- > 0)
+                                        *((unsigned short *)d)++ = v;
+                                }
+
+                                break;
+
+                            case SEQUENCE:
+                                if (This->bpp == 8)
+                                {
+                                    d = ((unsigned char *)This->surface) + dest_base + current->dst_index;
+                                    s = ((unsigned char *)Source->surface) + source_base + current->src_index;
+                                }
+                                else if (This->bpp == 16)
+                                {
+                                    d = ((unsigned short *)This->surface) + dest_base + current->dst_index;
+                                    s = ((unsigned short *)Source->surface) + source_base + current->src_index;
+                                }
+
+                                memcpy(d, s, current->count * This->lXPitch);
+                                break;
+
+                            case END:
+                            default:
+                                break;
+                            }
+
+                            current = &pattern[++pattern_idx];
+                        } while (current->type != END);
+                    }
+                    free(pattern);
+                }
+            }
 
         }
     }
