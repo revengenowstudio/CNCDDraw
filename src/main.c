@@ -300,9 +300,9 @@ HRESULT __stdcall ddraw_GetCaps(IDirectDrawImpl *This, LPDDCAPS lpDDDriverCaps, 
     if(lpDDDriverCaps)
     {
         lpDDDriverCaps->dwSize = sizeof(DDCAPS);
-        lpDDDriverCaps->dwCaps = DDCAPS_BLT|DDCAPS_PALETTE;
+        lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP;
         lpDDDriverCaps->dwCKeyCaps = 0;
-        lpDDDriverCaps->dwPalCaps = DDPCAPS_8BIT|DDPCAPS_PRIMARYSURFACE;
+        lpDDDriverCaps->dwPalCaps = DDPCAPS_8BIT | DDPCAPS_PRIMARYSURFACE;
         lpDDDriverCaps->dwVidMemTotal = 16777216;
         lpDDDriverCaps->dwVidMemFree = 16777216;
         lpDDDriverCaps->dwMaxVisibleOverlays = 0;
