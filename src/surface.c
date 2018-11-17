@@ -156,7 +156,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             unsigned char color = (unsigned char)lpDDBltFx->dwFillColor;
 
             for (x = 0; x < dst_w; x++)
-                dst[x] = color;
+                firstRow[x] = color;
         }
         else if (This->bpp == 16)
         {
@@ -312,12 +312,10 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
             srcRect.bottom = Source->height;
     }
 
-    int src_w = srcRect.right - srcRect.left;
-    int src_h = srcRect.bottom - srcRect.top;
     int src_x = srcRect.left;
     int src_y = srcRect.top;
 
-    RECT dstRect = { dst_x, dst_y, src_w + dst_x, src_h + dst_y };
+    RECT dstRect = { dst_x, dst_y, (srcRect.right - srcRect.left) + dst_x, (srcRect.bottom - srcRect.top) + dst_y };
 
     if (dstRect.right > This->width)
         dstRect.right = This->width;
