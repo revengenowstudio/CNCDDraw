@@ -124,10 +124,12 @@ BOOL WINAPI fake_ClipCursor(const RECT *lpRect)
 
 int WINAPI fake_ShowCursor(BOOL bShow)
 {
+    static int count;
+
     if (ddraw && !ddraw->handlemouse)
         return ShowCursor(bShow);
 
-    return TRUE;
+    return bShow ? ++count : --count;
 }
 
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
