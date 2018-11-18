@@ -696,7 +696,16 @@ HRESULT __stdcall ddraw_surface_GetClipper(IDirectDrawSurfaceImpl *This, LPDIREC
 
 HRESULT __stdcall ddraw_surface_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
 {
-    printf("IDirectDrawSurface::GetColorKey(This=%p, ...) ???\n", This);
+#if _DEBUG_X
+    printf("DirectDrawSurface::GetColorKey(This=%p, flags=0x%08X, colorKey=%p) ???\n", This, flags, colorKey);
+#endif
+
+    if (colorKey)
+    {
+        colorKey->dwColorSpaceHighValue = This->colorKey.dwColorSpaceHighValue;
+        colorKey->dwColorSpaceLowValue = This->colorKey.dwColorSpaceLowValue;
+    }
+
     return DD_OK;
 }
 
@@ -848,8 +857,11 @@ HRESULT __stdcall ddraw_surface_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD 
     }
 #endif
 
-    This->colorKey.dwColorSpaceHighValue = colorKey->dwColorSpaceHighValue;
-    This->colorKey.dwColorSpaceLowValue = colorKey->dwColorSpaceLowValue;
+    if (colorKey)
+    {
+        This->colorKey.dwColorSpaceHighValue = colorKey->dwColorSpaceHighValue;
+        This->colorKey.dwColorSpaceLowValue = colorKey->dwColorSpaceLowValue;
+    }
 
     return DD_OK;
 }
