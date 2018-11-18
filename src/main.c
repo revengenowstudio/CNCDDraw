@@ -692,6 +692,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
 HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWORD height, DWORD bpp, DWORD refreshRate, DWORD flags)
 {
+    printf("DirectDraw::SetDisplayMode2(refreshRate=%d, flags=%d)\n", (unsigned int)refreshRate, (unsigned int)flags);
+
     return ddraw_SetDisplayMode(This, width, height, bpp);
 }
 
@@ -1286,8 +1288,11 @@ HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void 
         printf("  IID_IDirectDrawX\n");
 
         ddraw_AddRef(This);
-        This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
         *obj = This;
+
+        if (!IsEqualGUID(&IID_IMediaStream, riid) && !IsEqualGUID(&IID_IAMMediaStream, riid))
+            This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
+
         return S_OK;
     }
 
