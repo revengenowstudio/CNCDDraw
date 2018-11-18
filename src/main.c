@@ -30,16 +30,15 @@
 
 #define IDR_MYMENU 93
 
-/* from mouse.c */
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint);
 void mouse_init();
 void mouse_lock();
 void mouse_unlock();
 
-/* from screenshot.c */
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
 void Settings_Save(RECT *lpRect, int windowState);
+void dinput_init();
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -89,6 +88,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             }
             
             timeBeginPeriod(1);
+            dinput_init();
             break;
         }
         case DLL_PROCESS_DETACH:

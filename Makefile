@@ -15,6 +15,7 @@ FILES = src/debug.c \
         src/screenshot.c \
         src/settings.c \
         src/lodepng.c \
+        src/dinput.c \
         src/opengl.c
 
 all:

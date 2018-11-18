@@ -13,6 +13,7 @@
   <ItemGroup>
     <ClCompile Include="src\clipper.c" />
     <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\dinput.c" />
     <ClCompile Include="src\lodepng.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\mouse.c" />

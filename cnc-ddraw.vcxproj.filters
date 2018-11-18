@@ -54,6 +54,9 @@
     <ClCompile Include="src\lodepng.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\dinput.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\clipper.h">
