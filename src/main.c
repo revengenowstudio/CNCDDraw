@@ -1287,11 +1287,13 @@ HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void 
 
         ddraw_AddRef(This);
         This->lpVtbl->SetDisplayMode2 = ddraw_SetDisplayMode2;
+        *obj = This;
+        return S_OK;
     }
 
     *obj = This;
 
-    return S_OK;
+    return DDERR_UNSUPPORTED;
 }
 
 ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
