@@ -626,8 +626,14 @@ HRESULT __stdcall ddraw_surface_EnumAttachedSurfaces(IDirectDrawSurfaceImpl *Thi
     static LPDDSURFACEDESC lpDDSurfaceDesc;
     lpDDSurfaceDesc = (LPDDSURFACEDESC)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(DDSURFACEDESC));
     ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    This->caps |= DDSCAPS_BACKBUFFER; // Nox hack
     lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This, lpDDSurfaceDesc, lpContext);
     HeapFree(GetProcessHeap(), 0, lpDDSurfaceDesc);
+
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && !(This->caps & DDSCAPS_BACKBUFFER))
+        ddraw_surface_AddRef(This);
+
+    This->caps &= ~DDSCAPS_BACKBUFFER;
 
     return DD_OK;
 }
@@ -675,7 +681,7 @@ HRESULT __stdcall ddraw_surface_GetAttachedSurface(IDirectDrawSurfaceImpl *This,
     
     if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && (lpDdsCaps->dwCaps & DDSCAPS_BACKBUFFER))
     {
-        This->Ref++;
+        ddraw_surface_AddRef(This);
         *surface = (LPDIRECTDRAWSURFACE)This;
     }
 
