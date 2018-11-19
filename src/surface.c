@@ -730,9 +730,11 @@ HRESULT __stdcall ddraw_surface_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 {
 #if _DEBUG_X
     printf("IDirectDrawSurface::GetDC(This=%p, ...)\n", This);
-    if (This->width % 4)
-        printf("   width=%d height=%d ???\n", This->width, This->height);
 #endif
+    if (This->width % 4)
+    {
+        printf("   GetDC: width=%d height=%d ???\n", This->width, This->height);
+    }
 
     RGBQUAD *data = 
         This->palette && This->palette->data_rgb ? This->palette->data_rgb :
@@ -1040,6 +1042,7 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
     if(Surface->width && Surface->height)
     {
         if (Surface->width == 622 && Surface->height == 51) Surface->width = 624; //AoE2
+        if (Surface->width == 71 && Surface->height == 24) Surface->width = 72; //Commandos
 
         Surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
         Surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
