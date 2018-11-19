@@ -57,6 +57,8 @@ ULONG __stdcall ddraw_surface_Release(IDirectDrawSurfaceImpl *This)
 
     if(This->Ref == 0)
     {
+        printf("    Released (%p)\n", This);
+
         if(This->caps & DDSCAPS_PRIMARYSURFACE)
         {
             EnterCriticalSection(&ddraw->cs);
@@ -731,7 +733,9 @@ HRESULT __stdcall ddraw_surface_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 
 HRESULT __stdcall ddraw_surface_GetFlipStatus(IDirectDrawSurfaceImpl *This, DWORD a)
 {
+#if _DEBUG_X
     printf("IDirectDrawSurface::GetFlipStatus(This=%p, ...) ???\n", This);
+#endif
     return DD_OK;
 }
 
@@ -1063,6 +1067,9 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
         SelectObject(Surface->hDC, Surface->bitmap);
     }
+
+    if (lpDDSurfaceDesc->dwFlags & DDSD_BACKBUFFERCOUNT)
+        printf("  dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
 
     printf(" Surface = %p (%dx%d@%d)\n", Surface, (int)Surface->width, (int)Surface->height, (int)Surface->bpp);
 

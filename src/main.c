@@ -1309,6 +1309,8 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
 
     if(This->Ref == 0)
     {
+        printf("    Released (%p)\n", This);
+
         if(This->render.run)
         {
             EnterCriticalSection(&This->cs);

@@ -41,6 +41,8 @@ ULONG __stdcall ddraw_clipper_Release(IDirectDrawClipperImpl *This)
 
     if(This->Ref == 0)
     {
+        printf("    Released (%p)\n", This);
+
         HeapFree(GetProcessHeap(), 0, This);
         return 0;
     }
