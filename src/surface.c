@@ -623,12 +623,12 @@ HRESULT __stdcall ddraw_surface_EnumAttachedSurfaces(IDirectDrawSurfaceImpl *Thi
     printf("IDirectDrawSurface::EnumAttachedSurfaces(This=%p, lpContext=%p, lpEnumSurfacesCallback=%p)\n", This, lpContext, lpEnumSurfacesCallback);
 
     /* this is not actually complete, but Carmageddon seems to call EnumAttachedSurfaces instead of GetSurfaceDesc to get the main surface description */
-    static LPDDSURFACEDESC lpDDSurfaceDesc;
-    lpDDSurfaceDesc = (LPDDSURFACEDESC)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(DDSURFACEDESC));
-    ddraw_surface_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    static DDSURFACEDESC ddSurfaceDesc;
+    memset(&ddSurfaceDesc, 0, sizeof(DDSURFACEDESC));
+
+    ddraw_surface_GetSurfaceDesc(This, &ddSurfaceDesc);
     This->caps |= DDSCAPS_BACKBUFFER; // Nox hack
-    lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This, lpDDSurfaceDesc, lpContext);
-    HeapFree(GetProcessHeap(), 0, lpDDSurfaceDesc);
+    lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This, &ddSurfaceDesc, lpContext);
 
     if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && !(This->caps & DDSCAPS_BACKBUFFER))
         ddraw_surface_AddRef(This);
