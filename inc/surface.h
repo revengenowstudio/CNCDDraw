@@ -50,6 +50,7 @@ typedef struct IDirectDrawSurfaceImpl
     HBITMAP bitmap;
     HDC hDC;
     DDCOLORKEY colorKey;
+    DWORD lastFlipTick;
 
 } IDirectDrawSurfaceImpl;
 

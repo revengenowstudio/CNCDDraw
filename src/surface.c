@@ -21,6 +21,9 @@
 #include "surface.h"
 #include "scale_pattern.h"
 
+// enables redraw via blt/unlock if there wasn't any flip for X ms
+#define FLIP_REDRAW_TIMEOUT 1000 / 20
+
 void dump_ddbltflags(DWORD dwFlags);
 void dump_ddscaps(DWORD dwCaps);
 void dump_ddsd(DWORD dwFlags);
@@ -425,7 +428,9 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         }
     }
 
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
+    if(This->caps & DDSCAPS_PRIMARYSURFACE && 
+        ddraw->render.run &&
+        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
@@ -564,7 +569,9 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
         }
     }
 
-    if (This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
+    if (This->caps & DDSCAPS_PRIMARYSURFACE &&
+        ddraw->render.run &&
+        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
@@ -639,6 +646,8 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
+        This->lastFlipTick = timeGetTime();
+
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         
         if (ddraw->renderer == render_soft_main)
@@ -912,7 +921,9 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && !(This->flags & DDSD_BACKBUFFERCOUNT) && ddraw->render.run)
+    if (This->caps & DDSCAPS_PRIMARYSURFACE &&
+        ddraw->render.run &&
+        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
