@@ -22,7 +22,7 @@
 #include "scale_pattern.h"
 
 // enables redraw via blt/unlock if there wasn't any flip for X ms
-#define FLIP_REDRAW_TIMEOUT 1000 / 20
+#define FLIP_REDRAW_TIMEOUT 1000 / 10
 
 void dump_ddbltflags(DWORD dwFlags);
 void dump_ddscaps(DWORD dwCaps);
