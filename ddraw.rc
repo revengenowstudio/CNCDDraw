@@ -2,9 +2,9 @@
 #define ver_str(a,b,c,d) str(a) "." str(b) "." str(c) "." str(d)
 
 #define VERSION_MAJOR    1
-#define VERSION_MINOR    2
-#define VERSION_BUILD    5
-#define VERSION_REVISION 7  
+#define VERSION_MINOR    3
+#define VERSION_BUILD    0
+#define VERSION_REVISION 0  
 
 #define VERSION          VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_REVISION
 #define VERSION_STRING   ver_str(VERSION_MAJOR, VERSION_MINOR, VERSION_BUILD, VERSION_REVISION)
@@ -18,13 +18,13 @@ PRODUCTVERSION VERSION
         BLOCK "040904B0"
         {
             VALUE "CompanyName", "cncnet.org"
-            VALUE "FileDescription", "DirectDraw replacement for C&C95 and Red Alert"
+            VALUE "FileDescription", "DirectDraw replacement"
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "ddraw"
             VALUE "LegalCopyright", "Copyright (c) 2010-2018"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFileName", "ddraw.dll"
-            VALUE "ProductName", "DirectDraw replacement for C&C95 and Red Alert"
+            VALUE "ProductName", "cnc-ddraw"
             VALUE "ProductVersion", VERSION_STRING
             VALUE "Comments", "https://cncnet.org"
         }
