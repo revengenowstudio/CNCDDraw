@@ -40,8 +40,32 @@ DWORD WINAPI render_soft_main(void)
     else
         Sleep(500);
 
+    int maxFPS = ddraw->render.maxfps;
+    DWORD frameLength = 0;
+    DWORD lastTick = 0;
+
+    if (maxFPS < 0)
+        maxFPS = ddraw->mode.dmDisplayFrequency;
+
+    if (maxFPS >= 1000)
+        maxFPS = 0;
+
+    if (maxFPS > 0)
+        frameLength = 1000.0f / maxFPS;
+
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
+        if (maxFPS > 0)
+        {
+            DWORD curTick = timeGetTime();
+            if (lastTick + frameLength > curTick)
+            {
+                SetEvent(ddraw->render.ev);
+                continue;
+            }
+            lastTick = curTick;
+        }
+
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
