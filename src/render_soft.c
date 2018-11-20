@@ -60,7 +60,9 @@ DWORD WINAPI render_soft_main(void)
             DWORD curTick = timeGetTime();
             if (lastTick + frameLength > curTick)
             {
+                ReleaseSemaphore(ddraw->render.sem, 1, NULL);
                 SetEvent(ddraw->render.ev);
+                SwitchToThread();
                 continue;
             }
             lastTick = curTick;
