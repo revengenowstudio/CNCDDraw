@@ -55,19 +55,19 @@ DWORD WINAPI render_soft_main(void)
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
-        BOOL skipFrame = FALSE;
-
         if (maxFPS > 0)
         {
             DWORD curTick = timeGetTime();
             if (lastTick + frameLength > curTick)
-                skipFrame = TRUE;
-            else
-                lastTick = curTick;
+            {
+                SetEvent(ddraw->render.ev);
+                continue;
+            }
+            lastTick = curTick;
         }
 
 #if _DEBUG
-        if (!skipFrame) DrawFrameInfoStart();
+        DrawFrameInfoStart();
 #endif
 
         EnterCriticalSection(&ddraw->cs);
@@ -113,7 +113,7 @@ DWORD WINAPI render_soft_main(void)
                     DIB_RGB_COLORS, 
                     SRCCOPY);
             }
-            else if (!skipFrame && !ChildWindowExists && (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height))
+            else if (!ChildWindowExists && (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height))
             {
                 StretchDIBits(
                     ddraw->render.hDC, 
@@ -130,7 +130,7 @@ DWORD WINAPI render_soft_main(void)
                     DIB_RGB_COLORS, 
                     SRCCOPY);
             }
-            else if (!skipFrame || ChildWindowExists)
+            else
             {
                 SetDIBitsToDevice(
                     ddraw->render.hDC, 
@@ -151,7 +151,7 @@ DWORD WINAPI render_soft_main(void)
         LeaveCriticalSection(&ddraw->cs);
 
 #if _DEBUG
-        if (!skipFrame) DrawFrameInfoEnd();
+        DrawFrameInfoEnd();
 #endif
 
         SetEvent(ddraw->render.ev);
