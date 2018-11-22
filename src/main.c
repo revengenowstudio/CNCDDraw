@@ -107,23 +107,23 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 
 BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
 {
-    ChildWindowExists = TRUE;
-
     IDirectDrawSurfaceImpl *this = (IDirectDrawSurfaceImpl *)lParam;
 
-    HDC hDC = GetDC(hWnd);
-
     RECT size;
-    GetClientRect(hWnd, &size);
-
     RECT pos;
-    GetWindowRect(hWnd, &pos);
 
-    MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)&pos, 2);
+    if (GetClientRect(hWnd, &size) && GetWindowRect(hWnd, &pos) && size.right > 1 && size.bottom > 1)
+    {
+        ChildWindowExists = TRUE;
 
-    BitBlt(hDC, 0, 0, size.right, size.bottom, this->hDC, pos.left, pos.top, SRCCOPY);
+        HDC hDC = GetDC(hWnd);
 
-    ReleaseDC(hWnd, hDC);
+        MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)&pos, 2);
+
+        BitBlt(hDC, 0, 0, size.right, size.bottom, this->hDC, pos.left, pos.top, SRCCOPY);
+
+        ReleaseDC(hWnd, hDC);
+    }
 
     return FALSE;
 }
