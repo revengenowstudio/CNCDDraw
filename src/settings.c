@@ -49,7 +49,7 @@ void Settings_Load()
 
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)
-        ddraw->ticklength = 1000.0f / maxTicks;
+        ddraw->ticklength = 1000.0f / maxTicks + 0.5f;
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;
@@ -291,11 +291,11 @@ static void CreateSettingsIni()
             "\n"
             "; Dune 2000\n"
             "[dune2000]\n"
-            "maxgameticks=58\n"
+            "maxgameticks=60\n"
             "\n"
             "; Dune 2000 Online\n"
             "[dune2000-spawn]\n"
-            "maxgameticks=58\n"
+            "maxgameticks=60\n"
             "\n"
             "; Command & Conquer: Tiberian Sun\n"
             "[game]\n"
