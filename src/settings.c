@@ -220,7 +220,7 @@ static void CreateSettingsIni()
             "devmode=false\n"
             "\n"
             "; Preliminary libretro shader support (OpenGL only) https://github.com/libretro/glsl-shaders\n"
-            "; Example: shader=Shaders\crt-lottes-fast-no-warp.glsl\n"
+            "; Example: shader=Shaders\\crt-lottes-fast-no-warp.glsl\n"
             "shader=\n"
             "\n"
             "; Max game ticks per second, possible values: 0-1000 (Can be used to slow down a too fast running game)\n"
