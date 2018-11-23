@@ -1143,6 +1143,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             /* fall through for lParam */
 
         /* down messages are ignored if we have no cursor lock */
+        case WM_XBUTTONDBLCLK:
+        case WM_XBUTTONDOWN:
+        case WM_XBUTTONUP:
+        case WM_MOUSEHWHEEL:
+        case WM_MOUSEWHEEL:
+        case WM_MOUSEHOVER:
         case WM_LBUTTONDBLCLK:
         case WM_MBUTTONDBLCLK:
         case WM_RBUTTONDBLCLK:
