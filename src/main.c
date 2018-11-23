@@ -517,55 +517,52 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     
     BOOL maintas = ddraw->maintas;
 
-    if(!This->windowed)
+    if (!This->windowed)
     {
         // Making sure the chosen resolution is valid
-        if(!This->devmode)
+        int oldWidth = This->render.width;
+        int oldHeight = This->render.height;
+
+        if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
         {
-            int oldWidth = This->render.width;
-            int oldHeight = This->render.height;
-            
-            if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+            // fail... compare resolutions
+            if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
             {
-                // fail... compare resolutions
-                if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
+                // chosen game resolution higher than current resolution, use window mode for this case
+                This->windowed = TRUE;
+            }
+            else
+            {
+                // Try 2x scaling
+                This->render.width *= 2;
+                This->render.height *= 2;
+
+                This->render.mode.dmPelsWidth = This->render.width;
+                This->render.mode.dmPelsHeight = This->render.height;
+
+                if ((This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight) ||
+                    ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                 {
-                    // chosen game resolution higher than current resolution, use window mode for this case
-                    This->windowed = TRUE;
-                }
-                else
-                {
-                    // Try 2x scaling
-                    This->render.width *= 2;
-                    This->render.height *= 2;
-                    
+                    // try current display settings
+                    This->render.width = This->mode.dmPelsWidth;
+                    This->render.height = This->mode.dmPelsHeight;
+
                     This->render.mode.dmPelsWidth = This->render.width;
                     This->render.mode.dmPelsHeight = This->render.height;
-                    
-                    if ((This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight) ||
-                        ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+
+                    if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                     {
-                        // try current display settings
-                        This->render.width = This->mode.dmPelsWidth;
-                        This->render.height = This->mode.dmPelsHeight;
-                        
+                        // everything failed, use window mode instead
+                        This->render.width = oldWidth;
+                        This->render.height = oldHeight;
+
                         This->render.mode.dmPelsWidth = This->render.width;
                         This->render.mode.dmPelsHeight = This->render.height;
-                        
-                        if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
-                        {
-                            // everything failed, use window mode instead
-                            This->render.width = oldWidth;
-                            This->render.height = oldHeight;
-                            
-                            This->render.mode.dmPelsWidth = This->render.width;
-                            This->render.mode.dmPelsHeight = This->render.height;
-                            
-                            This->windowed = TRUE;
-                        }
-                        else
-                            maintas = TRUE;
+
+                        This->windowed = TRUE;
                     }
+                    else
+                        maintas = TRUE;
                 }
             }
         }
@@ -653,13 +650,10 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if (This->renderer == render_d3d9_main)
             InitDirect3D9();
 
-        if(!This->devmode)
+        if (!Direct3D9Active && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
         {
-            if (!Direct3D9Active && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
-            {
-                This->render.run = FALSE;
-                return DDERR_INVALIDMODE;
-            }
+            This->render.run = FALSE;
+            return DDERR_INVALIDMODE;
         }
 
         if (ddraw->wine)
