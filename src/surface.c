@@ -1089,7 +1089,9 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
     }
 
     if (lpDDSurfaceDesc->dwFlags & DDSD_BACKBUFFERCOUNT)
+    {
         printf("  dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
+    }
 
     printf(" Surface = %p (%dx%d@%d)\n", Surface, (int)Surface->width, (int)Surface->height, (int)Surface->bpp);
 

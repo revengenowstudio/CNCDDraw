@@ -209,74 +209,122 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         return DDERR_UNSUPPORTED;
     }
 
-    SIZE resolutions[] =
-    {
-        { 320, 200 },
-        { 640, 400 },
-        { 640, 480 },
-        { 800, 600 },
-        { 1024, 768 },
-        { 1280, 1024 },
-        { 1280, 720 },
-        { 1920, 1080 },
-    };
+    // Some games crash when you feed them with too many resolutions...
 
-    for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
+    if (This->bpp)
     {
-        memset(&s, 0, sizeof(DDSURFACEDESC));
-        s.dwSize = sizeof(DDSURFACEDESC);
-        s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
-        s.dwHeight = resolutions[i].cy;
-        s.dwWidth = resolutions[i].cx;
-        s.dwRefreshRate = 60;
-        s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-        s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
-        s.ddpfPixelFormat.dwRGBBitCount = 8;
+        printf("    This->bpp=%d\n", This->bpp);
 
-        if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+        //set up some filters to keep the list short
+        DWORD refreshRate = 0;
+        DWORD bpp = 0;
+        DWORD flags = 0;
+        DWORD fixedOutput = 0;
+
+        DEVMODE m;
+        while (EnumDisplaySettings(NULL, i, &m))
         {
-            printf("    DDENUMRET_CANCEL returned, stopping\n");
-            break;
+            if (refreshRate != 60 && m.dmDisplayFrequency >= 50)
+                refreshRate = m.dmDisplayFrequency;
+
+            if (bpp != 32 && m.dmBitsPerPel >= 16)
+                bpp = m.dmBitsPerPel;
+
+            if (flags == 0)
+                flags = m.dmDisplayFlags;
+
+            if (fixedOutput == 0)
+                fixedOutput = m.dmDisplayFixedOutput;
+
+            i++;
         }
 
-        s.ddpfPixelFormat.dwFlags = DDPF_RGB;
-        s.ddpfPixelFormat.dwRGBBitCount = 16;
-        s.ddpfPixelFormat.dwRBitMask = 0xF800;
-        s.ddpfPixelFormat.dwGBitMask = 0x07E0;
-        s.ddpfPixelFormat.dwBBitMask = 0x001F;
-
-        if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+        i = 0;
+        while (EnumDisplaySettings(NULL, i, &m))
         {
-            printf("    DDENUMRET_CANCEL returned, stopping\n");
-            break;
-        }
-    }
-
-    /* Some games crash when you feed them with too many resolutions...
-    DEVMODE m;
-    while (EnumDisplaySettings(NULL, i, &m))
-    {
+            if (refreshRate == m.dmDisplayFrequency &&
+                bpp == m.dmBitsPerPel &&
+                flags == m.dmDisplayFlags &&
+                fixedOutput == m.dmDisplayFixedOutput)
+            {
 #if _DEBUG_X
-        printf("  %d: %dx%d@%d %d bpp\n", (int)i, (int)m.dmPelsWidth, (int)m.dmPelsHeight, (int)m.dmDisplayFrequency, (int)m.dmBitsPerPel);
+                printf("  %d: %dx%d@%d %d bpp\n", (int)i, (int)m.dmPelsWidth, (int)m.dmPelsHeight, (int)m.dmDisplayFrequency, (int)m.dmBitsPerPel);
 #endif
-        memset(&s, 0, sizeof(DDSURFACEDESC));
-        s.dwSize = sizeof(DDSURFACEDESC);
-        s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
-        s.dwHeight = m.dmPelsHeight;
-        s.dwWidth = m.dmPelsWidth;
-        s.dwRefreshRate = m.dmDisplayFrequency;
-        s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-        s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
-        s.ddpfPixelFormat.dwRGBBitCount = 8;
+                memset(&s, 0, sizeof(DDSURFACEDESC));
+                s.dwSize = sizeof(DDSURFACEDESC);
+                s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
+                s.dwHeight = m.dmPelsHeight;
+                s.dwWidth = m.dmPelsWidth;
+                s.dwRefreshRate = 60;
+                s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 
-        if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
-        {
-            printf("    DDENUMRET_CANCEL returned, stopping\n");
-            break;
+                s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+                s.ddpfPixelFormat.dwRGBBitCount = 8;
+                
+                if (This->bpp == 16)
+                {
+                    s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+                    s.ddpfPixelFormat.dwRGBBitCount = 16;
+                    s.ddpfPixelFormat.dwRBitMask = 0xF800;
+                    s.ddpfPixelFormat.dwGBitMask = 0x07E0;
+                    s.ddpfPixelFormat.dwBBitMask = 0x001F;
+                }
+
+                if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                {
+                    printf("    DDENUMRET_CANCEL returned, stopping\n");
+                    break;
+                }
+            }
+            i++;
         }
-        i++;
     }
-    */
+    else
+    {
+        SIZE resolutions[] =
+        {
+            { 320, 200 },
+            { 640, 400 },
+            { 640, 480 },
+            { 800, 600 },
+            { 1024, 768 },
+            { 1280, 1024 },
+            { 1280, 720 },
+            { 1920, 1080 },
+        };
+
+        for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
+        {
+            memset(&s, 0, sizeof(DDSURFACEDESC));
+            s.dwSize = sizeof(DDSURFACEDESC);
+            s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
+            s.dwHeight = resolutions[i].cy;
+            s.dwWidth = resolutions[i].cx;
+            s.dwRefreshRate = 60;
+            s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+            s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+            s.ddpfPixelFormat.dwRGBBitCount = 8;
+
+            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            {
+                printf("    DDENUMRET_CANCEL returned, stopping\n");
+                break;
+            }
+
+            s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+            s.ddpfPixelFormat.dwRGBBitCount = 16;
+            s.ddpfPixelFormat.dwRBitMask = 0xF800;
+            s.ddpfPixelFormat.dwGBitMask = 0x07E0;
+            s.ddpfPixelFormat.dwBBitMask = 0x001F;
+
+            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            {
+                printf("    DDENUMRET_CANCEL returned, stopping\n");
+                break;
+            }
+        }
+    }
+
     return DD_OK;
 }
 
