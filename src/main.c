@@ -219,7 +219,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         DWORD refreshRate = 0;
         DWORD bpp = 0;
         DWORD flags = 0;
-        DWORD fixedOutput = 0;
+        DWORD fixedOutput = 99998;
 
         DEVMODE m;
         while (EnumDisplaySettings(NULL, i, &m))
@@ -233,7 +233,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
             if (flags == 0)
                 flags = m.dmDisplayFlags;
 
-            if (fixedOutput == 0)
+            if (fixedOutput != DMDFO_DEFAULT)
                 fixedOutput = m.dmDisplayFixedOutput;
 
             i++;
