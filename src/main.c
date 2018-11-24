@@ -501,7 +501,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
     This->render.run = TRUE;
     
-    BOOL lockMouse = ddraw->locked;
+    BOOL lockMouse = ddraw->locked || This->fullscreen;
     mouse_unlock();
 	
     memset(&This->render.mode, 0, sizeof(DEVMODE));
