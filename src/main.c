@@ -449,6 +449,38 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     return DD_OK;
 }
 
+BOOL GetLowestResolution(float ratio, SIZE *outRes, DWORD minWidth, DWORD minHeight, DWORD maxWidth, DWORD maxHeight)
+{
+    BOOL result = FALSE;
+    int orgRatio = (int)(ratio * 100);
+    SIZE lowest = { .cx = maxWidth + 1, .cy = maxHeight + 1 };
+    DWORD i = 0;
+    DEVMODE m;
+
+    while (EnumDisplaySettings(NULL, i, &m))
+    {
+        if  (m.dmPelsWidth > minWidth &&
+            m.dmPelsHeight > minHeight &&
+            m.dmPelsWidth <= maxWidth &&
+            m.dmPelsHeight <= maxHeight &&
+            m.dmPelsWidth < lowest.cx &&
+            m.dmPelsHeight < lowest.cy)
+        {
+            int resRatio = (int)(((float)m.dmPelsWidth / m.dmPelsHeight) * 100);
+
+            if (resRatio == orgRatio)
+            {
+                result = TRUE;
+                outRes->cx = lowest.cx = m.dmPelsWidth;
+                outRes->cy = lowest.cy = m.dmPelsHeight;
+            }
+        }
+        i++;
+    }
+
+    return result;
+}
+
 void InitDirect3D9()
 {
     Direct3D9Active = Direct3D9_Create();
@@ -576,7 +608,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             // fail... compare resolutions
             if (This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight)
             {
-                // chosen game resolution higher than current resolution, use window mode for this case
+                // chosen game resolution higher than current resolution, use windowed mode for this case
                 This->windowed = TRUE;
             }
             else
@@ -591,26 +623,61 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                 if ((This->render.width > This->mode.dmPelsWidth || This->render.height > This->mode.dmPelsHeight) ||
                     ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                 {
-                    // try current display settings
-                    This->render.width = This->mode.dmPelsWidth;
-                    This->render.height = This->mode.dmPelsHeight;
+                    SIZE res = {0};
+
+                    //try to get a resolution with the same aspect ratio as the requested resolution
+                    BOOL foundRes = GetLowestResolution(
+                        (float)oldWidth / oldHeight,
+                        &res,
+                        oldWidth,
+                        oldHeight,
+                        This->mode.dmPelsWidth,
+                        This->mode.dmPelsHeight);
+
+                    if (!foundRes)
+                    {
+                        //try to get a resolution with the same aspect ratio as the current display mode
+                        foundRes = GetLowestResolution(
+                            (float)This->mode.dmPelsWidth / This->mode.dmPelsHeight,
+                            &res,
+                            oldWidth,
+                            oldHeight,
+                            This->mode.dmPelsWidth,
+                            This->mode.dmPelsHeight);
+
+                        if (foundRes)
+                            maintas = TRUE;
+                    }
+
+                    This->render.width = res.cx;
+                    This->render.height = res.cy;
 
                     This->render.mode.dmPelsWidth = This->render.width;
                     This->render.mode.dmPelsHeight = This->render.height;
-
-                    if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                    
+                    if (!foundRes || ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                     {
-                        // everything failed, use window mode instead
-                        This->render.width = oldWidth;
-                        This->render.height = oldHeight;
+                        // try current display settings
+                        This->render.width = This->mode.dmPelsWidth;
+                        This->render.height = This->mode.dmPelsHeight;
 
                         This->render.mode.dmPelsWidth = This->render.width;
                         This->render.mode.dmPelsHeight = This->render.height;
 
-                        This->windowed = TRUE;
+                        if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                        {
+                            // everything failed, use windowed mode instead
+                            This->render.width = oldWidth;
+                            This->render.height = oldHeight;
+
+                            This->render.mode.dmPelsWidth = This->render.width;
+                            This->render.mode.dmPelsHeight = This->render.height;
+
+                            This->windowed = TRUE;
+                        }
+                        else
+                            maintas = TRUE;
                     }
-                    else
-                        maintas = TRUE;
                 }
             }
         }
