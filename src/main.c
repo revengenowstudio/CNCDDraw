@@ -1194,7 +1194,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_XBUTTONDBLCLK:
         case WM_XBUTTONDOWN:
         case WM_XBUTTONUP:
-        case WM_MOUSEHWHEEL:
         case WM_MOUSEWHEEL:
         case WM_MOUSEHOVER:
         case WM_LBUTTONDBLCLK:
