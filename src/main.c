@@ -459,8 +459,8 @@ BOOL GetLowestResolution(float ratio, SIZE *outRes, DWORD minWidth, DWORD minHei
 
     while (EnumDisplaySettings(NULL, i, &m))
     {
-        if  (m.dmPelsWidth > minWidth &&
-            m.dmPelsHeight > minHeight &&
+        if  (m.dmPelsWidth >= minWidth &&
+            m.dmPelsHeight >= minHeight &&
             m.dmPelsWidth <= maxWidth &&
             m.dmPelsHeight <= maxHeight &&
             m.dmPelsWidth < lowest.cx &&
@@ -629,8 +629,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
                     BOOL foundRes = GetLowestResolution(
                         (float)oldWidth / oldHeight,
                         &res,
-                        oldWidth,
-                        oldHeight,
+                        oldWidth + 1, //don't return the original resolution since we tested that one already
+                        oldHeight + 1,
                         This->mode.dmPelsWidth,
                         This->mode.dmPelsHeight);
 
