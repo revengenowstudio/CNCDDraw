@@ -220,8 +220,10 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         DWORD bpp = 0;
         DWORD flags = 99998;
         DWORD fixedOutput = 99998;
-
         DEVMODE m;
+        memset(&m, 0, sizeof(DEVMODE));
+        m.dmSize = sizeof(DEVMODE);
+
         while (EnumDisplaySettings(NULL, i, &m))
         {
             if (refreshRate != 60 && m.dmDisplayFrequency >= 50)
@@ -236,9 +238,13 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
             if (fixedOutput != DMDFO_DEFAULT)
                 fixedOutput = m.dmDisplayFixedOutput;
 
+            memset(&m, 0, sizeof(DEVMODE));
+            m.dmSize = sizeof(DEVMODE);
             i++;
         }
 
+        memset(&m, 0, sizeof(DEVMODE));
+        m.dmSize = sizeof(DEVMODE);
         i = 0;
         while (EnumDisplaySettings(NULL, i, &m))
         {
@@ -276,6 +282,8 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
                     break;
                 }
             }
+            memset(&m, 0, sizeof(DEVMODE));
+            m.dmSize = sizeof(DEVMODE);
             i++;
         }
     }
@@ -456,6 +464,8 @@ BOOL GetLowestResolution(float ratio, SIZE *outRes, DWORD minWidth, DWORD minHei
     SIZE lowest = { .cx = maxWidth + 1, .cy = maxHeight + 1 };
     DWORD i = 0;
     DEVMODE m;
+    memset(&m, 0, sizeof(DEVMODE));
+    m.dmSize = sizeof(DEVMODE);
 
     while (EnumDisplaySettings(NULL, i, &m))
     {
@@ -475,6 +485,8 @@ BOOL GetLowestResolution(float ratio, SIZE *outRes, DWORD minWidth, DWORD minHei
                 outRes->cy = lowest.cy = m.dmPelsHeight;
             }
         }
+        memset(&m, 0, sizeof(DEVMODE));
+        m.dmSize = sizeof(DEVMODE);
         i++;
     }
 
@@ -1427,6 +1439,9 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
     if(This->Ref == 0)
     {
         printf("    Released (%p)\n", This);
+
+        if (This->bpp)
+            Settings_Save(&WindowRect, WindowState);
 
         if(This->render.run)
         {
