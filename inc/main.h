@@ -116,6 +116,7 @@ typedef struct IDirectDrawImpl
     DWORD ticklength;
     BOOL altenter;
     BOOL hidecursor;
+    BOOL limitTicksOnBltOrFlip;
     
 } IDirectDrawImpl;
 
