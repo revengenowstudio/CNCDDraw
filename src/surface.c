@@ -605,10 +605,7 @@ HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPD
     lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
     lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
     lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
-    lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps;
-
-    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP))
-        lpDDSurfaceDesc->ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+    lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps | DDSCAPS_VIDEOMEMORY;
 
     if (This->bpp == 8)
     {
