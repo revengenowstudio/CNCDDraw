@@ -674,7 +674,6 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             SwitchToThread();
         }
 
-        /*
         if (flags & DDFLIP_WAIT)
         {
             DWORD tick = This->lastFlipTick;
@@ -688,7 +687,6 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             if (sleepTime > 0 && sleepTime <= 17)
                 Sleep(sleepTime);
         }
-        */
 
         if (ddraw->ticklength > 0)
         {
