@@ -368,6 +368,7 @@ HRESULT __stdcall ddraw_GetCaps(IDirectDrawImpl *This, LPDDCAPS lpDDDriverCaps, 
         lpDDDriverCaps->dwAlignSizeSrc = 0;
         lpDDDriverCaps->dwAlignBoundaryDest = 0;
         lpDDDriverCaps->dwAlignSizeDest = 0;
+        lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
     }
 
     if(lpDDEmulCaps)

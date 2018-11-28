@@ -604,6 +604,9 @@ HRESULT __stdcall ddraw_surface_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPD
     lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
     lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps;
 
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP))
+        lpDDSurfaceDesc->ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+
     if (This->bpp == 8)
     {
         lpDDSurfaceDesc->ddpfPixelFormat.dwFlags |= DDPF_PALETTEINDEXED8;
@@ -667,6 +670,22 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             SwitchToThread();
         }
+
+        /*
+        if (flags & DDFLIP_WAIT)
+        {
+            DWORD tick = This->lastFlipTick;
+            while (tick % 17) tick++;
+            int sleepTime = tick - This->lastFlipTick;
+
+            int renderTime = timeGetTime() - This->lastFlipTick;
+            if (renderTime > 0)
+                sleepTime -= renderTime;
+
+            if (sleepTime > 0 && sleepTime <= 17)
+                Sleep(sleepTime);
+        }
+        */
 
         if (ddraw->ticklength > 0)
             LimitGameTicks(TRUE);
