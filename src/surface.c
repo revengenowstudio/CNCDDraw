@@ -184,10 +184,12 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                 row1[x] = color;
         }
 
+        unsigned int widthInBytes = dst_w * This->lXPitch;
+
         for (i = 1; i < dst_h; i++)
         {
             dst += This->lPitch;
-            memcpy(dst, firstRow, dst_w * This->lXPitch);
+            memcpy(dst, firstRow, widthInBytes);
         }
     }
 
@@ -257,10 +259,12 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                 unsigned char *dst = 
                     (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
 
+                unsigned int widthInBytes = width * This->lXPitch;
+
                 int i;
                 for (i = 0; i < height; i++)
                 {
-                    memcpy(dst, src, width * This->lXPitch);
+                    memcpy(dst, src, widthInBytes);
 
                     src += Source->lPitch;
                     dst += This->lPitch;
@@ -561,10 +565,12 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
             unsigned char *dst =
                 (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
 
+            unsigned int widthInBytes = dst_w * This->lXPitch;
+
             int i;
             for (i = 0; i < dst_h; i++)
             {
-                memcpy(dst, src, dst_w * This->lXPitch);
+                memcpy(dst, src, widthInBytes);
 
                 src += Source->lPitch;
                 dst += This->lPitch;

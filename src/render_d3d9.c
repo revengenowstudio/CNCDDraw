@@ -351,7 +351,7 @@ DWORD WINAPI render_d3d9_main(void)
                     int i;
                     for (i = 0; i < ddraw->height; i++)
                     {
-                        memcpy(dst, src, ddraw->width * ddraw->primary->lXPitch);
+                        memcpy(dst, src, ddraw->primary->lPitch);
 
                         src += ddraw->primary->lPitch;
                         dst += lock_rc.Pitch;
