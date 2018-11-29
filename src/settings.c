@@ -41,11 +41,17 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
 
-    ddraw->render.maxfps = GetInt("maxfps", 125);
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
+
+    ddraw->render.maxfps = GetInt("maxfps", 125);
+    if (ddraw->render.maxfps)
+    {
+        ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
+    }
 
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)

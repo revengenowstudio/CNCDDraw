@@ -40,25 +40,30 @@ DWORD WINAPI render_soft_main(void)
     else
         Sleep(500);
 
-    int maxFPS = ddraw->render.maxfps;
-    DWORD frameLength = 0;
     DWORD lastTick = 0;
+    int maxFPS = ddraw->render.maxfps;
+    ddraw->fpsLimiter.tickLengthNs = 0;
+    ddraw->fpsLimiter.ticklength = 0;
 
     if (maxFPS < 0)
         maxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (maxFPS >= 1000)
+    if (maxFPS > 1000)
         maxFPS = 0;
 
     if (maxFPS > 0)
-        frameLength = 1000.0f / maxFPS;
+    {
+        float len = 1000.0f / maxFPS;
+        ddraw->fpsLimiter.tickLengthNs = len * 10000;
+        ddraw->fpsLimiter.ticklength = len + 0.5f;
+    }
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
-        if (maxFPS > 0)
+        if (ddraw->fpsLimiter.ticklength > 0)
         {
             DWORD curTick = timeGetTime();
-            if (lastTick + frameLength > curTick)
+            if (lastTick + ddraw->fpsLimiter.ticklength > curTick)
             {
                 ReleaseSemaphore(ddraw->render.sem, 1, NULL);
                 SetEvent(ddraw->render.ev);

@@ -19,8 +19,6 @@ static IDirect3DTexture9 *PaletteTex[TEXTURE_COUNT];
 static IDirect3DPixelShader9 *PixelShader;
 static float ScaleW;
 static float ScaleH;
-static int MaxFPS;
-static DWORD FrameLength;
 static int BitsPerPixel;
 
 static BOOL CreateResources();
@@ -276,16 +274,22 @@ static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch)
 
 static void SetMaxFPS()
 {
-    MaxFPS = ddraw->render.maxfps;
+    int maxFPS = ddraw->render.maxfps;
+    ddraw->fpsLimiter.tickLengthNs = 0;
+    ddraw->fpsLimiter.ticklength = 0;
 
-    if (MaxFPS < 0)
-        MaxFPS = ddraw->mode.dmDisplayFrequency;
+    if (maxFPS < 0)
+        maxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (MaxFPS >= 1000 || ddraw->vsync)
-        MaxFPS = 0;
+    if (maxFPS > 1000 || ddraw->vsync)
+        maxFPS = 0;
 
-    if (MaxFPS > 0)
-        FrameLength = 1000.0f / MaxFPS;
+    if (maxFPS > 0)
+    {
+        float len = 1000.0f / maxFPS;
+        ddraw->fpsLimiter.tickLengthNs = len * 10000;
+        ddraw->fpsLimiter.ticklength = len + 0.5f;
+    }
 }
 
 DWORD WINAPI render_d3d9_main(void)
@@ -312,7 +316,7 @@ DWORD WINAPI render_d3d9_main(void)
 
         static int texIndex = 0, palIndex = 0;
 
-        if (MaxFPS > 0)
+        if (ddraw->fpsLimiter.ticklength > 0)
             tickStart = timeGetTime();
 
         EnterCriticalSection(&ddraw->cs);
@@ -416,12 +420,32 @@ DWORD WINAPI render_d3d9_main(void)
         DrawFrameInfoEnd();
 #endif
 
-        if (MaxFPS > 0)
+        if (ddraw->fpsLimiter.ticklength > 0)
         {
-            tickEnd = timeGetTime();
+            if (ddraw->fpsLimiter.hTimer)
+            {
+                FILETIME ft = { 0 };
+                GetSystemTimeAsFileTime(&ft);
 
-            if (tickEnd - tickStart < FrameLength)
-                Sleep(FrameLength - (tickEnd - tickStart));
+                if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                {
+                    memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                }
+                else
+                {
+                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                }
+
+                ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
+                SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+            }
+            else
+            {
+                tickEnd = timeGetTime();
+
+                if (tickEnd - tickStart < ddraw->fpsLimiter.ticklength)
+                    Sleep(ddraw->fpsLimiter.ticklength - (tickEnd - tickStart));
+            }
         }
     }
     return 0;

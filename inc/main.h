@@ -126,6 +126,7 @@ typedef struct IDirectDrawImpl
     BOOL hidecursor;
     SpeedLimiter ticksLimiter;
     SpeedLimiter flipLimiter;
+    SpeedLimiter fpsLimiter;
     
 } IDirectDrawImpl;
 

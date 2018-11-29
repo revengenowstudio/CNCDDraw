@@ -162,7 +162,7 @@ void LimitGameTicks()
 {
     if (ddraw->ticksLimiter.hTimer)
     {
-        FILETIME ft;
+        FILETIME ft = { 0 };
         GetSystemTimeAsFileTime(&ft);
 
         if (CompareFileTime((FILETIME *)&ddraw->ticksLimiter.dueTime, &ft) == -1)
@@ -1497,6 +1497,13 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             CancelWaitableTimer(This->flipLimiter.hTimer);
             CloseHandle(This->flipLimiter.hTimer);
             This->flipLimiter.hTimer = NULL;
+        }
+
+        if (This->fpsLimiter.hTimer)
+        {
+            CancelWaitableTimer(This->fpsLimiter.hTimer);
+            CloseHandle(This->fpsLimiter.hTimer);
+            This->fpsLimiter.hTimer = NULL;
         }
 
         DeleteCriticalSection(&This->cs);

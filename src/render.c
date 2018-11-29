@@ -25,8 +25,6 @@
 #define TEXTURE_COUNT 4
 
 static HGLRC OpenGLContext;
-static int MaxFPS;
-static DWORD FrameLength;
 static GLuint MainProgram;
 static GLuint ScaleProgram;
 static BOOL GotError;
@@ -50,7 +48,7 @@ static BOOL UseOpenGL;
 static BOOL AdjustAlignment;
 
 static HGLRC CreateContext(HDC hdc);
-static void SetMaxFPS(int baseMaxFPS);
+static void SetMaxFPS();
 static void BuildPrograms();
 static void CreateTextures(int width, int height);
 static void InitMainProgram();
@@ -69,7 +67,7 @@ DWORD WINAPI render_main(void)
     if (OpenGLContext)
     {
         OpenGL_Init();
-        SetMaxFPS(ddraw->render.maxfps);
+        SetMaxFPS();
         BuildPrograms();
         CreateTextures(ddraw->width, ddraw->height);
         InitMainProgram();
@@ -114,9 +112,11 @@ static HGLRC CreateContext(HDC hdc)
     return context;
 }
 
-static void SetMaxFPS(int baseMaxFPS)
+static void SetMaxFPS()
 {
-    MaxFPS = baseMaxFPS;
+    int maxFPS = ddraw->render.maxfps;
+    ddraw->fpsLimiter.tickLengthNs = 0;
+    ddraw->fpsLimiter.ticklength = 0;
 
     if (OpenGL_ExtExists("WGL_EXT_swap_control_tear", ddraw->render.hDC))
     {
@@ -125,7 +125,7 @@ static void SetMaxFPS(int baseMaxFPS)
             if (ddraw->vsync)
             {
                 wglSwapIntervalEXT(-1);
-                MaxFPS = 1000;
+                maxFPS = 0;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -138,21 +138,25 @@ static void SetMaxFPS(int baseMaxFPS)
             if (ddraw->vsync)
             {
                 wglSwapIntervalEXT(1);
-                MaxFPS = 1000;
+                maxFPS = 0;
             }
             else
                 wglSwapIntervalEXT(0);
         }
     }
 
-    if (MaxFPS < 0)
-        MaxFPS = ddraw->mode.dmDisplayFrequency;
+    if (maxFPS < 0)
+        maxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (MaxFPS >= 1000)
-        MaxFPS = 0;
+    if (maxFPS > 1000)
+        maxFPS = 0;
 
-    if (MaxFPS > 0)
-        FrameLength = 1000.0f / MaxFPS;
+    if (maxFPS > 0)
+    {
+        float len = 1000.0f / maxFPS;
+        ddraw->fpsLimiter.tickLengthNs = len * 10000;
+        ddraw->fpsLimiter.ticklength = len + 0.5f;
+    }
 }
 
 static void BuildPrograms()
@@ -543,8 +547,8 @@ static void InitScaleProgram()
 
 static void Render()
 {
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
+    DWORD tickStart = 0;
+    DWORD tickEnd = 0;
     BOOL needsUpdate = FALSE;
 
     glViewport(
@@ -569,8 +573,8 @@ static void Render()
 
         BOOL scaleChanged = FALSE;
 
-        if (MaxFPS > 0)
-            tick_start = timeGetTime();
+        if (ddraw->fpsLimiter.ticklength > 0)
+            tickStart = timeGetTime();
 
         EnterCriticalSection(&ddraw->cs);
 
@@ -785,12 +789,32 @@ static void Render()
         DrawFrameInfoEnd();
 #endif
 
-        if (MaxFPS > 0)
+        if (ddraw->fpsLimiter.ticklength > 0)
         {
-            tick_end = timeGetTime();
+            if (ddraw->fpsLimiter.hTimer)
+            {
+                FILETIME ft = { 0 };
+                GetSystemTimeAsFileTime(&ft);
 
-            if (tick_end - tick_start < FrameLength)
-                Sleep(FrameLength - (tick_end - tick_start));
+                if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                {
+                    memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                }
+                else
+                {
+                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                }
+
+                ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
+                SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+            }
+            else
+            {
+                tickEnd = timeGetTime();
+
+                if (tickEnd - tickStart < ddraw->fpsLimiter.ticklength)
+                    Sleep(ddraw->fpsLimiter.ticklength - (tickEnd - tickStart));
+            }
         }
     }
 }
