@@ -160,20 +160,40 @@ BOOL detect_cutscene()
 
 void LimitGameTicks()
 {
-    static DWORD nextGameTick;
-    if (!nextGameTick)
+    if (ddraw->ticksLimiter.hTimer)
     {
-        nextGameTick = timeGetTime();
-        return;
-    }
-    nextGameTick += ddraw->ticklength;
-    DWORD tickCount = timeGetTime();
+        FILETIME ft;
+        GetSystemTimeAsFileTime(&ft);
 
-    int sleepTime = nextGameTick - tickCount;
-    if (sleepTime <= 0 || sleepTime > ddraw->ticklength)
-        nextGameTick = tickCount;
+        if (CompareFileTime((FILETIME *)&ddraw->ticksLimiter.dueTime, &ft) == -1)
+        {
+            memcpy(&ddraw->ticksLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+        }
+        else
+        {
+            WaitForSingleObject(ddraw->ticksLimiter.hTimer, ddraw->ticksLimiter.ticklength * 2);
+        }
+
+        ddraw->ticksLimiter.dueTime.QuadPart += ddraw->ticksLimiter.tickLengthNs;
+        SetWaitableTimer(ddraw->ticksLimiter.hTimer, &ddraw->ticksLimiter.dueTime, 0, NULL, NULL, FALSE);
+    }
     else
-        Sleep(sleepTime);
+    {
+        static DWORD nextGameTick;
+        if (!nextGameTick)
+        {
+            nextGameTick = timeGetTime();
+            return;
+        }
+        nextGameTick += ddraw->ticksLimiter.ticklength;
+        DWORD tickCount = timeGetTime();
+
+        int sleepTime = nextGameTick - tickCount;
+        if (sleepTime <= 0 || sleepTime > ddraw->ticksLimiter.ticklength)
+            nextGameTick = tickCount;
+        else
+            Sleep(sleepTime);
+    }
 }
 
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
@@ -1463,6 +1483,20 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
         {
             CloseHandle(This->render.ev);
             ddraw->render.ev = NULL;
+        }
+
+        if (This->ticksLimiter.hTimer)
+        {
+            CancelWaitableTimer(This->ticksLimiter.hTimer);
+            CloseHandle(This->ticksLimiter.hTimer);
+            This->ticksLimiter.hTimer = NULL;
+        }
+
+        if (This->flipLimiter.hTimer)
+        {
+            CancelWaitableTimer(This->flipLimiter.hTimer);
+            CloseHandle(This->flipLimiter.hTimer);
+            This->flipLimiter.hTimer = NULL;
         }
 
         DeleteCriticalSection(&This->cs);

@@ -47,6 +47,15 @@ struct IDirectDrawSurfaceImpl;
 
 extern struct IDirectDrawImpl *ddraw;
 
+typedef struct SpeedLimiter
+{
+    DWORD ticklength;
+    LONGLONG tickLengthNs;
+    HANDLE hTimer;
+    LARGE_INTEGER dueTime;
+    BOOL useBltOrFlip;
+} SpeedLimiter;
+
 typedef struct IDirectDrawImpl
 {
     struct IDirectDrawImplVtbl *lpVtbl;
@@ -113,10 +122,10 @@ typedef struct IDirectDrawImpl
     char shader[MAX_PATH];
     BOOL wine;
     LONG minimized;
-    DWORD ticklength;
     BOOL altenter;
     BOOL hidecursor;
-    BOOL limitTicksOnBltOrFlip;
+    SpeedLimiter ticksLimiter;
+    SpeedLimiter flipLimiter;
     
 } IDirectDrawImpl;
 

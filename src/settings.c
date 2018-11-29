@@ -49,7 +49,18 @@ void Settings_Load()
 
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)
-        ddraw->ticklength = 1000.0f / maxTicks + 0.5f;
+    {
+        ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        float len = 1000.0f / maxTicks;
+        ddraw->ticksLimiter.tickLengthNs = len * 10000;
+        ddraw->ticksLimiter.ticklength = len + 0.5f;
+    }
+
+    //always using 60 fps for flip...
+    ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+    float flipLen = 1000.0f / 60;
+    ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
+    ddraw->flipLimiter.ticklength = flipLen + 0.5f;
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;

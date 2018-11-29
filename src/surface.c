@@ -448,9 +448,9 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             SwitchToThread();
         }
 
-        if (ddraw->ticklength > 0)
+        if (ddraw->ticksLimiter.ticklength > 0)
         {
-            ddraw->limitTicksOnBltOrFlip = TRUE;
+            ddraw->ticksLimiter.useBltOrFlip = TRUE;
             LimitGameTicks();
         }
     }
@@ -661,6 +661,10 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
+        FILETIME lastFlipFT = { 0 };
+        if (ddraw->flipLimiter.hTimer)
+            GetSystemTimeAsFileTime(&lastFlipFT);
+
         This->lastFlipTick = timeGetTime();
 
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
@@ -679,21 +683,39 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
         if (flags & DDFLIP_WAIT)
         {
-            DWORD tick = This->lastFlipTick;
-            while (tick % 17) tick++;
-            int sleepTime = tick - This->lastFlipTick;
+            if (ddraw->flipLimiter.hTimer)
+            {
+                if (!ddraw->flipLimiter.dueTime.QuadPart)
+                {
+                    memcpy(&ddraw->flipLimiter.dueTime, &lastFlipFT, sizeof(LARGE_INTEGER));
+                }
+                else
+                {
+                    while (CompareFileTime((FILETIME *)&ddraw->flipLimiter.dueTime, &lastFlipFT) == -1)
+                        ddraw->flipLimiter.dueTime.QuadPart += ddraw->flipLimiter.tickLengthNs;
 
-            int renderTime = timeGetTime() - This->lastFlipTick;
-            if (renderTime > 0)
-                sleepTime -= renderTime;
+                    SetWaitableTimer(ddraw->flipLimiter.hTimer, &ddraw->flipLimiter.dueTime, 0, NULL, NULL, FALSE);
+                    WaitForSingleObject(ddraw->flipLimiter.hTimer, ddraw->flipLimiter.ticklength * 2);
+                }
+            }
+            else
+            {
+                DWORD tick = This->lastFlipTick;
+                while (tick % 17) tick++;
+                int sleepTime = tick - This->lastFlipTick;
 
-            if (sleepTime > 0 && sleepTime <= 17)
-                Sleep(sleepTime);
+                int renderTime = timeGetTime() - This->lastFlipTick;
+                if (renderTime > 0)
+                    sleepTime -= renderTime;
+
+                if (sleepTime > 0 && sleepTime <= 17)
+                    Sleep(sleepTime);
+            }
         }
 
-        if (ddraw->ticklength > 0)
+        if (ddraw->ticksLimiter.ticklength > 0)
         {
-            ddraw->limitTicksOnBltOrFlip = TRUE;
+            ddraw->ticksLimiter.useBltOrFlip = TRUE;
             LimitGameTicks();
         }
     }
@@ -962,7 +984,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
         ReleaseSemaphore(ddraw->render.sem, 1, NULL);
 
-        if (ddraw->ticklength > 0 && !ddraw->limitTicksOnBltOrFlip)
+        if (ddraw->ticksLimiter.ticklength > 0 && !ddraw->ticksLimiter.useBltOrFlip)
             LimitGameTicks();
     }
 
