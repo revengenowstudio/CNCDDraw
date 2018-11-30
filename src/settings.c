@@ -46,27 +46,35 @@ void Settings_Load()
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
+    BOOL accurateTimers = GetBool("accuratetimers", FALSE);
+
     ddraw->render.maxfps = GetInt("maxfps", 125);
-    if (ddraw->render.maxfps)
+    if (ddraw->render.maxfps <= 1000)
     {
-        //ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        if (accurateTimers)
+            ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
         //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
     }
 
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)
     {
-        //ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        if (accurateTimers)
+            ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+
         float len = 1000.0f / maxTicks;
         ddraw->ticksLimiter.tickLengthNs = len * 10000;
         ddraw->ticksLimiter.ticklength = len + 0.5f;
     }
 
     //always using 60 fps for flip...
-    //ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (accurateTimers)
+        ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+
     float flipLen = 1000.0f / 60;
     ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
     ddraw->flipLimiter.ticklength = flipLen + 0.5f;
+
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;
@@ -247,6 +255,11 @@ static void CreateSettingsIni()
             "; Note: This option only works for games that draw their own cursor and it must be disabled for all other games\n"
             "handlemouse=true\n"
             "\n"
+            "; Use Waitable Timer Objects rather than timeGetTime+Sleep to limit FPS/Ticks/Flip\n"
+            "; Note: Can introduce a different type of tearing and stuttering in windowed mode\n"
+            "; Note: To workaround tearing/stuttering problems, set maxfps 1 lower than target ticks (59 for flip games)\n"
+            "accuratetimers=false\n"
+            "\n"
             "\n"
             "; Game specific settings - The following settings override all settings above, section name = executable name\n"
             "\n"
@@ -306,6 +319,16 @@ static void CreateSettingsIni()
             "; Atomic Bomberman\n"
             "[BM]\n"
             "maxgameticks=60\n"
+            "\n"
+            "; Dune 2000\n"
+            "[dune2000]\n"
+            "maxfps=59\n"
+            "accuratetimers=true\n"
+            "\n"
+            "; Dune 2000 Online\n"
+            "[dune2000-spawn]\n"
+            "maxfps=59\n"
+            "accuratetimers=true\n"
             "\n"
             "; Command & Conquer: Tiberian Sun\n"
             "[game]\n"
