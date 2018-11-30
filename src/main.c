@@ -882,6 +882,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
+        case WM_NCPAINT:
+        {
+            // return DefWindowProc to prevent glitched window frame (dune 2000)
+            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
         case WM_D3D9DEVICELOST:
         {
             if (Direct3D9Active && Direct3D9_OnDeviceLost())
