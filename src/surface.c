@@ -701,14 +701,14 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
             else
             {
                 DWORD tick = This->lastFlipTick;
-                while (tick % 17) tick++;
+                while (tick % ddraw->flipLimiter.ticklength) tick++;
                 int sleepTime = tick - This->lastFlipTick;
 
                 int renderTime = timeGetTime() - This->lastFlipTick;
                 if (renderTime > 0)
                     sleepTime -= renderTime;
 
-                if (sleepTime > 0 && sleepTime <= 17)
+                if (sleepTime > 0 && sleepTime <= ddraw->flipLimiter.ticklength)
                     Sleep(sleepTime);
             }
         }
