@@ -49,21 +49,21 @@ void Settings_Load()
     ddraw->render.maxfps = GetInt("maxfps", 125);
     if (ddraw->render.maxfps)
     {
-        ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        //ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
         //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
     }
 
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)
     {
-        ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        //ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
         float len = 1000.0f / maxTicks;
         ddraw->ticksLimiter.tickLengthNs = len * 10000;
         ddraw->ticksLimiter.ticklength = len + 0.5f;
     }
 
     //always using 60 fps for flip...
-    ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+    //ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
     float flipLen = 1000.0f / 60;
     ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
     ddraw->flipLimiter.ticklength = flipLen + 0.5f;
@@ -311,25 +311,25 @@ static void CreateSettingsIni()
             "[game]\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
-            "maxfps=62\n"
+            "maxfps=60\n"
             "\n"
             "; Command & Conquer: Tiberian Sun Online\n"
             "[ts-spawn]\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
-            "maxfps=62\n"
+            "maxfps=60\n"
             "\n"
             "; Command & Conquer: Red Alert 2: Yuri's Revenge\n"
             "[gamemd]\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
-            "maxfps=62\n"
+            "maxfps=60\n"
             "\n"
             "; Command & Conquer: Red Alert 2: Yuri's Revenge Online\n"
             "[gamemd-spawn]\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
-            "maxfps=62\n"
+            "maxfps=60\n"
             "\n"
 
             , fh);

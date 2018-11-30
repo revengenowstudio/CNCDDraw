@@ -55,7 +55,7 @@ DWORD WINAPI render_soft_main(void)
     {
         float len = 1000.0f / maxFPS;
         ddraw->fpsLimiter.tickLengthNs = len * 10000;
-        ddraw->fpsLimiter.ticklength = len + 0.5f;
+        ddraw->fpsLimiter.ticklength = len;// + 0.5f;
     }
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)

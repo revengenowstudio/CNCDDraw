@@ -155,7 +155,7 @@ static void SetMaxFPS()
     {
         float len = 1000.0f / maxFPS;
         ddraw->fpsLimiter.tickLengthNs = len * 10000;
-        ddraw->fpsLimiter.ticklength = len + 0.5f;
+        ddraw->fpsLimiter.ticklength = len;// + 0.5f;
     }
 }
 
