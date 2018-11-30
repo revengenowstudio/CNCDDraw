@@ -124,6 +124,7 @@ typedef struct IDirectDrawImpl
     LONG minimized;
     BOOL altenter;
     BOOL hidecursor;
+    BOOL accurateTimers;
     SpeedLimiter ticksLimiter;
     SpeedLimiter flipLimiter;
     SpeedLimiter fpsLimiter;

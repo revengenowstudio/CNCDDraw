@@ -40,18 +40,17 @@ void Settings_Load()
     ddraw->vsync = GetBool("vsync", FALSE);
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
+    ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
-    BOOL accurateTimers = GetBool("accuratetimers", FALSE);
-
     ddraw->render.maxfps = GetInt("maxfps", 125);
     if (ddraw->render.maxfps <= 1000)
     {
-        if (accurateTimers)
+        if (ddraw->accurateTimers)
             ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
         //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
     }
@@ -59,7 +58,7 @@ void Settings_Load()
     int maxTicks = GetInt("maxgameticks", 0);
     if (maxTicks > 0 && maxTicks <= 1000)
     {
-        if (accurateTimers)
+        if (ddraw->accurateTimers)
             ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
         float len = 1000.0f / maxTicks;
@@ -68,7 +67,7 @@ void Settings_Load()
     }
 
     //always using 60 fps for flip...
-    if (accurateTimers)
+    if (ddraw->accurateTimers)
         ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
     float flipLen = 1000.0f / 60;
