@@ -257,7 +257,7 @@ static void CreateSettingsIni()
             "\n"
             "; Use Waitable Timer Objects rather than timeGetTime+Sleep to limit FPS/Ticks/Flip\n"
             "; Note: Can introduce a different type of tearing and stuttering in windowed mode\n"
-            "; Note: To workaround tearing/stuttering problems, set maxfps 1 lower than target ticks (59 for flip games)\n"
+            "; Note: To workaround tearing/stuttering problems, set maxfps 1 lower than screen refresh rate (59 for flip games)\n"
             "accuratetimers=false\n"
             "\n"
             "\n"
