@@ -16,6 +16,7 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include <winuser.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <d3d9.h>
@@ -886,6 +887,40 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             // return DefWindowProc to prevent glitched window frame (dune 2000)
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
+        case WM_SETCURSOR:
+        {
+            // show resize cursor on window borders
+            if ((HWND)wParam == ddraw->hWnd)
+            {
+                WORD message = HIWORD(lParam);
+
+                if (message == WM_MOUSEMOVE)
+                {
+                    WORD htcode = LOWORD(lParam);
+
+                    switch (htcode)
+                    {
+                        case HTCAPTION:
+                        case HTMINBUTTON:
+                        case HTMAXBUTTON:
+                        case HTCLOSE:
+                        case HTBOTTOM:
+                        case HTBOTTOMLEFT:
+                        case HTBOTTOMRIGHT:
+                        case HTLEFT:
+                        case HTRIGHT:
+                        case HTTOP:
+                        case HTTOPLEFT:
+                        case HTTOPRIGHT:
+                            return DefWindowProc(hWnd, uMsg, wParam, lParam);
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            break;
         }
         case WM_D3D9DEVICELOST:
         {
