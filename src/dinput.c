@@ -15,17 +15,14 @@ static PROC HookFunc(PROC *orgFunc, PROC newFunc)
 {
     PROC org = *orgFunc;
     DWORD oldProtect;
-    MEMORY_BASIC_INFORMATION mbi;
 
-    if (VirtualQuery(orgFunc, &mbi, sizeof(MEMORY_BASIC_INFORMATION)))
+    if (VirtualProtect(orgFunc, sizeof(PROC), PAGE_EXECUTE_READWRITE, &oldProtect))
     {
-        if (VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_READWRITE, &oldProtect))
-        {
-            *orgFunc = newFunc;
-            VirtualProtect(mbi.BaseAddress, mbi.RegionSize, oldProtect, &oldProtect);
-            return org;
-        }
+        *orgFunc = newFunc;
+        VirtualProtect(orgFunc, sizeof(PROC), oldProtect, &oldProtect);
+        return org;
     }
+
     return 0;
 }
 

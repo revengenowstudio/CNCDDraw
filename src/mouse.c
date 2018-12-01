@@ -180,15 +180,11 @@ void HookIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunctio
                     _stricmp((const char *)pImport->Name, functionName) == 0)
                 {
                     DWORD oldProtect;
-                    MEMORY_BASIC_INFORMATION mbi;
 
-                    if (VirtualQuery(&pFirstThunk->u1.Function, &mbi, sizeof(MEMORY_BASIC_INFORMATION)))
+                    if (VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &oldProtect))
                     {
-                        if (VirtualProtect(mbi.BaseAddress, mbi.RegionSize, PAGE_READWRITE, &oldProtect))
-                        {
-                            pFirstThunk->u1.Function = (DWORD)newFunction;
-                            VirtualProtect(mbi.BaseAddress, mbi.RegionSize, oldProtect, &oldProtect);
-                        }
+                        pFirstThunk->u1.Function = (DWORD)newFunction;
+                        VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), oldProtect, &oldProtect);
                     }
 
                     break;
