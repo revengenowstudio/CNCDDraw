@@ -1432,6 +1432,12 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
             SetPixelFormat(This->render.hDC, ChoosePixelFormat(This->render.hDC, &pfd), &pfd);
         }
 
+        if (ddraw->handlemouse && ddraw->windowed)
+        {
+            while (ShowCursor(FALSE) > 0); //workaround for direct input games
+            while (ShowCursor(TRUE) < 0);
+        }
+
         SetCursor(LoadCursor(NULL, IDC_ARROW));
 
         GetWindowText(This->hWnd, (LPTSTR)&This->title, sizeof(This->title));
