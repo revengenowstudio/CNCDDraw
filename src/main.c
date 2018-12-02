@@ -766,7 +766,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
         else
         {
-            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW);
+            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW) & ~WS_MAXIMIZEBOX);
         }
 
         if (ddraw->wine)
@@ -1147,11 +1147,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (wParam == SC_CLOSE && !GameHandlesClose)
             {
                 exit(0);
-            }
-            if (wParam == SC_MAXIMIZE)
-            {
-                ToggleFullscreen();
-                return 0;
             }
 
             if (!GameHandlesClose)
