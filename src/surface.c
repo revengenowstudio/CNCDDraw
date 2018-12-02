@@ -1132,7 +1132,7 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
         Surface->bmi->bmiHeader.biHeight = -Surface->height;
 
         if (!Surface->bitmap)
-            Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * Surface->height * Surface->lXPitch);
+            Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * (Surface->height + 200) * Surface->lXPitch);
 
         SelectObject(Surface->hDC, Surface->bitmap);
     }
