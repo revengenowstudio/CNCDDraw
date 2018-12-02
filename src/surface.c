@@ -1095,7 +1095,7 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
         Surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
         Surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         Surface->bmi->bmiHeader.biWidth = Surface->width;
-        Surface->bmi->bmiHeader.biHeight = -Surface->height;
+        Surface->bmi->bmiHeader.biHeight = -(Surface->height + 200);
         Surface->bmi->bmiHeader.biPlanes = 1;
         Surface->bmi->bmiHeader.biBitCount = Surface->bpp;
         Surface->bmi->bmiHeader.biCompression = Surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
@@ -1129,7 +1129,8 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
         Surface->hDC = CreateCompatibleDC(ddraw->render.hDC);
         Surface->bitmap = CreateDIBSection(Surface->hDC, Surface->bmi, DIB_RGB_COLORS, (void **)&Surface->surface, NULL, 0);
-        
+        Surface->bmi->bmiHeader.biHeight = -Surface->height;
+
         if (!Surface->bitmap)
             Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * Surface->height * Surface->lXPitch);
 
