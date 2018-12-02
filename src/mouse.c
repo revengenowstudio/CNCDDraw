@@ -446,6 +446,14 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
     return result;
 }
 
+LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
+{
+    if (ddraw && ddraw->hWnd == hWnd && nIndex == GWL_STYLE)
+        return 0;
+
+    return SetWindowLongA(hWnd, nIndex, dwNewLong);
+}
+
 void mouse_init()
 {
     HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
@@ -464,5 +472,6 @@ void mouse_init()
     HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "MoveWindow", (PROC)fake_MoveWindow);
     HookIAT(GetModuleHandle(NULL), "user32.dll", "SendMessageA", (PROC)fake_SendMessageA);
+    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA);
     mouse_active = TRUE;
 }
