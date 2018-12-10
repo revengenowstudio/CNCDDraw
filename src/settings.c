@@ -82,7 +82,17 @@ void Settings_Load()
         ddraw->adjmouse = TRUE;
 
     if (GetBool("singlecpu", TRUE))
+    {
         SetProcessAffinityMask(GetCurrentProcess(), 1);
+    }
+    else
+    {
+        DWORD systemAffinity;
+        DWORD procAffinity;
+        HANDLE proc = GetCurrentProcess();
+        if (GetProcessAffinityMask(proc, &procAffinity, &systemAffinity))
+            SetProcessAffinityMask(proc, systemAffinity);
+    }
 
     ddraw->render.bpp = GetInt("bpp", 32);
     if (ddraw->render.bpp != 16 && ddraw->render.bpp != 24 && ddraw->render.bpp != 32)
