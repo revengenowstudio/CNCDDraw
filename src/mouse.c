@@ -362,11 +362,17 @@ BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
 
 BOOL WINAPI fake_ClientToScreen(HWND hWnd, LPPOINT lpPoint)
 {
+    if (ddraw && ddraw->hWnd != hWnd)
+        return ClientToScreen(hWnd, lpPoint) && ScreenToClient(ddraw->hWnd, lpPoint);
+
     return TRUE;
 }
 
 BOOL WINAPI fake_ScreenToClient(HWND hWnd, LPPOINT lpPoint)
 {
+    if (ddraw && ddraw->hWnd != hWnd)
+        return ClientToScreen(ddraw->hWnd, lpPoint) && ScreenToClient(hWnd, lpPoint);
+
     return TRUE;
 }
 
