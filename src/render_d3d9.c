@@ -410,7 +410,7 @@ DWORD WINAPI render_d3d9_main(void)
         IDirect3DDevice9_DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
         IDirect3DDevice9_EndScene(D3dDev);
 
-        if (IDirect3DDevice9_Present(D3dDev, NULL, NULL, NULL, NULL) == D3DERR_DEVICELOST)
+        if (FAILED(IDirect3DDevice9_Present(D3dDev, NULL, NULL, NULL, NULL)))
         {
             DWORD_PTR dwResult;
             SendMessageTimeout(ddraw->hWnd, WM_D3D9DEVICELOST, 0, 0, 0, 1000, &dwResult);
