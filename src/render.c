@@ -646,6 +646,8 @@ static void Render()
             static int errorCheckCount = 0;
             if (errorCheckCount < 20)
             {
+                glClear(GL_COLOR_BUFFER_BIT);
+
                 errorCheckCount++;
 
                 if (glGetError() != GL_NO_ERROR)
