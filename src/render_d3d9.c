@@ -278,10 +278,10 @@ static void SetMaxFPS()
     ddraw->fpsLimiter.tickLengthNs = 0;
     ddraw->fpsLimiter.ticklength = 0;
 
-    if (maxFPS < 0)
+    if (maxFPS < 0 || ddraw->vsync)
         maxFPS = ddraw->mode.dmDisplayFrequency;
 
-    if (maxFPS > 1000 || ddraw->vsync)
+    if (maxFPS > 1000)
         maxFPS = 0;
 
     if (maxFPS > 0)
@@ -419,25 +419,34 @@ DWORD WINAPI render_d3d9_main(void)
 #if _DEBUG
         DrawFrameInfoEnd();
 #endif
-
+        
         if (ddraw->fpsLimiter.ticklength > 0)
         {
             if (ddraw->fpsLimiter.hTimer)
             {
-                FILETIME ft = { 0 };
-                GetSystemTimeAsFileTime(&ft);
-
-                if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                if (ddraw->vsync)
                 {
-                    memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                    LARGE_INTEGER liDueTime = { .QuadPart = -ddraw->fpsLimiter.tickLengthNs };
+                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &liDueTime, 0, NULL, NULL, FALSE);
                 }
                 else
                 {
-                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
-                }
+                    FILETIME ft = { 0 };
+                    GetSystemTimeAsFileTime(&ft);
 
-                ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
-                SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+                    if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                    {
+                        memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                    }
+                    else
+                    {
+                        WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                    }
+
+                    ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
+                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+                }
             }
             else
             {

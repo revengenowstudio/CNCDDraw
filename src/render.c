@@ -118,6 +118,7 @@ static void SetMaxFPS()
     ddraw->fpsLimiter.tickLengthNs = 0;
     ddraw->fpsLimiter.ticklength = 0;
 
+    /*
     if (OpenGL_ExtExists("WGL_EXT_swap_control_tear", ddraw->render.hDC))
     {
         if (wglSwapIntervalEXT)
@@ -125,20 +126,21 @@ static void SetMaxFPS()
             if (ddraw->vsync)
             {
                 wglSwapIntervalEXT(-1);
-                maxFPS = 0;
+                maxFPS = ddraw->mode.dmDisplayFrequency;
             }
             else
                 wglSwapIntervalEXT(0);
         }
     }
-    else if (OpenGL_ExtExists("WGL_EXT_swap_control", ddraw->render.hDC))
+    else */
+    if (OpenGL_ExtExists("WGL_EXT_swap_control", ddraw->render.hDC))
     {
         if (wglSwapIntervalEXT)
         {
             if (ddraw->vsync)
             {
                 wglSwapIntervalEXT(1);
-                maxFPS = 0;
+                maxFPS = ddraw->mode.dmDisplayFrequency;
             }
             else
                 wglSwapIntervalEXT(0);
@@ -793,20 +795,29 @@ static void Render()
         {
             if (ddraw->fpsLimiter.hTimer)
             {
-                FILETIME ft = { 0 };
-                GetSystemTimeAsFileTime(&ft);
-
-                if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                if (ddraw->vsync)
                 {
-                    memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                    LARGE_INTEGER liDueTime = { .QuadPart = -ddraw->fpsLimiter.tickLengthNs };
+                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &liDueTime, 0, NULL, NULL, FALSE);
                 }
                 else
                 {
-                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
-                }
+                    FILETIME ft = { 0 };
+                    GetSystemTimeAsFileTime(&ft);
 
-                ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
-                SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+                    if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                    {
+                        memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                    }
+                    else
+                    {
+                        WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                    }
+
+                    ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
+                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+                }
             }
             else
             {
