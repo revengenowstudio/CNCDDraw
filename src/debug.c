@@ -57,11 +57,11 @@ void DrawFrameInfoStart()
             debugText,
             sizeof(debugText),
             "FPS: %lu | Time: %2.2f ms  ",
-            DebugFrameCount * 2,
+            DebugFrameCount,
             DebugFrameTime);
 
         DebugFrameCount = 0;
-        tick_fps = tick_start + 500;
+        tick_fps = tick_start + 1000;
 
         CounterStart();
     }
