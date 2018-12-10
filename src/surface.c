@@ -166,30 +166,45 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
     {
         unsigned char *dst = (unsigned char *)This->surface + (dst_x * This->lXPitch) + (This->lPitch * dst_y);
         unsigned char *firstRow = dst;
+        unsigned int dst_pitch = dst_w * This->lXPitch;
         int x, i;
 
         if (This->bpp == 8)
         {
             unsigned char color = (unsigned char)lpDDBltFx->dwFillColor;
 
-            for (x = 0; x < dst_w; x++)
-                firstRow[x] = color;
+            for (i = 0; i < dst_h; i++)
+            {
+                memset(dst, color, dst_pitch);
+                dst += This->lPitch;
+            }
         }
         else if (This->bpp == 16)
         {
             unsigned short *row1 = (unsigned short *)dst;
             unsigned short color = (unsigned short)lpDDBltFx->dwFillColor;
 
-            for (x = 0; x < dst_w; x++)
-                row1[x] = color;
-        }
+            if ((color & 0xFF) == (color >> 8))
+            {
+                unsigned char c8 = (unsigned char)(color & 0xFF);
 
-        unsigned int widthInBytes = dst_w * This->lXPitch;
+                for (i = 0; i < dst_h; i++)
+                {
+                    memset(dst, c8, dst_pitch);
+                    dst += This->lPitch;
+                }
+            }
+            else
+            {
+                for (x = 0; x < dst_w; x++)
+                    row1[x] = color;
 
-        for (i = 1; i < dst_h; i++)
-        {
-            dst += This->lPitch;
-            memcpy(dst, firstRow, widthInBytes);
+                for (i = 1; i < dst_h; i++)
+                {
+                    dst += This->lPitch;
+                    memcpy(dst, firstRow, dst_pitch);
+                }
+            }
         }
     }
 
