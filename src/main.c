@@ -1117,6 +1117,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     */
                 }
             }
+
+            if (!ddraw->handlemouse)
+            {
+                redrawCount = 2;
+                RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+            }
+
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
         case WM_MOVE:
