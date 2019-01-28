@@ -407,24 +407,24 @@ static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD o
     if (s > 0)
         return s;
 
-	return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, SettingsIniPath);
+    return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, SettingsIniPath);
 }
 
 static BOOL GetBool(LPCSTR key, BOOL defaultValue)
 {
-	char value[8];
-	GetString(key, defaultValue ? "Yes" : "No", value, sizeof(value));
+    char value[8];
+    GetString(key, defaultValue ? "Yes" : "No", value, sizeof(value));
 
-	return (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0 || _stricmp(value, "1") == 0);
+    return (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0 || _stricmp(value, "1") == 0);
 }
 
 static int GetInt(LPCSTR key, int defaultValue)
 {
-	char defvalue[16];
+    char defvalue[16];
     _snprintf(defvalue, sizeof(defvalue), "%d", defaultValue);
 
-	char value[16];
-	GetString(key, defvalue, value, sizeof(value));
+    char value[16];
+    GetString(key, defvalue, value, sizeof(value));
 
-	return atoi(value);
+    return atoi(value);
 }
