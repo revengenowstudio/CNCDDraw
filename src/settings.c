@@ -401,10 +401,12 @@ static void CreateSettingsIni()
             "; Diablo\n"
             "[Diablo]\n"
             "bnetHack=true\n"
+            "renderer=gdi\n"
             "\n"
             "; Warcraft 2 Battle.net Edition\n"
             "[Warcraft II BNE]\n"
             "bnetHack=true\n"
+            "renderer=gdi\n"
             "\n"
 
             , fh);
