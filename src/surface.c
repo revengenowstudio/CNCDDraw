@@ -992,6 +992,55 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
+    HWND hWnd = ddraw->bnetHack ? FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL) : NULL;
+    if (hWnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
+    {
+        if (ddraw->primary->palette && ddraw->primary->palette->data_rgb)
+            SetDIBColorTable(ddraw->primary->hDC, 0, 256, ddraw->primary->palette->data_rgb);
+
+        //GdiTransparentBlt idea taken from Aqrit's war2 ddraw
+
+        RGBQUAD quad;
+        GetDIBColorTable(ddraw->primary->hDC, 0xFE, 1, &quad);
+        COLORREF color = RGB(quad.rgbRed, quad.rgbGreen, quad.rgbBlue);
+        BOOL erase = FALSE;
+
+        do
+        {
+            RECT rc;
+            if (GetWindowRect(hWnd, &rc))
+            {
+                if (rc.bottom - rc.top == 479)
+                    erase = TRUE;
+
+                HDC hDC = GetDCEx(hWnd, NULL, DCX_PARENTCLIP | DCX_CACHE);
+
+                GdiTransparentBlt(
+                    hDC,
+                    0,
+                    0,
+                    rc.right - rc.left,
+                    rc.bottom - rc.top,
+                    ddraw->primary->hDC,
+                    rc.left,
+                    rc.top,
+                    rc.right - rc.left,
+                    rc.bottom - rc.top,
+                    color
+                );
+
+                ReleaseDC(hWnd, hDC);
+            }
+
+        } while ((hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL)));
+
+        if (erase)
+        {
+            DDBLTFX fx = { .dwFillColor = 0xFE };
+            IDirectDrawSurface_Blt(This, NULL, NULL, NULL, DDBLT_COLORFILL, &fx);
+        }
+    }
+
     if (This->caps & DDSCAPS_PRIMARYSURFACE &&
         ddraw->render.run &&
         (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))

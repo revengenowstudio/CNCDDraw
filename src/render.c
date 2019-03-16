@@ -787,6 +787,9 @@ static void Render()
             glEnd();
         }
 
+        if (ddraw->bnetActive)
+            glClear(GL_COLOR_BUFFER_BIT);
+
         SwapBuffers(ddraw->render.hDC);
 
 #if _DEBUG

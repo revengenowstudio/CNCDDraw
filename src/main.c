@@ -1161,51 +1161,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             break;
 
-        case WM_ACTIVATE:
-            if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
-            {
-                if (!ddraw->windowed)
-                {
-                    if (!Direct3D9Active)
-                    {
-                        ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
-
-                        if (wParam == WA_ACTIVE)
-                        {
-                            mouse_lock();
-                        }
-                    }
-
-                    InterlockedExchange(&ddraw->minimized, FALSE);
-                }
-
-                if (!ddraw->handlemouse)
-                    RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-            }
-            else if (wParam == WA_INACTIVE)
-            {
-                if (!ddraw->windowed && !ddraw->locked && ddraw->noactivateapp)
-                    return 0;
-
-                mouse_unlock();
-
-                if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
-                    return 0;
-
-                /* minimize our window on defocus when in fullscreen */
-                if (!ddraw->windowed)
-                {
-                    if (!Direct3D9Active)
-                    {
-                        ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                        ChangeDisplaySettings(&ddraw->mode, 0);
-                    }
-
-                    InterlockedExchange(&ddraw->minimized, TRUE);
-                }
-            }
-            return 0;
-
         //workaround for a bug where sometimes a background window steals the focus
         case WM_WINDOWPOSCHANGING:
         {
@@ -1228,7 +1183,77 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             mouse_unlock();
             return 0;
 
+
+        case WM_ENABLE:
+        {
+            if (ddraw->bnetHack)
+            {
+                if (wParam)
+                    mouse_lock();
+                else
+                    mouse_unlock();
+
+                HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
+                if (hWnd)
+                {
+                    RECT rc;
+                    if (GetWindowRect(hWnd, &rc) && (rc.bottom - rc.top != 479))
+                        while (ShowCursor(FALSE) > 0);
+                }
+
+                ddraw->bnetActive = !wParam;
+            }
+            break;
+        }
+
+        case WM_ACTIVATE:
+        {
+            return 0;
+        }
+
         case WM_ACTIVATEAPP:
+
+            if (wParam)
+            {
+                if (!ddraw->windowed)
+                {
+                    if (!Direct3D9Active)
+                    {
+                        ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+
+                        mouse_lock();
+                    }
+
+                    InterlockedExchange(&ddraw->minimized, FALSE);
+                }
+
+                if (!ddraw->handlemouse)
+                    RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+            }
+            else
+            {
+                if (!ddraw->windowed && !ddraw->locked && ddraw->noactivateapp)
+                    goto aapp_end;
+
+                mouse_unlock();
+
+                if (ddraw->wine && LastSetWindowPosTick + 500 > timeGetTime())
+                    goto aapp_end;
+
+                /* minimize our window on defocus when in fullscreen */
+                if (!ddraw->windowed)
+                {
+                    if (!Direct3D9Active)
+                    {
+                        ShowWindow(ddraw->hWnd, SW_MINIMIZE);
+                        ChangeDisplaySettings(&ddraw->mode, 0);
+                    }
+
+                    InterlockedExchange(&ddraw->minimized, TRUE);
+                }
+            }
+
+        aapp_end:
             /* C&C and RA stop drawing when they receive this with FALSE wParam, disable in windowed mode */
             if (ddraw->windowed || ddraw->noactivateapp)
             {
@@ -1619,6 +1644,16 @@ HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContex
     return DD_OK;
 }
 
+//Force redraw when the "Player Profile" screen exits - Idea taken from Aqrit's war2 ddraw
+static WNDPROC ButtonWndProc_original;
+LRESULT __stdcall ButtonWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    if (msg == WM_DESTROY) 
+        RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+
+    return ButtonWndProc_original(hwnd, msg, wParam, lParam);
+}
+
 int stdout_open = 0;
 HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter) 
 {
@@ -1667,6 +1702,17 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     This->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
 
     Settings_Load();
+
+    if (ddraw->bnetHack)
+    {
+        WNDCLASS wc;
+        HINSTANCE hInst = GetModuleHandle(NULL);
+        GetClassInfo(NULL, "Button", &wc);
+        wc.hInstance = hInst;
+        ButtonWndProc_original = wc.lpfnWndProc;
+        wc.lpfnWndProc = ButtonWndProc;
+        RegisterClass(&wc);
+    }
 
     return DD_OK;
 }

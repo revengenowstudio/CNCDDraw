@@ -21,7 +21,7 @@ PRODUCTVERSION VERSION
             VALUE "FileDescription", "DirectDraw replacement"
             VALUE "FileVersion", VERSION_STRING
             VALUE "InternalName", "ddraw"
-            VALUE "LegalCopyright", "Copyright (c) 2010-2018"
+            VALUE "LegalCopyright", "Copyright (c) 2010-2019"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFileName", "ddraw.dll"
             VALUE "ProductName", "cnc-ddraw"

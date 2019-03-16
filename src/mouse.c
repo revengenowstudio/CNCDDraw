@@ -250,7 +250,7 @@ void mouse_lock()
 
         if (ddraw->handlemouse)
         {
-            SetCapture(ddraw->hWnd);
+            //SetCapture(ddraw->hWnd);
             ClipCursor(&rc);
             while (ShowCursor(FALSE) > 0);
         }
@@ -315,7 +315,7 @@ void mouse_unlock()
         }
 
         ClipCursor(NULL);
-        ReleaseCapture();
+        //ReleaseCapture();
         
         SetCursorPos(
             rc.left + ddraw->render.viewport.x + (ddraw->cursor.x * ddraw->render.scaleW), 

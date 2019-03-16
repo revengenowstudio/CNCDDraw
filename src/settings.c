@@ -49,6 +49,8 @@ void Settings_Load()
 
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
+    ddraw->bnetHack = GetBool("bnetHack", TRUE);
+
     if (ddraw->accurateTimers || ddraw->vsync)
         ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
     //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
@@ -101,6 +103,9 @@ void Settings_Load()
 
     GetString("renderer", "auto", tmp, sizeof(tmp));
     printf("Using %s renderer\n", tmp);
+
+    if (ddraw->bnetHack && tolower(tmp[0]) != 'g')
+        ddraw->windowed = TRUE;
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
     {
@@ -274,6 +279,10 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
+            "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
+            "; Note: This hack as a negative side-effect, you can only play fullscreen with 'renderer=gdi' or via 'fullscreen=true'\n"
+            "bnetHack=false\n"
+            "\n"
             "\n"
             "\n"
             "; ### Game specific settings ###\n"
@@ -389,11 +398,13 @@ static void CreateSettingsIni()
             "handlemouse=false\n"
             "maxfps=60\n"
             "\n"
-            "; Command & Conquer: Red Alert 2: Yuri's Revenge - XWIS\n"
-            "[Yuri's Revenge]\n"
-            "noactivateapp=true\n"
-            "handlemouse=false\n"
-            "maxfps=60\n"
+            "; Diablo\n"
+            "[Diablo]\n"
+            "bnetHack=true\n"
+            "\n"
+            "; Warcraft 2 Battle.net Edition\n"
+            "[Warcraft II BNE]\n"
+            "bnetHack=true\n"
             "\n"
 
             , fh);
