@@ -1198,8 +1198,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
                 if (hWnd)
                 {
-                    RECT rc;
-                    if (GetWindowRect(hWnd, &rc) && (rc.bottom - rc.top != 479))
+                    BOOL hideCursor = TRUE;
+
+                    do
+                    {
+                        RECT rc;
+                        if (GetWindowRect(hWnd, &rc) && rc.bottom - rc.top == 479)
+                            hideCursor = FALSE;
+
+                    } while ((hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL)));
+
+                    if (hideCursor)
                         while (ShowCursor(FALSE) > 0);
                 }
 
