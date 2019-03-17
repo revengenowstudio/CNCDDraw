@@ -1,6 +1,8 @@
 LIBRARY     ddraw.dll
 
 EXPORTS
-    DirectDrawCreate            @1
-    DirectDrawEnumerateA        @2
-    GameHandlesClose            DATA
+    DirectDrawCreate                     @1
+    DirectDrawEnumerateA                 @2
+    GameHandlesClose                     DATA
+    NvOptimusEnablement                  DATA
+    AmdPowerXpressRequestHighPerformance DATA
