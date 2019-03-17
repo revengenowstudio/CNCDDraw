@@ -48,6 +48,8 @@ int WindowState = -1;
 BOOL Direct3D9Active;
 BOOL GameHandlesClose;
 BOOL ChildWindowExists;
+DWORD NvOptimusEnablement = 1;
+DWORD AmdPowerXpressRequestHighPerformance = 1;
 
 //BOOL WINAPI DllMainCRTStartup(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)
 BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
