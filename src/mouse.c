@@ -14,27 +14,25 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* This is a special mouse coordinate fix for games that use GetCursorPos and expect to be in fullscreen */
-
 #include <windows.h>
 #include <stdio.h>
 #include "main.h"
 #include "surface.h"
+#include "hook.h"
 
-BOOL mouse_active = FALSE;
 int yAdjust = 0;
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
     POINT pt, realpt;
     
-    if (!GetCursorPos(&pt) || !ddraw)
+    if (!real_GetCursorPos(&pt) || !ddraw)
         return FALSE;
     
     realpt.x = pt.x;
     realpt.y = pt.y;
     
-    if(ddraw->locked && (!ddraw->windowed || ScreenToClient(ddraw->hWnd, &pt)))
+    if(ddraw->locked && (!ddraw->windowed || real_ScreenToClient(ddraw->hWnd, &pt)))
     {
         //fallback solution for possible ClipCursor failure
         int diffx = 0, diffy = 0;
@@ -66,7 +64,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         }
 
         if (diffx || diffy)
-            SetCursorPos(realpt.x - diffx, realpt.y - diffy);
+            real_SetCursorPos(realpt.x - diffx, realpt.y - diffy);
 
 
         if(ddraw->adjmouse)
@@ -98,7 +96,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             }
 
             if (diffx || diffy)
-                SetCursorPos(realpt.x - diffx, realpt.y - diffy);
+                real_SetCursorPos(realpt.x - diffx, realpt.y - diffy);
         }
     }
 
@@ -127,7 +125,7 @@ int WINAPI fake_ShowCursor(BOOL bShow)
     static int count;
 
     if (ddraw && !ddraw->handlemouse)
-        return ShowCursor(bShow);
+        return real_ShowCursor(bShow);
 
     return bShow ? ++count : --count;
 }
@@ -135,68 +133,9 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
     if (ddraw && !ddraw->handlemouse)
-        return SetCursor(hCursor); 
+        return real_SetCursor(hCursor); 
     
     return NULL;
-}
-
-void HookIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
-{
-    if (!hMod || hMod == INVALID_HANDLE_VALUE || !newFunction)
-        return;
-
-    PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hMod;
-    if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
-        return;
-
-    PIMAGE_NT_HEADERS pNTHeaders = (PIMAGE_NT_HEADERS)((DWORD)pDosHeader + (DWORD)pDosHeader->e_lfanew);
-    if (pNTHeaders->Signature != IMAGE_NT_SIGNATURE)
-        return;
-
-    PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)pDosHeader +
-        (DWORD)(pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
-
-    if (pImportDescriptor == (PIMAGE_IMPORT_DESCRIPTOR)pNTHeaders)
-        return;
-
-    while (pImportDescriptor->FirstThunk)
-    {
-        char *impModuleName = (char *)((DWORD)pDosHeader + (DWORD)(pImportDescriptor->Name));
-
-        if (_stricmp(impModuleName, moduleName) == 0)
-        {
-            PIMAGE_THUNK_DATA pFirstThunk = 
-                (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->FirstThunk);
-
-            PIMAGE_THUNK_DATA pOrigFirstThunk = 
-                (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->OriginalFirstThunk);
-
-            while (pFirstThunk->u1.Function && pOrigFirstThunk->u1.AddressOfData)
-            {
-                PIMAGE_IMPORT_BY_NAME pImport = 
-                    (PIMAGE_IMPORT_BY_NAME)((DWORD)pDosHeader + pOrigFirstThunk->u1.AddressOfData);
-
-                if ((pOrigFirstThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0 &&
-                    _stricmp((const char *)pImport->Name, functionName) == 0)
-                {
-                    DWORD oldProtect;
-
-                    if (VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &oldProtect))
-                    {
-                        pFirstThunk->u1.Function = (DWORD)newFunction;
-                        VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), oldProtect, &oldProtect);
-                    }
-
-                    break;
-                }
-
-                pFirstThunk++;
-                pOrigFirstThunk++;
-            }
-        }
-
-        pImportDescriptor++;
-    }
 }
 
 void mouse_lock()
@@ -206,15 +145,15 @@ void mouse_lock()
     if (ddraw->devmode)
     {
         if (ddraw->handlemouse)
-            while(ShowCursor(FALSE) > 0);
+            while(real_ShowCursor(FALSE) > 0);
 
         return;
     }
 
-    if (mouse_active && !ddraw->locked)
+    if (Hook_Active && !ddraw->locked)
     {
         // Get the window client area.
-        GetClientRect(ddraw->hWnd, &rc);
+        real_GetClientRect(ddraw->hWnd, &rc);
         
         if(ddraw->adjmouse)
         {
@@ -230,8 +169,8 @@ void mouse_lock()
         // Convert the client area to screen coordinates.
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
-        ClientToScreen(ddraw->hWnd, &pt);
-        ClientToScreen(ddraw->hWnd, &pt2);
+        real_ClientToScreen(ddraw->hWnd, &pt);
+        real_ClientToScreen(ddraw->hWnd, &pt2);
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
@@ -239,29 +178,29 @@ void mouse_lock()
 
         if(ddraw->adjmouse)
         {
-            SetCursorPos(
+            real_SetCursorPos(
                 rc.left + (ddraw->cursor.x * ddraw->render.scaleW), 
                 rc.top + ((ddraw->cursor.y - yAdjust) * ddraw->render.scaleH));
         }
         else
         {
-            SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
+            real_SetCursorPos(rc.left + ddraw->cursor.x, rc.top + ddraw->cursor.y - yAdjust);
         }
 
         if (ddraw->handlemouse)
         {
             SetCapture(ddraw->hWnd);
-            ClipCursor(&rc);
-            while (ShowCursor(FALSE) > 0);
+            real_ClipCursor(&rc);
+            while (real_ShowCursor(FALSE) > 0);
         }
         else
         {
             if (ddraw->hidecursor)
             {
                 ddraw->hidecursor = FALSE;
-                ShowCursor(FALSE);
+                real_ShowCursor(FALSE);
             }
-            ClipCursor(&rc);
+            real_ClipCursor(&rc);
         }
 
         ddraw->locked = TRUE;
@@ -275,12 +214,12 @@ void mouse_unlock()
     if (ddraw->devmode)
     {
         if (ddraw->handlemouse)
-            while(ShowCursor(TRUE) < 0);
+            while(real_ShowCursor(TRUE) < 0);
 
         return;
     }
 
-    if(!mouse_active)
+    if(!Hook_Active)
     {
         return;
     }
@@ -290,34 +229,34 @@ void mouse_unlock()
         ddraw->locked = FALSE;
 
         // Get the window client area.
-        GetClientRect(ddraw->hWnd, &rc);
+        real_GetClientRect(ddraw->hWnd, &rc);
         
         // Convert the client area to screen coordinates.
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
-        ClientToScreen(ddraw->hWnd, &pt);
-        ClientToScreen(ddraw->hWnd, &pt2);
+        real_ClientToScreen(ddraw->hWnd, &pt);
+        real_ClientToScreen(ddraw->hWnd, &pt2);
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
        
         if (ddraw->handlemouse)
         {
-            while (ShowCursor(TRUE) < 0);
-            SetCursor(LoadCursor(NULL, IDC_ARROW));
+            while (real_ShowCursor(TRUE) < 0);
+            real_SetCursor(LoadCursor(NULL, IDC_ARROW));
         }
         else
         {
             CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
-            if (GetCursorInfo(&ci) && ci.flags == 0)
+            if (real_GetCursorInfo(&ci) && ci.flags == 0)
             {
                 ddraw->hidecursor = TRUE;
-                while (ShowCursor(TRUE) < 0);
+                while (real_ShowCursor(TRUE) < 0);
             }
         }
 
-        ClipCursor(NULL);
+        real_ClipCursor(NULL);
         ReleaseCapture();
         
-        SetCursorPos(
+        real_SetCursorPos(
             rc.left + ddraw->render.viewport.x + (ddraw->cursor.x * ddraw->render.scaleW), 
             rc.top + ddraw->render.viewport.y + ((ddraw->cursor.y + yAdjust) * ddraw->render.scaleH));
     }
@@ -338,11 +277,11 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
         }
         else
         {
-            return GetWindowRect(hWnd, lpRect) && MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+            return real_GetWindowRect(hWnd, lpRect) && MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
         }
     }
 
-    return GetWindowRect(hWnd, lpRect);
+    return real_GetWindowRect(hWnd, lpRect);
 }
 
 BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
@@ -357,13 +296,13 @@ BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
         return TRUE;
     }
 
-    return GetClientRect(hWnd, lpRect);
+    return real_GetClientRect(hWnd, lpRect);
 }
 
 BOOL WINAPI fake_ClientToScreen(HWND hWnd, LPPOINT lpPoint)
 {
     if (ddraw && ddraw->hWnd != hWnd)
-        return ClientToScreen(hWnd, lpPoint) && ScreenToClient(ddraw->hWnd, lpPoint);
+        return real_ClientToScreen(hWnd, lpPoint) && real_ScreenToClient(ddraw->hWnd, lpPoint);
 
     return TRUE;
 }
@@ -371,7 +310,7 @@ BOOL WINAPI fake_ClientToScreen(HWND hWnd, LPPOINT lpPoint)
 BOOL WINAPI fake_ScreenToClient(HWND hWnd, LPPOINT lpPoint)
 {
     if (ddraw && ddraw->hWnd != hWnd)
-        return ClientToScreen(ddraw->hWnd, lpPoint) && ScreenToClient(hWnd, lpPoint);
+        return real_ClientToScreen(ddraw->hWnd, lpPoint) && real_ScreenToClient(hWnd, lpPoint);
 
     return TRUE;
 }
@@ -379,13 +318,13 @@ BOOL WINAPI fake_ScreenToClient(HWND hWnd, LPPOINT lpPoint)
 BOOL WINAPI fake_SetCursorPos(int X, int Y)
 {
     POINT pt = { X, Y };
-    return ddraw && ClientToScreen(ddraw->hWnd, &pt) && SetCursorPos(pt.x, pt.y);
+    return ddraw && real_ClientToScreen(ddraw->hWnd, &pt) && real_SetCursorPos(pt.x, pt.y);
 }
 
 HWND WINAPI fake_WindowFromPoint(POINT Point)
 {
     POINT pt = { Point.x, Point.y };
-    return ddraw && ClientToScreen(ddraw->hWnd, &pt) ? WindowFromPoint(pt) : NULL;
+    return ddraw && real_ClientToScreen(ddraw->hWnd, &pt) ? real_WindowFromPoint(pt) : NULL;
 }
 
 BOOL WINAPI fake_GetClipCursor(LPRECT lpRect)
@@ -405,7 +344,7 @@ BOOL WINAPI fake_GetClipCursor(LPRECT lpRect)
 
 BOOL WINAPI fake_GetCursorInfo(PCURSORINFO pci)
 {
-    return pci && ddraw && GetCursorInfo(pci) && ScreenToClient(ddraw->hWnd, &pci->ptScreenPos);
+    return pci && ddraw && real_GetCursorInfo(pci) && real_ScreenToClient(ddraw->hWnd, &pci->ptScreenPos);
 }
 
 int WINAPI fake_GetSystemMetrics(int nIndex)
@@ -419,7 +358,7 @@ int WINAPI fake_GetSystemMetrics(int nIndex)
             return ddraw->height;
     }
 
-    return GetSystemMetrics(nIndex);
+    return real_GetSystemMetrics(nIndex);
 }
 
 BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
@@ -427,7 +366,7 @@ BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int
     if (ddraw && ddraw->hWnd == hWnd)
         return TRUE;
 
-    return SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
+    return real_SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
 BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
@@ -435,12 +374,12 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
     if (ddraw && ddraw->hWnd == hWnd)
         return TRUE;
 
-    return MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
+    return real_MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
 }
 
 LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    LRESULT result = SendMessageA(hWnd, Msg, wParam, lParam);
+    LRESULT result = real_SendMessageA(hWnd, Msg, wParam, lParam);
 
     if (result && ddraw && Msg == CB_GETDROPPEDCONTROLRECT)
     {
@@ -457,27 +396,5 @@ LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
     if (ddraw && ddraw->hWnd == hWnd && nIndex == GWL_STYLE)
         return 0;
 
-    return SetWindowLongA(hWnd, nIndex, dwNewLong);
-}
-
-void mouse_init()
-{
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "ClipCursor", (PROC)fake_ClipCursor);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "ShowCursor", (PROC)fake_ShowCursor);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetCursor", (PROC)fake_SetCursor);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetClientRect", (PROC)fake_GetClientRect);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "MoveWindow", (PROC)fake_MoveWindow);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "SendMessageA", (PROC)fake_SendMessageA);
-    HookIAT(GetModuleHandle(NULL), "user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA);
-    mouse_active = TRUE;
+    return real_SetWindowLongA(hWnd, nIndex, dwNewLong);
 }

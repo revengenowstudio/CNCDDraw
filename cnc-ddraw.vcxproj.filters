@@ -57,6 +57,9 @@
     <ClCompile Include="src\dinput.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\hook.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\clipper.h">
@@ -99,6 +102,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\scale_pattern.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\mouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\hook.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

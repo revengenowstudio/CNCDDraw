@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "hook.h"
 #include "surface.h"
 #include "scale_pattern.h"
 

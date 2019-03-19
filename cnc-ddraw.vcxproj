@@ -14,6 +14,7 @@
     <ClCompile Include="src\clipper.c" />
     <ClCompile Include="src\debug.c" />
     <ClCompile Include="src\dinput.c" />
+    <ClCompile Include="src\hook.c" />
     <ClCompile Include="src\lodepng.c" />
     <ClCompile Include="src\main.c" />
     <ClCompile Include="src\mouse.c" />
@@ -29,8 +30,10 @@
   <ItemGroup>
     <ClInclude Include="inc\clipper.h" />
     <ClInclude Include="inc\glcorearb.h" />
+    <ClInclude Include="inc\hook.h" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
     <ClInclude Include="inc\lodepng.h" />
+    <ClInclude Include="inc\mouse.h" />
     <ClInclude Include="inc\render_d3d9.h" />
     <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\debug.h" />

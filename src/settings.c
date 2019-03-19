@@ -41,6 +41,7 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
+    ddraw->hotPatch = GetBool("hotPatch", FALSE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -274,6 +275,9 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
+            "; Use hotpatching rather than IAT hooking\n"
+            "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
+            "hotPatch=false\n"
             "\n"
             "\n"
             "; ### Game specific settings ###\n"
