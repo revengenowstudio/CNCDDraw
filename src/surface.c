@@ -18,6 +18,7 @@
 #include <stdio.h>
 
 #include "main.h"
+#include "hook.h"
 #include "surface.h"
 #include "scale_pattern.h"
 
@@ -1008,7 +1009,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
         do
         {
             RECT rc;
-            if (GetWindowRect(hWnd, &rc))
+            if (real_GetWindowRect(hWnd, &rc))
             {
                 if (rc.bottom - rc.top == 479)
                     erase = TRUE;

@@ -1,7 +1,6 @@
 #include <windows.h>
 #include <dinput.h>
-
-void HookIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
+#include "hook.h"
 
 typedef HRESULT (WINAPI *DInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
 typedef HRESULT (WINAPI *DICreateDevice)(IDirectInputA*, REFGUID, LPDIRECTINPUTDEVICEA *, LPUNKNOWN);
@@ -64,5 +63,5 @@ static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, 
 
 void dinput_init()
 {
-    HookIAT(GetModuleHandle(NULL), "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    Hook_PatchIAT(GetModuleHandle(NULL), "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
 }

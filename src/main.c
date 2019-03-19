@@ -27,14 +27,11 @@
 #include "palette.h"
 #include "surface.h"
 #include "clipper.h"
+#include "hook.h"
+#include "mouse.h"
 #include "render_d3d9.h"
 
 #define IDR_MYMENU 93
-
-BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint);
-void mouse_init();
-void mouse_lock();
-void mouse_unlock();
 
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
@@ -115,7 +112,7 @@ BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam)
     RECT size;
     RECT pos;
 
-    if (GetClientRect(hWnd, &size) && GetWindowRect(hWnd, &pos) && size.right > 1 && size.bottom > 1)
+    if (real_GetClientRect(hWnd, &size) && real_GetWindowRect(hWnd, &pos) && size.right > 1 && size.bottom > 1)
     {
         ChildWindowExists = TRUE;
 
@@ -552,13 +549,13 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             return DDERR_UNSUPPORTED;
         }
 
-        const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXICON), GetSystemMetrics(SM_CYICON), 0);
+        const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, real_GetSystemMetrics(SM_CXICON), real_GetSystemMetrics(SM_CYICON), 0);
         if (hbicon)
-            SendMessage(This->hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
+            real_SendMessageA(This->hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
 
-        const HANDLE hsicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, GetSystemMetrics(SM_CXSMICON), GetSystemMetrics(SM_CYSMICON), 0);
+        const HANDLE hsicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, real_GetSystemMetrics(SM_CXSMICON), real_GetSystemMetrics(SM_CYSMICON), 0);
         if (hsicon)
-            SendMessage(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
+            real_SendMessageA(This->hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
 
     if (ddraw->altenter)
@@ -764,23 +761,23 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     {
         if (!This->border)
         {
-            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+            real_SetWindowLongA(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         }
         else
         {
-            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW) & ~WS_MAXIMIZEBOX);
+            real_SetWindowLongA(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW) & ~WS_MAXIMIZEBOX);
         }
 
         if (ddraw->wine)
-            SetWindowLong(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
+            real_SetWindowLongA(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
 
         /* center the window with correct dimensions */
         int x = (WindowRect.left != -32000) ? WindowRect.left : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
         int y = (WindowRect.top != -32000) ? WindowRect.top : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
         RECT dst = { x, y, This->render.width + x, This->render.height + y };
         AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
-        SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-        MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
+        real_SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        real_MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
         if (This->renderer == render_d3d9_main)
             InitDirect3D9();
@@ -800,9 +797,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
 
         if (ddraw->wine)
-            SetWindowLong(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
+            real_SetWindowLongA(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX);
 
-        SetWindowPos(This->hWnd, HWND_TOPMOST, 0, 0, This->render.width, This->render.height, SWP_SHOWWINDOW);
+        real_SetWindowPos(This->hWnd, HWND_TOPMOST, 0, 0, This->render.width, This->render.height, SWP_SHOWWINDOW);
         LastSetWindowPosTick = timeGetTime();
 
         mouse_lock();
@@ -840,7 +837,7 @@ void ToggleFullscreen()
     {
         mouse_unlock();
         WindowState = ddraw->windowed = FALSE;
-        SetWindowLong(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+        real_SetWindowLongA(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         ddraw->altenter = TRUE;
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
@@ -951,8 +948,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (!ddraw->windowed)
             {
                 LastSetWindowPosTick = timeGetTime();
-                SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 1, 1, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
-                SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+                real_SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 1, 1, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
+                real_SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, ddraw->render.width, ddraw->render.height, SWP_SHOWWINDOW);
             }
             return 0;
         }
@@ -1203,13 +1200,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     do
                     {
                         RECT rc;
-                        if (GetWindowRect(hWnd, &rc) && rc.bottom - rc.top == 479)
+                        if (real_GetWindowRect(hWnd, &rc) && rc.bottom - rc.top == 479)
                             hideCursor = FALSE;
 
                     } while ((hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL)));
 
                     if (hideCursor)
-                        while (ShowCursor(FALSE) > 0);
+                        while (real_ShowCursor(FALSE) > 0);
                 }
 
                 ddraw->bnetActive = !wParam;
@@ -1282,8 +1279,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_AUTORENDERER:
         {
             mouse_unlock();
-            SetWindowPos(ddraw->hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            real_SetWindowPos(ddraw->hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            real_SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             if (!ddraw->wine)
             {
                 ShowWindow(ddraw->hWnd, SW_MINIMIZE);
@@ -1448,11 +1445,11 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
     if (!This->WndProc)
     {
-        mouse_init();
+        Hook_Init();
 
         This->WndProc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hWnd, GWL_WNDPROC);
 
-        SetWindowLong(This->hWnd, GWL_WNDPROC, (LONG)WndProc);
+        real_SetWindowLongA(This->hWnd, GWL_WNDPROC, (LONG)WndProc);
 
         if (!This->render.hDC)
         {
@@ -1470,11 +1467,11 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 
         if (ddraw->handlemouse && ddraw->windowed)
         {
-            while (ShowCursor(FALSE) > 0); //workaround for direct input games
-            while (ShowCursor(TRUE) < 0);
+            while (real_ShowCursor(FALSE) > 0); //workaround for direct input games
+            while (real_ShowCursor(TRUE) < 0);
         }
 
-        SetCursor(LoadCursor(NULL, IDC_ARROW));
+        real_SetCursor(LoadCursor(NULL, IDC_ARROW));
 
         GetWindowText(This->hWnd, (LPTSTR)&This->title, sizeof(This->title));
 
@@ -1593,7 +1590,7 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
         DeleteCriticalSection(&This->cs);
 
         /* restore old wndproc, subsequent ddraw creation will otherwise fail */
-        SetWindowLong(This->hWnd, GWL_WNDPROC, (LONG)This->WndProc);
+        real_SetWindowLongA(This->hWnd, GWL_WNDPROC, (LONG)This->WndProc);
         HeapFree(GetProcessHeap(), 0, This);
         ddraw = NULL;
         return 0;

@@ -41,6 +41,8 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
+    ddraw->hotPatch = GetBool("hotPatch", FALSE);
+    ddraw->bnetHack = GetBool("bnetHack", TRUE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -48,8 +50,6 @@ void Settings_Load()
     WindowRect.top = GetInt("posY", -32000);
 
     ddraw->render.maxfps = GetInt("maxfps", 125);
-
-    ddraw->bnetHack = GetBool("bnetHack", TRUE);
 
     if (ddraw->accurateTimers || ddraw->vsync)
         ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
@@ -278,6 +278,10 @@ static void CreateSettingsIni()
             "\n"
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
+            "\n"
+            "; Use hotpatching rather than IAT hooking\n"
+            "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
+            "hotPatch=false\n"
             "\n"
             "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
             "; Note: This hack as a negative side-effect, you can only play fullscreen with 'renderer=gdi' or via 'fullscreen=true'\n"

@@ -16,6 +16,7 @@ FILES = src/debug.c \
         src/settings.c \
         src/lodepng.c \
         src/dinput.c \
+        src/hook.c \
         src/opengl.c
 
 all:
