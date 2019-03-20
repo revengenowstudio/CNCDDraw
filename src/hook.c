@@ -86,8 +86,30 @@ PROC Hook_HotPatch(PROC function, PROC newFunction)
 {
     PROC result = function;
 
+    if (!function)
+        return result;
+
     unsigned short *bytes = (unsigned short *)function;
-    if (function && *bytes == 0xFF8B) // mov edi, edi
+
+    if (*bytes == 0x25FF) // JMP DWORD PTR
+    {
+        char *address = (char *)function;
+        DWORD oldProtect;
+
+        if (VirtualProtect(address, 8, PAGE_EXECUTE_READWRITE, &oldProtect))
+        {
+            if (memcmp(address + 6, (const char[]) { 0xCC, 0xCC }, 2) == 0 ||
+                memcmp(address + 6, (const char[]) { 0x90, 0x90 }, 2) == 0)
+            {
+                memmove(address + 2, address, 6);
+                *((WORD *)(&address[0])) = 0xFF8B; // mov edi, edi
+            }
+
+            VirtualProtect(address, 8, oldProtect, &oldProtect);
+        }
+    }
+
+    if (*bytes == 0xFF8B) // mov edi, edi
     {
         char *address = ((char *)function) - 5;
         DWORD oldProtect;
