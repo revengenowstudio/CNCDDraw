@@ -810,8 +810,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         RedrawWindow(This->hWnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
 
-    InterlockedExchange(&ddraw->minimized, FALSE);
-    
     if(This->render.thread == NULL)
     {
         InterlockedExchange(&ddraw->render.paletteUpdated, TRUE);
@@ -1174,8 +1172,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             mouse_lock();
                         }
                     }
-
-                    InterlockedExchange(&ddraw->minimized, FALSE);
                 }
 
                 if (!ddraw->handlemouse)
@@ -1199,8 +1195,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
                         ChangeDisplaySettings(&ddraw->mode, 0);
                     }
-
-                    InterlockedExchange(&ddraw->minimized, TRUE);
                 }
             }
             return 0;

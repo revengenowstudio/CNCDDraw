@@ -121,7 +121,6 @@ typedef struct IDirectDrawImpl
     BOOL handlemouse;
     char shader[MAX_PATH];
     BOOL wine;
-    LONG minimized;
     BOOL altenter;
     BOOL hidecursor;
     BOOL accurateTimers;

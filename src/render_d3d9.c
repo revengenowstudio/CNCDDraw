@@ -304,12 +304,6 @@ DWORD WINAPI render_d3d9_main(void)
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
     {
-        if (InterlockedExchangeAdd(&ddraw->minimized, 0))
-        {
-            Sleep(500);
-            continue;
-        }
-
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
