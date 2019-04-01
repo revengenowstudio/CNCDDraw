@@ -46,6 +46,6 @@ extern BOOL Hook_Active;
 void Hook_Init();
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
 PROC Hook_HotPatch(PROC function, PROC newFunction);
-void Hook_TryHotPatch(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
 
 #endif

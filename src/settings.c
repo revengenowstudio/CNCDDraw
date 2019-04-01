@@ -41,13 +41,13 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
-    ddraw->hotPatch = GetBool("hotpatch", FALSE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
+    ddraw->hook = GetInt("hook", 1);
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
     if (ddraw->accurateTimers || ddraw->vsync)
@@ -275,9 +275,9 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
-            "; Use hotpatching rather than IAT hooking\n"
+            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = HotPatch, 3 = Try HotPatch / fallback = IAT Hooking\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
-            "hotpatch=false\n"
+            "hook=1\n"
             "\n"
             "\n"
             "\n"

@@ -133,17 +133,22 @@ PROC Hook_HotPatch(PROC function, PROC newFunction)
     return result;
 }
 
-void Hook_TryHotPatch(char *moduleName, char *functionName, PROC newFunction, PROC *function)
+void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function)
 {
-    FARPROC org = GetProcAddress(GetModuleHandle(moduleName), functionName);
-    if (ddraw->hotPatch && org)
-    {
-        *function = Hook_HotPatch(org, newFunction);
+    if (!ddraw->hook)
+        return;
 
-        if (*function == org) // hotpatch failed...
+    if (ddraw->hook >= 2)
+    {
+        FARPROC org = GetProcAddress(GetModuleHandle(moduleName), functionName);
+
+        if (org)
+            *function = Hook_HotPatch(org, newFunction);
+
+        if ((!org || *function == org) && ddraw->hook == 3) // hotpatch failed...
             Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
     }
-    else
+    else 
     {
         Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
     }
@@ -155,23 +160,23 @@ void Hook_Init()
     {
         Hook_Active = TRUE;
 
-        Hook_TryHotPatch("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
-        Hook_TryHotPatch("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
-        Hook_TryHotPatch("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
-        Hook_TryHotPatch("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
-        Hook_TryHotPatch("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
-        Hook_TryHotPatch("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
-        Hook_TryHotPatch("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
-        Hook_TryHotPatch("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
-        Hook_TryHotPatch("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
-        Hook_TryHotPatch("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
-        Hook_TryHotPatch("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
-        Hook_TryHotPatch("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
-        Hook_TryHotPatch("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
-        Hook_TryHotPatch("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
-        Hook_TryHotPatch("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
-        Hook_TryHotPatch("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
-        Hook_TryHotPatch("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        Hook_Create("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
+        Hook_Create("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
+        Hook_Create("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
+        Hook_Create("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
+        Hook_Create("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
+        Hook_Create("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
+        Hook_Create("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
+        Hook_Create("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
+        Hook_Create("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
+        Hook_Create("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
+        Hook_Create("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
+        Hook_Create("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
+        Hook_Create("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
+        Hook_Create("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
+        Hook_Create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
+        Hook_Create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
+        Hook_Create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
 
         //Hook_PatchIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
     }
