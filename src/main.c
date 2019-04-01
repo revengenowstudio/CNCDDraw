@@ -55,6 +55,30 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     {
         case DLL_PROCESS_ATTACH:
         {
+            /*
+            char buf[1024];
+            if (GetEnvironmentVariable("__COMPAT_LAYER", buf, sizeof(buf)))
+            {
+                char *s = strtok(buf, " ");
+                while (s) 
+                {
+                    if (strcmpi(s, "WIN95") == 0 || strcmpi(s, "WIN98") == 0 || strcmpi(s, "NT4SP5") == 0)
+                    {
+                        MessageBoxA(
+                            NULL, 
+                            "Please disable all compatibility modes for the game executable and "
+                                "then try to start the game again.",
+                            "Compatibility modes detected - cnc-ddraw", 
+                            MB_OK);
+
+                        //return FALSE;
+                        break;
+                    }
+
+                    s = strtok(NULL, " ");
+                }
+            }
+            */
             printf("cnc-ddraw DLL_PROCESS_ATTACH\n");
             
             //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
