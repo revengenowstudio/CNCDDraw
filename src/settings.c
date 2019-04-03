@@ -352,8 +352,9 @@ static void CreateSettingsIni()
             "maxfps=59\n"
             "accuratetimers=true\n"
             "\n"
-            "; Command & Conquer: Tiberian Sun\n"
+            "; Command & Conquer: Tiberian Sun / Command & Conquer: Red Alert 2\n"
             "[game]\n"
+            "checkfile=.\\blowfish.dll\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
             "maxfps=60\n"
@@ -410,7 +411,17 @@ static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD o
 {
     DWORD s = GetPrivateProfileStringA(ProcessFileName, key, "", outString, outSize, SettingsIniPath);
     if (s > 0)
-        return s;
+    {
+        char buf[MAX_PATH] = { 0 };
+
+        if (GetPrivateProfileStringA(ProcessFileName, "checkfile", "", buf, sizeof(buf), SettingsIniPath) > 0)
+        {
+            if (GetFileAttributes(buf) != INVALID_FILE_ATTRIBUTES)
+                return s;
+        }
+        else
+            return s;
+    }
 
     return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, SettingsIniPath);
 }
