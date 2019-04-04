@@ -5,7 +5,7 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 
  - Supports Windows XP, Vista, 7, 8, 10 and Wine
  - GDI / OpenGL / Direct3D 9 renderer (With automatic renderer selection)
- - Upscaling via glsl shaders - https://imgur.com/gallery/kxsM1oY | https://imgur.com/gallery/wjrhpFV
+ - Upscaling via glsl shaders - https://imgur.com/a/kxsM1oY | https://imgur.com/a/wjrhpFV
  - Windowed Mode / Fullscreen Exclusive Mode / Windowed-Fullscreen Mode / Fullscreen-Stretched Exclusive Mode
  - Alt+Enter support to switch quickly between Fullscreen and Windowed mode
  - Automatically saves and restores window position/size/state
