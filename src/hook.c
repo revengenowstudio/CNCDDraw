@@ -4,7 +4,12 @@
 #include "mouse.h"
 #include "hook.h"
 
+#ifdef _MSC_VER
+#include "detours.h"
+#endif
+
 BOOL Hook_Active;
+int HookingMethod = 1;
 GETCURSORPOSPROC real_GetCursorPos = GetCursorPos;
 CLIPCURSORPROC real_ClipCursor = ClipCursor;
 SHOWCURSORPROC real_ShowCursor = ShowCursor;
@@ -82,75 +87,41 @@ void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newF
     }
 }
 
-PROC Hook_HotPatch(PROC function, PROC newFunction)
-{
-    PROC result = function;
-
-    if (!function)
-        return result;
-
-    unsigned short *bytes = (unsigned short *)function;
-
-    if (*bytes == 0x25FF) // JMP DWORD PTR
-    {
-        char *address = (char *)function;
-        DWORD oldProtect;
-
-        if (VirtualProtect(address, 8, PAGE_EXECUTE_READWRITE, &oldProtect))
-        {
-            if (memcmp(address + 6, (const char[]) { 0xCC, 0xCC }, 2) == 0 ||
-                memcmp(address + 6, (const char[]) { 0x90, 0x90 }, 2) == 0)
-            {
-                memmove(address + 2, address, 6);
-                *((WORD *)(&address[0])) = 0xFF8B; // mov edi, edi
-            }
-
-            VirtualProtect(address, 8, oldProtect, &oldProtect);
-        }
-    }
-
-    if (*bytes == 0xFF8B) // mov edi, edi
-    {
-        char *address = ((char *)function) - 5;
-        DWORD oldProtect;
-
-        if (VirtualProtect(address, 7, PAGE_EXECUTE_READWRITE, &oldProtect))
-        {
-            if (memcmp(address, (const char[]) { 0xCC, 0xCC, 0xCC, 0xCC, 0xCC }, 5) == 0 ||
-                memcmp(address, (const char[]) { 0x90, 0x90, 0x90, 0x90, 0x90 }, 5) == 0)
-            {
-                address[0] = 0xE9; // long jump
-                *((DWORD *)(&address[1])) = ((char *)newFunction) - address - 5;
-                *((WORD *)(&address[5])) = 0xF9EB; // short jump to our long jump
-
-                result = (PROC)(((char *)function) + 2);
-            }
-
-            VirtualProtect(address, 7, oldProtect, &oldProtect);
-        }
-    }
-
-    return result;
-}
-
 void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function)
 {
-    if (!ddraw->hook)
-        return;
-
-    if (ddraw->hook >= 2)
+#ifdef _MSC_VER
+    if (HookingMethod == 2)
     {
-        FARPROC org = GetProcAddress(GetModuleHandle(moduleName), functionName);
-
-        if (org)
-            *function = Hook_HotPatch(org, newFunction);
-
-        if ((!org || *function == org) && ddraw->hook == 3) // hotpatch failed...
-            Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+        DetourTransactionBegin();
+        DetourUpdateThread(GetCurrentThread());
+        DetourAttach((PVOID *)function, (PVOID)newFunction);
+        DetourTransactionCommit();
     }
-    else 
-    {
+#endif
+
+    if (HookingMethod == 1)
         Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+}
+
+void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function)
+{
+#ifdef _MSC_VER
+    if (HookingMethod == 2)
+    {
+        DetourTransactionBegin();
+        DetourUpdateThread(GetCurrentThread());
+        DetourDetach((PVOID *)function, (PVOID)newFunction);
+        DetourTransactionCommit();
+    }
+#endif
+
+    if (HookingMethod == 1)
+    {
+        Hook_PatchIAT(
+            GetModuleHandle(NULL), 
+            moduleName, 
+            functionName, 
+            GetProcAddress(GetModuleHandle(moduleName), functionName));
     }
 }
 
@@ -177,7 +148,31 @@ void Hook_Init()
         Hook_Create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
         Hook_Create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
         Hook_Create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+    }
+}
 
-        //Hook_PatchIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
+void Hook_Exit()
+{
+    if (Hook_Active)
+    {
+        Hook_Active = FALSE;
+
+        Hook_Revert("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
+        Hook_Revert("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
+        Hook_Revert("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
+        Hook_Revert("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
+        Hook_Revert("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
+        Hook_Revert("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
+        Hook_Revert("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
+        Hook_Revert("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
+        Hook_Revert("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
+        Hook_Revert("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
+        Hook_Revert("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
+        Hook_Revert("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
+        Hook_Revert("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
+        Hook_Revert("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
+        Hook_Revert("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
+        Hook_Revert("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
+        Hook_Revert("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
     }
 }

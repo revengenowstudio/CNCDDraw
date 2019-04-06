@@ -5,6 +5,7 @@
 #include "main.h"
 #include "opengl.h"
 #include "render_d3d9.h"
+#include "hook.h"
 
 static char SettingsIniPath[MAX_PATH];
 static char ProcessFileName[96];
@@ -47,7 +48,10 @@ void Settings_Load()
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
-    ddraw->hook = GetInt("hook", 1);
+#ifndef _DEBUG
+    HookingMethod = GetInt("hook", 1);
+#endif
+    
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
     if (ddraw->accurateTimers || ddraw->vsync)
@@ -275,7 +279,7 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
-            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = HotPatch, 3 = Try HotPatch / fallback = IAT Hooking\n"
+            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
             "hook=1\n"
             "\n"

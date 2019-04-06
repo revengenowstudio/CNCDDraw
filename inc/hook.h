@@ -41,11 +41,13 @@ extern MOVEWINDOWPROC real_MoveWindow;
 extern SENDMESSAGEAPROC real_SendMessageA;
 extern SETWINDOWLONGAPROC real_SetWindowLongA;
 
+extern int HookingMethod;
 extern BOOL Hook_Active;
 
 void Hook_Init();
+void Hook_Exit();
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
-PROC Hook_HotPatch(PROC function, PROC newFunction);
 void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function);
 
 #endif

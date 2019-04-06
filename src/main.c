@@ -36,7 +36,8 @@
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
 void Settings_Save(RECT *lpRect, int windowState);
-void dinput_init();
+void DInput_Hook();
+void DInput_UnHook();
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -112,7 +113,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             }
             
             timeBeginPeriod(1);
-            dinput_init();
+            DInput_Hook();
             break;
         }
         case DLL_PROCESS_DETACH:
@@ -122,6 +123,8 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             Settings_Save(&WindowRect, WindowState);
 
             timeEndPeriod(1);
+            Hook_Exit();
+            DInput_UnHook();
             break;
         }
     }

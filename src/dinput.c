@@ -2,13 +2,13 @@
 #include <dinput.h>
 #include "hook.h"
 
-typedef HRESULT (WINAPI *DInputCreateA)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
-typedef HRESULT (WINAPI *DICreateDevice)(IDirectInputA*, REFGUID, LPDIRECTINPUTDEVICEA *, LPUNKNOWN);
-typedef HRESULT (WINAPI *DIDSetCooperativeLevel)(IDirectInputDeviceA *, HWND, DWORD);
+typedef HRESULT (WINAPI *DIRECTINPUTCREATEAPROC)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+typedef HRESULT (WINAPI *DICREATEDEVICEPROC)(IDirectInputA*, REFGUID, LPDIRECTINPUTDEVICEA *, LPUNKNOWN);
+typedef HRESULT (WINAPI *DIDSETCOOPERATIVELEVELPROC)(IDirectInputDeviceA *, HWND, DWORD);
 
-static DInputCreateA DInputCreateA_;
-static DICreateDevice DICreateDevice_;
-static DIDSetCooperativeLevel DIDSetCooperativeLevel_;
+static DIRECTINPUTCREATEAPROC DInputCreateA;
+static DICREATEDEVICEPROC DICreateDevice;
+static DIDSETCOOPERATIVELEVELPROC DIDSetCooperativeLevel;
 
 static PROC HookFunc(PROC *orgFunc, PROC newFunc)
 {
@@ -27,17 +27,17 @@ static PROC HookFunc(PROC *orgFunc, PROC newFunc)
 
 static HRESULT WINAPI fake_DIDSetCooperativeLevel(IDirectInputDeviceA *This, HWND hwnd, DWORD dwFlags)
 {
-    return DIDSetCooperativeLevel_(This, hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
+    return DIDSetCooperativeLevel(This, hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 }
 
 static HRESULT WINAPI fake_DICreateDevice(IDirectInputA *This, REFGUID rguid, LPDIRECTINPUTDEVICEA * lplpDIDevice, LPUNKNOWN pUnkOuter)
 {
-    HRESULT result = DICreateDevice_(This, rguid, lplpDIDevice, pUnkOuter);
+    HRESULT result = DICreateDevice(This, rguid, lplpDIDevice, pUnkOuter);
 
-    if (SUCCEEDED(result) && !DIDSetCooperativeLevel_)
+    if (SUCCEEDED(result) && !DIDSetCooperativeLevel)
     {
-        DIDSetCooperativeLevel_ = 
-            (DIDSetCooperativeLevel)HookFunc(
+        DIDSetCooperativeLevel = 
+            (DIDSETCOOPERATIVELEVELPROC)HookFunc(
                 (PROC *)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_DIDSetCooperativeLevel);
     }
 
@@ -46,22 +46,33 @@ static HRESULT WINAPI fake_DICreateDevice(IDirectInputA *This, REFGUID rguid, LP
 
 static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter)
 {
-    DInputCreateA_ = (DInputCreateA)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
-    if (!DInputCreateA_)
+    DInputCreateA = 
+        (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
+
+    if (!DInputCreateA)
         return DIERR_GENERIC;
 
-    HRESULT result = DInputCreateA_(hinst, dwVersion, lplpDirectInput, punkOuter);
+    HRESULT result = DInputCreateA(hinst, dwVersion, lplpDirectInput, punkOuter);
 
-    if (SUCCEEDED(result) && !DICreateDevice_)
+    if (SUCCEEDED(result) && !DICreateDevice)
     {
-        DICreateDevice_ =
-            (DICreateDevice)HookFunc((PROC *)&(*lplpDirectInput)->lpVtbl->CreateDevice, (PROC)fake_DICreateDevice);
+        DICreateDevice =
+            (DICREATEDEVICEPROC)HookFunc((PROC *)&(*lplpDirectInput)->lpVtbl->CreateDevice, (PROC)fake_DICreateDevice);
     }
 
     return result;
 }
 
-void dinput_init()
+void DInput_Hook()
 {
     Hook_PatchIAT(GetModuleHandle(NULL), "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+}
+
+void DInput_UnHook()
+{
+    Hook_PatchIAT(
+        GetModuleHandle(NULL), 
+        "dinput.dll", 
+        "DirectInputCreateA", 
+        (PROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA"));
 }

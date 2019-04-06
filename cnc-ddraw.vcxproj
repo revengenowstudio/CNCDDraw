@@ -13,6 +13,19 @@
   <ItemGroup>
     <ClCompile Include="src\clipper.c" />
     <ClCompile Include="src\debug.c" />
+    <ClCompile Include="src\detours\creatwth.cpp" />
+    <ClCompile Include="src\detours\detours.cpp" />
+    <ClCompile Include="src\detours\disasm.cpp" />
+    <ClCompile Include="src\detours\disolarm.cpp" />
+    <ClCompile Include="src\detours\disolarm64.cpp" />
+    <ClCompile Include="src\detours\disolia64.cpp" />
+    <ClCompile Include="src\detours\disolx64.cpp" />
+    <ClCompile Include="src\detours\disolx86.cpp" />
+    <ClCompile Include="src\detours\image.cpp" />
+    <ClCompile Include="src\detours\modules.cpp" />
+    <ClCompile Include="src\detours\uimports.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\dinput.c" />
     <ClCompile Include="src\hook.c" />
     <ClCompile Include="src\lodepng.c" />
@@ -99,7 +112,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;src\detours</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,7 +137,7 @@ if exist "$(LocalDebuggerCommand)" if exist "$(LocalDebuggerWorkingDirectory)"  
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <AdditionalIncludeDirectories>inc</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>inc;src\detours</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
