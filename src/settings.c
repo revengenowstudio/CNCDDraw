@@ -323,6 +323,7 @@ static void CreateSettingsIni()
             "[olwin]\n"
             "noactivateapp=true\n"
             "maxgameticks=60\n"
+            "hook=2\n"
             "\n"
             "; Dark Reign: The Future of War\n"
             "[DKReign]\n"
