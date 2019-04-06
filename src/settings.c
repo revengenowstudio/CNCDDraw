@@ -324,6 +324,8 @@ static void CreateSettingsIni()
             "noactivateapp=true\n"
             "maxgameticks=60\n"
             "hook=2\n"
+            "handlemouse=false\n"
+            "renderer=gdi\n"
             "\n"
             "; Dark Reign: The Future of War\n"
             "[DKReign]\n"
