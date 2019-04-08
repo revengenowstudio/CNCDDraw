@@ -1,7 +1,9 @@
-CC=gcc
-WINDRES=windres
-CFLAGS=-Iinc -Wall -Wl,--enable-stdcall-fixup -s
-LIBS=-lgdi32 -lwinmm
+-include config.mk
+
+WINDRES  ?= windres
+LDFLAGS   = -Iinc -Wall -Wl,--enable-stdcall-fixup -s
+CFLAGS    = -std=c99
+LIBS      = -lgdi32 -lwinmm
 
 FILES = src/debug.c \
         src/main.c \
@@ -21,8 +23,8 @@ FILES = src/debug.c \
 
 all:
 	$(WINDRES) -J rc ddraw.rc ddraw.rc.o
-	$(CC) $(CFLAGS) -shared -o ddraw.dll $(FILES) ddraw.def ddraw.rc.o $(LIBS)
-#	$(CC) $(CFLAGS) -nostdlib -shared -o ddraw.dll $(FILES) ddraw.def ddraw.rc.o $(LIBS) -lkernel32 -luser32 -lmsvcrt
+	$(CC) $(CFLAGS) $(LDFLAGS) -shared -o ddraw.dll $(FILES) ddraw.def ddraw.rc.o $(LIBS)
+#	$(CC) $(CFLAGS) $(LDFLAGS) -nostdlib -shared -o ddraw.dll $(FILES) ddraw.def ddraw.rc.o $(LIBS) -lkernel32 -luser32 -lmsvcrt
 
 clean:
-	rm -f ddraw.dll
+	$(RM) -f ddraw.dll ddraw.rc.o
