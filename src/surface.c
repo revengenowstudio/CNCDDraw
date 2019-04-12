@@ -29,6 +29,7 @@ void dump_ddbltflags(DWORD dwFlags);
 void dump_ddscaps(DWORD dwCaps);
 void dump_ddsd(DWORD dwFlags);
 DWORD WINAPI render_soft_main(void);
+void *pvBmpBits;
 
 HRESULT __stdcall ddraw_surface_QueryInterface(IDirectDrawSurfaceImpl *This, REFIID riid, void **obj)
 {
@@ -1198,6 +1199,9 @@ HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC lpD
 
         if (!Surface->bitmap)
             Surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, Surface->lPitch * (Surface->height + 200) * Surface->lXPitch);
+
+        if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
+            pvBmpBits = Surface->surface;
 
         SelectObject(Surface->hDC, Surface->bitmap);
     }
