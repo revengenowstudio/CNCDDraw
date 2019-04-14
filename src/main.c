@@ -913,6 +913,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_NCLBUTTONUP:
         case WM_NCACTIVATE:
         case WM_NCPAINT:
+        case WM_NCHITTEST:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }
