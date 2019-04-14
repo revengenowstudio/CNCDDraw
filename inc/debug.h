@@ -8,6 +8,7 @@ double CounterStop();
 void DebugPrint(const char *format, ...);
 void DrawFrameInfoStart();
 void DrawFrameInfoEnd();
+int dprintf(const char *fmt, ...);
 
 extern double DebugFrameTime;
 extern DWORD DebugFrameCount;
@@ -24,6 +25,8 @@ extern DWORD DebugFrameCount;
 
 #ifdef _DEBUG_S
 #define printf(format, ...) DebugPrint("xDBG " format, ##__VA_ARGS__)
+#else
+#define printf(format, ...) dprintf(format, ##__VA_ARGS__) 
 #endif 
 
 #else 

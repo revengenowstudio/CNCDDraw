@@ -1646,7 +1646,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
 #if _DEBUG
     if(!stdout_open)
     {
-        freopen("ra95stdout.txt", "w", stdout);
+        freopen("cnc-ddraw.log", "w", stdout);
         setvbuf(stdout, NULL, _IOLBF, 1024);
         stdout_open = 1;
     }
