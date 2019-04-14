@@ -36,7 +36,7 @@ HRESULT __stdcall ddraw_surface_QueryInterface(IDirectDrawSurfaceImpl *This, REF
 
     if (riid && !IsEqualGUID(&IID_IDirectDrawSurface, riid))
     {
-        printf("  IID_IDirectDrawSurfaceX\n");
+        printf("  GUID = %08X\n", ((GUID *)riid)->Data1);
 
         IDirectDrawSurface_AddRef(This);
     }

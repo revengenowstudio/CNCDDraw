@@ -1496,7 +1496,7 @@ HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void 
 
     if (riid && !IsEqualGUID(&IID_IDirectDraw, riid))
     {
-        printf("  IID_IDirectDrawX\n");
+        printf("  GUID = %08X\n", ((GUID *)riid)->Data1);
 
         ddraw_AddRef(This);
         *obj = This;
