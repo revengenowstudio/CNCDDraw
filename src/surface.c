@@ -211,8 +211,18 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
     if (Source)
     {
-        if (dwFlags & DDBLT_KEYSRC)
+        if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
         {
+            DDCOLORKEY colorKey;
+
+            colorKey.dwColorSpaceLowValue =
+                (dwFlags & DDBLT_KEYSRCOVERRIDE) ? 
+                    lpDDBltFx->ddckSrcColorkey.dwColorSpaceLowValue : Source->colorKey.dwColorSpaceLowValue;
+
+            colorKey.dwColorSpaceHighValue =
+                (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
+                    lpDDBltFx->ddckSrcColorkey.dwColorSpaceHighValue : Source->colorKey.dwColorSpaceHighValue;
+            
             if (!isStretchBlt)
             {
                 int width = dst_w > src_w ? src_w : dst_w;
@@ -230,7 +240,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                         {
                             unsigned char c = ((unsigned char *)Source->surface)[x1 + src_x + ysrc];
 
-                            if (c != Source->colorKey.dwColorSpaceLowValue)
+                            if (c < colorKey.dwColorSpaceLowValue || c > colorKey.dwColorSpaceHighValue)
                             {
                                 ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
                             }
@@ -249,7 +259,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
                         {
                             unsigned short c = ((unsigned short *)Source->surface)[x1 + src_x + ysrc];
 
-                            if (c != Source->colorKey.dwColorSpaceLowValue)
+                            if (c < colorKey.dwColorSpaceLowValue || c > colorKey.dwColorSpaceHighValue)
                             {
                                 ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
                             }
@@ -259,7 +269,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             }
             else
             {
-                printf("   DDBLT_KEYSRC does not support stretching");
+                printf("   DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching");
             }
         }
         else
@@ -546,7 +556,7 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
                     {
                         unsigned char c = ((unsigned char *)Source->surface)[x1 + src_x + ysrc];
 
-                        if (c != Source->colorKey.dwColorSpaceLowValue)
+                        if (c < Source->colorKey.dwColorSpaceLowValue || c > Source->colorKey.dwColorSpaceHighValue)
                         {
                             ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
                         }
@@ -565,7 +575,7 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
                     {
                         unsigned short c = ((unsigned short *)Source->surface)[x1 + src_x + ysrc];
                         
-                        if (c != Source->colorKey.dwColorSpaceLowValue)
+                        if (c < Source->colorKey.dwColorSpaceLowValue || c > Source->colorKey.dwColorSpaceHighValue)
                         {
                             ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
                         }
