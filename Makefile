@@ -27,4 +27,4 @@ all:
 #	$(CC) $(CFLAGS) $(LDFLAGS) -nostdlib -shared -o ddraw.dll $(FILES) ddraw.def ddraw.rc.o $(LIBS) -lkernel32 -luser32 -lmsvcrt
 
 clean:
-	$(RM) -f ddraw.dll ddraw.rc.o
+	$(RM) ddraw.dll ddraw.rc.o
