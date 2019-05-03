@@ -29,6 +29,8 @@ DWORD WINAPI render_soft_main(void)
     char warningText[512] = { 0 };
     if (ShowDriverWarning)
     {
+        ShowDriverWarning = FALSE;
+
         if (!ddraw->windowed)
             PostMessage(ddraw->hWnd, WM_AUTORENDERER, 0, 0);
 
@@ -37,8 +39,8 @@ DWORD WINAPI render_soft_main(void)
             "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
             strlen(OpenGL_Version) > 10 ? "" : OpenGL_Version);
     }
-    else
-        Sleep(500);
+
+    Sleep(500);
 
     DWORD lastTick = 0;
     int maxFPS = ddraw->render.maxfps;

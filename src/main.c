@@ -1269,11 +1269,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             mouse_unlock();
             real_SetWindowPos(ddraw->hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
             real_SetWindowPos(ddraw->hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-            if (!ddraw->wine)
-            {
-                ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                ShowWindow(ddraw->hWnd, SW_RESTORE);
-            }
             mouse_lock();
             return 0;
         }
