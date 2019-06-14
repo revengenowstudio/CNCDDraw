@@ -46,4 +46,4 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 
 ### Download
 
-You can always find the latest release here: https://github.com/CnCNet/cnc-ddraw/releases
+You can always find the latest release here: https://github.com/CnCNet/cnc-ddraw/releases/latest
