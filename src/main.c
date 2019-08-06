@@ -198,12 +198,10 @@ void LimitGameTicks()
 
 void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
 {
-    RECT mainrc;
-    real_GetClientRect(ddraw->hWnd, &mainrc);
-
-    POINT pt = { mainrc.left, mainrc.top };
+    POINT pt = { 0, 0 };
     real_ClientToScreen(ddraw->hWnd, &pt);
 
+    RECT mainrc;
     SetRect(&mainrc, pt.x, pt.y, pt.x + ddraw->width, pt.y + ddraw->height);
 
     int adjY = 0;
@@ -227,14 +225,14 @@ void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
             0,
             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
-        if (rc.bottom > mainrc.bottom)
+        if (rc.bottom > mainrc.bottom && abs(mainrc.bottom - rc.bottom) > abs(adjY))
             adjY = mainrc.bottom - rc.bottom;
-        else if (rc.top < mainrc.top)
+        else if (rc.top < mainrc.top && abs(mainrc.top - rc.top) > abs(adjY))
             adjY = mainrc.top - rc.top;
 
-        if (rc.right > mainrc.right)
+        if (rc.right > mainrc.right && abs(mainrc.right - rc.right) > abs(adjX))
             adjX = mainrc.right - rc.right;
-        else if (rc.left < mainrc.left)
+        else if (rc.left < mainrc.left && abs(mainrc.left - rc.left) > abs(adjX))
             adjX = mainrc.left - rc.left;
 
         hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
