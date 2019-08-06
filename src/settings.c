@@ -234,7 +234,7 @@ static void CreateSettingsIni()
             "\n"
             "; Preliminary libretro shader support - (Requires 'renderer=opengl') https://github.com/libretro/glsl-shaders\n"
             "; Example: shader=Shaders\\crt-lottes-fast-no-warp.glsl\n"
-            "shader=\n"
+            "shader=Shaders\\bilinear.glsl\n"
             "\n"
             "; Window position, -32000 = center to screen\n"
             "posX=-32000\n"
