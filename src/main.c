@@ -198,6 +198,17 @@ void LimitGameTicks()
 
 void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
 {
+    RECT mainrc;
+    real_GetClientRect(ddraw->hWnd, &mainrc);
+
+    POINT pt = { mainrc.left, mainrc.top };
+    real_ClientToScreen(ddraw->hWnd, &pt);
+
+    SetRect(&mainrc, pt.x, pt.y, pt.x + ddraw->width, pt.y + ddraw->height);
+
+    int adjY = 0;
+    int adjX = 0;
+
     HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
 
     while (hWnd != NULL)
@@ -205,16 +216,52 @@ void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
         RECT rc;
         real_GetWindowRect(hWnd, &rc);
 
+        OffsetRect(&rc, newX - oldX, newY - oldY);
+
         real_SetWindowPos(
             hWnd,
             0,
-            rc.left + (newX - oldX),
-            rc.top + (newY - oldY),
+            rc.left,
+            rc.top,
             0,
             0,
             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
+        if (rc.bottom > mainrc.bottom)
+            adjY = mainrc.bottom - rc.bottom;
+        else if (rc.top < mainrc.top)
+            adjY = mainrc.top - rc.top;
+
+        if (rc.right > mainrc.right)
+            adjX = mainrc.right - rc.right;
+        else if (rc.left < mainrc.left)
+            adjX = mainrc.left - rc.left;
+
         hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
+    }
+    
+    if (adjX || adjY)
+    {
+        HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
+
+        while (hWnd != NULL)
+        {
+            RECT rc;
+            real_GetWindowRect(hWnd, &rc);
+
+            OffsetRect(&rc, adjX, adjY);
+
+            real_SetWindowPos(
+                hWnd,
+                0,
+                rc.left,
+                rc.top,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+            hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
+        }
     }
 }
 
@@ -1107,9 +1154,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (CopyRect(&clientrc, windowrc) &&
                         UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)))
                     {
-                        if (ddraw->bnetHack && WindowRect.left != -32000)
-                            UpdateBnetPos(WindowRect.left, WindowRect.top, clientrc.left, clientrc.top);
-
                         WindowRect.left = clientrc.left;
                         WindowRect.top = clientrc.top;
                         WindowRect.right = clientrc.right - clientrc.left;
@@ -1159,10 +1203,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int x = (int)(short)LOWORD(lParam);
                 int y = (int)(short)HIWORD(lParam);
 
-                if (x != -32000)
+                if (ddraw->bnetHack)
                 {
-                    if (ddraw->bnetHack && WindowRect.left != -32000)
-                        UpdateBnetPos(WindowRect.left, WindowRect.top, x, y);
+                    static int lastX = -32000;
+                    static int lastY = -32000;
+
+                    if (x != -32000)
+                    {
+                        if (lastX != -32000 && lastY != -32000)
+                            UpdateBnetPos(lastX, lastY, x, y);
+
+                        lastX = x;
+                    }
+
+                    if (y != -32000)
+                    {
+                        lastY = y;
+                    }
                 }
 
                 if (inSizeMove || ddraw->wine)
