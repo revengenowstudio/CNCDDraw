@@ -196,6 +196,28 @@ void LimitGameTicks()
     }
 }
 
+void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
+{
+    HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
+
+    while (hWnd != NULL)
+    {
+        RECT rc;
+        real_GetWindowRect(hWnd, &rc);
+
+        real_SetWindowPos(
+            hWnd,
+            0,
+            rc.left + (newX - oldX),
+            rc.top + (newY - oldY),
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+        hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
+    }
+}
+
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
     printf("DirectDraw::Compact(This=%p) ???\n", This);
@@ -776,7 +798,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         int y = (WindowRect.top != -32000) ? WindowRect.top : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
         RECT dst = { x, y, This->render.width + x, This->render.height + y };
         AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
-        real_SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         real_MoveWindow(This->hWnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
         if (This->renderer == render_d3d9_main)
@@ -833,6 +854,9 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
+    if (ddraw->bnetHack)
+        return;
+
     if (ddraw->windowed)
     {
         mouse_unlock();
@@ -1083,6 +1107,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (CopyRect(&clientrc, windowrc) &&
                         UnadjustWindowRectEx(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)))
                     {
+                        if (ddraw->bnetHack && WindowRect.left != -32000)
+                            UpdateBnetPos(WindowRect.left, WindowRect.top, clientrc.left, clientrc.top);
+
                         WindowRect.left = clientrc.left;
                         WindowRect.top = clientrc.top;
                         WindowRect.right = clientrc.right - clientrc.left;
@@ -1129,11 +1156,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (ddraw->windowed)
             {
+                int x = (int)(short)LOWORD(lParam);
+                int y = (int)(short)HIWORD(lParam);
+
+                if (x != -32000)
+                {
+                    if (ddraw->bnetHack && WindowRect.left != -32000)
+                        UpdateBnetPos(WindowRect.left, WindowRect.top, x, y);
+                }
+
                 if (inSizeMove || ddraw->wine)
                 {
-                    int x = (int)(short)LOWORD(lParam);
-                    int y = (int)(short)HIWORD(lParam);
-
                     if (x != -32000)
                         WindowRect.left = x; // -32000 = Exit/Minimize
 
@@ -1181,38 +1214,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_MOUSELEAVE:
             mouse_unlock();
             return 0;
-
-
-        case WM_ENABLE:
-        {
-            if (ddraw->bnetHack)
-            {
-                if (wParam)
-                    mouse_lock();
-                else
-                    mouse_unlock();
-
-                HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
-                if (hWnd)
-                {
-                    BOOL hideCursor = TRUE;
-
-                    do
-                    {
-                        RECT rc;
-                        if (real_GetWindowRect(hWnd, &rc) && rc.bottom - rc.top == 479)
-                            hideCursor = FALSE;
-
-                    } while ((hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL)));
-
-                    if (hideCursor)
-                        while (real_ShowCursor(FALSE) > 0);
-                }
-
-                ddraw->bnetActive = !wParam;
-            }
-            break;
-        }
 
         case WM_ACTIVATE:
         {

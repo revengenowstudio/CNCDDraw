@@ -142,6 +142,9 @@ void mouse_lock()
 {
     RECT rc;
 
+    if (ddraw->bnetHack && ddraw->bnetActive)
+        return;
+
     if (ddraw->devmode)
     {
         if (ddraw->handlemouse)
@@ -277,7 +280,14 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
         }
         else
         {
-            return real_GetWindowRect(hWnd, lpRect) && MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+            if (real_GetWindowRect(hWnd, lpRect))
+            {
+                MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+
+                return TRUE;
+            }
+
+            return FALSE;
         }
     }
 
@@ -397,4 +407,63 @@ LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
         return 0;
 
     return real_SetWindowLongA(hWnd, nIndex, dwNewLong);
+}
+
+BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
+{
+    if (ddraw && ddraw->hWnd == hWnd)
+    {
+        if (ddraw->bnetHack)
+            return FALSE;
+    }
+
+    return real_EnableWindow(hWnd, bEnable);
+}
+
+BOOL WINAPI fake_DestroyWindow(HWND hWnd)
+{
+    BOOL result = real_DestroyWindow(hWnd);
+
+    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive && ddraw->bnetHack && !FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
+    {
+        ddraw->bnetActive = FALSE;
+        mouse_lock();
+    }
+
+    return result;
+}
+
+HWND WINAPI fake_CreateWindowExA(
+    DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
+    int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+{
+    HWND hWnd = real_CreateWindowExA(
+        dwExStyle,
+        lpClassName,
+        lpWindowName,
+        dwStyle | WS_CLIPCHILDREN,
+        X,
+        Y,
+        nWidth,
+        nHeight,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam);
+
+    if (_strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw && ddraw->bnetHack)
+    {
+        if (!ddraw->bnetActive)
+        {
+            ddraw->bnetActive = TRUE;
+            mouse_unlock();
+        }
+
+        POINT pt = { 0, 0 };
+        real_ClientToScreen(ddraw->hWnd, &pt);
+
+        real_SetWindowPos(hWnd, 0, pt.x + X, pt.y + Y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+    }
+
+    return hWnd;
 }

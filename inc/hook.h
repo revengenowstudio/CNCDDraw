@@ -3,8 +3,6 @@
 
 #include <windows.h>
 
-typedef HFONT(__stdcall* CREATEFONTINDIRECTA)(CONST LOGFONT*);
-
 typedef BOOL (WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
 typedef int (WINAPI* SHOWCURSORPROC)(BOOL);
@@ -22,6 +20,9 @@ typedef BOOL (WINAPI* SETWINDOWPOSPROC)(HWND, HWND, int, int, int, int, UINT);
 typedef BOOL (WINAPI* MOVEWINDOWPROC)(HWND, int, int, int, int, BOOL);
 typedef LRESULT (WINAPI* SENDMESSAGEAPROC)(HWND, UINT, WPARAM, LPARAM);
 typedef LONG (WINAPI* SETWINDOWLONGAPROC)(HWND, int, LONG);
+typedef BOOL (WINAPI* ENABLEWINDOWPROC)(HWND, BOOL);
+typedef HWND (WINAPI* CREATEWINDOWEXAPROC)(DWORD, LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
+typedef BOOL (WINAPI* DESTROYWINDOWPROC)(HWND);
 
 extern GETCURSORPOSPROC real_GetCursorPos;
 extern CLIPCURSORPROC real_ClipCursor;
@@ -40,6 +41,9 @@ extern SETWINDOWPOSPROC real_SetWindowPos;
 extern MOVEWINDOWPROC real_MoveWindow;
 extern SENDMESSAGEAPROC real_SendMessageA;
 extern SETWINDOWLONGAPROC real_SetWindowLongA;
+extern ENABLEWINDOWPROC real_EnableWindow;
+extern CREATEWINDOWEXAPROC real_CreateWindowExA;
+extern DESTROYWINDOWPROC real_DestroyWindow;
 
 extern BOOL Hook_Active;
 

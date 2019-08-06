@@ -20,6 +20,7 @@
 #include "main.h"
 #include "hook.h"
 #include "surface.h"
+#include "mouse.h"
 #include "scale_pattern.h"
 
 // enables redraw via blt/unlock if there wasn't any flip for X ms
@@ -1010,7 +1011,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
         do
         {
             RECT rc;
-            if (real_GetWindowRect(hWnd, &rc))
+            if (fake_GetWindowRect(hWnd, &rc))
             {
                 if (rc.bottom - rc.top == 479)
                     erase = TRUE;

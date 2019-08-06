@@ -22,6 +22,10 @@ SETWINDOWPOSPROC real_SetWindowPos = SetWindowPos;
 MOVEWINDOWPROC real_MoveWindow = MoveWindow;
 SENDMESSAGEAPROC real_SendMessageA = SendMessageA;
 SETWINDOWLONGAPROC real_SetWindowLongA = SetWindowLongA;
+ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
+CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
+DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
+
 
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
 {
@@ -146,6 +150,9 @@ void Hook_TryHotPatch(char *moduleName, char *functionName, PROC newFunction, PR
     else
     {
         Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+
+        if (ddraw->bnetHack)
+            Hook_PatchIAT(GetModuleHandle("storm.dll"), moduleName, functionName, newFunction);
     }
 }
 
@@ -172,6 +179,9 @@ void Hook_Init()
         Hook_TryHotPatch("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
         Hook_TryHotPatch("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
         Hook_TryHotPatch("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        Hook_TryHotPatch("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
+        Hook_TryHotPatch("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
+        Hook_TryHotPatch("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
 
         //Hook_PatchIAT(GetModuleHandle(NULL), "user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos);
     }
