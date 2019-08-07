@@ -104,7 +104,10 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
 #endif
 
     if (HookingMethod == 1)
+    {
         Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+        Hook_PatchIAT(GetModuleHandle("storm.dll"), moduleName, functionName, newFunction);
+    }
 }
 
 void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function)
@@ -125,6 +128,12 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
             GetModuleHandle(NULL), 
             moduleName, 
             functionName, 
+            GetProcAddress(GetModuleHandle(moduleName), functionName));
+
+        Hook_PatchIAT(
+            GetModuleHandle("storm.dll"),
+            moduleName,
+            functionName,
             GetProcAddress(GetModuleHandle(moduleName), functionName));
     }
 }
