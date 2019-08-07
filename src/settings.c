@@ -281,7 +281,6 @@ static void CreateSettingsIni()
             "hotpatch=false\n"
             "\n"
             "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
-            "; Note: This hack as a negative side-effect, you can only play fullscreen with 'renderer=gdi' or via 'fullscreen=true'\n"
             "bnetHack=true\n"
             "\n"
             "\n"
