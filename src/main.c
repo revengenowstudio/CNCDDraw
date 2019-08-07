@@ -1754,6 +1754,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     {
         This->DirectDrawCreate =
             (HRESULT(WINAPI *)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(This->real_dll, "DirectDrawCreate");
+    
+        if (This->DirectDrawCreate == DirectDrawCreate)
+            This->DirectDrawCreate = NULL;
     }
 
     InitializeCriticalSection(&This->cs);
