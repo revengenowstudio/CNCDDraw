@@ -277,7 +277,14 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
         }
         else
         {
-            return real_GetWindowRect(hWnd, lpRect) && MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+            if (real_GetWindowRect(hWnd, lpRect))
+            {
+                MapWindowPoints(HWND_DESKTOP, ddraw->hWnd, (LPPOINT)lpRect, 2);
+                
+                return TRUE;
+            }
+            
+            return FALSE;
         }
     }
 
