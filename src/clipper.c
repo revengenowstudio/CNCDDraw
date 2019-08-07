@@ -20,7 +20,7 @@
 
 HRESULT __stdcall ddraw_clipper_QueryInterface(IDirectDrawClipperImpl *This, REFIID riid, void **obj)
 {
-    printf("DirectDrawClipper::QueryInterface(This=%p, riid=%08X, obj=%p) ???\n", This, (unsigned int)riid, obj);
+    printf("??? DirectDrawClipper::QueryInterface(This=%p, riid=%08X, obj=%p)\n", This, (unsigned int)riid, obj);
     return S_OK;
 }
 
@@ -52,37 +52,37 @@ ULONG __stdcall ddraw_clipper_Release(IDirectDrawClipperImpl *This)
 
 HRESULT __stdcall ddraw_clipper_GetClipList(IDirectDrawClipperImpl *This, LPRECT a, LPRGNDATA b, LPDWORD c)
 {
-    printf("IDirectDrawClipper::GetClipList(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::GetClipList(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_clipper_GetHWnd(IDirectDrawClipperImpl *This, HWND FAR *a)
 {
-    printf("IDirectDrawClipper::GetHWnd(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::GetHWnd(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_clipper_Initialize(IDirectDrawClipperImpl *This, LPDIRECTDRAW a, DWORD b)
 {
-    printf("IDirectDrawClipper::Initialize(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::Initialize(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_clipper_IsClipListChanged(IDirectDrawClipperImpl *This, BOOL FAR *a)
 {
-    printf("IDirectDrawClipper::IsClipListChanged(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::IsClipListChanged(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_clipper_SetClipList(IDirectDrawClipperImpl *This, LPRGNDATA a, DWORD b)
 {
-    printf("IDirectDrawClipper::SetClipList(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::SetClipList(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_clipper_SetHWnd(IDirectDrawClipperImpl *This, DWORD a, HWND b)
 {
-    printf("IDirectDrawClipper::SetHWnd(This=%p, ...) ???\n", This);
+    printf("??? IDirectDrawClipper::SetHWnd(This=%p, ...)\n", This);
     return DD_OK;
 }
 

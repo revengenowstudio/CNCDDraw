@@ -3,6 +3,8 @@
 
 #include <windows.h>
 
+typedef HFONT(__stdcall* CREATEFONTINDIRECTA)(CONST LOGFONT*);
+
 typedef BOOL (WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
 typedef int (WINAPI* SHOWCURSORPROC)(BOOL);
@@ -45,11 +47,13 @@ extern ENABLEWINDOWPROC real_EnableWindow;
 extern CREATEWINDOWEXAPROC real_CreateWindowExA;
 extern DESTROYWINDOWPROC real_DestroyWindow;
 
+extern int HookingMethod;
 extern BOOL Hook_Active;
 
 void Hook_Init();
+void Hook_Exit();
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
-PROC Hook_HotPatch(PROC function, PROC newFunction);
-void Hook_TryHotPatch(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function);
 
 #endif

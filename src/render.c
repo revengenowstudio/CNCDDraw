@@ -46,7 +46,7 @@ static GLuint FrameBufferTexId;
 static GLuint ScaleVBOs[3], ScaleVAO;
 static BOOL UseOpenGL;
 static BOOL AdjustAlignment;
-static BOOL UseBilinear;
+static BOOL FilterBilinear;
 
 static HGLRC CreateContext(HDC hdc);
 static void SetMaxFPS();
@@ -178,7 +178,7 @@ static void BuildPrograms()
         else
             OpenGL_GotVersion3 = FALSE;
 
-        UseBilinear = strstr(ddraw->shader, "\\bilinear.glsl") != 0;
+        FilterBilinear = strstr(ddraw->shader, "bilinear.glsl") != 0;
     }
 
     if (OpenGL_GotVersion2 && !MainProgram)
@@ -488,8 +488,8 @@ static void InitScaleProgram()
 
     glGenTextures(1, &FrameBufferTexId);
     glBindTexture(GL_TEXTURE_2D, FrameBufferTexId);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, UseBilinear ? GL_LINEAR : GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, UseBilinear ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, FilterBilinear ? GL_LINEAR : GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, FilterBilinear ? GL_LINEAR : GL_NEAREST);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, SurfaceTexWidth, SurfaceTexHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, FrameBufferTexId, 0);

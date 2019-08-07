@@ -36,7 +36,8 @@
 BOOL screenshot(struct IDirectDrawSurfaceImpl *);
 void Settings_Load();
 void Settings_Save(RECT *lpRect, int windowState);
-void dinput_init();
+void DInput_Hook();
+void DInput_UnHook();
 
 IDirectDrawImpl *ddraw = NULL;
 
@@ -55,6 +56,33 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     {
         case DLL_PROCESS_ATTACH:
         {
+            char buf[1024];
+            if (GetEnvironmentVariable("__COMPAT_LAYER", buf, sizeof(buf)))
+            {
+                char *s = strtok(buf, " ");
+                while (s) 
+                {
+                    if (strcmpi(s, "WIN95") == 0 || strcmpi(s, "WIN98") == 0 || strcmpi(s, "NT4SP5") == 0)
+                    {
+                        char mes[128] = { 0 };
+
+                        _snprintf(
+                            mes, 
+                            sizeof(mes), 
+                            "Please disable the '%s' compatibility mode for all game executables and "
+                                "then try to start the game again.",
+                            s);
+
+                        MessageBoxA(NULL, mes, "Compatibility modes detected - cnc-ddraw", MB_OK);
+
+                        //return FALSE;
+                        break;
+                    }
+
+                    s = strtok(NULL, " ");
+                }
+            }
+
             printf("cnc-ddraw DLL_PROCESS_ATTACH\n");
             
             //SetProcessPriorityBoost(GetCurrentProcess(), TRUE);
@@ -88,7 +116,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             }
             
             timeBeginPeriod(1);
-            dinput_init();
+            DInput_Hook();
             break;
         }
         case DLL_PROCESS_DETACH:
@@ -98,6 +126,8 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             Settings_Save(&WindowRect, WindowState);
 
             timeEndPeriod(1);
+            Hook_Exit();
+            DInput_UnHook();
             break;
         }
     }
@@ -278,14 +308,14 @@ void UpdateBnetPos(int newX, int newY)
 
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
-    printf("DirectDraw::Compact(This=%p) ???\n", This);
+    printf("??? DirectDraw::Compact(This=%p)\n", This);
 
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_DuplicateSurface(IDirectDrawImpl *This, LPDIRECTDRAWSURFACE src, LPDIRECTDRAWSURFACE *dest)
 {
-    printf("DirectDraw::DuplicateSurface(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::DuplicateSurface(This=%p, ...)\n", This);
     return DD_OK;
 }
 
@@ -430,13 +460,13 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
 
 HRESULT __stdcall ddraw_EnumSurfaces(IDirectDrawImpl *This, DWORD a, LPDDSURFACEDESC b, LPVOID c, LPDDENUMSURFACESCALLBACK d)
 {
-    printf("DirectDraw::EnumSurfaces(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::EnumSurfaces(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_FlipToGDISurface(IDirectDrawImpl *This)
 {
-    printf("DirectDraw::FlipToGDISurface(This=%p) ???\n", This);
+    printf("??? DirectDraw::FlipToGDISurface(This=%p)\n", This);
 
     return DD_OK;
 }
@@ -473,44 +503,44 @@ HRESULT __stdcall ddraw_GetCaps(IDirectDrawImpl *This, LPDDCAPS lpDDDriverCaps, 
 
 HRESULT __stdcall ddraw_GetDisplayMode(IDirectDrawImpl *This, LPDDSURFACEDESC a)
 {
-    printf("DirectDraw::GetDisplayMode(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetDisplayMode(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetFourCCCodes(IDirectDrawImpl *This, LPDWORD a, LPDWORD b)
 {
-    printf("DirectDraw::GetFourCCCodes(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetFourCCCodes(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetGDISurface(IDirectDrawImpl *This, LPDIRECTDRAWSURFACE *a)
 {
-    printf("DirectDraw::GetGDISurface(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetGDISurface(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetMonitorFrequency(IDirectDrawImpl *This, LPDWORD a)
 {
-    printf("DirectDraw::GetMonitorFrequency(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetMonitorFrequency(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetScanLine(IDirectDrawImpl *This, LPDWORD a)
 {
-    printf("DirectDraw::GetScanLine(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetScanLine(This=%p, ...)\n", This);
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_GetVerticalBlankStatus(IDirectDrawImpl *This, LPBOOL lpbIsInVB)
 {
-    printf("DirectDraw::GetVerticalBlankStatus(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::GetVerticalBlankStatus(This=%p, ...)\n", This);
     *lpbIsInVB = TRUE;
     return DD_OK;
 }
 
 HRESULT __stdcall ddraw_Initialize(IDirectDrawImpl *This, GUID *a)
 {
-    printf("DirectDraw::Initialize(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::Initialize(This=%p, ...)\n", This);
     return DD_OK;
 }
 
@@ -893,8 +923,6 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         RedrawWindow(This->hWnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
 
-    InterlockedExchange(&ddraw->minimized, FALSE);
-    
     if(This->render.thread == NULL)
     {
         InterlockedExchange(&ddraw->render.paletteUpdated, TRUE);
@@ -975,6 +1003,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_NCLBUTTONUP:
         case WM_NCACTIVATE:
         case WM_NCPAINT:
+        case WM_NCHITTEST:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }
@@ -1289,8 +1318,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
                         mouse_lock();
                     }
-
-                    InterlockedExchange(&ddraw->minimized, FALSE);
                 }
 
                 if (!ddraw->handlemouse)
@@ -1314,8 +1341,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
                         ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
                     }
-
-                    InterlockedExchange(&ddraw->minimized, TRUE);
                 }
             }
 
@@ -1541,7 +1566,7 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
 HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HANDLE b)
 {
 #if _DEBUG_X
-    printf("DirectDraw::WaitForVerticalBlank(This=%p, ...) ???\n", This);
+    printf("??? DirectDraw::WaitForVerticalBlank(This=%p, ...)\n", This);
 #endif
     return DD_OK;
 }

@@ -35,6 +35,36 @@ void DebugPrint(const char *format, ...)
 	OutputDebugStringA(buffer);
 }
 
+int dprintf(const char *fmt, ...)
+{
+    static CRITICAL_SECTION cs;
+    static BOOL initialized;
+
+    if (!initialized)
+    {
+        initialized = TRUE;
+        InitializeCriticalSection(&cs);
+    }
+
+    EnterCriticalSection(&cs);
+    
+    va_list args;
+    int ret;
+
+    SYSTEMTIME st;
+    GetLocalTime(&st);
+
+    fprintf(stdout, "[%lu] %02d:%02d:%02d.%03d ", GetCurrentThreadId(), st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+
+    va_start(args, fmt);
+    ret = vfprintf(stdout, fmt, args);
+    va_end(args);
+
+    LeaveCriticalSection(&cs);
+
+    return ret;
+}
+
 void DrawFrameInfoStart()
 {
     static DWORD tick_fps = 0;

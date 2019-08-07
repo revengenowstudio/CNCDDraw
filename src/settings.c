@@ -5,6 +5,7 @@
 #include "main.h"
 #include "opengl.h"
 #include "render_d3d9.h"
+#include "hook.h"
 
 static char SettingsIniPath[MAX_PATH];
 static char ProcessFileName[96];
@@ -41,7 +42,6 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
-    ddraw->hotPatch = GetBool("hotpatch", FALSE);
     ddraw->bnetHack = GetBool("bnetHack", TRUE);
 
     WindowRect.right = GetInt("width", 0);
@@ -49,6 +49,10 @@ void Settings_Load()
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
+#ifndef _DEBUG
+    HookingMethod = GetInt("hook", 1);
+#endif
+    
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
     if (ddraw->accurateTimers || ddraw->vsync)
@@ -276,9 +280,9 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
-            "; Use hotpatching rather than IAT hooking\n"
+            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
-            "hotpatch=false\n"
+            "hook=1\n"
             "\n"
             "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
             "bnetHack=true\n"
@@ -323,6 +327,9 @@ static void CreateSettingsIni()
             "[olwin]\n"
             "noactivateapp=true\n"
             "maxgameticks=60\n"
+            "hook=2\n"
+            "handlemouse=false\n"
+            "renderer=gdi\n"
             "\n"
             "; Dark Reign: The Future of War\n"
             "[DKReign]\n"
@@ -356,8 +363,9 @@ static void CreateSettingsIni()
             "maxfps=59\n"
             "accuratetimers=true\n"
             "\n"
-            "; Command & Conquer: Tiberian Sun\n"
+            "; Command & Conquer: Tiberian Sun / Command & Conquer: Red Alert 2\n"
             "[game]\n"
+            "checkfile=.\\blowfish.dll\n"
             "noactivateapp=true\n"
             "handlemouse=false\n"
             "maxfps=60\n"
@@ -398,6 +406,11 @@ static void CreateSettingsIni()
             "handlemouse=false\n"
             "maxfps=60\n"
             "\n"
+            "; Command & Conquer: Red Alert 2: Yuri's Revenge - XWIS\n"
+            "[Yuri's Revenge]\n"
+            "noactivateapp=true\n"
+            "handlemouse=false\n"
+            "maxfps=60\n"
             "; Diablo\n"
             "[Diablo]\n"
             "bnetHack=true\n"
@@ -416,7 +429,17 @@ static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD o
 {
     DWORD s = GetPrivateProfileStringA(ProcessFileName, key, "", outString, outSize, SettingsIniPath);
     if (s > 0)
-        return s;
+    {
+        char buf[MAX_PATH] = { 0 };
+
+        if (GetPrivateProfileStringA(ProcessFileName, "checkfile", "", buf, sizeof(buf), SettingsIniPath) > 0)
+        {
+            if (GetFileAttributes(buf) != INVALID_FILE_ATTRIBUTES)
+                return s;
+        }
+        else
+            return s;
+    }
 
     return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, SettingsIniPath);
 }

@@ -122,14 +122,12 @@ typedef struct IDirectDrawImpl
     BOOL handlemouse;
     char shader[MAX_PATH];
     BOOL wine;
-    LONG minimized;
     BOOL altenter;
     BOOL hidecursor;
     BOOL accurateTimers;
     int bnetHack;
     BOOL bnetActive;
     BOOL bnetD3d9Fullscreen;
-    BOOL hotPatch;
     SpeedLimiter ticksLimiter;
     SpeedLimiter flipLimiter;
     SpeedLimiter fpsLimiter;
