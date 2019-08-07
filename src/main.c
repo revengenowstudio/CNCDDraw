@@ -788,6 +788,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
     }
 
+    if (!ddraw->windowed && ddraw->bnetHack && ddraw->renderer == render_main)
+        This->render.height++;
+
     if (!ddraw->handlemouse)
         This->boxing = maintas = FALSE;
     
@@ -913,7 +916,7 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
-    if (ddraw->bnetHack && ddraw->renderer != render_soft_main)
+    if (ddraw->bnetHack && ddraw->renderer == render_d3d9_main)
         return;
 
     if (ddraw->windowed)
