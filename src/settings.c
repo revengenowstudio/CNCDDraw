@@ -101,7 +101,7 @@ void Settings_Load()
     // to do: read .glslp config file instead of the shader and apply the correct settings
     GetString("shader", "", ddraw->shader, sizeof(ddraw->shader));
 
-    GetString("renderer", "auto", tmp, sizeof(tmp));
+    GetString("renderer", "opengl", tmp, sizeof(tmp));
     printf("Using %s renderer\n", tmp);
 
     if (ddraw->bnetHack && tolower(tmp[0]) == 'd')
@@ -210,7 +210,7 @@ static void CreateSettingsIni()
             "\n"
             "; Override the width/height settings shown above and always stretch to fullscreen\n"
             "; Note: Can be combined with 'windowed=true' to get windowed-fullscreen aka borderless mode\n"
-            "fullscreen=true\n"
+            "fullscreen=false\n"
             "\n"
             "; Run in windowed mode rather than going fullscreen\n"
             "windowed=true\n"
@@ -241,7 +241,7 @@ static void CreateSettingsIni()
             "posY=-32000\n"
             "\n"
             "; Renderer, possible values: auto, opengl, gdi, direct3d9 (auto = try direct3d9/opengl, fallback = gdi)\n"
-            "renderer=auto\n"
+            "renderer=opengl\n"
             "\n"
             "; Developer mode (don't lock the cursor)\n"
             "devmode=false\n"
@@ -282,7 +282,6 @@ static void CreateSettingsIni()
             "; Use hotpatching rather than IAT hooking\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
             "hotpatch=false\n"
-            "\n"
             "\n"
             "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
             "; Note: This hack as a negative side-effect, you can only play fullscreen with 'renderer=gdi' or via 'fullscreen=true'\n"
