@@ -1586,7 +1586,7 @@ HRESULT __stdcall ddraw_QueryInterface(IDirectDrawImpl *This, REFIID riid, void 
 
     if (riid && !IsEqualGUID(&IID_IDirectDraw, riid))
     {
-        printf("  IID_IDirectDrawX\n");
+        printf("  GUID = %08X\n", ((GUID *)riid)->Data1);
 
         ddraw_AddRef(This);
         *obj = This;
@@ -1708,21 +1708,7 @@ struct IDirectDrawImplVtbl iface =
 
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
 {
-    printf("DirectDrawEnumerateA(lpCallback=%p, lpContext=%p) ???\n", lpCallback, lpContext);
-    /*
-    HMODULE hddraw = LoadLibrary("system32\\ddraw.dll");
-
-    if (hddraw)
-    {
-        HRESULT(WINAPI *DDrawEnumerateA)(LPDDENUMCALLBACK, LPVOID) = 
-            (HRESULT(WINAPI *)(LPDDENUMCALLBACK, LPVOID))GetProcAddress(hddraw, "DirectDrawEnumerateA");
-
-        if (DDrawEnumerateA)
-            return DDrawEnumerateA(lpCallback, lpContext);
-
-        FreeLibrary(hddraw);
-    }
-    */
+    printf("??? DirectDrawEnumerateA(lpCallback=%p, lpContext=%p)\n", lpCallback, lpContext);
 
     if (lpCallback)
         lpCallback(NULL, "display", "(null)", lpContext);
@@ -1746,7 +1732,7 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
 #if _DEBUG
     if(!stdout_open)
     {
-        freopen("ra95stdout.txt", "w", stdout);
+        freopen("cnc-ddraw.log", "w", stdout);
         setvbuf(stdout, NULL, _IOLBF, 1024);
         stdout_open = 1;
     }
