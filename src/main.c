@@ -196,8 +196,18 @@ void LimitGameTicks()
     }
 }
 
-void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
+void UpdateBnetPos(int newX, int newY)
 {
+    static int oldX = -32000;
+    static int oldY = -32000;
+
+    if (oldX == -32000 || oldY == -32000)
+    {
+        oldX = newX;
+        oldY = newY;
+        return;
+    }
+
     POINT pt = { 0, 0 };
     real_ClientToScreen(ddraw->hWnd, &pt);
 
@@ -261,6 +271,9 @@ void UpdateBnetPos(int oldX, int oldY, int newX, int newY)
             hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
         }
     }
+
+    oldX = newX;
+    oldY = newY;
 }
 
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
@@ -900,7 +913,7 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
-    if (ddraw->bnetHack)
+    if (ddraw->bnetHack && ddraw->renderer != render_soft_main)
         return;
 
     if (ddraw->windowed)
@@ -910,6 +923,7 @@ void ToggleFullscreen()
         real_SetWindowLongA(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         ddraw->altenter = TRUE;
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+        UpdateBnetPos(0, 0);
         mouse_lock();
     }
     else
@@ -920,7 +934,7 @@ void ToggleFullscreen()
         if (Direct3D9Active)
             Direct3D9_Reset();
         else
-            ChangeDisplaySettings(&ddraw->mode, 0);
+            ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
 
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
@@ -1202,24 +1216,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int x = (int)(short)LOWORD(lParam);
                 int y = (int)(short)HIWORD(lParam);
 
-                if (ddraw->bnetHack)
-                {
-                    static int lastX = -32000;
-                    static int lastY = -32000;
-
-                    if (x != -32000)
-                    {
-                        if (lastX != -32000 && lastY != -32000)
-                            UpdateBnetPos(lastX, lastY, x, y);
-
-                        lastX = x;
-                    }
-
-                    if (y != -32000)
-                    {
-                        lastY = y;
-                    }
-                }
+                if (ddraw->bnetHack && x != -32000 && y != -32000)
+                    UpdateBnetPos(x, y);
 
                 if (inSizeMove || ddraw->wine)
                 {
@@ -1311,7 +1309,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!Direct3D9Active)
                     {
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                        ChangeDisplaySettings(&ddraw->mode, 0);
+                        ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
                     }
 
                     InterlockedExchange(&ddraw->minimized, TRUE);

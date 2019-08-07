@@ -145,7 +145,12 @@ void Hook_TryHotPatch(char *moduleName, char *functionName, PROC newFunction, PR
         *function = Hook_HotPatch(org, newFunction);
 
         if (*function == org) // hotpatch failed...
+        {
             Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+
+            if (ddraw->bnetHack)
+                Hook_PatchIAT(GetModuleHandle("storm.dll"), moduleName, functionName, newFunction);
+        }
     }
     else
     {
