@@ -1189,6 +1189,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
             break;
 
+        //workaround for a bug where sometimes a background window steals the focus
+        case WM_WINDOWPOSCHANGING:
+        {
+            if (ddraw->locked)
+            {
+                WINDOWPOS *pos = (WINDOWPOS *)lParam;
+                
+                if (pos->flags == SWP_NOMOVE + SWP_NOSIZE)
+                {
+                    mouse_unlock();
+                    
+                    if (GetForegroundWindow() == ddraw->hWnd)
+                        mouse_lock();
+                }
+            }
+            break;
+        }
+
+        case WM_MOUSELEAVE:
+            mouse_unlock();
+            return 0;
+
         case WM_ACTIVATE:
             if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
             {
@@ -1228,28 +1250,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     }
                 }
             }
-            return 0;
-
-        //workaround for a bug where sometimes a background window steals the focus
-        case WM_WINDOWPOSCHANGING:
-        {
-            if (ddraw->locked)
-            {
-                WINDOWPOS *pos = (WINDOWPOS *)lParam;
-                
-                if (pos->flags == SWP_NOMOVE + SWP_NOSIZE)
-                {
-                    mouse_unlock();
-                    
-                    if (GetForegroundWindow() == ddraw->hWnd)
-                        mouse_lock();
-                }
-            }
-            break;
-        }
-
-        case WM_MOUSELEAVE:
-            mouse_unlock();
             return 0;
 
         case WM_ACTIVATEAPP:
