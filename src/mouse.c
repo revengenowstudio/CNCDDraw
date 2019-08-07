@@ -19,6 +19,7 @@
 #include "main.h"
 #include "surface.h"
 #include "hook.h"
+#include "render_d3d9.h"
 
 int yAdjust = 0;
 
@@ -428,6 +429,12 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
     {
         ddraw->bnetActive = FALSE;
         mouse_lock();
+
+        if (ddraw->windowed && ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+        {
+            ToggleFullscreen();
+            ddraw->bnetD3d9Fullscreen = FALSE;
+        }
     }
 
     return result;
@@ -437,7 +444,28 @@ HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-    HWND hWnd = real_CreateWindowExA(
+    if (lpClassName && _strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw && ddraw->bnetHack)
+    {
+        if (!ddraw->bnetActive)
+        {
+            if (!ddraw->windowed && !ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+            {
+                ToggleFullscreen();
+                ddraw->bnetD3d9Fullscreen = TRUE;
+            }
+
+            ddraw->bnetActive = TRUE;
+            mouse_unlock();
+        }
+
+        POINT pt = { 0, 0 };
+        real_ClientToScreen(ddraw->hWnd, &pt);
+
+        X += pt.x;
+        Y += pt.y;
+    }
+
+    return real_CreateWindowExA(
         dwExStyle,
         lpClassName,
         lpWindowName,
@@ -450,20 +478,4 @@ HWND WINAPI fake_CreateWindowExA(
         hMenu,
         hInstance,
         lpParam);
-
-    if (_strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw && ddraw->bnetHack)
-    {
-        if (!ddraw->bnetActive)
-        {
-            ddraw->bnetActive = TRUE;
-            mouse_unlock();
-        }
-
-        POINT pt = { 0, 0 };
-        real_ClientToScreen(ddraw->hWnd, &pt);
-
-        real_SetWindowPos(hWnd, 0, pt.x + X, pt.y + Y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
-    }
-
-    return hWnd;
 }

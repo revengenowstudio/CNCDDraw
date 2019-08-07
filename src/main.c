@@ -916,7 +916,7 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
-    if (ddraw->bnetHack && ddraw->renderer == render_d3d9_main)
+    if (ddraw->bnetHack && ddraw->bnetActive && ddraw->renderer == render_d3d9_main)
         return;
 
     if (ddraw->windowed)

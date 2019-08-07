@@ -104,9 +104,6 @@ void Settings_Load()
     GetString("renderer", "opengl", tmp, sizeof(tmp));
     printf("Using %s renderer\n", tmp);
 
-    if (ddraw->bnetHack && tolower(tmp[0]) == 'd')
-        ddraw->windowed = TRUE;
-
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
     {
         ddraw->renderer = render_soft_main;
