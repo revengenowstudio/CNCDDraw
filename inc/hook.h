@@ -3,8 +3,6 @@
 
 #include <windows.h>
 
-typedef HFONT(__stdcall* CREATEFONTINDIRECTA)(CONST LOGFONT*);
-
 typedef BOOL (WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
 typedef int (WINAPI* SHOWCURSORPROC)(BOOL);
