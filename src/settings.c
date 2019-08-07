@@ -104,7 +104,7 @@ void Settings_Load()
     GetString("renderer", "auto", tmp, sizeof(tmp));
     printf("Using %s renderer\n", tmp);
 
-    if (ddraw->bnetHack && tolower(tmp[0]) != 'g')
+    if (ddraw->bnetHack && tolower(tmp[0]) == 'd')
         ddraw->windowed = TRUE;
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
