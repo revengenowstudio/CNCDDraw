@@ -231,7 +231,7 @@ void UpdateBnetPos(int newX, int newY)
     static int oldX = -32000;
     static int oldY = -32000;
 
-    if (oldX == -32000 || oldY == -32000)
+    if (oldX == -32000 || oldY == -32000 || !ddraw->bnetActive)
     {
         oldX = newX;
         oldY = newY;
@@ -1248,7 +1248,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int x = (int)(short)LOWORD(lParam);
                 int y = (int)(short)HIWORD(lParam);
 
-                if (ddraw->bnetActive && x != -32000 && y != -32000)
+                if (x != -32000 && y != -32000)
                     UpdateBnetPos(x, y);
 
                 if (inSizeMove || ddraw->wine)
