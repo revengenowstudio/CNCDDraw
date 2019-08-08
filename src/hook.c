@@ -27,6 +27,10 @@ SETWINDOWPOSPROC real_SetWindowPos = SetWindowPos;
 MOVEWINDOWPROC real_MoveWindow = MoveWindow;
 SENDMESSAGEAPROC real_SendMessageA = SendMessageA;
 SETWINDOWLONGAPROC real_SetWindowLongA = SetWindowLongA;
+ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
+CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
+DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
+
 
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
 {
@@ -100,7 +104,10 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
 #endif
 
     if (HookingMethod == 1)
+    {
         Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
+        Hook_PatchIAT(GetModuleHandle("storm.dll"), moduleName, functionName, newFunction);
+    }
 }
 
 void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function)
@@ -121,6 +128,12 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
             GetModuleHandle(NULL), 
             moduleName, 
             functionName, 
+            GetProcAddress(GetModuleHandle(moduleName), functionName));
+
+        Hook_PatchIAT(
+            GetModuleHandle("storm.dll"),
+            moduleName,
+            functionName,
             GetProcAddress(GetModuleHandle(moduleName), functionName));
     }
 }
@@ -148,6 +161,9 @@ void Hook_Init()
         Hook_Create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
         Hook_Create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
         Hook_Create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        Hook_Create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
+        Hook_Create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
+        Hook_Create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
     }
 }
 
@@ -174,5 +190,8 @@ void Hook_Exit()
         Hook_Revert("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
         Hook_Revert("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
         Hook_Revert("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        Hook_Revert("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
+        Hook_Revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
+        Hook_Revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
     }
 }

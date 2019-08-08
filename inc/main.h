@@ -37,6 +37,7 @@ extern BOOL ChildWindowExists;
 
 BOOL detect_cutscene();
 void LimitGameTicks();
+void ToggleFullscreen();
 DWORD WINAPI render_main(void);
 DWORD WINAPI render_soft_main(void);
 BOOL CALLBACK EnumChildProc(HWND hWnd, LPARAM lParam);
@@ -124,6 +125,8 @@ typedef struct IDirectDrawImpl
     BOOL altenter;
     BOOL hidecursor;
     BOOL accurateTimers;
+    BOOL bnetActive;
+    BOOL bnetWasFullscreen;
     SpeedLimiter ticksLimiter;
     SpeedLimiter flipLimiter;
     SpeedLimiter fpsLimiter;

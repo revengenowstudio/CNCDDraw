@@ -226,6 +226,86 @@ void LimitGameTicks()
     }
 }
 
+void UpdateBnetPos(int newX, int newY)
+{
+    static int oldX = -32000;
+    static int oldY = -32000;
+
+    if (oldX == -32000 || oldY == -32000 || !ddraw->bnetActive)
+    {
+        oldX = newX;
+        oldY = newY;
+        return;
+    }
+
+    POINT pt = { 0, 0 };
+    real_ClientToScreen(ddraw->hWnd, &pt);
+
+    RECT mainrc;
+    SetRect(&mainrc, pt.x, pt.y, pt.x + ddraw->width, pt.y + ddraw->height);
+
+    int adjY = 0;
+    int adjX = 0;
+
+    HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
+
+    while (hWnd != NULL)
+    {
+        RECT rc;
+        real_GetWindowRect(hWnd, &rc);
+
+        OffsetRect(&rc, newX - oldX, newY - oldY);
+
+        real_SetWindowPos(
+            hWnd,
+            0,
+            rc.left,
+            rc.top,
+            0,
+            0,
+            SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+        if (rc.bottom > mainrc.bottom && abs(mainrc.bottom - rc.bottom) > abs(adjY))
+            adjY = mainrc.bottom - rc.bottom;
+        else if (rc.top < mainrc.top && abs(mainrc.top - rc.top) > abs(adjY))
+            adjY = mainrc.top - rc.top;
+
+        if (rc.right > mainrc.right && abs(mainrc.right - rc.right) > abs(adjX))
+            adjX = mainrc.right - rc.right;
+        else if (rc.left < mainrc.left && abs(mainrc.left - rc.left) > abs(adjX))
+            adjX = mainrc.left - rc.left;
+
+        hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
+    }
+    
+    if (adjX || adjY)
+    {
+        HWND hWnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
+
+        while (hWnd != NULL)
+        {
+            RECT rc;
+            real_GetWindowRect(hWnd, &rc);
+
+            OffsetRect(&rc, adjX, adjY);
+
+            real_SetWindowPos(
+                hWnd,
+                0,
+                rc.left,
+                rc.top,
+                0,
+                0,
+                SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+            hWnd = FindWindowEx(HWND_DESKTOP, hWnd, "SDlgDialog", NULL);
+        }
+    }
+
+    oldX = newX;
+    oldY = newY;
+}
+
 HRESULT __stdcall ddraw_Compact(IDirectDrawImpl *This)
 {
     printf("??? DirectDraw::Compact(This=%p)\n", This);
@@ -861,6 +941,9 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
+    if (ddraw->bnetActive)
+        return;
+
     if (ddraw->windowed)
     {
         mouse_unlock();
@@ -868,6 +951,7 @@ void ToggleFullscreen()
         real_SetWindowLongA(ddraw->hWnd, GWL_STYLE, GetWindowLong(ddraw->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         ddraw->altenter = TRUE;
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+        UpdateBnetPos(0, 0);
         mouse_lock();
     }
     else
@@ -878,7 +962,7 @@ void ToggleFullscreen()
         if (Direct3D9Active)
             Direct3D9_Reset();
         else
-            ChangeDisplaySettings(&ddraw->mode, 0);
+            ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
 
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
@@ -1158,11 +1242,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         {
             if (ddraw->windowed)
             {
+                int x = (int)(short)LOWORD(lParam);
+                int y = (int)(short)HIWORD(lParam);
+
+                if (x != -32000 && y != -32000)
+                    UpdateBnetPos(x, y);
+
                 if (inSizeMove || ddraw->wine)
                 {
-                    int x = (int)(short)LOWORD(lParam);
-                    int y = (int)(short)HIWORD(lParam);
-
                     if (x != -32000)
                         WindowRect.left = x; // -32000 = Exit/Minimize
 
@@ -1246,7 +1333,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!Direct3D9Active)
                     {
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                        ChangeDisplaySettings(&ddraw->mode, 0);
+                        ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
                     }
                 }
             }

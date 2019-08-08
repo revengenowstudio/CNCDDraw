@@ -404,6 +404,9 @@ DWORD WINAPI render_d3d9_main(void)
         IDirect3DDevice9_DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
         IDirect3DDevice9_EndScene(D3dDev);
 
+        if (ddraw->bnetActive)
+            IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+
         if (FAILED(IDirect3DDevice9_Present(D3dDev, NULL, NULL, NULL, NULL)))
         {
             DWORD_PTR dwResult;

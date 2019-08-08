@@ -19,6 +19,7 @@
 #include "main.h"
 #include "surface.h"
 #include "hook.h"
+#include "render_d3d9.h"
 
 int yAdjust = 0;
 
@@ -141,6 +142,9 @@ HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 void mouse_lock()
 {
     RECT rc;
+
+    if (ddraw->bnetActive)
+        return;
 
     if (ddraw->devmode)
     {
@@ -406,4 +410,78 @@ LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
         return 0;
 
     return real_SetWindowLongA(hWnd, nIndex, dwNewLong);
+}
+
+BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
+{
+    if (ddraw && ddraw->hWnd == hWnd)
+    {
+        return FALSE;
+    }
+
+    return real_EnableWindow(hWnd, bEnable);
+}
+
+BOOL WINAPI fake_DestroyWindow(HWND hWnd)
+{
+    BOOL result = real_DestroyWindow(hWnd);
+
+    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive)
+    {
+        RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+
+        if (!FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
+        {
+            ddraw->bnetActive = FALSE;
+            mouse_lock();
+
+            if (ddraw->windowed && ddraw->bnetWasFullscreen)
+            {
+                ToggleFullscreen();
+                ddraw->bnetWasFullscreen = FALSE;
+            }
+        }
+    }
+
+    return result;
+}
+
+HWND WINAPI fake_CreateWindowExA(
+    DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
+    int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
+{
+    if (lpClassName && _strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw)
+    {
+        if (!ddraw->bnetActive)
+        {
+            if (!ddraw->windowed && !ddraw->bnetWasFullscreen)
+            {
+                ToggleFullscreen();
+                ddraw->bnetWasFullscreen = TRUE;
+            }
+
+            ddraw->bnetActive = TRUE;
+            mouse_unlock();
+        }
+
+        POINT pt = { 0, 0 };
+        real_ClientToScreen(ddraw->hWnd, &pt);
+
+        X += pt.x;
+        Y += pt.y;
+    }
+
+    return real_CreateWindowExA(
+        dwExStyle,
+        lpClassName,
+        lpWindowName,
+        dwStyle | WS_CLIPCHILDREN,
+        X,
+        Y,
+        nWidth,
+        nHeight,
+        hWndParent,
+        hMenu,
+        hInstance,
+        lpParam);
 }

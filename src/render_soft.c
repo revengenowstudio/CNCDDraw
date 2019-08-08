@@ -105,7 +105,12 @@ DWORD WINAPI render_soft_main(void)
                 EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
             }
 
-            if (scaleCutscene)
+            if (ddraw->bnetActive)
+            {
+                RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
+                FillRect(ddraw->render.hDC, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
+            }
+            else if (scaleCutscene)
             {
                 StretchDIBits(
                     ddraw->render.hDC, 

@@ -6,3 +6,4 @@ EXPORTS
     GameHandlesClose                     DATA
     NvOptimusEnablement                  DATA
     AmdPowerXpressRequestHighPerformance DATA
+    pvBmpBits                            DATA
