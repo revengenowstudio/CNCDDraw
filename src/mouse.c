@@ -426,17 +426,20 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 {
     BOOL result = real_DestroyWindow(hWnd);
 
-    RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
-
-    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive && !FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
+    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive)
     {
-        ddraw->bnetActive = FALSE;
-        mouse_lock();
+        RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
 
-        if (ddraw->windowed && ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+        if (!FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
         {
-            ToggleFullscreen();
-            ddraw->bnetD3d9Fullscreen = FALSE;
+            ddraw->bnetActive = FALSE;
+            mouse_lock();
+
+            if (ddraw->windowed && ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+            {
+                ToggleFullscreen();
+                ddraw->bnetD3d9Fullscreen = FALSE;
+            }
         }
     }
 
