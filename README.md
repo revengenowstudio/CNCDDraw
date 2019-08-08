@@ -25,6 +25,7 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
  - Carmageddon 2
  - Warcraft 2
  - StarCraft
+ - Diablo
  - Diablo 2
  - Age of Empires
  - Age of Empires II
