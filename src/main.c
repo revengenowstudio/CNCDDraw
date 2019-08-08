@@ -1053,6 +1053,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             return 0;
         }
+        case WM_TIMER:
+        {
+            switch (wParam)
+            {
+                case IDT_TIMER_LEAVE_BNET:
+                {
+                    KillTimer(ddraw->hWnd, IDT_TIMER_LEAVE_BNET);
+
+                    if (!ddraw->windowed)
+                        ddraw->bnetWasFullscreen = FALSE;
+
+                    if (!ddraw->bnetActive && ddraw->bnetWasFullscreen)
+                    {
+                        int ws = WindowState;
+                        ToggleFullscreen();
+                        WindowState = ws;
+                        ddraw->bnetWasFullscreen = FALSE;
+                    }
+
+                    return 0;
+                }   
+            }
+            break;
+        }
         case WM_WINDOWPOSCHANGED:
         {
             WINDOWPOS *pos = (WINDOWPOS *)lParam;

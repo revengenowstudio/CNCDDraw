@@ -28,11 +28,14 @@
 #define WM_WINEFULLSCREEN WM_USER+112
 #define WM_D3D9DEVICELOST WM_USER+113
 
+#define IDT_TIMER_LEAVE_BNET 541287654
+
 DEFINE_GUID(IID_IMediaStream, 0xb502d1bd, 0x9a57, 0x11d0, 0x8f, 0xde, 0x00, 0xc0, 0x4f, 0xd9, 0x18, 0x9d);
 DEFINE_GUID(IID_IAMMediaStream, 0xbebe595d, 0x9a6f, 0x11d0, 0x8f, 0xde, 0x00, 0xc0, 0x4f, 0xd9, 0x18, 0x9d);
 
 extern BOOL ShowDriverWarning;
 extern RECT WindowRect;
+extern int WindowState;
 extern BOOL ChildWindowExists;
 
 BOOL detect_cutscene();

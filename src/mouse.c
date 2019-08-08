@@ -437,8 +437,7 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 
             if (ddraw->windowed && ddraw->bnetWasFullscreen)
             {
-                ToggleFullscreen();
-                ddraw->bnetWasFullscreen = FALSE;
+                SetTimer(ddraw->hWnd, IDT_TIMER_LEAVE_BNET, 1000, (TIMERPROC)NULL);
             }
         }
     }
@@ -456,7 +455,9 @@ HWND WINAPI fake_CreateWindowExA(
         {
             if (!ddraw->windowed && !ddraw->bnetWasFullscreen)
             {
+                int ws = WindowState;
                 ToggleFullscreen();
+                WindowState = ws;
                 ddraw->bnetWasFullscreen = TRUE;
             }
 
