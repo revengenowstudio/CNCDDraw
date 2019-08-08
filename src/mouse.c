@@ -193,7 +193,7 @@ void mouse_lock()
 
         if (ddraw->handlemouse)
         {
-            //SetCapture(ddraw->hWnd);
+            SetCapture(ddraw->hWnd);
             real_ClipCursor(&rc);
             while (real_ShowCursor(FALSE) > 0);
         }
@@ -258,7 +258,7 @@ void mouse_unlock()
         }
 
         real_ClipCursor(NULL);
-        //ReleaseCapture();
+        ReleaseCapture();
         
         real_SetCursorPos(
             rc.left + ddraw->render.viewport.x + (ddraw->cursor.x * ddraw->render.scaleW), 
@@ -435,10 +435,10 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
             ddraw->bnetActive = FALSE;
             mouse_lock();
 
-            if (ddraw->windowed && ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+            if (ddraw->windowed && ddraw->bnetWasFullscreen)
             {
                 ToggleFullscreen();
-                ddraw->bnetD3d9Fullscreen = FALSE;
+                ddraw->bnetWasFullscreen = FALSE;
             }
         }
     }
@@ -454,10 +454,10 @@ HWND WINAPI fake_CreateWindowExA(
     {
         if (!ddraw->bnetActive)
         {
-            if (!ddraw->windowed && !ddraw->bnetD3d9Fullscreen && ddraw->renderer == render_d3d9_main)
+            if (!ddraw->windowed && !ddraw->bnetWasFullscreen)
             {
                 ToggleFullscreen();
-                ddraw->bnetD3d9Fullscreen = TRUE;
+                ddraw->bnetWasFullscreen = TRUE;
             }
 
             ddraw->bnetActive = TRUE;
