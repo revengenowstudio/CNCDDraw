@@ -42,7 +42,6 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
-    ddraw->bnetHack = GetBool("bnetHack", TRUE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -284,9 +283,6 @@ static void CreateSettingsIni()
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
             "hook=1\n"
             "\n"
-            "; Workaround for battle.net on Diablo and Warcraft 2 BNE\n"
-            "bnetHack=true\n"
-            "\n"
             "\n"
             "\n"
             "; ### Game specific settings ###\n"
@@ -411,13 +407,6 @@ static void CreateSettingsIni()
             "noactivateapp=true\n"
             "handlemouse=false\n"
             "maxfps=60\n"
-            "; Diablo\n"
-            "[Diablo]\n"
-            "bnetHack=true\n"
-            "\n"
-            "; Warcraft 2 Battle.net Edition\n"
-            "[Warcraft II BNE]\n"
-            "bnetHack=true\n"
             "\n"
 
             , fh);

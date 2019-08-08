@@ -1005,7 +1005,7 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     printf("DirectDrawSurface::Unlock(This=%p, lpRect=%p)\n", This, lpRect);
 #endif
     
-    HWND hWnd = ddraw->bnetHack ? FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL) : NULL;
+    HWND hWnd = ddraw->bnetActive ? FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL) : NULL;
     if (hWnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
         if (ddraw->primary->palette && ddraw->primary->palette->data_rgb)

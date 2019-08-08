@@ -143,7 +143,7 @@ void mouse_lock()
 {
     RECT rc;
 
-    if (ddraw->bnetHack && ddraw->bnetActive)
+    if (ddraw->bnetActive)
         return;
 
     if (ddraw->devmode)
@@ -416,8 +416,7 @@ BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
 {
     if (ddraw && ddraw->hWnd == hWnd)
     {
-        if (ddraw->bnetHack)
-            return FALSE;
+        return FALSE;
     }
 
     return real_EnableWindow(hWnd, bEnable);
@@ -427,7 +426,9 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 {
     BOOL result = real_DestroyWindow(hWnd);
 
-    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive && ddraw->bnetHack && !FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
+    RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
+
+    if (ddraw && ddraw->hWnd != hWnd && ddraw->bnetActive && !FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
     {
         ddraw->bnetActive = FALSE;
         mouse_lock();
@@ -446,7 +447,7 @@ HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-    if (lpClassName && _strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw && ddraw->bnetHack)
+    if (lpClassName && _strcmpi(lpClassName, "SDlgDialog") == 0 && ddraw)
     {
         if (!ddraw->bnetActive)
         {

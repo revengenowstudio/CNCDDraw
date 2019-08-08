@@ -818,7 +818,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
     }
 
-    if (!ddraw->windowed && ddraw->bnetHack && ddraw->renderer == render_main)
+    if (!ddraw->windowed && ddraw->renderer == render_main)
         This->render.height++;
 
     if (!ddraw->handlemouse)
@@ -944,7 +944,7 @@ HRESULT __stdcall ddraw_SetDisplayMode2(IDirectDrawImpl *This, DWORD width, DWOR
 
 void ToggleFullscreen()
 {
-    if (ddraw->bnetHack && ddraw->bnetActive && ddraw->renderer == render_d3d9_main)
+    if (ddraw->bnetActive && ddraw->renderer == render_d3d9_main)
         return;
 
     if (ddraw->windowed)
@@ -1248,7 +1248,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 int x = (int)(short)LOWORD(lParam);
                 int y = (int)(short)HIWORD(lParam);
 
-                if (ddraw->bnetHack && x != -32000 && y != -32000)
+                if (ddraw->bnetActive && x != -32000 && y != -32000)
                     UpdateBnetPos(x, y);
 
                 if (inSizeMove || ddraw->wine)
@@ -1716,16 +1716,6 @@ HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContex
     return DD_OK;
 }
 
-//Force redraw when the "Player Profile" screen exits - Idea taken from Aqrit's war2 ddraw
-static WNDPROC ButtonWndProc_original;
-LRESULT __stdcall ButtonWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    if (msg == WM_DESTROY) 
-        RedrawWindow(NULL, NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_ALLCHILDREN);
-
-    return ButtonWndProc_original(hwnd, msg, wParam, lParam);
-}
-
 int stdout_open = 0;
 HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter) 
 {
@@ -1777,17 +1767,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     This->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
 
     Settings_Load();
-
-    if (ddraw->bnetHack)
-    {
-        WNDCLASS wc;
-        HINSTANCE hInst = GetModuleHandle(NULL);
-        GetClassInfo(NULL, "Button", &wc);
-        wc.hInstance = hInst;
-        ButtonWndProc_original = wc.lpfnWndProc;
-        wc.lpfnWndProc = ButtonWndProc;
-        RegisterClass(&wc);
-    }
 
     return DD_OK;
 }

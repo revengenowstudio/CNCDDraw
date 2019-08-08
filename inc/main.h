@@ -125,7 +125,6 @@ typedef struct IDirectDrawImpl
     BOOL altenter;
     BOOL hidecursor;
     BOOL accurateTimers;
-    int bnetHack;
     BOOL bnetActive;
     BOOL bnetD3d9Fullscreen;
     SpeedLimiter ticksLimiter;
