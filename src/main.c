@@ -1036,12 +1036,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         case HTTOPLEFT:
                         case HTTOPRIGHT:
                             return DefWindowProc(hWnd, uMsg, wParam, lParam);
+                        case HTCLIENT:
+                            if (!ddraw->locked)
+                                return DefWindowProc(hWnd, uMsg, wParam, lParam);
                         default:
                             break;
                     }
-
-                    if (htcode == HTCLIENT && !ddraw->locked)
-                        return DefWindowProc(hWnd, uMsg, wParam, lParam);
                 }
             }
 
