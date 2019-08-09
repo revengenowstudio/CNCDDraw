@@ -1049,8 +1049,12 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
 
         if (erase)
         {
+            BOOL x = ddraw->ticksLimiter.useBltOrFlip;
+
             DDBLTFX fx = { .dwFillColor = 0xFE };
             IDirectDrawSurface_Blt(This, NULL, NULL, NULL, DDBLT_COLORFILL, &fx);
+
+            ddraw->ticksLimiter.useBltOrFlip = x;
         }
     }
 
