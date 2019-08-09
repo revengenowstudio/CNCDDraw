@@ -1039,6 +1039,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                         default:
                             break;
                     }
+
+                    if (htcode == HTCLIENT && !ddraw->locked)
+                        return DefWindowProc(hWnd, uMsg, wParam, lParam);
                 }
             }
 
