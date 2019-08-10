@@ -1499,11 +1499,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             break;
 
-        //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
         case WM_PARENTNOTIFY:
         {
-            if (!ddraw->handlemouse && LOWORD(wParam) == WM_DESTROY)
-                redrawCount = 2;
+            if (!ddraw->handlemouse)
+            {
+                switch (LOWORD(wParam))
+                {
+                    case WM_DESTROY: //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
+                        redrawCount = 2;
+                        break;
+                    case WM_LBUTTONDOWN:
+                    case WM_MBUTTONDOWN:
+                    case WM_RBUTTONDOWN:
+                    case WM_XBUTTONDOWN:
+                    {
+                        if (!ddraw->devmode && !ddraw->locked)
+                        {
+                            int x = GET_X_LPARAM(lParam);
+                            int y = GET_Y_LPARAM(lParam);
+
+                            ddraw->cursor.x = (x - ddraw->render.viewport.x) * ddraw->render.unScaleW;
+                            ddraw->cursor.y = (y - ddraw->render.viewport.y) * ddraw->render.unScaleH;
+
+                            mouse_lock();
+                        }
+                        break;
+                    }
+                }
+            }
             break;
         }
         case WM_PAINT:
