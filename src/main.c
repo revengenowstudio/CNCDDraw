@@ -1521,6 +1521,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                             ddraw->cursor.x = (x - ddraw->render.viewport.x) * ddraw->render.unScaleW;
                             ddraw->cursor.y = (y - ddraw->render.viewport.y) * ddraw->render.unScaleH;
 
+                            ddraw->hidecursor = FALSE;
                             mouse_lock();
                         }
                         break;
