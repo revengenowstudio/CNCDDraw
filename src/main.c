@@ -875,6 +875,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
     if (This->windowed)
     {
+        MSG msg; // workaround for "Not Responding" window problem in cnc games
+        PeekMessage(&msg, ddraw->hWnd, 0, 0, PM_NOREMOVE);
+
         if (!This->border)
         {
             real_SetWindowLongA(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
