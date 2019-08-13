@@ -686,6 +686,13 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.height = WindowRect.bottom;
     }
 
+    //temporary fix: center window for games that keep changing their resolution
+    if (This->width && This->bpp == bpp && (This->width != width || This->height != height))
+    {
+        WindowRect.left = -32000;
+        WindowRect.top = -32000;
+    }
+
     This->width = width;
     This->height = height;
     This->bpp = bpp;
