@@ -42,6 +42,7 @@ void Settings_Load()
     ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
+    ddraw->resizable = GetBool("resizable", TRUE);
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);

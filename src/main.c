@@ -1016,9 +1016,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_NCLBUTTONUP:
         case WM_NCACTIVATE:
         case WM_NCPAINT:
-        case WM_NCHITTEST:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
+        case WM_NCHITTEST:
+        {
+            LRESULT result = DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+            if (!ddraw->resizable)
+            {
+                switch (result)
+                {
+                    case HTBOTTOM:
+                    case HTBOTTOMLEFT:
+                    case HTBOTTOMRIGHT:
+                    case HTLEFT:
+                    case HTRIGHT:
+                    case HTTOP:
+                    case HTTOPLEFT:
+                    case HTTOPRIGHT:
+                        return HTBORDER;
+                }
+            }
+
+            return result;
         }
         case WM_SETCURSOR:
         {
