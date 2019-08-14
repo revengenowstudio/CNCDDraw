@@ -435,9 +435,26 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
             ddraw->bnetActive = FALSE;
             mouse_lock();
 
-            if (ddraw->windowed && ddraw->bnetWasFullscreen)
+            if (ddraw->windowed)
             {
-                SetTimer(ddraw->hWnd, IDT_TIMER_LEAVE_BNET, 1000, (TIMERPROC)NULL);
+                if (!ddraw->fullscreen)
+                {
+                    ddraw->bnetPos.x = ddraw->bnetPos.y = 0;
+                    ClientToScreen(ddraw->hWnd, &ddraw->bnetPos);
+
+                    int width = ddraw->bnetWinRect.right - ddraw->bnetWinRect.left;
+                    int height = ddraw->bnetWinRect.bottom - ddraw->bnetWinRect.top;
+                    UINT flags = width != ddraw->width || height != ddraw->height ? 0 : SWP_NOMOVE;
+
+                    SetWindowRect(ddraw->bnetWinRect.left, ddraw->bnetWinRect.top, width, height, flags);
+                }
+
+                if (ddraw->bnetWasFullscreen)
+                {
+                    SetTimer(ddraw->hWnd, IDT_TIMER_LEAVE_BNET, 1000, (TIMERPROC)NULL);
+                }
+
+                ddraw->resizable = TRUE;
             }
         }
     }
@@ -459,6 +476,21 @@ HWND WINAPI fake_CreateWindowExA(
                 ToggleFullscreen();
                 WindowState = ws;
                 ddraw->bnetWasFullscreen = TRUE;
+            }
+
+            if (!ddraw->fullscreen)
+            {
+                GetClientRect(ddraw->hWnd, &ddraw->bnetWinRect);
+                MapWindowPoints(ddraw->hWnd, HWND_DESKTOP, (LPPOINT)&ddraw->bnetWinRect, 2);
+
+                int width = ddraw->bnetWinRect.right - ddraw->bnetWinRect.left;
+                int height = ddraw->bnetWinRect.bottom - ddraw->bnetWinRect.top;
+                int x = ddraw->bnetPos.x || ddraw->bnetPos.y ? ddraw->bnetPos.x : -32000;
+                int y = ddraw->bnetPos.x || ddraw->bnetPos.y ? ddraw->bnetPos.y : -32000;
+                UINT flags = width != ddraw->width || height != ddraw->height ? 0 : SWP_NOMOVE;
+
+                SetWindowRect(x, y, ddraw->width, ddraw->height, flags);
+                ddraw->resizable = FALSE;
             }
 
             ddraw->bnetActive = TRUE;

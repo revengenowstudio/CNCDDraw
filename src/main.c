@@ -1002,6 +1002,37 @@ BOOL UnadjustWindowRectEx(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwExStyle
     return fRc;
 }
 
+void SetWindowRect(int x, int y, int width, int height, UINT flags)
+{
+    if (ddraw->windowed)
+    {
+        if (ddraw->render.thread)
+        {
+            EnterCriticalSection(&ddraw->cs);
+            ddraw->render.run = FALSE;
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+            LeaveCriticalSection(&ddraw->cs);
+
+            WaitForSingleObject(ddraw->render.thread, INFINITE);
+            ddraw->render.thread = NULL;
+        }
+
+        if ((flags & SWP_NOMOVE) == 0)
+        {
+            WindowRect.left = x;
+            WindowRect.top = y;
+        }
+
+        if ((flags & SWP_NOSIZE) == 0)
+        {
+            WindowRect.bottom = height;
+            WindowRect.right = width;
+        }
+
+        ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
+    }
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     RECT rc = { 0, 0, ddraw->render.width, ddraw->render.height };
