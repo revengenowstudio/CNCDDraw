@@ -440,7 +440,7 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
                 if (!ddraw->fullscreen)
                 {
                     ddraw->bnetPos.x = ddraw->bnetPos.y = 0;
-                    ClientToScreen(ddraw->hWnd, &ddraw->bnetPos);
+                    real_ClientToScreen(ddraw->hWnd, &ddraw->bnetPos);
 
                     int width = ddraw->bnetWinRect.right - ddraw->bnetWinRect.left;
                     int height = ddraw->bnetWinRect.bottom - ddraw->bnetWinRect.top;
@@ -480,7 +480,7 @@ HWND WINAPI fake_CreateWindowExA(
 
             if (!ddraw->fullscreen)
             {
-                GetClientRect(ddraw->hWnd, &ddraw->bnetWinRect);
+                real_GetClientRect(ddraw->hWnd, &ddraw->bnetWinRect);
                 MapWindowPoints(ddraw->hWnd, HWND_DESKTOP, (LPPOINT)&ddraw->bnetWinRect, 2);
 
                 int width = ddraw->bnetWinRect.right - ddraw->bnetWinRect.left;
