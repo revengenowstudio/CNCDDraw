@@ -132,6 +132,7 @@ typedef struct IDirectDrawImpl
     BOOL resizable;
     BOOL bnetActive;
     BOOL bnetWasFullscreen;
+    BOOL bnetWasUpscaled;
     RECT bnetWinRect;
     POINT bnetPos;
     SpeedLimiter ticksLimiter;

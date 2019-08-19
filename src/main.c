@@ -700,6 +700,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     ddraw->cursor.x = width / 2;
     ddraw->cursor.y = height / 2;
 
+    BOOL border = This->border;
+
     if(This->fullscreen)
     {
         This->render.width = This->mode.dmPelsWidth;
@@ -707,7 +709,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
         if (This->windowed) //windowed-fullscreen aka borderless
         {
-            This->border = FALSE;
+            border = FALSE;
             WindowRect.left = -32000;
             WindowRect.top = -32000;
 
@@ -885,7 +887,7 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         MSG msg; // workaround for "Not Responding" window problem in cnc games
         PeekMessage(&msg, ddraw->hWnd, 0, 0, PM_NOREMOVE);
 
-        if (!This->border)
+        if (!border)
         {
             real_SetWindowLongA(This->hWnd, GWL_STYLE, GetWindowLong(This->hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         }
@@ -1129,12 +1131,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!ddraw->windowed)
                         ddraw->bnetWasFullscreen = FALSE;
 
-                    if (!ddraw->bnetActive && ddraw->bnetWasFullscreen)
+                    if (!ddraw->bnetActive)
                     {
-                        int ws = WindowState;
-                        ToggleFullscreen();
-                        WindowState = ws;
-                        ddraw->bnetWasFullscreen = FALSE;
+                        if (ddraw->bnetWasFullscreen)
+                        {
+                            int ws = WindowState;
+                            ToggleFullscreen();
+                            WindowState = ws;
+                            ddraw->bnetWasFullscreen = FALSE;
+                        }
+                        else if (ddraw->bnetWasUpscaled)
+                        {
+                            SetWindowRect(0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                            ddraw->bnetWasUpscaled = FALSE;
+                        }
                     }
 
                     return 0;
