@@ -334,7 +334,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
 
     if (lpDDSurfaceDesc != NULL)
     {
-        return DDERR_UNSUPPORTED;
+        //return DDERR_UNSUPPORTED;
     }
 
     // Some games crash when you feed them with too many resolutions...
@@ -1695,6 +1695,16 @@ HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HAN
     return DD_OK;
 }
 
+HRESULT __stdcall ddraw_GetAvailableVidMem(IDirectDrawImpl *This, LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
+{
+    printf("??? DirectDraw::GetAvailableVidMem(This=%p)\n", This);
+
+    *lpdwTotal = 16777216;
+    *lpdwFree = 16777216;
+
+    return DD_OK;
+}
+
 ULONG __stdcall ddraw_AddRef(IDirectDrawImpl *This)
 {
     printf("DirectDraw::AddRef(This=%p)\n", This);
@@ -1827,7 +1837,8 @@ struct IDirectDrawImplVtbl iface =
     ddraw_RestoreDisplayMode,
     ddraw_SetCooperativeLevel,
     ddraw_SetDisplayMode,
-    ddraw_WaitForVerticalBlank
+    ddraw_WaitForVerticalBlank,
+    ddraw_GetAvailableVidMem
 };
 
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
