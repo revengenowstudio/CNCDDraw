@@ -980,7 +980,7 @@ void ToggleFullscreen()
         if (Direct3D9Active)
             Direct3D9_Reset();
         else
-            ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
+            ChangeDisplaySettings(&ddraw->mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
 
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
@@ -1410,7 +1410,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (!Direct3D9Active)
                     {
-                        ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
+                        ChangeDisplaySettings(&ddraw->render.mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
 
                         if (wParam == WA_ACTIVE)
                         {
