@@ -1410,7 +1410,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 {
                     if (!Direct3D9Active)
                     {
-                        ChangeDisplaySettings(&ddraw->render.mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
+                        ChangeDisplaySettings(&ddraw->render.mode, CDS_FULLSCREEN);
 
                         if (wParam == WA_ACTIVE)
                         {
@@ -1438,7 +1438,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!Direct3D9Active)
                     {
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                        ChangeDisplaySettings(&ddraw->mode, CDS_FULLSCREEN);
+                        ChangeDisplaySettings(&ddraw->mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
                     }
                 }
             }
