@@ -1474,7 +1474,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         }
         case WM_SYSKEYDOWN:
         {
-            if (wParam == VK_RETURN)
+			BOOL contextCode = (lParam & (1 << 29)) != 0;
+			BOOL keyState    = (lParam & (1 << 30)) != 0;
+
+            if (wParam == VK_RETURN && contextCode && !keyState)
             {
                 ToggleFullscreen();
                 return 0;
