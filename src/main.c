@@ -1376,6 +1376,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 exit(0);
             }
 
+            if (wParam == SC_KEYMENU)
+                return 0;
+
             if (!GameHandlesClose)
                 return DefWindowProc(hWnd, uMsg, wParam, lParam);
 
