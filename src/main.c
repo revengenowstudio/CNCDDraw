@@ -1043,11 +1043,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     
     switch(uMsg)
     {
+        //case WM_NCACTIVATE:
         case WM_GETMINMAXINFO:
         case WM_MOVING:
         case WM_NCLBUTTONDOWN:
         case WM_NCLBUTTONUP:
-        case WM_NCACTIVATE:
         case WM_NCPAINT:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
