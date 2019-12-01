@@ -433,6 +433,7 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
         if (!FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL))
         {
             ddraw->bnetActive = FALSE;
+            SetFocus(ddraw->hWnd);
             mouse_lock();
 
             if (ddraw->windowed)
