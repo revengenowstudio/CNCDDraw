@@ -1866,6 +1866,23 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
         freopen("cnc-ddraw.log", "w", stdout);
         setvbuf(stdout, NULL, _IOLBF, 1024);
         stdout_open = 1;
+
+        HKEY hKey;
+        LONG status = 
+            RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", 0L, KEY_READ, &hKey);
+
+        if (status == ERROR_SUCCESS)
+        {
+            char name[256] = {0};
+            DWORD nameSize = sizeof(name);
+            RegQueryValueExA(hKey, "ProductName", NULL, NULL, (PVOID)&name, &nameSize);
+
+            char build[256] = {0};
+            DWORD buildSize = sizeof(build);
+            RegQueryValueExA(hKey, "BuildLab", NULL, NULL, (PVOID)&build, &buildSize);
+
+            printf("%s (%s)\n", name, build);
+        }
     }
 #endif
 
