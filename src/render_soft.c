@@ -42,7 +42,8 @@ DWORD WINAPI render_soft_main(void)
 
     Sleep(500);
 
-    DWORD lastTick = 0;
+    DWORD tickStart = 0;
+    DWORD tickEnd = 0;
     int maxFPS = ddraw->render.maxfps;
     ddraw->fpsLimiter.tickLengthNs = 0;
     ddraw->fpsLimiter.ticklength = 0;
@@ -62,22 +63,12 @@ DWORD WINAPI render_soft_main(void)
 
     while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
     {
-        if (ddraw->fpsLimiter.ticklength > 0)
-        {
-            DWORD curTick = timeGetTime();
-            if (lastTick + ddraw->fpsLimiter.ticklength > curTick)
-            {
-                ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-                SetEvent(ddraw->render.ev);
-                SwitchToThread();
-                continue;
-            }
-            lastTick = curTick;
-        }
-
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
+
+        if (ddraw->fpsLimiter.ticklength > 0)
+            tickStart = timeGetTime();
 
         EnterCriticalSection(&ddraw->cs);
 
@@ -168,7 +159,33 @@ DWORD WINAPI render_soft_main(void)
         DrawFrameInfoEnd();
 #endif
 
-        SetEvent(ddraw->render.ev);
+        if (ddraw->fpsLimiter.ticklength > 0)
+        {
+            if (ddraw->fpsLimiter.hTimer)
+            {
+                FILETIME ft = { 0 };
+                GetSystemTimeAsFileTime(&ft);
+
+                if (CompareFileTime((FILETIME*)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                {
+                    memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                }
+                else
+                {
+                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                }
+
+                ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
+                SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+            }
+            else
+            {
+                tickEnd = timeGetTime();
+
+                if (tickEnd - tickStart < ddraw->fpsLimiter.ticklength)
+                    Sleep(ddraw->fpsLimiter.ticklength - (tickEnd - tickStart));
+            }
+        }
     }
 
     return TRUE;

@@ -1777,12 +1777,6 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             ReleaseDC(This->hWnd, This->render.hDC);
             This->render.hDC = NULL;
         }
-        
-        if(This->render.ev)
-        {
-            CloseHandle(This->render.ev);
-            ddraw->render.ev = NULL;
-        }
 
         if (This->ticksLimiter.hTimer)
         {
@@ -1919,7 +1913,6 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     }
 
     InitializeCriticalSection(&This->cs);
-    This->render.ev = CreateEvent(NULL, TRUE, FALSE, NULL);
     This->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
 
     This->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;

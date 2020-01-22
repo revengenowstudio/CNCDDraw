@@ -94,7 +94,6 @@ typedef struct IDirectDrawImpl
 
         HANDLE thread;
         BOOL run;
-        HANDLE ev;
         HANDLE sem;
         DEVMODE mode;
         struct { int width; int height; int x; int y; } viewport;
