@@ -565,7 +565,8 @@ static void Render()
     else if (ddraw->bpp == 16)
         glEnable(GL_TEXTURE_2D);
 
-    while (UseOpenGL && ddraw->render.run && WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED)
+    while (UseOpenGL && ddraw->render.run &&
+        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED))
     {
 #if _DEBUG
         DrawFrameInfoStart();

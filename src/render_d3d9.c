@@ -302,7 +302,8 @@ DWORD WINAPI render_d3d9_main(void)
     DWORD tickEnd = 0;
     BOOL needsUpdate = FALSE;
 
-    while (ddraw->render.run && WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED)
+    while (ddraw->render.run && 
+        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
         DrawFrameInfoStart();
