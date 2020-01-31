@@ -316,7 +316,6 @@ static void CreateSettingsIni()
             "\n"
             "; Command & Conquer: Red Alert\n"
             "[ra95p]\n"
-            "maxgameticks=120\n"
             "maxfps=60\n"
             "forcefps=true\n"
             "\n"
