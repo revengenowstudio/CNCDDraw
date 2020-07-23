@@ -1841,6 +1841,11 @@ struct IDirectDrawImplVtbl iface =
     ddraw_GetAvailableVidMem
 };
 
+HRESULT WINAPI DirectDrawCreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR  *lplpDDClipper, IUnknown FAR *pUnkOuter)
+{
+    return ddraw_CreateClipper(NULL, dwFlags, lplpDDClipper, pUnkOuter);
+}
+
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
 {
     printf("??? DirectDrawEnumerateA(lpCallback=%p, lpContext=%p)\n", lpCallback, lpContext);
