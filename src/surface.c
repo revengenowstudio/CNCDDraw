@@ -271,7 +271,7 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
             }
             else
             {
-                printf("   DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching");
+                printf("   DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
             }
         }
         else

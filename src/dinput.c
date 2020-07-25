@@ -65,6 +65,8 @@ static HRESULT WINAPI fake_DICreateDevice(IDirectInputA *This, REFGUID rguid, LP
 
 static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter)
 {
+    printf("??? DirectInputCreateA\n");
+
     DInputCreateA = 
         (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
 
