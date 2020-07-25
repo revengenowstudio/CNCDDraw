@@ -824,7 +824,15 @@ HRESULT __stdcall ddraw_surface_GetPalette(IDirectDrawSurfaceImpl *This, LPDIREC
 {
     printf("DirectDrawSurface::GetPalette(This=%p, lplpDDPalette=%p)\n", This, lplpDDPalette);
     *lplpDDPalette = (LPDIRECTDRAWPALETTE)This->palette;
-    return DD_OK;
+    
+    if (This->palette)
+    {
+        return DD_OK;
+    }
+    else
+    {
+        return DDERR_NOPALETTEATTACHED;
+    }
 }
 
 HRESULT __stdcall ddraw_surface_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT ddpfPixelFormat)
