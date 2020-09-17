@@ -422,6 +422,16 @@ BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
     return real_EnableWindow(hWnd, bEnable);
 }
 
+int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
+{
+    if (ddraw && ddraw->bpp && index == BITSPIXEL)
+    {
+        return ddraw->bpp;
+    }
+
+    return real_GetDeviceCaps(hdc, index);
+}
+
 BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 {
     BOOL result = real_DestroyWindow(hWnd);

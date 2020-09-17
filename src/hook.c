@@ -30,6 +30,7 @@ SETWINDOWLONGAPROC real_SetWindowLongA = SetWindowLongA;
 ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
 CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
 DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
+GETDEVICECAPSPROC real_GetDeviceCaps = GetDeviceCaps;
 
 
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
@@ -164,6 +165,7 @@ void Hook_Init()
         Hook_Create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
         Hook_Create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
         Hook_Create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
+        Hook_Create("gdi.dll",    "GetDeviceCaps ", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
     }
 }
 
@@ -193,5 +195,6 @@ void Hook_Exit()
         Hook_Revert("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
         Hook_Revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
         Hook_Revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
+        Hook_Revert("gdi.dll",    "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
     }
 }

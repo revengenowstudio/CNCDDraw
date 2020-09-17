@@ -23,6 +23,7 @@ typedef LONG (WINAPI* SETWINDOWLONGAPROC)(HWND, int, LONG);
 typedef BOOL (WINAPI* ENABLEWINDOWPROC)(HWND, BOOL);
 typedef HWND (WINAPI* CREATEWINDOWEXAPROC)(DWORD, LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID);
 typedef BOOL (WINAPI* DESTROYWINDOWPROC)(HWND);
+typedef BOOL(WINAPI* GETDEVICECAPSPROC)(HDC, int);
 
 extern GETCURSORPOSPROC real_GetCursorPos;
 extern CLIPCURSORPROC real_ClipCursor;
@@ -44,6 +45,7 @@ extern SETWINDOWLONGAPROC real_SetWindowLongA;
 extern ENABLEWINDOWPROC real_EnableWindow;
 extern CREATEWINDOWEXAPROC real_CreateWindowExA;
 extern DESTROYWINDOWPROC real_DestroyWindow;
+extern GETDEVICECAPSPROC real_GetDeviceCaps;
 
 extern int HookingMethod;
 extern BOOL Hook_Active;
