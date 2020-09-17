@@ -915,6 +915,13 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     }
     else
     {
+        LONG style = GetWindowLong(This->hWnd, GWL_STYLE);
+
+        if ((style & WS_CAPTION))
+        {
+            real_SetWindowLongA(This->hWnd, GWL_STYLE, style & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+        }
+
         if (This->renderer == render_d3d9_main)
             InitDirect3D9();
 
