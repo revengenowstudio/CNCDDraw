@@ -212,6 +212,11 @@ void Hook_Init()
     {
         if (!Hook_Active && HookingMethod == 3)
         {
+            FARPROC proc = GetProcAddress(GetModuleHandle("kernelbase.dll"), "LoadLibraryExW");
+
+            if (proc)
+                real_LoadLibraryExW = proc;
+
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
             DetourAttach((PVOID*)&real_LoadLibraryExW, (PVOID)fake_LoadLibraryExW);
