@@ -282,7 +282,7 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
-            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours\n"
+            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours, 3 = IAT Hooking (All Modules)\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
             "hook=1\n"
             "\n"

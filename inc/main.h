@@ -37,6 +37,7 @@ extern BOOL ShowDriverWarning;
 extern RECT WindowRect;
 extern int WindowState;
 extern BOOL ChildWindowExists;
+extern HMODULE DDrawModule;
 
 BOOL detect_cutscene();
 void LimitGameTicks();

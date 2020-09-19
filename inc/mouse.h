@@ -26,6 +26,7 @@ LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
 BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable);
 BOOL WINAPI fake_DestroyWindow(HWND hWnd);
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index);
+HMODULE WINAPI fake_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);

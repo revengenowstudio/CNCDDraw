@@ -432,6 +432,15 @@ int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
     return real_GetDeviceCaps(hdc, index);
 }
 
+HMODULE WINAPI fake_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
+{
+    HMODULE hMod = real_LoadLibraryExW(lpLibFileName, hFile, dwFlags);
+
+    Hook_Init();
+
+    return hMod;
+}
+
 BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 {
     BOOL result = real_DestroyWindow(hWnd);

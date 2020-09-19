@@ -31,6 +31,7 @@ ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
 CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
 DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
 GETDEVICECAPSPROC real_GetDeviceCaps = GetDeviceCaps;
+LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
 
 
 void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
@@ -102,6 +103,37 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
         DetourAttach((PVOID *)function, (PVOID)newFunction);
         DetourTransactionCommit();
     }
+
+    if (HookingMethod == 3)
+    {
+        char gameExePath[MAX_PATH] = { 0 };
+        char gameDir[MAX_PATH] = { 0 };
+
+        if (GetModuleFileNameA(NULL, gameExePath, MAX_PATH))
+        {
+            _splitpath(gameExePath, NULL, gameDir, NULL, NULL);
+
+            char modPath[MAX_PATH] = { 0 };
+            char modDir[MAX_PATH] = { 0 };
+            HMODULE hMod = NULL;
+
+            while (hMod = DetourEnumerateModules(hMod))
+            {
+                if (hMod == DDrawModule)
+                    continue;
+
+                if (GetModuleFileNameA(hMod, modPath, MAX_PATH))
+                {
+                    _splitpath(modPath, NULL, modDir, NULL, NULL);
+
+                    if (_strnicmp(gameDir, modDir, strlen(gameDir)) == 0)
+                    {
+                        Hook_PatchIAT(hMod, moduleName, functionName, newFunction);
+                    }
+                }
+            }
+        }
+    }
 #endif
 
     if (HookingMethod == 1)
@@ -120,6 +152,41 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
         DetourUpdateThread(GetCurrentThread());
         DetourDetach((PVOID *)function, (PVOID)newFunction);
         DetourTransactionCommit();
+    }
+
+    if (HookingMethod == 3)
+    {
+        char gameExePath[MAX_PATH] = { 0 };
+        char gameDir[MAX_PATH] = { 0 };
+
+        if (GetModuleFileNameA(NULL, gameExePath, MAX_PATH))
+        {
+            _splitpath(gameExePath, NULL, gameDir, NULL, NULL);
+
+            char modPath[MAX_PATH] = { 0 };
+            char modDir[MAX_PATH] = { 0 };
+            HMODULE hMod = NULL;
+
+            while (hMod = DetourEnumerateModules(hMod))
+            {
+                if (hMod == DDrawModule)
+                    continue;
+
+                if (GetModuleFileNameA(hMod, modPath, MAX_PATH))
+                {
+                    _splitpath(modPath, NULL, modDir, NULL, NULL);
+
+                    if (_strnicmp(gameDir, modDir, strlen(gameDir)) == 0)
+                    {
+                        Hook_PatchIAT(
+                            hMod,
+                            moduleName,
+                            functionName,
+                            GetProcAddress(GetModuleHandle(moduleName), functionName));
+                    }
+                }
+            }
+        }
     }
 #endif
 
@@ -141,8 +208,16 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
 
 void Hook_Init()
 {
-    if (!Hook_Active)
+    if (!Hook_Active || HookingMethod == 3)
     {
+        if (!Hook_Active && HookingMethod == 3)
+        {
+            DetourTransactionBegin();
+            DetourUpdateThread(GetCurrentThread());
+            DetourAttach((PVOID*)&real_LoadLibraryExW, (PVOID)fake_LoadLibraryExW);
+            DetourTransactionCommit();
+        }
+
         Hook_Active = TRUE;
 
         Hook_Create("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
@@ -174,6 +249,14 @@ void Hook_Exit()
     if (Hook_Active)
     {
         Hook_Active = FALSE;
+
+        if (HookingMethod == 3)
+        {
+            DetourTransactionBegin();
+            DetourUpdateThread(GetCurrentThread());
+            DetourDetach((PVOID*)&real_LoadLibraryExW, (PVOID)fake_LoadLibraryExW);
+            DetourTransactionCommit();
+        }
 
         Hook_Revert("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
         Hook_Revert("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
