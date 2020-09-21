@@ -106,15 +106,15 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
 
     if (HookingMethod == 3)
     {
-        char gameExePath[MAX_PATH] = { 0 };
-        char gameDir[MAX_PATH] = { 0 };
+        WCHAR gameExePath[MAX_PATH] = { 0 };
+        WCHAR gameDir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameA(NULL, gameExePath, MAX_PATH))
+        if (GetModuleFileNameW(NULL, gameExePath, MAX_PATH))
         {
-            _splitpath(gameExePath, NULL, gameDir, NULL, NULL);
+            _wsplitpath(gameExePath, NULL, gameDir, NULL, NULL);
 
-            char modPath[MAX_PATH] = { 0 };
-            char modDir[MAX_PATH] = { 0 };
+            WCHAR modPath[MAX_PATH] = { 0 };
+            WCHAR modDir[MAX_PATH] = { 0 };
             HMODULE hMod = NULL;
 
             while (hMod = DetourEnumerateModules(hMod))
@@ -122,11 +122,11 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
                 if (hMod == DDrawModule)
                     continue;
 
-                if (GetModuleFileNameA(hMod, modPath, MAX_PATH))
+                if (GetModuleFileNameW(hMod, modPath, MAX_PATH))
                 {
-                    _splitpath(modPath, NULL, modDir, NULL, NULL);
+                    _wsplitpath(modPath, NULL, modDir, NULL, NULL);
 
-                    if (_strnicmp(gameDir, modDir, strlen(gameDir)) == 0)
+                    if (_wcsnicmp(gameDir, modDir, wcslen(gameDir)) == 0)
                     {
                         Hook_PatchIAT(hMod, moduleName, functionName, newFunction);
                     }
@@ -156,15 +156,15 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
 
     if (HookingMethod == 3)
     {
-        char gameExePath[MAX_PATH] = { 0 };
-        char gameDir[MAX_PATH] = { 0 };
+        WCHAR gameExePath[MAX_PATH] = { 0 };
+        WCHAR gameDir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameA(NULL, gameExePath, MAX_PATH))
+        if (GetModuleFileNameW(NULL, gameExePath, MAX_PATH))
         {
-            _splitpath(gameExePath, NULL, gameDir, NULL, NULL);
+            _wsplitpath(gameExePath, NULL, gameDir, NULL, NULL);
 
-            char modPath[MAX_PATH] = { 0 };
-            char modDir[MAX_PATH] = { 0 };
+            WCHAR modPath[MAX_PATH] = { 0 };
+            WCHAR modDir[MAX_PATH] = { 0 };
             HMODULE hMod = NULL;
 
             while (hMod = DetourEnumerateModules(hMod))
@@ -172,11 +172,11 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
                 if (hMod == DDrawModule)
                     continue;
 
-                if (GetModuleFileNameA(hMod, modPath, MAX_PATH))
+                if (GetModuleFileNameW(hMod, modPath, MAX_PATH))
                 {
-                    _splitpath(modPath, NULL, modDir, NULL, NULL);
+                    _wsplitpath(modPath, NULL, modDir, NULL, NULL);
 
-                    if (_strnicmp(gameDir, modDir, strlen(gameDir)) == 0)
+                    if (_wcsnicmp(gameDir, modDir, wcslen(gameDir)) == 0)
                     {
                         Hook_PatchIAT(
                             hMod,
