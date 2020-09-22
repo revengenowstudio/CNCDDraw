@@ -432,6 +432,33 @@ int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
     return real_GetDeviceCaps(hdc, index);
 }
 
+HMODULE WINAPI fake_LoadLibraryA(LPCSTR lpLibFileName)
+{
+    HMODULE hMod = real_LoadLibraryA(lpLibFileName);
+
+    Hook_Init();
+
+    return hMod;
+}
+
+HMODULE WINAPI fake_LoadLibraryW(LPCWSTR lpLibFileName)
+{
+    HMODULE hMod = real_LoadLibraryW(lpLibFileName);
+
+    Hook_Init();
+
+    return hMod;
+}
+
+HMODULE WINAPI fake_LoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
+{
+    HMODULE hMod = real_LoadLibraryExA(lpLibFileName, hFile, dwFlags);
+
+    Hook_Init();
+
+    return hMod;
+}
+
 HMODULE WINAPI fake_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags)
 {
     HMODULE hMod = real_LoadLibraryExW(lpLibFileName, hFile, dwFlags);

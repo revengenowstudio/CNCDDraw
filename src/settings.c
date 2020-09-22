@@ -49,9 +49,7 @@ void Settings_Load()
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
-#ifndef _DEBUG
     HookingMethod = GetInt("hook", 1);
-#endif
     
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
@@ -282,7 +280,7 @@ static void CreateSettingsIni()
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
-            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours, 3 = IAT Hooking (All Modules)\n"
+            "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours, 3 = IAT+Detours Hooking (All Modules), 4 = IAT Hooking (All Modules)\n"
             "; Note: Can be used to fix issues related to new features added by cnc-ddraw such as windowed mode or stretching\n"
             "hook=1\n"
             "\n"

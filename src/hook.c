@@ -31,6 +31,9 @@ ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
 CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
 DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
 GETDEVICECAPSPROC real_GetDeviceCaps = GetDeviceCaps;
+LOADLIBRARYAPROC real_LoadLibraryA = LoadLibraryA;
+LOADLIBRARYWPROC real_LoadLibraryW = LoadLibraryW;
+LOADLIBRARYEXAPROC real_LoadLibraryExA = LoadLibraryExA;
 LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
 
 
@@ -104,7 +107,7 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
         DetourTransactionCommit();
     }
 
-    if (HookingMethod == 3)
+    if (HookingMethod == 3 || HookingMethod == 4)
     {
         WCHAR gameExePath[MAX_PATH] = { 0 };
         WCHAR gameDir[MAX_PATH] = { 0 };
@@ -154,7 +157,7 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
         DetourTransactionCommit();
     }
 
-    if (HookingMethod == 3)
+    if (HookingMethod == 3 || HookingMethod == 4)
     {
         WCHAR gameExePath[MAX_PATH] = { 0 };
         WCHAR gameDir[MAX_PATH] = { 0 };
@@ -208,7 +211,7 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
 
 void Hook_Init()
 {
-    if (!Hook_Active || HookingMethod == 3)
+    if (!Hook_Active || HookingMethod == 3 || HookingMethod == 4)
     {
         if (!Hook_Active && HookingMethod == 3)
         {
@@ -245,7 +248,15 @@ void Hook_Init()
         Hook_Create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
         Hook_Create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
         Hook_Create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
-        Hook_Create("gdi.dll",    "GetDeviceCaps ", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
+        Hook_Create("gdi.dll",    "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
+
+        if (HookingMethod == 4)
+        {
+            Hook_Create("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
+            Hook_Create("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
+            Hook_Create("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
+            Hook_Create("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
+        }
     }
 }
 
@@ -284,5 +295,13 @@ void Hook_Exit()
         Hook_Revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
         Hook_Revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
         Hook_Revert("gdi.dll",    "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
+
+        if (HookingMethod == 4)
+        {
+            Hook_Revert("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
+            Hook_Revert("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
+            Hook_Revert("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
+            Hook_Revert("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
+        }
     }
 }
