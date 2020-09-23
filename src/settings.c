@@ -43,6 +43,7 @@ void Settings_Load()
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
     ddraw->resizable = GetBool("resizable", TRUE);
+    ddraw->ddrawrefcount0 = GetBool("ddrawrefcount0", FALSE); // Twisted Metal 2 DirectDraw Error hack
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -442,6 +443,13 @@ static void CreateSettingsIni()
             "handlemouse=false\n"
             "maxfps=60\n"
             "forcefps=true\n"
+            "\n"
+            "; Twisted Metal 2\n"
+            "[Tm2]\n"
+            "renderer=gdi\n"
+            "maxgameticks=60\n"
+            "handlemouse=false\n"
+            "ddrawrefcount0=true\n"
             "\n"
 
             , fh);

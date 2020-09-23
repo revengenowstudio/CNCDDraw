@@ -1818,6 +1818,9 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
         return 0;
     }
 
+    if (This->ddrawrefcount0)
+        return 0;
+
     return This->Ref;
 }
 
