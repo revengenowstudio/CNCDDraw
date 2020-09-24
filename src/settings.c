@@ -44,6 +44,7 @@ void Settings_Load()
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
     ddraw->resizable = GetBool("resizable", TRUE);
     ddraw->ddrawrefcount0 = GetBool("ddrawrefcount0", FALSE); // Twisted Metal 2 DirectDraw Error hack
+    ddraw->forcewmmove = GetBool("forcewmmove", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -274,10 +275,6 @@ static void CreateSettingsIni()
             "; Note: This option only works for games that draw their own cursor and it must be disabled for all other games\n"
             "handlemouse=true\n"
             "\n"
-            "; Use Waitable Timer Objects rather than timeGetTime+Sleep to limit FPS/Ticks/Flip\n"
-            "; Note: To workaround tearing/stuttering problems, set maxfps 1 lower than screen refresh rate (59 for flip games)\n"
-            "accuratetimers=false\n"
-            "\n"
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
             "\n"
@@ -449,6 +446,23 @@ static void CreateSettingsIni()
             "maxgameticks=60\n"
             "handlemouse=false\n"
             "ddrawrefcount0=true\n"
+            "\n"
+            "; Caesar III\n"
+            "[c3]\n"
+            "handlemouse=false\n"
+            "forcewmmove=true\n"
+            "\n"
+            "; Pharaoh\n"
+            "[Pharaoh]\n"
+            "handlemouse=false\n"
+            "forcewmmove=true\n"
+            "\n"
+            "; Master of Olympus - Zeus\n"
+            "[Zeus]\n"
+            "handlemouse=false\n"
+            "forcewmmove=true\n"
+            "renderer=gdi\n"
+            "hook=2\n"
             "\n"
 
             , fh);

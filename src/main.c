@@ -513,7 +513,7 @@ HRESULT __stdcall ddraw_GetCaps(IDirectDrawImpl *This, LPDDCAPS lpDDDriverCaps, 
 HRESULT __stdcall ddraw_GetDisplayMode(IDirectDrawImpl *This, LPDDSURFACEDESC a)
 {
     printf("??? DirectDraw::GetDisplayMode(This=%p, ...)\n", This);
-    return DD_OK;
+    return DDERR_UNSUPPORTEDMODE;
 }
 
 HRESULT __stdcall ddraw_GetFourCCCodes(IDirectDrawImpl *This, LPDWORD a, LPDWORD b)
@@ -957,6 +957,9 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
     }
 
+    if (ddraw->forcewmmove)
+        PostMessageA(ddraw->hWnd, WM_MOVE, 0, MAKELPARAM(-32000, -32000));
+
     return DD_OK;
 }
 
@@ -1376,6 +1379,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (!ddraw->handlemouse)
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
+            if (ddraw->forcewmmove)
+            {
+                lParam = 0;
+                break;
+            }
+
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
 
@@ -1779,7 +1788,13 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             }
 
             if (This->renderer == render_d3d9_main)
+            {
                 Direct3D9_Release();
+            }
+            else if (!ddraw->windowed)
+            {
+                ChangeDisplaySettings(&This->mode, 0);
+            }
         }
 
         if(This->render.hDC)

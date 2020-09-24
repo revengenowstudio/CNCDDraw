@@ -132,6 +132,7 @@ typedef struct IDirectDrawImpl
     BOOL accurateTimers;
     BOOL resizable;
     BOOL ddrawrefcount0;
+    BOOL forcewmmove;
     BOOL bnetActive;
     BOOL bnetWasFullscreen;
     BOOL bnetWasUpscaled;
