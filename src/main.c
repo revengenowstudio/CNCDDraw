@@ -957,8 +957,11 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         This->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)This->renderer, NULL, 0, NULL);
     }
 
-    if (ddraw->forcewmmove)
+    if (ddraw->sierrahack)
+    {
         PostMessageA(ddraw->hWnd, WM_MOVE, 0, MAKELPARAM(-32000, -32000));
+        PostMessageA(ddraw->hWnd, WM_DISPLAYCHANGE, ddraw->bpp, MAKELPARAM(ddraw->width, ddraw->height));
+    }
 
     return DD_OK;
 }
@@ -1379,7 +1382,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             if (!ddraw->handlemouse)
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
-            if (ddraw->forcewmmove)
+            if (ddraw->sierrahack)
             {
                 lParam = 0;
                 break;

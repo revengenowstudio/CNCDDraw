@@ -44,7 +44,7 @@ void Settings_Load()
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
     ddraw->resizable = GetBool("resizable", TRUE);
     ddraw->ddrawrefcount0 = GetBool("ddrawrefcount0", FALSE); // Twisted Metal 2 DirectDraw Error hack
-    ddraw->forcewmmove = GetBool("forcewmmove", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
+    ddraw->sierrahack = GetBool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
     WindowRect.right = GetInt("width", 0);
     WindowRect.bottom = GetInt("height", 0);
@@ -450,17 +450,17 @@ static void CreateSettingsIni()
             "; Caesar III\n"
             "[c3]\n"
             "handlemouse=false\n"
-            "forcewmmove=true\n"
+            "sierrahack=true\n"
             "\n"
             "; Pharaoh\n"
             "[Pharaoh]\n"
             "handlemouse=false\n"
-            "forcewmmove=true\n"
+            "sierrahack=true\n"
             "\n"
             "; Master of Olympus - Zeus\n"
             "[Zeus]\n"
             "handlemouse=false\n"
-            "forcewmmove=true\n"
+            "sierrahack=true\n"
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
