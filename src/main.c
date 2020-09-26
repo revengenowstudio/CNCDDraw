@@ -1835,6 +1835,10 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
         ddraw = NULL;
         return 0;
     }
+    else
+    {
+        This->lpVtbl->SetDisplayMode1 = ddraw_SetDisplayMode;
+    }
 
     if (This->ddrawrefcount0)
         return 0;
