@@ -51,7 +51,9 @@ void Settings_Load()
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
 
-    HookingMethod = GetInt("hook", 1);
+#ifdef _MSC_VER
+    HookingMethod = GetInt("hook", 4);
+#endif
     
     ddraw->render.maxfps = GetInt("maxfps", 125);
 
