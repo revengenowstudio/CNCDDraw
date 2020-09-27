@@ -55,7 +55,7 @@ void Settings_Load()
     HookingMethod = GetInt("hook", 4);
 #endif
     
-    ddraw->render.maxfps = GetInt("maxfps", 125);
+    ddraw->render.maxfps = GetInt("maxfps", -1);
 
     if (ddraw->render.maxfps)
         ddraw->render.forcefps = GetBool("forcefps", FALSE);
@@ -229,7 +229,7 @@ static void CreateSettingsIni()
             "\n"
             "; Real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
             "; Note: Does not have an impact on the game speed, to limit your game speed use 'maxgameticks='\n"
-            "maxfps=125\n"
+            "maxfps=-1\n"
             "\n"
             "; Vertical synchronization, enable if you get tearing - (Requires 'renderer=auto/opengl/direct3d9')\n"
             "vsync=false\n"
@@ -290,6 +290,14 @@ static void CreateSettingsIni()
             "; ### Game specific settings ###\n"
             "; The following settings override all settings shown above, section name = executable name\n"
             "\n"
+            "\n"
+            "; Command & Conquer: Red Alert - CnCNet\n"
+            "[ra95-spawn]\n"
+            "maxfps=125\n"
+            "\n"
+            "; Command & Conquer Gold - CnCNet\n"
+            "[cnc95]\n"
+            "maxfps=125\n"
             "\n"
             "; Carmageddon\n"
             "[CARMA95]\n"
