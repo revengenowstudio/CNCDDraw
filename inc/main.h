@@ -131,7 +131,7 @@ typedef struct IDirectDrawImpl
     BOOL hidecursor;
     BOOL accurateTimers;
     BOOL resizable;
-    BOOL ddrawrefcount0;
+    BOOL tm2hack;
     BOOL sierrahack;
     BOOL bnetActive;
     BOOL bnetWasFullscreen;

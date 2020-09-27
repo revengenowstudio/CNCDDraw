@@ -43,7 +43,7 @@ void Settings_Load()
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
     ddraw->resizable = GetBool("resizable", TRUE);
-    ddraw->ddrawrefcount0 = GetBool("ddrawrefcount0", FALSE); // Twisted Metal 2 DirectDraw Error hack
+    ddraw->tm2hack = GetBool("tm2hack", FALSE); // Twisted Metal 2 hack
     ddraw->sierrahack = GetBool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
     WindowRect.right = GetInt("width", 0);
@@ -452,7 +452,7 @@ static void CreateSettingsIni()
             "renderer=gdi\n"
             "maxgameticks=60\n"
             "handlemouse=false\n"
-            "ddrawrefcount0=true\n"
+            "tm2hack=true\n"
             "\n"
             "; Caesar III\n"
             "[c3]\n"
