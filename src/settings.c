@@ -229,7 +229,7 @@ static void CreateSettingsIni()
             "\n"
             "; Real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
             "; Note: Does not have an impact on the game speed, to limit your game speed use 'maxgameticks='\n"
-            "maxfps=-1\n"
+            "maxfps=60\n"
             "\n"
             "; Vertical synchronization, enable if you get tearing - (Requires 'renderer=auto/opengl/direct3d9')\n"
             "vsync=false\n"
