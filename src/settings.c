@@ -246,7 +246,7 @@ static void CreateSettingsIni()
             "adjmouse=false\n"
             "\n"
             "; Preliminary libretro shader support - (Requires 'renderer=opengl') https://github.com/libretro/glsl-shaders\n"
-            "shader=Shaders\\bilinear.glsl\n"
+            "shader=Shaders\\simple-sharp-bilinear.glsl\n"
             "\n"
             "; Window position, -32000 = center to screen\n"
             "posX=-32000\n"
