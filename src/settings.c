@@ -55,7 +55,7 @@ void Settings_Load()
     HookingMethod = GetInt("hook", 4);
 #endif
     
-    ddraw->render.maxfps = GetInt("maxfps", -1);
+    ddraw->render.maxfps = GetInt("maxfps", 60);
 
     if (ddraw->render.maxfps)
         ddraw->render.forcefps = GetBool("forcefps", FALSE);

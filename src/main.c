@@ -583,7 +583,7 @@ HRESULT __stdcall ddraw_RestoreDisplayMode(IDirectDrawImpl *This)
     if(!ddraw->windowed)
     {
         if (!Direct3D9Active)
-            ChangeDisplaySettings(&This->mode, 0);
+            ChangeDisplaySettings(NULL, 0);
     }
 
     return DD_OK;
@@ -996,7 +996,7 @@ void ToggleFullscreen()
         if (Direct3D9Active)
             Direct3D9_Reset();
         else
-            ChangeDisplaySettings(&ddraw->mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
+            ChangeDisplaySettings(NULL, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
 
         ddraw_SetDisplayMode(ddraw, ddraw->width, ddraw->height, ddraw->bpp);
         mouse_lock();
@@ -1463,7 +1463,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     if (!Direct3D9Active)
                     {
                         ShowWindow(ddraw->hWnd, SW_MINIMIZE);
-                        ChangeDisplaySettings(&ddraw->mode, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
+                        ChangeDisplaySettings(NULL, ddraw->bnetActive ? CDS_FULLSCREEN : 0);
                     }
                 }
             }
@@ -1796,7 +1796,7 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
             }
             else if (!ddraw->windowed)
             {
-                ChangeDisplaySettings(&This->mode, 0);
+                ChangeDisplaySettings(NULL, 0);
             }
         }
 
