@@ -9,6 +9,7 @@
 
 static char SettingsIniPath[MAX_PATH];
 static char ProcessFileName[96];
+static int SaveSettings;
 
 static BOOL GetBool(LPCSTR key, BOOL defaultValue);
 static int GetInt(LPCSTR key, int defaultValue);
@@ -50,6 +51,8 @@ void Settings_Load()
     WindowRect.bottom = GetInt("height", 0);
     WindowRect.left = GetInt("posX", -32000);
     WindowRect.top = GetInt("posY", -32000);
+
+    SaveSettings = GetInt("savesettings", 2);
 
 #ifdef _MSC_VER
     HookingMethod = GetInt("hook", 4);
@@ -165,35 +168,39 @@ void Settings_Load()
 
 void Settings_Save(RECT *lpRect, int windowState)
 {
+    if (!SaveSettings)
+        return;
+
     char buf[16];
+    char *section = SaveSettings == 1 ? "ddraw" : ProcessFileName;
 
     if (lpRect->right)
     {
         sprintf(buf, "%ld", lpRect->right);
-        WritePrivateProfileString(ProcessFileName, "width", buf, SettingsIniPath);
+        WritePrivateProfileString(section, "width", buf, SettingsIniPath);
     }
     
     if (lpRect->bottom)
     {
         sprintf(buf, "%ld", lpRect->bottom);
-        WritePrivateProfileString(ProcessFileName, "height", buf, SettingsIniPath);
+        WritePrivateProfileString(section, "height", buf, SettingsIniPath);
     }
 
     if (lpRect->left != -32000)
     {
         sprintf(buf, "%ld", lpRect->left);
-        WritePrivateProfileString(ProcessFileName, "posX", buf, SettingsIniPath);
+        WritePrivateProfileString(section, "posX", buf, SettingsIniPath);
     }
 
     if (lpRect->top != -32000)
     {
         sprintf(buf, "%ld", lpRect->top);
-        WritePrivateProfileString(ProcessFileName, "posY", buf, SettingsIniPath);
+        WritePrivateProfileString(section, "posY", buf, SettingsIniPath);
     }
 
     if (windowState != -1)
     {
-        WritePrivateProfileString(ProcessFileName, "windowed", windowState ? "true" : "false", SettingsIniPath);
+        WritePrivateProfileString(section, "windowed", windowState ? "true" : "false", SettingsIniPath);
     }
 }
 
@@ -253,6 +260,10 @@ static void CreateSettingsIni()
             "\n"
             "; Show window borders in windowed mode\n"
             "border=true\n"
+            "\n"
+            "; Save window position/size/state on game exit and restore it automatically on next game start\n"
+            "; Possible values: 0 = disabled, 1 = save to global 'ddraw' section, 2 = save to game specific section\n"
+            "savesettings=2\n"
             "\n"
             "; Enable C&C video resize hack - Stretches C&C cutscenes to fullscreen\n"
             "vhack=false\n"
