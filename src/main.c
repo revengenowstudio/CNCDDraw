@@ -423,6 +423,7 @@ HRESULT __stdcall ddraw_EnumDisplayModes(IDirectDrawImpl *This, DWORD dwFlags, L
         SIZE resolutions[] =
         {
             { 320, 200 },
+            { 320, 240 },
             { 640, 400 },
             { 640, 480 },
             { 800, 600 },
