@@ -837,6 +837,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         }
     }
 
+    //if (!ddraw->windowed && ddraw->renderer == render_main) This->render.height++;
+
     if (!ddraw->handlemouse)
         This->boxing = maintas = FALSE;
     
