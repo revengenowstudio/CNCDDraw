@@ -690,8 +690,23 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
     if (ddraw->altenter)
     {
         ddraw->altenter = FALSE;
-        This->render.width = ddraw->width;
-        This->render.height = ddraw->height;
+
+        memset(&This->render.mode, 0, sizeof(DEVMODE));
+        This->render.mode.dmSize = sizeof(DEVMODE);
+        This->render.mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+        This->render.mode.dmPelsWidth = This->render.width;
+        This->render.mode.dmPelsHeight = This->render.height;
+        if (This->render.bpp)
+        {
+            This->render.mode.dmFields |= DM_BITSPERPEL;
+            This->render.mode.dmBitsPerPel = This->render.bpp;
+        }
+
+        if (ChangeDisplaySettings(&This->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+        {
+            This->render.width = ddraw->width;
+            This->render.height = ddraw->height;
+        }
     }
     else
     {
