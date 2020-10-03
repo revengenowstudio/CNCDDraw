@@ -962,7 +962,8 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
         if (!Direct3D9Active && ChangeDisplaySettings(&This->render.mode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
         {
             This->render.run = FALSE;
-            return DDERR_INVALIDMODE;
+            This->windowed = TRUE;
+            return ddraw_SetDisplayMode(This, width, height, bpp);
         }
 
         if (ddraw->wine)
