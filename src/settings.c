@@ -106,7 +106,7 @@ void Settings_Load()
             SetProcessAffinityMask(proc, systemAffinity);
     }
 
-    ddraw->render.bpp = GetInt("bpp", 32);
+    ddraw->render.bpp = GetInt("bpp", 0);
     if (ddraw->render.bpp != 16 && ddraw->render.bpp != 24 && ddraw->render.bpp != 32)
         ddraw->render.bpp = 0;
 

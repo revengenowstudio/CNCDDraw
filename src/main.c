@@ -665,8 +665,17 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
 
         if (EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &This->mode) == FALSE)
         {
-            /* not expected */
-            return DDERR_UNSUPPORTED;
+            This->mode.dmSize = sizeof(DEVMODE);
+            This->mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT | DM_BITSPERPEL | DM_DISPLAYFREQUENCY;
+            This->mode.dmPelsWidth = real_GetSystemMetrics(SM_CXSCREEN);
+            This->mode.dmPelsHeight = real_GetSystemMetrics(SM_CYSCREEN);
+            This->mode.dmDisplayFrequency = 60;
+            This->mode.dmBitsPerPel = 32;
+
+            if (!This->mode.dmPelsWidth || !This->mode.dmPelsHeight)
+            {
+                This->fullscreen = FALSE;
+            }
         }
 
         const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, real_GetSystemMetrics(SM_CXICON), real_GetSystemMetrics(SM_CYICON), 0);
@@ -906,8 +915,10 @@ HRESULT __stdcall ddraw_SetDisplayMode(IDirectDrawImpl *This, DWORD width, DWORD
             real_SetWindowLongA(This->hWnd, GWL_STYLE, (GetWindowLong(This->hWnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
 
         /* center the window with correct dimensions */
-        int x = (WindowRect.left != -32000) ? WindowRect.left : (This->mode.dmPelsWidth / 2) - (This->render.width / 2);
-        int y = (WindowRect.top != -32000) ? WindowRect.top : (This->mode.dmPelsHeight / 2) - (This->render.height / 2);
+        int cy = This->mode.dmPelsWidth ? This->mode.dmPelsWidth : This->render.width;
+        int cx = This->mode.dmPelsHeight ? This->mode.dmPelsHeight : This->render.height;
+        int x = (WindowRect.left != -32000) ? WindowRect.left : (cy / 2) - (This->render.width / 2);
+        int y = (WindowRect.top != -32000) ? WindowRect.top : (cx / 2) - (This->render.height / 2);
         RECT dst = { x, y, This->render.width + x, This->render.height + y };
         AdjustWindowRect(&dst, GetWindowLong(This->hWnd, GWL_STYLE), FALSE);
         real_SetWindowPos(ddraw->hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
