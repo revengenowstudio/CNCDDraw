@@ -681,10 +681,6 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
     if(This->caps & DDSCAPS_PRIMARYSURFACE && ddraw->render.run)
     {
-        FILETIME lastFlipFT = { 0 };
-        if (ddraw->flipLimiter.hTimer)
-            GetSystemTimeAsFileTime(&lastFlipFT);
-
         This->lastFlipTick = timeGetTime();
 
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
@@ -693,34 +689,7 @@ HRESULT __stdcall ddraw_surface_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWS
 
         if (flags & DDFLIP_WAIT)
         {
-            if (ddraw->flipLimiter.hTimer)
-            {
-                if (!ddraw->flipLimiter.dueTime.QuadPart)
-                {
-                    memcpy(&ddraw->flipLimiter.dueTime, &lastFlipFT, sizeof(LARGE_INTEGER));
-                }
-                else
-                {
-                    while (CompareFileTime((FILETIME *)&ddraw->flipLimiter.dueTime, &lastFlipFT) == -1)
-                        ddraw->flipLimiter.dueTime.QuadPart += ddraw->flipLimiter.tickLengthNs;
-
-                    SetWaitableTimer(ddraw->flipLimiter.hTimer, &ddraw->flipLimiter.dueTime, 0, NULL, NULL, FALSE);
-                    WaitForSingleObject(ddraw->flipLimiter.hTimer, ddraw->flipLimiter.ticklength * 2);
-                }
-            }
-            else
-            {
-                DWORD tick = This->lastFlipTick;
-                while (tick % ddraw->flipLimiter.ticklength) tick++;
-                int sleepTime = tick - This->lastFlipTick;
-
-                int renderTime = timeGetTime() - This->lastFlipTick;
-                if (renderTime > 0)
-                    sleepTime -= renderTime;
-
-                if (sleepTime > 0 && sleepTime <= ddraw->flipLimiter.ticklength)
-                    Sleep(sleepTime);
-            }
+            IDirectDraw_WaitForVerticalBlank(ddraw, DDWAITVB_BLOCKEND, NULL);
         }
 
         if (ddraw->ticksLimiter.ticklength > 0)

@@ -1747,11 +1747,49 @@ HRESULT __stdcall ddraw_SetCooperativeLevel(IDirectDrawImpl *This, HWND hWnd, DW
     return DD_OK;
 }
 
-HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD a, HANDLE b)
+HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD dwFlags, HANDLE h)
 {
 #if _DEBUG_X
-    printf("??? DirectDraw::WaitForVerticalBlank(This=%p, ...)\n", This);
+    printf("DirectDraw::WaitForVerticalBlank(This=%p, flags=%08X, handle=%p)\n", This, dwFlags, h);
 #endif
+
+    FILETIME lastFlipFT = { 0 };
+    if (ddraw->flipLimiter.hTimer)
+        GetSystemTimeAsFileTime(&lastFlipFT);
+
+    if (ddraw->flipLimiter.hTimer)
+    {
+        if (!ddraw->flipLimiter.dueTime.QuadPart)
+        {
+            memcpy(&ddraw->flipLimiter.dueTime, &lastFlipFT, sizeof(LARGE_INTEGER));
+        }
+        else
+        {
+            while (CompareFileTime((FILETIME*)&ddraw->flipLimiter.dueTime, &lastFlipFT) == -1)
+                ddraw->flipLimiter.dueTime.QuadPart += ddraw->flipLimiter.tickLengthNs;
+
+            SetWaitableTimer(ddraw->flipLimiter.hTimer, &ddraw->flipLimiter.dueTime, 0, NULL, NULL, FALSE);
+            WaitForSingleObject(ddraw->flipLimiter.hTimer, ddraw->flipLimiter.ticklength * 2);
+        }
+    }
+    else
+    {
+        static DWORD nextGameTick;
+        if (!nextGameTick)
+        {
+            nextGameTick = timeGetTime();
+            return;
+        }
+        nextGameTick += ddraw->flipLimiter.ticklength;
+        DWORD tickCount = timeGetTime();
+
+        int sleepTime = nextGameTick - tickCount;
+        if (sleepTime <= 0 || sleepTime > ddraw->flipLimiter.ticklength)
+            nextGameTick = tickCount;
+        else
+            Sleep(sleepTime);
+    }
+
     return DD_OK;
 }
 
