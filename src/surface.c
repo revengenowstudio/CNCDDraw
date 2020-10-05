@@ -607,9 +607,6 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
         if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
         {
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-
-            if (ddraw->ticksLimiter.ticklength > 0 && !ddraw->ticksLimiter.useBltOrFlip)
-                LimitGameTicks();
         }
     }
 
