@@ -460,18 +460,20 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
         }
     }
 
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && 
-        ddraw->render.run &&
-        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
+    if((This->caps & DDSCAPS_PRIMARYSURFACE) && ddraw->render.run)
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
-        SwitchToThread();
 
-        if (ddraw->ticksLimiter.ticklength > 0)
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
         {
-            ddraw->ticksLimiter.useBltOrFlip = TRUE;
-            LimitGameTicks();
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+            SwitchToThread();
+
+            if (ddraw->ticksLimiter.ticklength > 0)
+            {
+                ddraw->ticksLimiter.useBltOrFlip = TRUE;
+                LimitGameTicks();
+            }
         }
     }
 
@@ -598,12 +600,17 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
         }
     }
 
-    if (This->caps & DDSCAPS_PRIMARYSURFACE &&
-        ddraw->render.run &&
-        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && ddraw->render.run)
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
+        {
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+
+            if (ddraw->ticksLimiter.ticklength > 0 && !ddraw->ticksLimiter.useBltOrFlip)
+                LimitGameTicks();
+        }
     }
 
     return DD_OK;
@@ -1017,15 +1024,17 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
         }
     }
 
-    if (This->caps & DDSCAPS_PRIMARYSURFACE &&
-        ddraw->render.run &&
-        (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime()))
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && ddraw->render.run)
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
-        ReleaseSemaphore(ddraw->render.sem, 1, NULL);
 
-        if (ddraw->ticksLimiter.ticklength > 0 && !ddraw->ticksLimiter.useBltOrFlip)
-            LimitGameTicks();
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
+        {
+            ReleaseSemaphore(ddraw->render.sem, 1, NULL);
+
+            if (ddraw->ticksLimiter.ticklength > 0 && !ddraw->ticksLimiter.useBltOrFlip)
+                LimitGameTicks();
+        }
     }
 
     return DD_OK;

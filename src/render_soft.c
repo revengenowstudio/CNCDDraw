@@ -62,7 +62,7 @@ DWORD WINAPI render_soft_main(void)
     }
 
     while (ddraw->render.run &&
-        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED))
+        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
         DrawFrameInfoStart();

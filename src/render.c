@@ -566,7 +566,7 @@ static void Render()
         glEnable(GL_TEXTURE_2D);
 
     while (UseOpenGL && ddraw->render.run &&
-        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, INFINITE) != WAIT_FAILED))
+        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
         DrawFrameInfoStart();
