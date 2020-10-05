@@ -1778,7 +1778,7 @@ HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD dwFlag
         if (!nextGameTick)
         {
             nextGameTick = timeGetTime();
-            return;
+            return DD_OK;
         }
         nextGameTick += ddraw->flipLimiter.ticklength;
         DWORD tickCount = timeGetTime();
