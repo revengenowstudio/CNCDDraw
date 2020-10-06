@@ -51,6 +51,7 @@ typedef struct IDirectDrawSurfaceImpl
     HDC hDC;
     DDCOLORKEY colorKey;
     DWORD lastFlipTick;
+    DWORD lastBltTick;
 
 } IDirectDrawSurfaceImpl;
 

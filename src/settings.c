@@ -462,8 +462,6 @@ static void CreateSettingsIni()
             "[TWISTED]\n"
             "renderer=gdi\n"
             "maxgameticks=25\n"
-            "maxfps=60\n"
-            "forcefps=true\n"
             "\n"
             "; Twisted Metal 2\n"
             "[Tm2]\n"

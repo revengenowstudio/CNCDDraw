@@ -466,6 +466,8 @@ HRESULT __stdcall ddraw_surface_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestR
 
         if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
         {
+            This->lastBltTick = timeGetTime();
+
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
             SwitchToThread();
 
@@ -604,7 +606,10 @@ HRESULT __stdcall ddraw_surface_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
 
-        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
+        DWORD time = timeGetTime();
+
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || 
+            (This->lastFlipTick + FLIP_REDRAW_TIMEOUT < time && This->lastBltTick + FLIP_REDRAW_TIMEOUT < time))
         {
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
         }
@@ -1025,7 +1030,10 @@ HRESULT __stdcall ddraw_surface_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRe
     {
         InterlockedExchange(&ddraw->render.surfaceUpdated, TRUE);
 
-        if (!(This->flags & DDSD_BACKBUFFERCOUNT) || This->lastFlipTick + FLIP_REDRAW_TIMEOUT < timeGetTime())
+        DWORD time = timeGetTime();
+
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) ||
+            (This->lastFlipTick + FLIP_REDRAW_TIMEOUT < time && This->lastBltTick + FLIP_REDRAW_TIMEOUT < time))
         {
             ReleaseSemaphore(ddraw->render.sem, 1, NULL);
 
