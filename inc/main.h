@@ -133,6 +133,7 @@ typedef struct IDirectDrawImpl
     BOOL resizable;
     BOOL tm2hack;
     BOOL sierrahack;
+    BOOL nonexclusive;
     BOOL bnetActive;
     BOOL bnetWasFullscreen;
     BOOL bnetWasUpscaled;

@@ -44,6 +44,7 @@ void Settings_Load()
     ddraw->vhack = GetBool("vhack", FALSE);
     ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
     ddraw->resizable = GetBool("resizable", TRUE);
+    ddraw->nonexclusive = GetBool("nonexclusive", FALSE);
     ddraw->tm2hack = GetBool("tm2hack", FALSE); // Twisted Metal 2 hack
     ddraw->sierrahack = GetBool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
@@ -267,6 +268,9 @@ static void CreateSettingsIni()
             "; Possible values: 0 = disabled, 1 = save to global 'ddraw' section, 2 = save to game specific section\n"
             "savesettings=2\n"
             "\n"
+            "; Should the window be resizeable by the user in windowed mode?\n"
+            "resizeable=true\n"
+            "\n"
             "; Enable C&C video resize hack - Stretches C&C cutscenes to fullscreen\n"
             "vhack=false\n"
             "\n"
@@ -292,8 +296,12 @@ static void CreateSettingsIni()
             "hook=4\n"
             "\n"
             "; Force consistent FPS (Requires 'maxfps=' to be set to a value other than 0)\n"
-            "; Note: Fixes flickering cursor issues in C&C games\n"
+            "; Note: Fixes flickering cursor issues in C&C games (Might be useful for some screen recorders too)\n"
             "forcefps=false\n"
+            "\n"
+            "; Disable fullscreen-exclusive mode for the OpenGL renderer\n"
+            "; Note: Can be used in case some GUI elements like buttons/textboxes/videos/etc.. are invisible\n"
+            "nonexclusive=false\n"
             "\n"
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"
