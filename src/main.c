@@ -1752,13 +1752,14 @@ HRESULT __stdcall ddraw_WaitForVerticalBlank(IDirectDrawImpl *This, DWORD dwFlag
 #if _DEBUG_X
     printf("DirectDraw::WaitForVerticalBlank(This=%p, flags=%08X, handle=%p)\n", This, dwFlags, h);
 #endif
-
-    FILETIME lastFlipFT = { 0 };
-    if (ddraw->flipLimiter.hTimer)
-        GetSystemTimeAsFileTime(&lastFlipFT);
+    if (!ddraw->flipLimiter.ticklength)
+        return DD_OK;
 
     if (ddraw->flipLimiter.hTimer)
     {
+        FILETIME lastFlipFT = { 0 };
+        GetSystemTimeAsFileTime(&lastFlipFT);
+
         if (!ddraw->flipLimiter.dueTime.QuadPart)
         {
             memcpy(&ddraw->flipLimiter.dueTime, &lastFlipFT, sizeof(LARGE_INTEGER));

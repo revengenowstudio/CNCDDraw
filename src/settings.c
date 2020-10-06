@@ -78,14 +78,16 @@ void Settings_Load()
         ddraw->ticksLimiter.ticklength = len + 0.5f;
     }
 
-    //always using 60 fps for flip...
-    if (ddraw->accurateTimers)
-        ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+    if (maxTicks >= 0)
+    {
+        //always using 60 fps for flip...
+        if (ddraw->accurateTimers)
+            ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
-    float flipLen = 1000.0f / 60;
-    ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
-    ddraw->flipLimiter.ticklength = flipLen + 0.5f;
-
+        float flipLen = 1000.0f / 60;
+        ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
+        ddraw->flipLimiter.ticklength = flipLen + 0.5f;
+    }
 
     if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
         WindowRect.left = WindowRect.top = -32000;
@@ -277,7 +279,7 @@ static void CreateSettingsIni()
             "; Hide WM_ACTIVATEAPP messages to prevent problems on alt+tab\n"
             "noactivateapp=false\n"
             "\n"
-            "; Max game ticks per second, possible values: 0-1000\n"
+            "; Max game ticks per second, possible values: -1 = disabled, 0 = emulate 60hz vblank, 1-1000 = custom game speed\n"
             "; Note: Can be used to slow down a too fast running game, fix flickering or too fast animations\n"
             "maxgameticks=0\n"
             "\n"
