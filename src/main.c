@@ -1909,8 +1909,7 @@ ULONG __stdcall ddraw_Release(IDirectDrawImpl *This)
     }
     else
     {
-        if (!This->tm2hack)
-            This->lpVtbl->SetDisplayMode1 = ddraw_SetDisplayMode;
+        //    This->lpVtbl->SetDisplayMode1 = ddraw_SetDisplayMode;
     }
 
     if (This->tm2hack)
