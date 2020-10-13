@@ -1,38 +1,20 @@
-/*
- * Copyright (c) 2010 Toni Spets <toni.spets@iki.fi>
- *
- * Permission to use, copy, modify, and distribute this software for any
- * purpose with or without fee is hereby granted, provided that the above
- * copyright notice and this permission notice appear in all copies.
- *
- * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
- * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
- * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
- * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
- * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
- * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+#ifndef IDIRECTDRAWSURFACE_H
+#define IDIRECTDRAWSURFACE_H
 
-#ifndef SURFACE_H
-#define SURFACE_H
-
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "IDirectDrawPalette.h"
 #include "ddraw.h"
-#include "palette.h"
 
-HRESULT __stdcall ddraw_CreateSurface(IDirectDrawImpl *This, LPDDSURFACEDESC DDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *DDSurface, IUnknown FAR * unkOuter);
 
 struct IDirectDrawSurfaceImpl;
 struct IDirectDrawSurfaceImplVtbl;
-
-extern struct IDirectDrawSurfaceImpl *ddraw_primary;
 
 typedef struct IDirectDrawSurfaceImpl
 {
     struct IDirectDrawSurfaceImplVtbl *lpVtbl;
 
-    ULONG Ref;
+    ULONG ref;
 
     DWORD width;
     DWORD height;
@@ -43,17 +25,19 @@ typedef struct IDirectDrawSurfaceImpl
     IDirectDrawPaletteImpl *palette;
 
     void *surface;
-    DWORD lPitch;
-    DWORD lXPitch;
+    DWORD l_pitch;
+    DWORD lx_pitch;
 
     PBITMAPINFO bmi;
     HBITMAP bitmap;
-    HDC hDC;
-    DDCOLORKEY colorKey;
-    DWORD lastFlipTick;
-    DWORD lastBltTick;
+    HDC hdc;
+    DDCOLORKEY color_key;
+    DWORD last_flip_tick;
+    DWORD last_blt_tick;
 
 } IDirectDrawSurfaceImpl;
+
+typedef struct IDirectDrawSurfaceImplVtbl IDirectDrawSurfaceImplVtbl;
 
 struct IDirectDrawSurfaceImplVtbl
 {
@@ -96,7 +80,8 @@ struct IDirectDrawSurfaceImplVtbl
     HRESULT (__stdcall *UpdateOverlay)(IDirectDrawSurfaceImpl*, LPRECT, LPDIRECTDRAWSURFACE,LPRECT,DWORD, LPDDOVERLAYFX);
     HRESULT (__stdcall *UpdateOverlayDisplay)(IDirectDrawSurfaceImpl*, DWORD);
     HRESULT (__stdcall *UpdateOverlayZOrder)(IDirectDrawSurfaceImpl*, DWORD, LPDIRECTDRAWSURFACE);
-} IDirectDrawSurfaceImplVtbl;
+};
 
+extern struct IDirectDrawSurfaceImplVtbl g_dds_vtbl;
 
 #endif

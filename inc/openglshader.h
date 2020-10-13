@@ -1,6 +1,9 @@
+#ifndef OPENGLSHADER_H
+#define OPENGLSHADER_H
+
 // old
 
-const char PassthroughVertShader110Src[] =
+const char PASSTHROUGH_VERT_SHADER_110[] =
     "#version 110\n"
     "varying vec2 TEX0; \n"
     "\n"
@@ -10,7 +13,7 @@ const char PassthroughVertShader110Src[] =
     "    TEX0 = gl_MultiTexCoord0.xy; \n"
     "}\n";
 
-const char PaletteFragShader110Src[] =
+const char PALETTE_FRAG_SHADER_110[] =
     "#version 110\n"
     "uniform sampler2D SurfaceTex; \n"
     "uniform sampler2D PaletteTex; \n"
@@ -23,7 +26,7 @@ const char PaletteFragShader110Src[] =
     "}\n";
 
 
-const char PassthroughFragShader110Src[] =
+const char PASSTHROUGH_FRAG_SHADER_110[] =
     "#version 110\n"
     "uniform sampler2D SurfaceTex; \n"
     "varying vec2 TEX0; \n"
@@ -36,7 +39,7 @@ const char PassthroughFragShader110Src[] =
 
 // new 
 
-const char PassthroughVertShaderSrc[] =
+const char PASSTHROUGH_VERT_SHADER[] =
     "#version 130\n"
     "in vec4 VertexCoord;\n"
     "in vec4 COLOR;\n"
@@ -53,7 +56,7 @@ const char PassthroughVertShaderSrc[] =
     "}\n";
 
 
-const char PaletteFragShaderSrc[] =
+const char PALETTE_FRAG_SHADER[] =
     "#version 130\n"
     "out vec4 FragColor;\n"
     "uniform sampler2D SurfaceTex;\n"
@@ -67,7 +70,7 @@ const char PaletteFragShaderSrc[] =
     "}\n";
 
 
-const char PassthroughFragShaderSrc[] =
+const char PASSTHROUGH_FRAG_SHADER[] =
     "#version 130\n"
     "out vec4 FragColor;\n"
     "uniform sampler2D SurfaceTex;\n"
@@ -78,3 +81,5 @@ const char PassthroughFragShaderSrc[] =
     "    vec4 texel = texture(SurfaceTex, TEX0.xy);\n"
     "    FragColor = texel;\n"
     "}\n";
+
+#endif

@@ -16,51 +16,24 @@
     <Filter Include="Source Files\detours">
       <UniqueIdentifier>{af194dd7-3316-4887-93d6-9f2af2135f94}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\IDirectDraw">
+      <UniqueIdentifier>{37ee5b88-e57f-4c55-a43e-e475cf4e8920}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\clipper.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\debug.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\mouse.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\palette.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\render.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\render_soft.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\screenshot.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\surface.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\opengl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\render_d3d9.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\settings.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\lodepng.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\dinput.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\hook.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\detours\disolx64.cpp">
@@ -96,33 +69,69 @@
     <ClCompile Include="src\detours\disolia64.cpp">
       <Filter>Source Files\detours</Filter>
     </ClCompile>
+    <ClCompile Include="src\hook.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirectDraw\IDirectDraw.c">
+      <Filter>Source Files\IDirectDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dllmain.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\wndproc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_ogl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirectDraw\IDirectDrawPalette.c">
+      <Filter>Source Files\IDirectDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddpalette.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirectDraw\IDirectDrawClipper.c">
+      <Filter>Source Files\IDirectDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddclipper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirectDraw\IDirectDrawSurface.c">
+      <Filter>Source Files\IDirectDraw</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ddsurface.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\winapi_hooks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\directinput.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\render_gdi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\opengl_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\clipper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\ddraw.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\main.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\palette.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\surface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\opengl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\openglshader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="inc\d3d9shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\render_d3d9.h">
@@ -144,6 +153,63 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\hook.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IDirectDraw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\directinput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\wndproc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\screenshot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\render_ogl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IDirectDrawPalette.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ddpalette.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IDirectDrawClipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ddclipper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IDirectDrawSurface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\ddsurface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\winapi_hooks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\d3d9shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\dllmain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\render_gdi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\opengl_utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

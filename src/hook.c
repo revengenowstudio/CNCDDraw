@@ -1,15 +1,18 @@
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
-#include "main.h"
-#include "mouse.h"
+#include "dd.h"
+#include "winapi_hooks.h"
 #include "hook.h"
+#include "dllmain.h"
 
 #ifdef _MSC_VER
 #include "detours.h"
 #endif
 
-BOOL Hook_Active;
-int HookingMethod = 1;
+BOOL g_hook_active;
+int g_hook_method = 1;
+
 GETCURSORPOSPROC real_GetCursorPos = GetCursorPos;
 CLIPCURSORPROC real_ClipCursor = ClipCursor;
 SHOWCURSORPROC real_ShowCursor = ShowCursor;
@@ -37,66 +40,66 @@ LOADLIBRARYEXAPROC real_LoadLibraryExA = LoadLibraryExA;
 LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
 
 
-void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction)
+void hook_patch_iat(HMODULE hmod, char *module_name, char *function_name, PROC new_function)
 {
-    if (!hMod || hMod == INVALID_HANDLE_VALUE || !newFunction)
+    if (!hmod || hmod == INVALID_HANDLE_VALUE || !new_function)
         return;
 
 #ifdef _MSC_VER
     __try
     {
 #endif
-        PIMAGE_DOS_HEADER pDosHeader = (PIMAGE_DOS_HEADER)hMod;
-        if (pDosHeader->e_magic != IMAGE_DOS_SIGNATURE)
+        PIMAGE_DOS_HEADER dos_header = (PIMAGE_DOS_HEADER)hmod;
+        if (dos_header->e_magic != IMAGE_DOS_SIGNATURE)
             return;
 
-        PIMAGE_NT_HEADERS pNTHeaders = (PIMAGE_NT_HEADERS)((DWORD)pDosHeader + (DWORD)pDosHeader->e_lfanew);
-        if (pNTHeaders->Signature != IMAGE_NT_SIGNATURE)
+        PIMAGE_NT_HEADERS nt_headers = (PIMAGE_NT_HEADERS)((DWORD)dos_header + (DWORD)dos_header->e_lfanew);
+        if (nt_headers->Signature != IMAGE_NT_SIGNATURE)
             return;
 
-        PIMAGE_IMPORT_DESCRIPTOR pImportDescriptor = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)pDosHeader +
-            (DWORD)(pNTHeaders->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
+        PIMAGE_IMPORT_DESCRIPTOR import_desc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)dos_header +
+            (DWORD)(nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
 
-        if (pImportDescriptor == (PIMAGE_IMPORT_DESCRIPTOR)pNTHeaders)
+        if (import_desc == (PIMAGE_IMPORT_DESCRIPTOR)nt_headers)
             return;
 
-        while (pImportDescriptor->FirstThunk)
+        while (import_desc->FirstThunk)
         {
-            char* impModuleName = (char*)((DWORD)pDosHeader + (DWORD)(pImportDescriptor->Name));
+            char* imp_module_name = (char*)((DWORD)dos_header + (DWORD)(import_desc->Name));
 
-            if (_stricmp(impModuleName, moduleName) == 0)
+            if (_stricmp(imp_module_name, module_name) == 0)
             {
-                PIMAGE_THUNK_DATA pFirstThunk =
-                    (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->FirstThunk);
+                PIMAGE_THUNK_DATA first_thunk =
+                    (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->FirstThunk);
 
-                PIMAGE_THUNK_DATA pOrigFirstThunk =
-                    (PIMAGE_THUNK_DATA)((DWORD)pDosHeader + (DWORD)pImportDescriptor->OriginalFirstThunk);
+                PIMAGE_THUNK_DATA original_first_thunk =
+                    (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->OriginalFirstThunk);
 
-                while (pFirstThunk->u1.Function && pOrigFirstThunk->u1.AddressOfData)
+                while (first_thunk->u1.Function && original_first_thunk->u1.AddressOfData)
                 {
-                    PIMAGE_IMPORT_BY_NAME pImport =
-                        (PIMAGE_IMPORT_BY_NAME)((DWORD)pDosHeader + pOrigFirstThunk->u1.AddressOfData);
+                    PIMAGE_IMPORT_BY_NAME import =
+                        (PIMAGE_IMPORT_BY_NAME)((DWORD)dos_header + original_first_thunk->u1.AddressOfData);
 
-                    if ((pOrigFirstThunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0 &&
-                        _stricmp((const char*)pImport->Name, functionName) == 0)
+                    if ((original_first_thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0 &&
+                        _stricmp((const char*)import->Name, function_name) == 0)
                     {
-                        DWORD oldProtect;
+                        DWORD old_protect;
 
-                        if (VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &oldProtect))
+                        if (VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &old_protect))
                         {
-                            pFirstThunk->u1.Function = (DWORD)newFunction;
-                            VirtualProtect(&pFirstThunk->u1.Function, sizeof(DWORD), oldProtect, &oldProtect);
+                            first_thunk->u1.Function = (DWORD)new_function;
+                            VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), old_protect, &old_protect);
                         }
 
                         break;
                     }
 
-                    pFirstThunk++;
-                    pOrigFirstThunk++;
+                    first_thunk++;
+                    original_first_thunk++;
                 }
             }
 
-            pImportDescriptor++;
+            import_desc++;
         }
 #ifdef _MSC_VER
     }
@@ -106,42 +109,42 @@ void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newF
 #endif
 }
 
-void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function)
+void hook_create(char *module_name, char *function_name, PROC new_function, PROC *function)
 {
 #ifdef _MSC_VER
-    if (HookingMethod == 2)
+    if (g_hook_method == 2)
     {
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
-        DetourAttach((PVOID *)function, (PVOID)newFunction);
+        DetourAttach((PVOID *)function, (PVOID)new_function);
         DetourTransactionCommit();
     }
 
-    if (HookingMethod == 3 || HookingMethod == 4)
+    if (g_hook_method == 3 || g_hook_method == 4)
     {
-        WCHAR gameExePath[MAX_PATH] = { 0 };
-        WCHAR gameDir[MAX_PATH] = { 0 };
+        WCHAR game_exe_path[MAX_PATH] = { 0 };
+        WCHAR game_dir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameW(NULL, gameExePath, MAX_PATH))
+        if (GetModuleFileNameW(NULL, game_exe_path, MAX_PATH))
         {
-            _wsplitpath(gameExePath, NULL, gameDir, NULL, NULL);
+            _wsplitpath(game_exe_path, NULL, game_dir, NULL, NULL);
 
-            WCHAR modPath[MAX_PATH] = { 0 };
-            WCHAR modDir[MAX_PATH] = { 0 };
-            HMODULE hMod = NULL;
+            WCHAR mod_path[MAX_PATH] = { 0 };
+            WCHAR mod_dir[MAX_PATH] = { 0 };
+            HMODULE hmod = NULL;
 
-            while (hMod = DetourEnumerateModules(hMod))
+            while (hmod = DetourEnumerateModules(hmod))
             {
-                if (hMod == DDrawModule)
+                if (hmod == g_ddraw_module)
                     continue;
 
-                if (GetModuleFileNameW(hMod, modPath, MAX_PATH))
+                if (GetModuleFileNameW(hmod, mod_path, MAX_PATH))
                 {
-                    _wsplitpath(modPath, NULL, modDir, NULL, NULL);
+                    _wsplitpath(mod_path, NULL, mod_dir, NULL, NULL);
 
-                    if (_wcsnicmp(gameDir, modDir, wcslen(gameDir)) == 0)
+                    if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        Hook_PatchIAT(hMod, moduleName, functionName, newFunction);
+                        hook_patch_iat(hmod, module_name, function_name, new_function);
                     }
                 }
             }
@@ -149,53 +152,53 @@ void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *f
     }
 #endif
 
-    if (HookingMethod == 1)
+    if (g_hook_method == 1)
     {
-        Hook_PatchIAT(GetModuleHandle(NULL), moduleName, functionName, newFunction);
-        Hook_PatchIAT(GetModuleHandle("storm.dll"), moduleName, functionName, newFunction);
+        hook_patch_iat(GetModuleHandle(NULL), module_name, function_name, new_function);
+        hook_patch_iat(GetModuleHandle("storm.dll"), module_name, function_name, new_function);
     }
 }
 
-void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function)
+void hook_revert(char *module_name, char *function_name, PROC new_function, PROC *function)
 {
 #ifdef _MSC_VER
-    if (HookingMethod == 2)
+    if (g_hook_method == 2)
     {
         DetourTransactionBegin();
         DetourUpdateThread(GetCurrentThread());
-        DetourDetach((PVOID *)function, (PVOID)newFunction);
+        DetourDetach((PVOID *)function, (PVOID)new_function);
         DetourTransactionCommit();
     }
 
-    if (HookingMethod == 3 || HookingMethod == 4)
+    if (g_hook_method == 3 || g_hook_method == 4)
     {
-        WCHAR gameExePath[MAX_PATH] = { 0 };
-        WCHAR gameDir[MAX_PATH] = { 0 };
+        WCHAR game_exe_path[MAX_PATH] = { 0 };
+        WCHAR game_dir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameW(NULL, gameExePath, MAX_PATH))
+        if (GetModuleFileNameW(NULL, game_exe_path, MAX_PATH))
         {
-            _wsplitpath(gameExePath, NULL, gameDir, NULL, NULL);
+            _wsplitpath(game_exe_path, NULL, game_dir, NULL, NULL);
 
-            WCHAR modPath[MAX_PATH] = { 0 };
-            WCHAR modDir[MAX_PATH] = { 0 };
-            HMODULE hMod = NULL;
+            WCHAR mod_path[MAX_PATH] = { 0 };
+            WCHAR mod_dir[MAX_PATH] = { 0 };
+            HMODULE hmod = NULL;
 
-            while (hMod = DetourEnumerateModules(hMod))
+            while (hmod = DetourEnumerateModules(hmod))
             {
-                if (hMod == DDrawModule)
+                if (hmod == g_ddraw_module)
                     continue;
 
-                if (GetModuleFileNameW(hMod, modPath, MAX_PATH))
+                if (GetModuleFileNameW(hmod, mod_path, MAX_PATH))
                 {
-                    _wsplitpath(modPath, NULL, modDir, NULL, NULL);
+                    _wsplitpath(mod_path, NULL, mod_dir, NULL, NULL);
 
-                    if (_wcsnicmp(gameDir, modDir, wcslen(gameDir)) == 0)
+                    if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        Hook_PatchIAT(
-                            hMod,
-                            moduleName,
-                            functionName,
-                            GetProcAddress(GetModuleHandle(moduleName), functionName));
+                        hook_patch_iat(
+                            hmod,
+                            module_name,
+                            function_name,
+                            GetProcAddress(GetModuleHandle(module_name), function_name));
                     }
                 }
             }
@@ -203,28 +206,28 @@ void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *f
     }
 #endif
 
-    if (HookingMethod == 1)
+    if (g_hook_method == 1)
     {
-        Hook_PatchIAT(
+        hook_patch_iat(
             GetModuleHandle(NULL), 
-            moduleName, 
-            functionName, 
-            GetProcAddress(GetModuleHandle(moduleName), functionName));
+            module_name, 
+            function_name, 
+            GetProcAddress(GetModuleHandle(module_name), function_name));
 
-        Hook_PatchIAT(
+        hook_patch_iat(
             GetModuleHandle("storm.dll"),
-            moduleName,
-            functionName,
-            GetProcAddress(GetModuleHandle(moduleName), functionName));
+            module_name,
+            function_name,
+            GetProcAddress(GetModuleHandle(module_name), function_name));
     }
 }
 
-void Hook_Init()
+void hook_init()
 {
-    if (!Hook_Active || HookingMethod == 3 || HookingMethod == 4)
+    if (!g_hook_active || g_hook_method == 3 || g_hook_method == 4)
     {
 #ifdef _MSC_VER
-        if (!Hook_Active && HookingMethod == 3)
+        if (!g_hook_active && g_hook_method == 3)
         {
             FARPROC proc = GetProcAddress(GetModuleHandle("kernelbase.dll"), "LoadLibraryExW");
 
@@ -238,48 +241,48 @@ void Hook_Init()
         }
 #endif
 
-        Hook_Active = TRUE;
+        g_hook_active = TRUE;
 
-        Hook_Create("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
-        Hook_Create("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
-        Hook_Create("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
-        Hook_Create("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
-        Hook_Create("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
-        Hook_Create("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
-        Hook_Create("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
-        Hook_Create("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
-        Hook_Create("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
-        Hook_Create("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
-        Hook_Create("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
-        Hook_Create("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
-        Hook_Create("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
-        Hook_Create("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
-        Hook_Create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
-        Hook_Create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
-        Hook_Create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
-        Hook_Create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
-        Hook_Create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
-        Hook_Create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
-        Hook_Create("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
+        hook_create("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
+        hook_create("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
+        hook_create("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
+        hook_create("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
+        hook_create("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
+        hook_create("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
+        hook_create("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
+        hook_create("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
+        hook_create("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
+        hook_create("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
+        hook_create("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
+        hook_create("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
+        hook_create("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
+        hook_create("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
+        hook_create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
+        hook_create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
+        hook_create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        hook_create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
+        hook_create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
+        hook_create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
+        hook_create("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
 
-        if (HookingMethod == 4)
+        if (g_hook_method == 4)
         {
-            Hook_Create("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
-            Hook_Create("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
-            Hook_Create("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
-            Hook_Create("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
+            hook_create("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
+            hook_create("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
+            hook_create("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
+            hook_create("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
         }
     }
 }
 
-void Hook_Exit()
+void hook_exit()
 {
-    if (Hook_Active)
+    if (g_hook_active)
     {
-        Hook_Active = FALSE;
+        g_hook_active = FALSE;
 
 #ifdef _MSC_VER
-        if (HookingMethod == 3)
+        if (g_hook_method == 3)
         {
             DetourTransactionBegin();
             DetourUpdateThread(GetCurrentThread());
@@ -288,34 +291,34 @@ void Hook_Exit()
         }
 #endif
 
-        Hook_Revert("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
-        Hook_Revert("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
-        Hook_Revert("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
-        Hook_Revert("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
-        Hook_Revert("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
-        Hook_Revert("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
-        Hook_Revert("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
-        Hook_Revert("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
-        Hook_Revert("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
-        Hook_Revert("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
-        Hook_Revert("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
-        Hook_Revert("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
-        Hook_Revert("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
-        Hook_Revert("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
-        Hook_Revert("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
-        Hook_Revert("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
-        Hook_Revert("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
-        Hook_Revert("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
-        Hook_Revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
-        Hook_Revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
-        Hook_Revert("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
+        hook_revert("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
+        hook_revert("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
+        hook_revert("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
+        hook_revert("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
+        hook_revert("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
+        hook_revert("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
+        hook_revert("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
+        hook_revert("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
+        hook_revert("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
+        hook_revert("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
+        hook_revert("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
+        hook_revert("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
+        hook_revert("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
+        hook_revert("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
+        hook_revert("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
+        hook_revert("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
+        hook_revert("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
+        hook_revert("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
+        hook_revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
+        hook_revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
+        hook_revert("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
 
-        if (HookingMethod == 4)
+        if (g_hook_method == 4)
         {
-            Hook_Revert("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
-            Hook_Revert("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
-            Hook_Revert("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
-            Hook_Revert("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
+            hook_revert("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
+            hook_revert("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
+            hook_revert("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
+            hook_revert("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
         }
     }
 }

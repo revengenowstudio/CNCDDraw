@@ -6,20 +6,28 @@ CFLAGS    = -std=c99
 LIBS      = -lgdi32 -lwinmm
 
 FILES = src/debug.c \
-        src/main.c \
-        src/mouse.c \
-        src/palette.c \
-        src/surface.c \
-        src/clipper.c \
-        src/render.c \
-        src/render_soft.c \
+        src/dd.c \
+        src/ddpalette.c \
+        src/ddsurface.c \
+        src/ddclipper.c \
+        src/IDirectDraw/IDirectDraw.c \
+        src/IDirectDraw/IDirectDrawPalette.c \
+        src/IDirectDraw/IDirectDrawClipper.c \
+        src/IDirectDraw/IDirectDrawSurface.c \
+        src/render_ogl.c \
+        src/render_gdi.c \
         src/render_d3d9.c \
+        src/mouse.c \
+        src/winapi_hooks.c \
         src/screenshot.c \
-        src/settings.c \
+        src/config.c \
         src/lodepng.c \
-        src/dinput.c \
+        src/directinput.c \
         src/hook.c \
-        src/opengl.c
+        src/dllmain.c \
+        src/wndproc.c \
+        src/utils.c \
+        src/opengl_utils.c
 
 all:
 	$(WINDRES) -J rc ddraw.rc ddraw.rc.o

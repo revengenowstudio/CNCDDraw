@@ -2,214 +2,205 @@
 #include <windows.h>
 #include <stdio.h>
 #include <d3d9.h>
-#include "main.h"
-#include "opengl.h"
+#include "config.h"
+#include "dd.h"
 #include "render_d3d9.h"
+#include "render_gdi.h"
+#include "render_ogl.h"
 #include "hook.h"
+#include "debug.h"
 
-static char SettingsIniPath[MAX_PATH];
-static char ProcessFileName[96];
-static int SaveSettings;
 
-static BOOL GetBool(LPCSTR key, BOOL defaultValue);
-static int GetInt(LPCSTR key, int defaultValue);
-static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize);
-static void CreateSettingsIni();
+static BOOL cfg_get_bool(LPCSTR key, BOOL defaultValue);
+static int cfg_get_int(LPCSTR key, int defaultValue);
+static DWORD cfg_get_string(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize);
+static void cfg_create_ini();
 
-void Settings_Load()
+cnc_ddraw_config g_config = 
+    { .window_rect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 }, .window_state = -1 };
+
+void cfg_load()
 {
     //set up settings ini
     char cwd[MAX_PATH];
     char tmp[256];
     GetCurrentDirectoryA(sizeof(cwd), cwd);
-    _snprintf(SettingsIniPath, sizeof(SettingsIniPath), "%s\\ddraw.ini", cwd);
+    _snprintf(g_config.ini_path, sizeof(g_config.ini_path), "%s\\ddraw.ini", cwd);
 
-    if (GetFileAttributes(SettingsIniPath) == INVALID_FILE_ATTRIBUTES)
-        CreateSettingsIni();
+    if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
+        cfg_create_ini();
 
     //get process filename
-    char ProcessFilePath[MAX_PATH] = { 0 };
-    GetModuleFileNameA(NULL, ProcessFilePath, MAX_PATH);
-    _splitpath(ProcessFilePath, NULL, NULL, ProcessFileName, NULL);
+    char process_file_path[MAX_PATH] = { 0 };
+    GetModuleFileNameA(NULL, process_file_path, MAX_PATH);
+    _splitpath(process_file_path, NULL, NULL, g_config.process_file_name, NULL);
 
     //load settings from ini
-    ddraw->windowed = GetBool("windowed", FALSE);
-    ddraw->border = GetBool("border", TRUE);
-    ddraw->boxing = GetBool("boxing", FALSE);
-    ddraw->maintas = GetBool("maintas", FALSE);
-    ddraw->adjmouse = GetBool("adjmouse", FALSE);
-    ddraw->devmode = GetBool("devmode", FALSE);
-    ddraw->vsync = GetBool("vsync", FALSE);
-    ddraw->noactivateapp = GetBool("noactivateapp", FALSE);
-    ddraw->vhack = GetBool("vhack", FALSE);
-    ddraw->accurateTimers = GetBool("accuratetimers", FALSE);
-    ddraw->resizable = GetBool("resizable", TRUE);
-    ddraw->nonexclusive = GetBool("nonexclusive", FALSE);
-    ddraw->tm2hack = GetBool("tm2hack", FALSE); // Twisted Metal 2 hack
-    ddraw->sierrahack = GetBool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
+    g_ddraw->windowed = cfg_get_bool("windowed", FALSE);
+    g_ddraw->border = cfg_get_bool("border", TRUE);
+    g_ddraw->boxing = cfg_get_bool("boxing", FALSE);
+    g_ddraw->maintas = cfg_get_bool("maintas", FALSE);
+    g_ddraw->adjmouse = cfg_get_bool("adjmouse", FALSE);
+    g_ddraw->devmode = cfg_get_bool("devmode", FALSE);
+    g_ddraw->vsync = cfg_get_bool("vsync", FALSE);
+    g_ddraw->noactivateapp = cfg_get_bool("noactivateapp", FALSE);
+    g_ddraw->vhack = cfg_get_bool("vhack", FALSE);
+    g_ddraw->accurate_timers = cfg_get_bool("accuratetimers", FALSE);
+    g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
+    g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
+    g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
-    WindowRect.right = GetInt("width", 0);
-    WindowRect.bottom = GetInt("height", 0);
-    WindowRect.left = GetInt("posX", -32000);
-    WindowRect.top = GetInt("posY", -32000);
+    g_config.window_rect.right = cfg_get_int("width", 0);
+    g_config.window_rect.bottom = cfg_get_int("height", 0);
+    g_config.window_rect.left = cfg_get_int("posX", -32000);
+    g_config.window_rect.top = cfg_get_int("posY", -32000);
 
-    SaveSettings = GetInt("savesettings", 2);
+    g_config.save_settings = cfg_get_int("savesettings", 2);
 
 #ifdef _MSC_VER
-    HookingMethod = GetInt("hook", 4);
+    g_hook_method = cfg_get_int("hook", 4);
 #endif
     
-    ddraw->render.maxfps = GetInt("maxfps", 60);
+    g_ddraw->render.maxfps = cfg_get_int("maxfps", 60);
 
-    if (ddraw->render.maxfps)
-        ddraw->render.forcefps = GetBool("forcefps", FALSE);
+    if (g_ddraw->render.maxfps)
+        g_ddraw->render.forcefps = cfg_get_bool("forcefps", FALSE);
 
-    if (ddraw->accurateTimers || ddraw->vsync)
-        ddraw->fpsLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
-    //can't fully set it up here due to missing ddraw->mode.dmDisplayFrequency
+    if (g_ddraw->accurate_timers || g_ddraw->vsync)
+        g_ddraw->fps_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
+    //can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency
 
-    int maxTicks = GetInt("maxgameticks", 0);
-    if (maxTicks > 0 && maxTicks <= 1000)
+    int max_ticks = cfg_get_int("maxgameticks", 0);
+    if (max_ticks > 0 && max_ticks <= 1000)
     {
-        if (ddraw->accurateTimers)
-            ddraw->ticksLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        if (g_ddraw->accurate_timers)
+            g_ddraw->ticks_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
-        float len = 1000.0f / maxTicks;
-        ddraw->ticksLimiter.tickLengthNs = len * 10000;
-        ddraw->ticksLimiter.ticklength = len + 0.5f;
+        float len = 1000.0f / max_ticks;
+        g_ddraw->ticks_limiter.tick_length_ns = len * 10000;
+        g_ddraw->ticks_limiter.tick_length = len + 0.5f;
     }
 
-    if (maxTicks >= 0)
+    if (max_ticks >= 0)
     {
         //always using 60 fps for flip...
-        if (ddraw->accurateTimers)
-            ddraw->flipLimiter.hTimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        if (g_ddraw->accurate_timers)
+            g_ddraw->flip_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
-        float flipLen = 1000.0f / 60;
-        ddraw->flipLimiter.tickLengthNs = flipLen * 10000;
-        ddraw->flipLimiter.ticklength = flipLen + 0.5f;
+        float flip_len = 1000.0f / 60;
+        g_ddraw->flip_limiter.tick_length_ns = flip_len * 10000;
+        g_ddraw->flip_limiter.tick_length = flip_len + 0.5f;
     }
 
-    if ((ddraw->fullscreen = GetBool("fullscreen", FALSE)))
-        WindowRect.left = WindowRect.top = -32000;
+    if ((g_ddraw->fullscreen = cfg_get_bool("fullscreen", FALSE)))
+        g_config.window_rect.left = g_config.window_rect.top = -32000;
 
-    if (!(ddraw->handlemouse = GetBool("handlemouse", TRUE)))
-        ddraw->adjmouse = TRUE;
+    if (!(g_ddraw->handlemouse = cfg_get_bool("handlemouse", TRUE)))
+        g_ddraw->adjmouse = TRUE;
 
-    if (GetBool("singlecpu", TRUE))
+    if (cfg_get_bool("singlecpu", TRUE))
     {
         SetProcessAffinityMask(GetCurrentProcess(), 1);
     }
     else
     {
-        DWORD systemAffinity;
-        DWORD procAffinity;
+        DWORD system_affinity;
+        DWORD proc_affinity;
         HANDLE proc = GetCurrentProcess();
-        if (GetProcessAffinityMask(proc, &procAffinity, &systemAffinity))
-            SetProcessAffinityMask(proc, systemAffinity);
+        if (GetProcessAffinityMask(proc, &proc_affinity, &system_affinity))
+            SetProcessAffinityMask(proc, system_affinity);
     }
 
-    ddraw->render.bpp = GetInt("bpp", 0);
-    if (ddraw->render.bpp != 16 && ddraw->render.bpp != 24 && ddraw->render.bpp != 32)
-        ddraw->render.bpp = 0;
+    g_ddraw->render.bpp = cfg_get_int("bpp", 0);
+
+    if (g_ddraw->render.bpp != 16 && g_ddraw->render.bpp != 24 && g_ddraw->render.bpp != 32)
+        g_ddraw->render.bpp = 0;
 
     // to do: read .glslp config file instead of the shader and apply the correct settings
-    GetString("shader", "", ddraw->shader, sizeof(ddraw->shader));
+    cfg_get_string("shader", "", g_ddraw->shader, sizeof(g_ddraw->shader));
 
-    GetString("renderer", "auto", tmp, sizeof(tmp));
-    printf("Using %s renderer\n", tmp);
+    cfg_get_string("renderer", "auto", tmp, sizeof(tmp));
+    dprintf("     Using %s renderer\n", tmp);
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
     {
-        ddraw->renderer = render_soft_main;
+        g_ddraw->renderer = gdi_render_main;
     }
     else if (tolower(tmp[0]) == 'd') //direct3d9
     {
-        ddraw->renderer = render_d3d9_main;
+        g_ddraw->renderer = d3d9_render_main;
     }
     else if (tolower(tmp[0]) == 'o') //opengl
     {
-        if (OpenGL_LoadDll())
+        if (oglu_load_dll())
         {
-            ddraw->renderer = render_main;
+            g_ddraw->renderer = ogl_render_main;
         }
         else
         {
-            ShowDriverWarning = TRUE;
-            ddraw->renderer = render_soft_main;
+            g_ddraw->show_driver_warning = TRUE;
+            g_ddraw->renderer = gdi_render_main;
         }
     }
     else //auto
     {
-        LPDIRECT3D9 d3d = NULL;
-
-        // Windows = Direct3D 9, Wine = OpenGL
-        if (!ddraw->wine && (Direct3D9_hModule = LoadLibrary("d3d9.dll")))
+        if (!g_ddraw->wine && d3d9_is_available())
         {
-            IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-                (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
-
-            if (D3DCreate9 && (d3d = D3DCreate9(D3D_SDK_VERSION)))
-                IDirect3D9_Release(d3d);
+            g_ddraw->renderer = d3d9_render_main;
         }
-
-        if (d3d)
+        else if (oglu_load_dll())
         {
-            ddraw->renderer = render_d3d9_main;
-        }
-        else if (OpenGL_LoadDll())
-        {
-            ddraw->renderer = render_main;
+            g_ddraw->renderer = ogl_render_main;
         }
         else
         {
-            ShowDriverWarning = TRUE;
-            ddraw->renderer = render_soft_main;
+            g_ddraw->show_driver_warning = TRUE;
+            g_ddraw->renderer = gdi_render_main;
         }
     }
 }
 
-void Settings_Save(RECT *lpRect, int windowState)
+void cfg_save()
 {
-    if (!SaveSettings)
+    if (!g_config.save_settings)
         return;
 
     char buf[16];
-    char *section = SaveSettings == 1 ? "ddraw" : ProcessFileName;
+    char *section = g_config.save_settings == 1 ? "ddraw" : g_config.process_file_name;
 
-    if (lpRect->right)
+    if (g_config.window_rect.right)
     {
-        sprintf(buf, "%ld", lpRect->right);
-        WritePrivateProfileString(section, "width", buf, SettingsIniPath);
+        sprintf(buf, "%ld", g_config.window_rect.right);
+        WritePrivateProfileString(section, "width", buf, g_config.ini_path);
     }
     
-    if (lpRect->bottom)
+    if (g_config.window_rect.bottom)
     {
-        sprintf(buf, "%ld", lpRect->bottom);
-        WritePrivateProfileString(section, "height", buf, SettingsIniPath);
+        sprintf(buf, "%ld", g_config.window_rect.bottom);
+        WritePrivateProfileString(section, "height", buf, g_config.ini_path);
     }
 
-    if (lpRect->left != -32000)
+    if (g_config.window_rect.left != -32000)
     {
-        sprintf(buf, "%ld", lpRect->left);
-        WritePrivateProfileString(section, "posX", buf, SettingsIniPath);
+        sprintf(buf, "%ld", g_config.window_rect.left);
+        WritePrivateProfileString(section, "posX", buf, g_config.ini_path);
     }
 
-    if (lpRect->top != -32000)
+    if (g_config.window_rect.top != -32000)
     {
-        sprintf(buf, "%ld", lpRect->top);
-        WritePrivateProfileString(section, "posY", buf, SettingsIniPath);
+        sprintf(buf, "%ld", g_config.window_rect.top);
+        WritePrivateProfileString(section, "posY", buf, g_config.ini_path);
     }
 
-    if (windowState != -1)
+    if (g_config.window_state != -1)
     {
-        WritePrivateProfileString(section, "windowed", windowState ? "true" : "false", SettingsIniPath);
+        WritePrivateProfileString(section, "windowed", g_config.window_state ? "true" : "false", g_config.ini_path);
     }
 }
 
-static void CreateSettingsIni()
+static void cfg_create_ini()
 {
-    FILE *fh = fopen(SettingsIniPath, "w");
+    FILE *fh = fopen(g_config.ini_path, "w");
     if (fh)
     {
         fputs(
@@ -483,7 +474,6 @@ static void CreateSettingsIni()
             "nonexclusive=true\n"
             "maxgameticks=60\n"
             "handlemouse=false\n"
-            "tm2hack=true\n"
             "\n"
             "; Caesar III\n"
             "[c3]\n"
@@ -508,14 +498,17 @@ static void CreateSettingsIni()
     }
 }
 
-static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize)
+static DWORD cfg_get_string(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize)
 {
-    DWORD s = GetPrivateProfileStringA(ProcessFileName, key, "", outString, outSize, SettingsIniPath);
+    DWORD s = GetPrivateProfileStringA(
+        g_config.process_file_name, key, "", outString, outSize, g_config.ini_path);
+
     if (s > 0)
     {
         char buf[MAX_PATH] = { 0 };
 
-        if (GetPrivateProfileStringA(ProcessFileName, "checkfile", "", buf, sizeof(buf), SettingsIniPath) > 0)
+        if (GetPrivateProfileStringA(
+            g_config.process_file_name, "checkfile", "", buf, sizeof(buf), g_config.ini_path) > 0)
         {
             if (GetFileAttributes(buf) != INVALID_FILE_ATTRIBUTES)
                 return s;
@@ -524,24 +517,24 @@ static DWORD GetString(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD o
             return s;
     }
 
-    return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, SettingsIniPath);
+    return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, g_config.ini_path);
 }
 
-static BOOL GetBool(LPCSTR key, BOOL defaultValue)
+static BOOL cfg_get_bool(LPCSTR key, BOOL defaultValue)
 {
     char value[8];
-    GetString(key, defaultValue ? "Yes" : "No", value, sizeof(value));
+    cfg_get_string(key, defaultValue ? "Yes" : "No", value, sizeof(value));
 
     return (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0 || _stricmp(value, "1") == 0);
 }
 
-static int GetInt(LPCSTR key, int defaultValue)
+static int cfg_get_int(LPCSTR key, int defaultValue)
 {
-    char defvalue[16];
-    _snprintf(defvalue, sizeof(defvalue), "%d", defaultValue);
+    char def_value[16];
+    _snprintf(def_value, sizeof(def_value), "%d", defaultValue);
 
     char value[16];
-    GetString(key, defvalue, value, sizeof(value));
+    cfg_get_string(key, def_value, value, sizeof(value));
 
     return atoi(value);
 }

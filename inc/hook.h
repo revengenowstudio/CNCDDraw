@@ -1,7 +1,9 @@
 #ifndef HOOK_H
 #define HOOK_H
 
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+
 
 typedef BOOL (WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
@@ -55,13 +57,13 @@ extern LOADLIBRARYWPROC real_LoadLibraryW;
 extern LOADLIBRARYEXAPROC real_LoadLibraryExA;
 extern LOADLIBRARYEXWPROC real_LoadLibraryExW;
 
-extern int HookingMethod;
-extern BOOL Hook_Active;
+extern int g_hook_method;
+extern BOOL g_hook_active;
 
-void Hook_Init();
-void Hook_Exit();
-void Hook_PatchIAT(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
-void Hook_Create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
-void Hook_Revert(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void hook_init();
+void hook_exit();
+void hook_patch_iat(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
+void hook_create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void hook_revert(char *moduleName, char *functionName, PROC newFunction, PROC *function);
 
 #endif

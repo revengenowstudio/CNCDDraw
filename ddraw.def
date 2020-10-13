@@ -1,10 +1,10 @@
 LIBRARY     ddraw.dll
 
 EXPORTS
-    DirectDrawCreate                     @1
-    DirectDrawEnumerateA                 @2
-    DirectDrawCreateClipper              @10
-    GameHandlesClose                     DATA
-    NvOptimusEnablement                  DATA
-    AmdPowerXpressRequestHighPerformance DATA
-    pvBmpBits                            DATA
+    DirectDrawCreate				          @8
+    DirectDrawCreateClipper                   @9
+    DirectDrawEnumerateA			          @11
+    GameHandlesClose                          DATA
+    NvOptimusEnablement                       DATA
+    AmdPowerXpressRequestHighPerformance      DATA
+    pvBmpBits = g_fake_primary_surface_export DATA

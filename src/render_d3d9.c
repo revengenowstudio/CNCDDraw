@@ -1,58 +1,64 @@
 #include <windows.h>
 #include <stdio.h>
 #include <d3d9.h>
-#include "main.h"
-#include "surface.h"
+#include "dd.h"
+#include "ddsurface.h"
 #include "d3d9shader.h"
 #include "render_d3d9.h"
+#include "utils.h"
+#include "wndproc.h"
 
-#define TEXTURE_COUNT 2
 
-HMODULE Direct3D9_hModule;
+static BOOL d3d9_create_resouces();
+static BOOL d3d9_set_states();
+static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch);
+static void d3d9_set_max_fps();
 
-static D3DPRESENT_PARAMETERS D3dpp;
-static LPDIRECT3D9 D3d;
-static LPDIRECT3DDEVICE9 D3dDev;
-static LPDIRECT3DVERTEXBUFFER9 VertexBuf;
-static IDirect3DTexture9 *SurfaceTex[TEXTURE_COUNT];
-static IDirect3DTexture9 *PaletteTex[TEXTURE_COUNT];
-static IDirect3DPixelShader9 *PixelShader;
-static float ScaleW;
-static float ScaleH;
-static int BitsPerPixel;
+static d3d9_renderer g_d3d9;
 
-static BOOL CreateResources();
-static BOOL SetStates();
-static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch);
-static void SetMaxFPS();
-
-BOOL Direct3D9_Create()
+BOOL d3d9_is_available()
 {
-    if (!Direct3D9_Release())
+    LPDIRECT3D9 d3d9 = NULL;
+
+    if ((g_d3d9.hmodule = LoadLibrary("d3d9.dll")))
+    {
+        IDirect3D9* (WINAPI * d3d_create9)(UINT) =
+            (IDirect3D9 * (WINAPI*)(UINT))GetProcAddress(g_d3d9.hmodule, "Direct3DCreate9");
+
+        if (d3d_create9 && (d3d9 = d3d_create9(D3D_SDK_VERSION)))
+            IDirect3D9_Release(d3d9);
+    }
+
+    return d3d9 != NULL;
+}
+
+BOOL d3d9_create()
+{
+    if (!d3d9_release())
         return FALSE;
 
-    if (!Direct3D9_hModule)
-        Direct3D9_hModule = LoadLibrary("d3d9.dll");
+    if (!g_d3d9.hmodule)
+        g_d3d9.hmodule = LoadLibrary("d3d9.dll");
 
-    if (Direct3D9_hModule)
+    if (g_d3d9.hmodule)
     {
-        IDirect3D9 *(WINAPI *D3DCreate9)(UINT) =
-            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(Direct3D9_hModule, "Direct3DCreate9");
+        IDirect3D9 *(WINAPI *d3d_create9)(UINT) =
+            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(g_d3d9.hmodule, "Direct3DCreate9");
 
-        if (D3DCreate9 && (D3d = D3DCreate9(D3D_SDK_VERSION)))
+        if (d3d_create9 && (g_d3d9.instance = d3d_create9(D3D_SDK_VERSION)))
         {
-            BitsPerPixel = ddraw->render.bpp ? ddraw->render.bpp : ddraw->mode.dmBitsPerPel;
+            g_d3d9.bits_per_pixel = g_ddraw->render.bpp ? g_ddraw->render.bpp : g_ddraw->mode.dmBitsPerPel;
 
-            D3dpp.Windowed = ddraw->windowed;
-            D3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-            D3dpp.hDeviceWindow = ddraw->hWnd;
-            D3dpp.PresentationInterval = ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-            D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
-            D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
-            D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
-            D3dpp.BackBufferCount = 1;
+            g_d3d9.params.Windowed = g_ddraw->windowed;
+            g_d3d9.params.SwapEffect = D3DSWAPEFFECT_DISCARD;
+            g_d3d9.params.hDeviceWindow = g_ddraw->hwnd;
+            g_d3d9.params.PresentationInterval = g_ddraw->vsync ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+            g_d3d9.params.BackBufferWidth = g_d3d9.params.Windowed ? 0 : g_ddraw->render.width;
+            g_d3d9.params.BackBufferHeight = g_d3d9.params.Windowed ? 0 : g_ddraw->render.height;
+            g_d3d9.params.BackBufferFormat = g_d3d9.bits_per_pixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+            g_d3d9.params.BackBufferCount = 1;
 
-            DWORD behaviorFlags[] = {
+            DWORD behavior_flags[] = {
                 D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
                 D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
                 D3DCREATE_HARDWARE_VERTEXPROCESSING,
@@ -61,18 +67,18 @@ BOOL Direct3D9_Create()
             };
 
             int i;
-            for (i = 0; i < sizeof(behaviorFlags) / sizeof(behaviorFlags[0]); i++)
+            for (i = 0; i < sizeof(behavior_flags) / sizeof(behavior_flags[0]); i++)
             {
                 if (SUCCEEDED(
                     IDirect3D9_CreateDevice(
-                        D3d,
+                        g_d3d9.instance,
                         D3DADAPTER_DEFAULT,
                         D3DDEVTYPE_HAL,
-                        ddraw->hWnd,
-                        D3DCREATE_MULTITHREADED | behaviorFlags[i],
-                        &D3dpp,
-                        &D3dDev)))
-                    return D3dDev && CreateResources() && SetStates();
+                        g_ddraw->hwnd,
+                        D3DCREATE_MULTITHREADED | behavior_flags[i],
+                        &g_d3d9.params,
+                        &g_d3d9.device)))
+                    return g_d3d9.device && d3d9_create_resouces() && d3d9_set_states();
             }
         }
     }
@@ -80,177 +86,177 @@ BOOL Direct3D9_Create()
     return FALSE;
 }
 
-BOOL Direct3D9_OnDeviceLost()
+BOOL d3d9_on_device_lost()
 {
-    if (D3dDev && IDirect3DDevice9_TestCooperativeLevel(D3dDev) == D3DERR_DEVICENOTRESET)
-        return Direct3D9_Reset();
+    if (g_d3d9.device && IDirect3DDevice9_TestCooperativeLevel(g_d3d9.device) == D3DERR_DEVICENOTRESET)
+        return d3d9_reset();
 
     return FALSE;
 }
 
-BOOL Direct3D9_Reset()
+BOOL d3d9_reset()
 {
-    D3dpp.Windowed = ddraw->windowed;
-    D3dpp.BackBufferWidth = D3dpp.Windowed ? 0 : ddraw->render.width;
-    D3dpp.BackBufferHeight = D3dpp.Windowed ? 0 : ddraw->render.height;
-    D3dpp.BackBufferFormat = BitsPerPixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
+    g_d3d9.params.Windowed = g_ddraw->windowed;
+    g_d3d9.params.BackBufferWidth = g_d3d9.params.Windowed ? 0 : g_ddraw->render.width;
+    g_d3d9.params.BackBufferHeight = g_d3d9.params.Windowed ? 0 : g_ddraw->render.height;
+    g_d3d9.params.BackBufferFormat = g_d3d9.bits_per_pixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
 
-    if (D3dDev && SUCCEEDED(IDirect3DDevice9_Reset(D3dDev, &D3dpp)))
-        return SetStates();
+    if (g_d3d9.device && SUCCEEDED(IDirect3DDevice9_Reset(g_d3d9.device, &g_d3d9.params)))
+        return d3d9_set_states();
 
     return FALSE;
 }
 
-BOOL Direct3D9_Release()
+BOOL d3d9_release()
 {
-    if (VertexBuf)
+    if (g_d3d9.vertex_buf)
     {
-        IDirect3DVertexBuffer9_Release(VertexBuf);
-        VertexBuf = NULL;
+        IDirect3DVertexBuffer9_Release(g_d3d9.vertex_buf);
+        g_d3d9.vertex_buf = NULL;
     }
     
     int i;
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
     {
-        if (SurfaceTex[i])
+        if (g_d3d9.surface_tex[i])
         {
-            IDirect3DTexture9_Release(SurfaceTex[i]);
-            SurfaceTex[i] = NULL;
+            IDirect3DTexture9_Release(g_d3d9.surface_tex[i]);
+            g_d3d9.surface_tex[i] = NULL;
         }
 
-        if (PaletteTex[i])
+        if (g_d3d9.palette_tex[i])
         {
-            IDirect3DTexture9_Release(PaletteTex[i]);
-            PaletteTex[i] = NULL;
+            IDirect3DTexture9_Release(g_d3d9.palette_tex[i]);
+            g_d3d9.palette_tex[i] = NULL;
         }
     }
     
-    if (PixelShader)
+    if (g_d3d9.pixel_shader)
     {
-        IDirect3DPixelShader9_Release(PixelShader);
-        PixelShader = NULL;
+        IDirect3DPixelShader9_Release(g_d3d9.pixel_shader);
+        g_d3d9.pixel_shader = NULL;
     }
 
-    if (D3dDev)
+    if (g_d3d9.device)
     {
-        IDirect3DDevice9_Release(D3dDev);
-        D3dDev = NULL;
+        IDirect3DDevice9_Release(g_d3d9.device);
+        g_d3d9.device = NULL;
     }
 
-    if (D3d)
+    if (g_d3d9.instance)
     {
-        IDirect3D9_Release(D3d);
-        D3d = NULL;
+        IDirect3D9_Release(g_d3d9.instance);
+        g_d3d9.instance = NULL;
     }
 
     return TRUE;
 }
 
-static BOOL CreateResources()
+static BOOL d3d9_create_resouces()
 {
     BOOL err = FALSE;
 
-    int width = ddraw->width;
-    int height = ddraw->height;
+    int width = g_ddraw->width;
+    int height = g_ddraw->height;
 
-    int texWidth =
+    int tex_width =
         width <= 1024 ? 1024 : width <= 2048 ? 2048 : width <= 4096 ? 4096 : width;
 
-    int texHeight =
-        height <= texWidth ? texWidth : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
+    int tex_height =
+        height <= tex_width ? tex_width : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    texWidth = texWidth > texHeight ? texWidth : texHeight;
+    tex_width = tex_width > tex_height ? tex_width : tex_height;
 
-    ScaleW = (float)width / texWidth;;
-    ScaleH = (float)height / texHeight;
+    g_d3d9.scale_w = (float)width / tex_width;;
+    g_d3d9.scale_h = (float)height / tex_height;
 
     err = err || FAILED(
         IDirect3DDevice9_CreateVertexBuffer(
-            D3dDev, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &VertexBuf, NULL));
+            g_d3d9.device, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &g_d3d9.vertex_buf, NULL));
 
-    err = err || !UpdateVertices(InterlockedExchangeAdd(&ddraw->incutscene, 0), TRUE);
+    err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->incutscene, 0), TRUE);
 
     int i;
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
     {
         err = err || FAILED(
             IDirect3DDevice9_CreateTexture(
-                D3dDev,
-                texWidth,
-                texHeight,
+                g_d3d9.device,
+                tex_width,
+                tex_height,
                 1,
                 0,
-                ddraw->bpp == 16 ? D3DFMT_R5G6B5 : D3DFMT_L8,
+                g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : D3DFMT_L8,
                 D3DPOOL_MANAGED,
-                &SurfaceTex[i],
+                &g_d3d9.surface_tex[i],
                 0));
 
-        err = err || !SurfaceTex[i];
+        err = err || !g_d3d9.surface_tex[i];
 
-        if (ddraw->bpp == 8)
+        if (g_ddraw->bpp == 8)
         {
             err = err || FAILED(
                 IDirect3DDevice9_CreateTexture(
-                    D3dDev,
+                    g_d3d9.device,
                     256,
                     256,
                     1,
                     0,
                     D3DFMT_X8R8G8B8,
                     D3DPOOL_MANAGED,
-                    &PaletteTex[i],
+                    &g_d3d9.palette_tex[i],
                     0));
 
-            err = err || !PaletteTex[i];
+            err = err || !g_d3d9.palette_tex[i];
         }
     }
 
-    if (ddraw->bpp == 8)
+    if (g_ddraw->bpp == 8)
     {
         err = err || FAILED(
-            IDirect3DDevice9_CreatePixelShader(D3dDev, (DWORD *)PalettePixelShaderSrc, &PixelShader));
+            IDirect3DDevice9_CreatePixelShader(g_d3d9.device, (DWORD *)D3D9_PALETTE_SHADER, &g_d3d9.pixel_shader));
     }
 
-    return VertexBuf && (PixelShader || ddraw->bpp == 16) && !err;
+    return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16) && !err;
 }
 
-static BOOL SetStates()
+static BOOL d3d9_set_states()
 {
     BOOL err = FALSE;
 
-    err = err || FAILED(IDirect3DDevice9_SetFVF(D3dDev, D3DFVF_XYZRHW | D3DFVF_TEX1));
-    err = err || FAILED(IDirect3DDevice9_SetStreamSource(D3dDev, 0, VertexBuf, 0, sizeof(CUSTOMVERTEX)));
-    err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[0]));
+    err = err || FAILED(IDirect3DDevice9_SetFVF(g_d3d9.device, D3DFVF_XYZRHW | D3DFVF_TEX1));
+    err = err || FAILED(IDirect3DDevice9_SetStreamSource(g_d3d9.device, 0, g_d3d9.vertex_buf, 0, sizeof(CUSTOMVERTEX)));
+    err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9 *)g_d3d9.surface_tex[0]));
 
-    if (ddraw->bpp == 8)
+    if (g_ddraw->bpp == 8)
     {
-        err = err || FAILED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[0]));
-        err = err || FAILED(IDirect3DDevice9_SetPixelShader(D3dDev, PixelShader));
+        err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[0]));
+        err = err || FAILED(IDirect3DDevice9_SetPixelShader(g_d3d9.device, g_d3d9.pixel_shader));
     }
 
-    D3DVIEWPORT9 viewData = {
-        ddraw->render.viewport.x,
-        ddraw->render.viewport.y,
-        ddraw->render.viewport.width,
-        ddraw->render.viewport.height,
+    D3DVIEWPORT9 view_data = {
+        g_ddraw->render.viewport.x,
+        g_ddraw->render.viewport.y,
+        g_ddraw->render.viewport.width,
+        g_ddraw->render.viewport.height,
         0.0f,
         1.0f };
 
-    err = err || FAILED(IDirect3DDevice9_SetViewport(D3dDev, &viewData));
+    err = err || FAILED(IDirect3DDevice9_SetViewport(g_d3d9.device, &view_data));
 
     return !err;
 }
 
-static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch)
+static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
 {
-    float vpX = stretch ? (float)ddraw->render.viewport.x : 0.0f;
-    float vpY = stretch ? (float)ddraw->render.viewport.y : 0.0f;
+    float vpX = stretch ? (float)g_ddraw->render.viewport.x : 0.0f;
+    float vpY = stretch ? (float)g_ddraw->render.viewport.y : 0.0f;
 
-    float vpW = stretch ? (float)(ddraw->render.viewport.width + ddraw->render.viewport.x) : (float)ddraw->width;
-    float vpH = stretch ? (float)(ddraw->render.viewport.height + ddraw->render.viewport.y) : (float)ddraw->height;
+    float vpW = stretch ? (float)(g_ddraw->render.viewport.width + g_ddraw->render.viewport.x) : (float)g_ddraw->width;
+    float vpH = stretch ? (float)(g_ddraw->render.viewport.height + g_ddraw->render.viewport.y) : (float)g_ddraw->height;
 
-    float sH = inCutscene ? ScaleH * ((float)CUTSCENE_HEIGHT / ddraw->height) : ScaleH;
-    float sW = inCutscene ? ScaleW * ((float)CUTSCENE_WIDTH / ddraw->width) : ScaleW;
+    float sH = in_cutscene ? g_d3d9.scale_h * ((float)CUTSCENE_HEIGHT / g_ddraw->height) : g_d3d9.scale_h;
+    float sW = in_cutscene ? g_d3d9.scale_w * ((float)CUTSCENE_WIDTH / g_ddraw->width) : g_d3d9.scale_w;
 
     CUSTOMVERTEX vertices[] =
     {
@@ -261,197 +267,198 @@ static BOOL UpdateVertices(BOOL inCutscene, BOOL stretch)
     };
 
     void *data;
-    if (VertexBuf && SUCCEEDED(IDirect3DVertexBuffer9_Lock(VertexBuf, 0, 0, (void**)&data, 0)))
+    if (g_d3d9.vertex_buf && SUCCEEDED(IDirect3DVertexBuffer9_Lock(g_d3d9.vertex_buf, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
 
-        IDirect3DVertexBuffer9_Unlock(VertexBuf);
+        IDirect3DVertexBuffer9_Unlock(g_d3d9.vertex_buf);
         return TRUE;
     }
 
     return FALSE;
 }
 
-static void SetMaxFPS()
+static void d3d9_set_max_fps()
 {
-    int maxFPS = ddraw->render.maxfps;
-    ddraw->fpsLimiter.tickLengthNs = 0;
-    ddraw->fpsLimiter.ticklength = 0;
+    int max_fps = g_ddraw->render.maxfps;
 
-    if (maxFPS < 0 || ddraw->vsync)
-        maxFPS = ddraw->mode.dmDisplayFrequency;
+    g_ddraw->fps_limiter.tick_length_ns = 0;
+    g_ddraw->fps_limiter.tick_length = 0;
 
-    if (maxFPS > 1000)
-        maxFPS = 0;
+    if (max_fps < 0 || g_ddraw->vsync)
+        max_fps = g_ddraw->mode.dmDisplayFrequency;
 
-    if (maxFPS > 0)
+    if (max_fps > 1000)
+        max_fps = 0;
+
+    if (max_fps > 0)
     {
-        float len = 1000.0f / maxFPS;
-        ddraw->fpsLimiter.tickLengthNs = len * 10000;
-        ddraw->fpsLimiter.ticklength = len;// + 0.5f;
+        float len = 1000.0f / max_fps;
+        g_ddraw->fps_limiter.tick_length_ns = len * 10000;
+        g_ddraw->fps_limiter.tick_length = len;// + 0.5f;
     }
 }
 
-DWORD WINAPI render_d3d9_main(void)
+DWORD WINAPI d3d9_render_main(void)
 {
     Sleep(500);
 
-    SetMaxFPS();
+    d3d9_set_max_fps();
 
-    DWORD tickStart = 0;
-    DWORD tickEnd = 0;
-    BOOL needsUpdate = FALSE;
+    DWORD tick_start = 0;
+    DWORD tick_end = 0;
+    BOOL needs_update = FALSE;
 
-    while (ddraw->render.run && 
-        (ddraw->render.forcefps || WaitForSingleObject(ddraw->render.sem, 200) != WAIT_FAILED))
+    while (g_ddraw->render.run && 
+        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
         DrawFrameInfoStart();
 #endif
 
-        static int texIndex = 0, palIndex = 0;
+        static int tex_index = 0, palIndex = 0;
 
-        if (ddraw->fpsLimiter.ticklength > 0)
-            tickStart = timeGetTime();
+        if (g_ddraw->fps_limiter.tick_length > 0)
+            tick_start = timeGetTime();
 
-        EnterCriticalSection(&ddraw->cs);
+        EnterCriticalSection(&g_ddraw->cs);
 
-        if (ddraw->primary && (ddraw->bpp == 16 || (ddraw->primary->palette && ddraw->primary->palette->data_rgb)))
+        if (g_ddraw->primary && (g_ddraw->bpp == 16 || (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)))
         {
-            if (ddraw->vhack)
+            if (g_ddraw->vhack)
             {
-                if (detect_cutscene())
+                if (util_detect_cutscene())
                 {
-                    if (!InterlockedExchange(&ddraw->incutscene, TRUE))
-                        UpdateVertices(TRUE, TRUE);
+                    if (!InterlockedExchange(&g_ddraw->incutscene, TRUE))
+                        d3d9_update_vertices(TRUE, TRUE);
                 }
                 else
                 {
-                    if (InterlockedExchange(&ddraw->incutscene, FALSE))
-                        UpdateVertices(FALSE, TRUE);
+                    if (InterlockedExchange(&g_ddraw->incutscene, FALSE))
+                        d3d9_update_vertices(FALSE, TRUE);
                 }
             }
 
             D3DLOCKED_RECT lock_rc;
 
-            if (InterlockedExchange(&ddraw->render.surfaceUpdated, FALSE))
+            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE))
             {
-                if (++texIndex >= TEXTURE_COUNT)
-                    texIndex = 0;
+                if (++tex_index >= D3D9_TEXTURE_COUNT)
+                    tex_index = 0;
 
-                RECT rc = { 0,0,ddraw->width,ddraw->height };
+                RECT rc = { 0, 0, g_ddraw->width, g_ddraw->height };
 
-                if (SUCCEEDED(IDirect3DDevice9_SetTexture(D3dDev, 0, (IDirect3DBaseTexture9 *)SurfaceTex[texIndex])) &&
-                    SUCCEEDED(IDirect3DTexture9_LockRect(SurfaceTex[texIndex], 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9 *)g_d3d9.surface_tex[tex_index])) &&
+                    SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.surface_tex[tex_index], 0, &lock_rc, &rc, 0)))
                 {
-                    unsigned char *src = (unsigned char *)ddraw->primary->surface;
+                    unsigned char *src = (unsigned char *)g_ddraw->primary->surface;
                     unsigned char *dst = (unsigned char *)lock_rc.pBits;
 
                     int i;
-                    for (i = 0; i < ddraw->height; i++)
+                    for (i = 0; i < g_ddraw->height; i++)
                     {
-                        memcpy(dst, src, ddraw->primary->lPitch);
+                        memcpy(dst, src, g_ddraw->primary->l_pitch);
 
-                        src += ddraw->primary->lPitch;
+                        src += g_ddraw->primary->l_pitch;
                         dst += lock_rc.Pitch;
                     }
 
-                    IDirect3DTexture9_UnlockRect(SurfaceTex[texIndex], 0);
+                    IDirect3DTexture9_UnlockRect(g_d3d9.surface_tex[tex_index], 0);
                 }
             }
 
-            if (ddraw->bpp == 8 && InterlockedExchange(&ddraw->render.paletteUpdated, FALSE))
+            if (g_ddraw->bpp == 8 && InterlockedExchange(&g_ddraw->render.palette_updated, FALSE))
             {
-                if (++palIndex >= TEXTURE_COUNT)
+                if (++palIndex >= D3D9_TEXTURE_COUNT)
                     palIndex = 0;
 
                 RECT rc = { 0,0,256,1 };
 
-                if (SUCCEEDED(IDirect3DDevice9_SetTexture(D3dDev, 1, (IDirect3DBaseTexture9 *)PaletteTex[palIndex])) &&
-                    SUCCEEDED(IDirect3DTexture9_LockRect(PaletteTex[palIndex], 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[palIndex])) &&
+                    SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.palette_tex[palIndex], 0, &lock_rc, &rc, 0)))
                 {
-                    memcpy(lock_rc.pBits, ddraw->primary->palette->data_rgb, 256 * sizeof(int));
+                    memcpy(lock_rc.pBits, g_ddraw->primary->palette->data_rgb, 256 * sizeof(int));
 
-                    IDirect3DTexture9_UnlockRect(PaletteTex[palIndex], 0);
+                    IDirect3DTexture9_UnlockRect(g_d3d9.palette_tex[palIndex], 0);
                 }
             }
 
-            if (!ddraw->handlemouse)
+            if (!g_ddraw->handlemouse)
             {
-                ChildWindowExists = FALSE;
-                EnumChildWindows(ddraw->hWnd, EnumChildProc, (LPARAM)ddraw->primary);
+                g_ddraw->child_window_exists = FALSE;
+                EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
 
-                if (ddraw->render.width != ddraw->width || ddraw->render.height != ddraw->height)
+                if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
                 {
-                    if (ChildWindowExists)
+                    if (g_ddraw->child_window_exists)
                     {
-                        IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+                        IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-                        if (!needsUpdate && UpdateVertices(FALSE, FALSE))
-                            needsUpdate = TRUE;
+                        if (!needs_update && d3d9_update_vertices(FALSE, FALSE))
+                            needs_update = TRUE;
                     }
-                    else if (needsUpdate)
+                    else if (needs_update)
                     {
-                        if (UpdateVertices(FALSE, TRUE))
-                            needsUpdate = FALSE;
+                        if (d3d9_update_vertices(FALSE, TRUE))
+                            needs_update = FALSE;
                     }
                 }
             }
         }
 
-        LeaveCriticalSection(&ddraw->cs);
+        LeaveCriticalSection(&g_ddraw->cs);
 
-        IDirect3DDevice9_BeginScene(D3dDev);
-        IDirect3DDevice9_DrawPrimitive(D3dDev, D3DPT_TRIANGLESTRIP, 0, 2);
-        IDirect3DDevice9_EndScene(D3dDev);
+        IDirect3DDevice9_BeginScene(g_d3d9.device);
+        IDirect3DDevice9_DrawPrimitive(g_d3d9.device, D3DPT_TRIANGLESTRIP, 0, 2);
+        IDirect3DDevice9_EndScene(g_d3d9.device);
 
-        if (ddraw->bnetActive)
-            IDirect3DDevice9_Clear(D3dDev, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+        if (g_ddraw->bnet_active)
+            IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-        if (FAILED(IDirect3DDevice9_Present(D3dDev, NULL, NULL, NULL, NULL)))
+        if (FAILED(IDirect3DDevice9_Present(g_d3d9.device, NULL, NULL, NULL, NULL)))
         {
-            DWORD_PTR dwResult;
-            SendMessageTimeout(ddraw->hWnd, WM_D3D9DEVICELOST, 0, 0, 0, 1000, &dwResult);
+            DWORD_PTR result;
+            SendMessageTimeout(g_ddraw->hwnd, WM_D3D9DEVICELOST, 0, 0, 0, 1000, &result);
         }
 
 #if _DEBUG
         DrawFrameInfoEnd();
 #endif
         
-        if (ddraw->fpsLimiter.ticklength > 0)
+        if (g_ddraw->fps_limiter.tick_length > 0)
         {
-            if (ddraw->fpsLimiter.hTimer)
+            if (g_ddraw->fps_limiter.htimer)
             {
-                if (ddraw->vsync)
+                if (g_ddraw->vsync)
                 {
-                    WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
-                    LARGE_INTEGER liDueTime = { .QuadPart = -ddraw->fpsLimiter.tickLengthNs };
-                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &liDueTime, 0, NULL, NULL, FALSE);
+                    WaitForSingleObject(g_ddraw->fps_limiter.htimer, g_ddraw->fps_limiter.tick_length * 2);
+                    LARGE_INTEGER due_time = { .QuadPart = -g_ddraw->fps_limiter.tick_length_ns };
+                    SetWaitableTimer(g_ddraw->fps_limiter.htimer, &due_time, 0, NULL, NULL, FALSE);
                 }
                 else
                 {
                     FILETIME ft = { 0 };
                     GetSystemTimeAsFileTime(&ft);
 
-                    if (CompareFileTime((FILETIME *)&ddraw->fpsLimiter.dueTime, &ft) == -1)
+                    if (CompareFileTime((FILETIME *)&g_ddraw->fps_limiter.due_time, &ft) == -1)
                     {
-                        memcpy(&ddraw->fpsLimiter.dueTime, &ft, sizeof(LARGE_INTEGER));
+                        memcpy(&g_ddraw->fps_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
                     }
                     else
                     {
-                        WaitForSingleObject(ddraw->fpsLimiter.hTimer, ddraw->fpsLimiter.ticklength * 2);
+                        WaitForSingleObject(g_ddraw->fps_limiter.htimer, g_ddraw->fps_limiter.tick_length * 2);
                     }
 
-                    ddraw->fpsLimiter.dueTime.QuadPart += ddraw->fpsLimiter.tickLengthNs;
-                    SetWaitableTimer(ddraw->fpsLimiter.hTimer, &ddraw->fpsLimiter.dueTime, 0, NULL, NULL, FALSE);
+                    g_ddraw->fps_limiter.due_time.QuadPart += g_ddraw->fps_limiter.tick_length_ns;
+                    SetWaitableTimer(g_ddraw->fps_limiter.htimer, &g_ddraw->fps_limiter.due_time, 0, NULL, NULL, FALSE);
                 }
             }
             else
             {
-                tickEnd = timeGetTime();
+                tick_end = timeGetTime();
 
-                if (tickEnd - tickStart < ddraw->fpsLimiter.ticklength)
-                    Sleep(ddraw->fpsLimiter.ticklength - (tickEnd - tickStart));
+                if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
+                    Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
             }
         }
     }

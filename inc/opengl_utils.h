@@ -1,4 +1,5 @@
-#pragma once
+#ifndef OPENGL_UTILS_H
+#define OPENGL_UTILS_H
 #include "glcorearb.h"
 
 // wgl
@@ -32,11 +33,11 @@ extern PFNGLVERTEX2FPROC glVertex2f;
 // <--- compat profile only
 
 
-BOOL OpenGL_LoadDll();
-void OpenGL_Init();
-BOOL OpenGL_ExtExists(char *ext, HDC hdc);
-GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource);
-GLuint OpenGL_BuildProgramFromFile(const char *filePath);
+BOOL oglu_load_dll();
+void oglu_init();
+BOOL oglu_ext_exists(char *ext, HDC hdc);
+GLuint oglu_build_program(const GLchar *vertSource, const GLchar *fragSource);
+GLuint oglu_build_program_from_file(const char *filePath);
 
 extern PFNGLVIEWPORTPROC glViewport;
 extern PFNGLBINDTEXTUREPROC glBindTexture;
@@ -52,7 +53,6 @@ extern PFNGLGETTEXIMAGEPROC glGetTexImage;
 extern PFNGLPIXELSTOREIPROC glPixelStorei;
 extern PFNGLENABLEPROC glEnable;
 extern PFNGLCLEARPROC glClear;
-
 extern PFNGLCREATEPROGRAMPROC glCreateProgram;
 extern PFNGLDELETEPROGRAMPROC glDeleteProgram;
 extern PFNGLUSEPROGRAMPROC glUseProgram;
@@ -84,13 +84,11 @@ extern PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
 extern PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 extern PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
 extern PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
-
 extern PFNGLCREATESHADERPROC glCreateShader;
 extern PFNGLDELETESHADERPROC glDeleteShader;
 extern PFNGLSHADERSOURCEPROC glShaderSource;
 extern PFNGLCOMPILESHADERPROC glCompileShader;
 extern PFNGLGETSHADERIVPROC glGetShaderiv;
-
 extern PFNGLGENBUFFERSPROC glGenBuffers;
 extern PFNGLBINDBUFFERPROC	glBindBuffer;
 extern PFNGLBUFFERDATAPROC	glBufferData;
@@ -102,21 +100,18 @@ extern PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 extern PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
 extern PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
-
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
-
 extern PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 extern PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 extern PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
 extern PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 extern PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
-
 extern PFNGLTEXBUFFERPROC glTexBuffer;
 
-extern HMODULE OpenGL_hModule;
+extern HMODULE g_oglu_hmodule;
+extern BOOL g_oglu_got_version2;
+extern BOOL g_oglu_got_version3;
+extern char g_oglu_version[];
 
-extern BOOL OpenGL_GotVersion2;
-extern BOOL OpenGL_GotVersion3;
-
-extern char OpenGL_Version[];
+#endif

@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
-#include "opengl.h"
+#include "opengl_utils.h"
 
 PFNWGLCREATECONTEXTPROC xwglCreateContext;
 PFNWGLDELETECONTEXTPROC xwglDeleteContext;
@@ -21,13 +21,10 @@ PFNGLGETTEXIMAGEPROC glGetTexImage;
 PFNGLPIXELSTOREIPROC glPixelStorei;
 PFNGLENABLEPROC glEnable;
 PFNGLCLEARPROC glClear;
-
 PFNGLBEGINPROC glBegin;
 PFNGLENDPROC glEnd;
 PFNGLTEXCOORD2FPROC glTexCoord2f;
 PFNGLVERTEX2FPROC glVertex2f;
-
-// Program
 PFNGLCREATEPROGRAMPROC glCreateProgram;
 PFNGLDELETEPROGRAMPROC glDeleteProgram;
 PFNGLUSEPROGRAMPROC glUseProgram;
@@ -59,13 +56,11 @@ PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray;
 PFNGLDISABLEVERTEXATTRIBARRAYPROC glDisableVertexAttribArray;
 PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation;
 PFNGLGETACTIVEUNIFORMPROC glGetActiveUniform;
-
 PFNGLCREATESHADERPROC glCreateShader;
 PFNGLDELETESHADERPROC glDeleteShader;
 PFNGLSHADERSOURCEPROC glShaderSource;
 PFNGLCOMPILESHADERPROC glCompileShader;
 PFNGLGETSHADERIVPROC glGetShaderiv;
-
 PFNGLGENBUFFERSPROC glGenBuffers;
 PFNGLBINDBUFFERPROC glBindBuffer;
 PFNGLBUFFERDATAPROC glBufferData;
@@ -77,59 +72,53 @@ PFNGLDELETEBUFFERSPROC glDeleteBuffers;
 PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 PFNGLBINDVERTEXARRAYPROC glBindVertexArray;
 PFNGLDELETEVERTEXARRAYSPROC glDeleteVertexArrays;
-
 PFNGLACTIVETEXTUREPROC glActiveTexture;
-
 PFNGLGENFRAMEBUFFERSPROC glGenFramebuffers;
 PFNGLBINDFRAMEBUFFERPROC glBindFramebuffer;
 PFNGLFRAMEBUFFERTEXTURE2DPROC glFramebufferTexture2D;
 PFNGLDRAWBUFFERSPROC glDrawBuffers;
 PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
-
 PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
-
 PFNGLTEXBUFFERPROC glTexBuffer;
 
-HMODULE OpenGL_hModule;
+HMODULE g_oglu_hmodule;
+BOOL g_oglu_got_version2;
+BOOL g_oglu_got_version3;
+char g_oglu_version[128];
 
-BOOL OpenGL_GotVersion2;
-BOOL OpenGL_GotVersion3;
-
-char OpenGL_Version[128];
-
-BOOL OpenGL_LoadDll()
+BOOL oglu_load_dll()
 {
-    if (!OpenGL_hModule)
-        OpenGL_hModule = LoadLibrary("opengl32.dll");
+    if (!g_oglu_hmodule)
+        g_oglu_hmodule = LoadLibrary("opengl32.dll");
 
-    if (OpenGL_hModule)
+    if (g_oglu_hmodule)
     {
-        xwglCreateContext = (PFNWGLCREATECONTEXTPROC)GetProcAddress(OpenGL_hModule, "wglCreateContext");
-        xwglDeleteContext = (PFNWGLDELETECONTEXTPROC)GetProcAddress(OpenGL_hModule, "wglDeleteContext");
-        xwglGetProcAddress = (PFNWGLGETPROCADDRESSPROC)GetProcAddress(OpenGL_hModule, "wglGetProcAddress");
-        xwglMakeCurrent = (PFNWGLMAKECURRENTPROC)GetProcAddress(OpenGL_hModule, "wglMakeCurrent");
+        xwglCreateContext = (PFNWGLCREATECONTEXTPROC)GetProcAddress(g_oglu_hmodule, "wglCreateContext");
+        xwglDeleteContext = (PFNWGLDELETECONTEXTPROC)GetProcAddress(g_oglu_hmodule, "wglDeleteContext");
+        xwglGetProcAddress = (PFNWGLGETPROCADDRESSPROC)GetProcAddress(g_oglu_hmodule, "wglGetProcAddress");
+        xwglMakeCurrent = (PFNWGLMAKECURRENTPROC)GetProcAddress(g_oglu_hmodule, "wglMakeCurrent");
 
-        glViewport = (PFNGLVIEWPORTPROC)GetProcAddress(OpenGL_hModule, "glViewport");
-        glBindTexture = (PFNGLBINDTEXTUREPROC)GetProcAddress(OpenGL_hModule, "glBindTexture");
-        glGenTextures = (PFNGLGENTEXTURESPROC)GetProcAddress(OpenGL_hModule, "glGenTextures");
-        glTexParameteri = (PFNGLTEXPARAMETERIPROC)GetProcAddress(OpenGL_hModule, "glTexParameteri");
-        glDeleteTextures = (PFNGLDELETETEXTURESPROC)GetProcAddress(OpenGL_hModule, "glDeleteTextures");
-        glTexImage2D = (PFNGLTEXIMAGE2DPROC)GetProcAddress(OpenGL_hModule, "glTexImage2D");
-        glDrawElements = (PFNGLDRAWELEMENTSPROC)GetProcAddress(OpenGL_hModule, "glDrawElements");
-        glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)GetProcAddress(OpenGL_hModule, "glTexSubImage2D");
-        glGetError = (PFNGLGETERRORPROC)GetProcAddress(OpenGL_hModule, "glGetError");
-        glGetString = (PFNGLGETSTRINGPROC)GetProcAddress(OpenGL_hModule, "glGetString");
-        glGetTexImage = (PFNGLGETTEXIMAGEPROC)GetProcAddress(OpenGL_hModule, "glGetTexImage");
-        glPixelStorei = (PFNGLPIXELSTOREIPROC)GetProcAddress(OpenGL_hModule, "glPixelStorei");
-        glEnable = (PFNGLENABLEPROC)GetProcAddress(OpenGL_hModule, "glEnable");
-        glClear = (PFNGLCLEARPROC)GetProcAddress(OpenGL_hModule, "glClear");
+        glViewport = (PFNGLVIEWPORTPROC)GetProcAddress(g_oglu_hmodule, "glViewport");
+        glBindTexture = (PFNGLBINDTEXTUREPROC)GetProcAddress(g_oglu_hmodule, "glBindTexture");
+        glGenTextures = (PFNGLGENTEXTURESPROC)GetProcAddress(g_oglu_hmodule, "glGenTextures");
+        glTexParameteri = (PFNGLTEXPARAMETERIPROC)GetProcAddress(g_oglu_hmodule, "glTexParameteri");
+        glDeleteTextures = (PFNGLDELETETEXTURESPROC)GetProcAddress(g_oglu_hmodule, "glDeleteTextures");
+        glTexImage2D = (PFNGLTEXIMAGE2DPROC)GetProcAddress(g_oglu_hmodule, "glTexImage2D");
+        glDrawElements = (PFNGLDRAWELEMENTSPROC)GetProcAddress(g_oglu_hmodule, "glDrawElements");
+        glTexSubImage2D = (PFNGLTEXSUBIMAGE2DPROC)GetProcAddress(g_oglu_hmodule, "glTexSubImage2D");
+        glGetError = (PFNGLGETERRORPROC)GetProcAddress(g_oglu_hmodule, "glGetError");
+        glGetString = (PFNGLGETSTRINGPROC)GetProcAddress(g_oglu_hmodule, "glGetString");
+        glGetTexImage = (PFNGLGETTEXIMAGEPROC)GetProcAddress(g_oglu_hmodule, "glGetTexImage");
+        glPixelStorei = (PFNGLPIXELSTOREIPROC)GetProcAddress(g_oglu_hmodule, "glPixelStorei");
+        glEnable = (PFNGLENABLEPROC)GetProcAddress(g_oglu_hmodule, "glEnable");
+        glClear = (PFNGLCLEARPROC)GetProcAddress(g_oglu_hmodule, "glClear");
 
-        glBegin = (PFNGLBEGINPROC)GetProcAddress(OpenGL_hModule, "glBegin");
-        glEnd = (PFNGLENDPROC)GetProcAddress(OpenGL_hModule, "glEnd");
-        glTexCoord2f = (PFNGLTEXCOORD2FPROC)GetProcAddress(OpenGL_hModule, "glTexCoord2f");
-        glVertex2f = (PFNGLVERTEX2FPROC)GetProcAddress(OpenGL_hModule, "glVertex2f");
+        glBegin = (PFNGLBEGINPROC)GetProcAddress(g_oglu_hmodule, "glBegin");
+        glEnd = (PFNGLENDPROC)GetProcAddress(g_oglu_hmodule, "glEnd");
+        glTexCoord2f = (PFNGLTEXCOORD2FPROC)GetProcAddress(g_oglu_hmodule, "glTexCoord2f");
+        glVertex2f = (PFNGLVERTEX2FPROC)GetProcAddress(g_oglu_hmodule, "glVertex2f");
     }
 
     return xwglCreateContext && xwglDeleteContext && xwglGetProcAddress && xwglMakeCurrent && glViewport &&
@@ -138,7 +127,7 @@ BOOL OpenGL_LoadDll()
         glEnable && glClear && glBegin && glEnd && glTexCoord2f && glVertex2f;
 }
 
-void OpenGL_Init()
+void oglu_init()
 {
     // Program
     glCreateProgram = (PFNGLCREATEPROGRAMPROC)xwglGetProcAddress("glCreateProgram");
@@ -170,13 +159,11 @@ void OpenGL_Init()
     glVertexAttrib4fv = (PFNGLVERTEXATTRIB4FVPROC)xwglGetProcAddress("glVertexAttrib4fv");
     glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)xwglGetProcAddress("glEnableVertexAttribArray");
     glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)xwglGetProcAddress("glBindAttribLocation");
-
     glCreateShader = (PFNGLCREATESHADERPROC)xwglGetProcAddress("glCreateShader");
     glDeleteShader = (PFNGLDELETESHADERPROC)xwglGetProcAddress("glDeleteShader");
     glShaderSource = (PFNGLSHADERSOURCEPROC)xwglGetProcAddress("glShaderSource");
     glCompileShader = (PFNGLCOMPILESHADERPROC)xwglGetProcAddress("glCompileShader");
     glGetShaderiv = (PFNGLGETSHADERIVPROC)xwglGetProcAddress("glGetShaderiv");
-
     glGenBuffers = (PFNGLGENBUFFERSPROC)xwglGetProcAddress("glGenBuffers");
     glBindBuffer = (PFNGLBINDBUFFERPROC)xwglGetProcAddress("glBindBuffer");
     glBufferData = (PFNGLBUFFERDATAPROC)xwglGetProcAddress("glBufferData");
@@ -188,9 +175,7 @@ void OpenGL_Init()
     glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)xwglGetProcAddress("glGenVertexArrays");
     glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)xwglGetProcAddress("glBindVertexArray");
     glDeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)xwglGetProcAddress("glDeleteVertexArrays");
-
     glActiveTexture = (PFNGLACTIVETEXTUREPROC)xwglGetProcAddress("glActiveTexture");
-
     glGenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)xwglGetProcAddress("glGenFramebuffers");
     glBindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)xwglGetProcAddress("glBindFramebuffer");
     glFramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)xwglGetProcAddress("glFramebufferTexture2D");
@@ -206,23 +191,23 @@ void OpenGL_Init()
     char *glversion = (char *)glGetString(GL_VERSION);
     if (glversion)
     {
-        strncpy(OpenGL_Version, glversion, sizeof(OpenGL_Version));
+        strncpy(g_oglu_version, glversion, sizeof(g_oglu_version)-1);
         const char deli[2] = " ";
-        strtok(OpenGL_Version, deli);
+        strtok(g_oglu_version, deli);
     }
     else
-        OpenGL_Version[0] = '0';
+        g_oglu_version[0] = '0';
 
-    OpenGL_GotVersion2 = glGetUniformLocation && glActiveTexture && glUniform1i;
+    g_oglu_got_version2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 
-    OpenGL_GotVersion3 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
+    g_oglu_got_version3 = glGenFramebuffers && glBindFramebuffer && glFramebufferTexture2D && glDrawBuffers &&
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
         glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray &&
         glGetUniformLocation && glversion && glversion[0] != '2';
 }
 
-BOOL OpenGL_ExtExists(char *ext, HDC hdc)
+BOOL oglu_ext_exists(char *ext, HDC hdc)
 {
     char *glext = (char *)glGetString(GL_EXTENSIONS);
     if (glext)
@@ -244,46 +229,46 @@ BOOL OpenGL_ExtExists(char *ext, HDC hdc)
     return FALSE;
 }
 
-GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
+GLuint oglu_build_program(const GLchar *vertSource, const GLchar *fragSource)
 {
     if (!glCreateShader || !glShaderSource || !glCompileShader || !glCreateProgram ||
         !glAttachShader || !glLinkProgram || !glUseProgram || !glDetachShader)
         return 0;
 
-    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    GLuint vert_shader = glCreateShader(GL_VERTEX_SHADER);
+    GLuint frag_shader = glCreateShader(GL_FRAGMENT_SHADER);
 
-    if (!vertShader || !fragShader)
+    if (!vert_shader || !frag_shader)
         return 0;
 
-    glShaderSource(vertShader, 1, &vertSource, NULL);
-    glShaderSource(fragShader, 1, &fragSource, NULL);
+    glShaderSource(vert_shader, 1, &vertSource, NULL);
+    glShaderSource(frag_shader, 1, &fragSource, NULL);
 
-    GLint isCompiled = 0;
+    GLint is_compiled = 0;
 
-    glCompileShader(vertShader);
+    glCompileShader(vert_shader);
     if (glGetShaderiv)
     {
-        glGetShaderiv(vertShader, GL_COMPILE_STATUS, &isCompiled);
-        if (isCompiled == GL_FALSE)
+        glGetShaderiv(vert_shader, GL_COMPILE_STATUS, &is_compiled);
+        if (is_compiled == GL_FALSE)
         {
             if (glDeleteShader)
-                glDeleteShader(vertShader);
+                glDeleteShader(vert_shader);
 
             return 0;
         }
     }
 
-    glCompileShader(fragShader);
+    glCompileShader(frag_shader);
     if (glGetShaderiv)
     {
-        glGetShaderiv(fragShader, GL_COMPILE_STATUS, &isCompiled);
-        if (isCompiled == GL_FALSE)
+        glGetShaderiv(frag_shader, GL_COMPILE_STATUS, &is_compiled);
+        if (is_compiled == GL_FALSE)
         {
             if (glDeleteShader)
             {
-                glDeleteShader(fragShader);
-                glDeleteShader(vertShader);
+                glDeleteShader(frag_shader);
+                glDeleteShader(vert_shader);
             }
 
             return 0;
@@ -293,21 +278,21 @@ GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
     GLuint program = glCreateProgram();
     if (program)
     {
-        glAttachShader(program, vertShader);
-        glAttachShader(program, fragShader);
+        glAttachShader(program, vert_shader);
+        glAttachShader(program, frag_shader);
 
         glLinkProgram(program);
 
-        glDetachShader(program, vertShader);
-        glDetachShader(program, fragShader);
-        glDeleteShader(vertShader);
-        glDeleteShader(fragShader);
+        glDetachShader(program, vert_shader);
+        glDetachShader(program, frag_shader);
+        glDeleteShader(vert_shader);
+        glDeleteShader(frag_shader);
 
         if (glGetProgramiv)
         {
-            GLint isLinked = 0;
-            glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
-            if (isLinked == GL_FALSE)
+            GLint is_linked = 0;
+            glGetProgramiv(program, GL_LINK_STATUS, &is_linked);
+            if (is_linked == GL_FALSE)
             {
                 if (glDeleteProgram)
                     glDeleteProgram(program);
@@ -320,7 +305,7 @@ GLuint OpenGL_BuildProgram(const GLchar *vertSource, const GLchar *fragSource)
     return program;
 }
 
-GLuint OpenGL_BuildProgramFromFile(const char *filePath)
+GLuint oglu_build_program_from_file(const char *filePath)
 {
     GLuint program = 0;
 
@@ -328,47 +313,47 @@ GLuint OpenGL_BuildProgramFromFile(const char *filePath)
     if (file)
     {
         fseek(file, 0, SEEK_END);
-        long fileSize = ftell(file);
+        long file_size = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        char *source = fileSize > 0 ? calloc(fileSize + 1, 1) : NULL;
+        char *source = file_size > 0 ? calloc(file_size + 1, 1) : NULL;
         if (source)
         {
-            fread(source, fileSize, 1, file);
+            fread(source, file_size, 1, file);
             fclose(file);
 
-            char *vertSource = calloc(fileSize + 50, 1);
-            char *fragSource = calloc(fileSize + 50, 1);
+            char *vert_source = calloc(file_size + 50, 1);
+            char *frag_source = calloc(file_size + 50, 1);
 
-            if (fragSource && vertSource)
+            if (frag_source && vert_source)
             {
-                char *versionStart = strstr(source, "#version");
-                if (versionStart)
+                char *version_start = strstr(source, "#version");
+                if (version_start)
                 {
                     const char deli[2] = "\n";
-                    char *version = strtok(versionStart, deli);
+                    char *version = strtok(version_start, deli);
 
-                    strcpy(vertSource, source);
-                    strcpy(fragSource, source);
-                    strcat(vertSource, "\n#define VERTEX\n");
-                    strcat(fragSource, "\n#define FRAGMENT\n");
-                    strcat(vertSource, version + strlen(version) + 1);
-                    strcat(fragSource, version + strlen(version) + 1);
+                    strcpy(vert_source, source);
+                    strcpy(frag_source, source);
+                    strcat(vert_source, "\n#define VERTEX\n");
+                    strcat(frag_source, "\n#define FRAGMENT\n");
+                    strcat(vert_source, version + strlen(version) + 1);
+                    strcat(frag_source, version + strlen(version) + 1);
 
-                    program = OpenGL_BuildProgram(vertSource, fragSource);
+                    program = oglu_build_program(vert_source, frag_source);
                 }
                 else
                 {
-                    strcpy(vertSource, "#define VERTEX\n");
-                    strcpy(fragSource, "#define FRAGMENT\n");
-                    strcat(vertSource, source);
-                    strcat(fragSource, source);
+                    strcpy(vert_source, "#define VERTEX\n");
+                    strcpy(frag_source, "#define FRAGMENT\n");
+                    strcat(vert_source, source);
+                    strcat(frag_source, source);
 
-                    program = OpenGL_BuildProgram(vertSource, fragSource);
+                    program = oglu_build_program(vert_source, frag_source);
                 }
 
-                free(vertSource);
-                free(fragSource);
+                free(vert_source);
+                free(frag_source);
             }
 
             free(source);

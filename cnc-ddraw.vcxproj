@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\clipper.c" />
+    <ClCompile Include="src\ddclipper.c" />
     <ClCompile Include="src\debug.c" />
     <ClCompile Include="src\detours\creatwth.cpp" />
     <ClCompile Include="src\detours\detours.cpp" />
@@ -26,37 +26,58 @@
     <ClCompile Include="src\detours\uimports.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="src\dinput.c" />
+    <ClCompile Include="src\directinput.c" />
+    <ClCompile Include="src\dllmain.c" />
+    <ClCompile Include="src\utils.c" />
     <ClCompile Include="src\hook.c" />
+    <ClCompile Include="src\IDirectDraw\IDirectDraw.c" />
+    <ClCompile Include="src\IDirectDraw\IDirectDrawClipper.c" />
+    <ClCompile Include="src\IDirectDraw\IDirectDrawPalette.c" />
+    <ClCompile Include="src\IDirectDraw\IDirectDrawSurface.c" />
     <ClCompile Include="src\lodepng.c" />
-    <ClCompile Include="src\main.c" />
+    <ClCompile Include="src\dd.c" />
     <ClCompile Include="src\mouse.c" />
-    <ClCompile Include="src\opengl.c" />
-    <ClCompile Include="src\palette.c" />
-    <ClCompile Include="src\render.c" />
+    <ClCompile Include="src\opengl_utils.c" />
+    <ClCompile Include="src\ddpalette.c" />
+    <ClCompile Include="src\render_ogl.c" />
     <ClCompile Include="src\render_d3d9.c" />
-    <ClCompile Include="src\render_soft.c" />
+    <ClCompile Include="src\render_gdi.c" />
     <ClCompile Include="src\screenshot.c" />
-    <ClCompile Include="src\settings.c" />
-    <ClCompile Include="src\surface.c" />
+    <ClCompile Include="src\config.c" />
+    <ClCompile Include="src\ddsurface.c" />
+    <ClCompile Include="src\winapi_hooks.c" />
+    <ClCompile Include="src\wndproc.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\clipper.h" />
+    <ClInclude Include="inc\d3d9shader.h" />
+    <ClInclude Include="inc\ddclipper.h" />
+    <ClInclude Include="inc\directinput.h" />
+    <ClInclude Include="inc\dllmain.h" />
     <ClInclude Include="inc\glcorearb.h" />
+    <ClInclude Include="inc\utils.h" />
     <ClInclude Include="inc\hook.h" />
+    <ClInclude Include="inc\IDirectDraw.h" />
+    <ClInclude Include="inc\IDirectDrawClipper.h" />
+    <ClInclude Include="inc\IDirectDrawPalette.h" />
+    <ClInclude Include="inc\IDirectDrawSurface.h" />
     <ClInclude Include="inc\KHR\khrplatform.h" />
     <ClInclude Include="inc\lodepng.h" />
     <ClInclude Include="inc\mouse.h" />
     <ClInclude Include="inc\render_d3d9.h" />
     <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\debug.h" />
-    <ClInclude Include="inc\main.h" />
-    <ClInclude Include="inc\opengl.h" />
-    <ClInclude Include="inc\palette.h" />
+    <ClInclude Include="inc\dd.h" />
+    <ClInclude Include="inc\opengl_utils.h" />
+    <ClInclude Include="inc\ddpalette.h" />
     <ClInclude Include="inc\openglshader.h" />
-    <ClInclude Include="inc\d3d9shader.h" />
+    <ClInclude Include="inc\render_ogl.h" />
+    <ClInclude Include="inc\render_gdi.h" />
     <ClInclude Include="inc\scale_pattern.h" />
-    <ClInclude Include="inc\surface.h" />
+    <ClInclude Include="inc\screenshot.h" />
+    <ClInclude Include="inc\config.h" />
+    <ClInclude Include="inc\ddsurface.h" />
+    <ClInclude Include="inc\winapi_hooks.h" />
+    <ClInclude Include="inc\wndproc.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc" />
