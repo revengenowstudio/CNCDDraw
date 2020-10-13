@@ -112,6 +112,7 @@ void cfg_load()
         DWORD system_affinity;
         DWORD proc_affinity;
         HANDLE proc = GetCurrentProcess();
+
         if (GetProcessAffinityMask(proc, &proc_affinity, &system_affinity))
             SetProcessAffinityMask(proc, system_affinity);
     }

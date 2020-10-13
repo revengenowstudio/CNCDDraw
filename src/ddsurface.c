@@ -170,7 +170,7 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
             }
             else
             {
-                dprintf("    DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
+                dprintfex("     DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
             }
         }
         else
@@ -602,7 +602,7 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 {
     if ((This->width % 4))
     {
-        dprintf("    GetDC: width=%d height=%d\n", This->width, This->height);
+        dprintf("     GetDC: width=%d height=%d\n", This->width, This->height);
     }
 
     RGBQUAD *data = 
@@ -832,8 +832,11 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         dst_surface->bmi->bmiHeader.biCompression = dst_surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
 
         WORD clr_bits = (WORD)(dst_surface->bmi->bmiHeader.biPlanes * dst_surface->bmi->bmiHeader.biBitCount);
+
         if (clr_bits < 24)
+        {
             dst_surface->bmi->bmiHeader.biClrUsed = (1 << clr_bits);
+        }
 
         dst_surface->bmi->bmiHeader.biSizeImage = ((dst_surface->width * clr_bits + 31) & ~31) / 8 * dst_surface->height;
 
@@ -863,10 +866,18 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         dst_surface->bmi->bmiHeader.biHeight = -dst_surface->height;
 
         if (!dst_surface->bitmap)
-            dst_surface->surface = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dst_surface->l_pitch * (dst_surface->height + 200) * dst_surface->lx_pitch);
+        {
+            dst_surface->surface = 
+                HeapAlloc(
+                    GetProcessHeap(), 
+                    HEAP_ZERO_MEMORY, 
+                    dst_surface->l_pitch * (dst_surface->height + 200) * dst_surface->lx_pitch);
+        }
 
         if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
+        {
             g_fake_primary_surface_export = dst_surface->surface;
+        }
 
         SelectObject(dst_surface->hdc, dst_surface->bitmap);
     }

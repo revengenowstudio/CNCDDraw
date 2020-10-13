@@ -18,9 +18,10 @@ void dbg_init()
 
     if (!stdout_open)
     {
+        stdout_open = 1;
+
         freopen("cnc-ddraw.log", "w", stdout);
         setvbuf(stdout, NULL, _IOLBF, 1024);
-        stdout_open = 1;
 
         HKEY hkey;
         LONG status =

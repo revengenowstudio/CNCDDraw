@@ -21,6 +21,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
     {
         //fallback solution for possible ClipCursor failure
         int diffx = 0, diffy = 0;
+
         int max_width = g_ddraw->adjmouse ? g_ddraw->render.viewport.width : g_ddraw->width;
         int max_height = g_ddraw->adjmouse ? g_ddraw->render.viewport.height : g_ddraw->height;
 
@@ -348,6 +349,7 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
                 {
                     int width = g_ddraw->bnet_win_rect.right - g_ddraw->bnet_win_rect.left;
                     int height = g_ddraw->bnet_win_rect.bottom - g_ddraw->bnet_win_rect.top;
+
                     UINT flags = width != g_ddraw->width || height != g_ddraw->height ? 0 : SWP_NOMOVE;
 
                     util_set_window_rect(g_ddraw->bnet_win_rect.left, g_ddraw->bnet_win_rect.top, width, height, flags);
@@ -389,8 +391,10 @@ HWND WINAPI fake_CreateWindowExA(
 
             int width = g_ddraw->bnet_win_rect.right - g_ddraw->bnet_win_rect.left;
             int height = g_ddraw->bnet_win_rect.bottom - g_ddraw->bnet_win_rect.top;
+
             int x = g_ddraw->bnet_pos.x || g_ddraw->bnet_pos.y ? g_ddraw->bnet_pos.x : -32000;
             int y = g_ddraw->bnet_pos.x || g_ddraw->bnet_pos.y ? g_ddraw->bnet_pos.y : -32000;
+
             UINT flags = width != g_ddraw->width || height != g_ddraw->height ? 0 : SWP_NOMOVE;
 
             util_set_window_rect(x, y, g_ddraw->width, g_ddraw->height, flags);

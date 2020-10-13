@@ -38,6 +38,7 @@ void mouse_lock()
         // Convert the client area to screen coordinates.
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
+
         real_ClientToScreen(g_ddraw->hwnd, &pt);
         real_ClientToScreen(g_ddraw->hwnd, &pt2);
         
@@ -69,6 +70,7 @@ void mouse_lock()
                 g_ddraw->hidecursor = FALSE;
                 real_ShowCursor(FALSE);
             }
+
             real_ClipCursor(&rc);
         }
 
@@ -88,12 +90,12 @@ void mouse_unlock()
         return;
     }
 
-    if(!g_hook_active)
+    if (!g_hook_active)
     {
         return;
     }
 
-    if(g_ddraw->locked)
+    if (g_ddraw->locked)
     {
         g_ddraw->locked = FALSE;
 
@@ -103,8 +105,10 @@ void mouse_unlock()
         // Convert the client area to screen coordinates.
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
+
         real_ClientToScreen(g_ddraw->hwnd, &pt);
         real_ClientToScreen(g_ddraw->hwnd, &pt2);
+
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
        
         if (g_ddraw->handlemouse)

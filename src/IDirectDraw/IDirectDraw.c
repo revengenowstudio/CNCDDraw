@@ -25,6 +25,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             *obj = dd;
             IDirectDraw_AddRef(dd);
+
             ret = S_OK;
         }
         else
@@ -57,6 +58,7 @@ ULONG __stdcall IDirectDraw__Release(IDirectDrawImpl* This)
     if (This->ref == 0)
     {
         dprintf("     Released (%p)\n", This);
+
         HeapFree(GetProcessHeap(), 0, This);
     }
 

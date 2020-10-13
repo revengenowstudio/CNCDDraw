@@ -24,6 +24,7 @@ static PROC hook_func(PROC *org_func, PROC new_func)
     {
         *org_func = new_func;
         VirtualProtect(org_func, sizeof(PROC), old_protect, &old_protect);
+
         return org;
     }
 

@@ -71,7 +71,9 @@ DWORD WINAPI gdi_render_main(void)
                     DrawText(g_ddraw->primary->hdc, warning_text, -1, &rc, DT_NOCLIP | DT_CENTER);
                 }
                 else
+                {
                     warning_text[0] = 0;
+                }
             }
 
             BOOL scale_cutscene = g_ddraw->vhack && util_detect_cutscene();
@@ -173,7 +175,9 @@ DWORD WINAPI gdi_render_main(void)
                 tick_end = timeGetTime();
 
                 if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
+                {
                     Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
+                }
             }
         }
     }

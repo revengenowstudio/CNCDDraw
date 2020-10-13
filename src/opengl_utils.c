@@ -196,7 +196,9 @@ void oglu_init()
         strtok(g_oglu_version, deli);
     }
     else
+    {
         g_oglu_version[0] = '0';
+    }
 
     g_oglu_got_version2 = glGetUniformLocation && glActiveTexture && glUniform1i;
 
@@ -210,6 +212,7 @@ void oglu_init()
 BOOL oglu_ext_exists(char *ext, HDC hdc)
 {
     char *glext = (char *)glGetString(GL_EXTENSIONS);
+
     if (glext)
     {
         if (strstr(glext, ext))
@@ -219,6 +222,7 @@ BOOL oglu_ext_exists(char *ext, HDC hdc)
     if (wglGetExtensionsStringARB)
     {
         char *wglext = (char *)wglGetExtensionsStringARB(hdc);
+
         if (wglext)
         {
             if (strstr(wglext, ext))
@@ -317,6 +321,7 @@ GLuint oglu_build_program_from_file(const char *file_path)
         fseek(file, 0, SEEK_SET);
 
         char *source = file_size > 0 ? calloc(file_size + 1, 1) : NULL;
+
         if (source)
         {
             fread(source, file_size, 1, file);
@@ -328,6 +333,7 @@ GLuint oglu_build_program_from_file(const char *file_path)
             if (frag_source && vert_source)
             {
                 char *version_start = strstr(source, "#version");
+
                 if (version_start)
                 {
                     const char deli[2] = "\n";

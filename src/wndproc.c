@@ -135,7 +135,9 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             WINDOWPOS *pos = (WINDOWPOS *)lParam;
 
             if (g_ddraw->wine && !g_ddraw->windowed && (pos->x > 0 || pos->y > 0) && g_ddraw->last_set_window_pos_tick + 500 < timeGetTime())
+            {
                 PostMessage(g_ddraw->hwnd, WM_WINEFULLSCREEN, 0, 0);
+            }
 
             break;
         }
@@ -329,7 +331,9 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 int y = (int)(short)HIWORD(lParam);
 
                 if (x != -32000 && y != -32000)
+                {
                     util_update_bnet_pos(x, y);
+                }
 
                 if (in_size_move || g_ddraw->wine)
                 {
@@ -470,17 +474,20 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 util_toggle_fullscreen();
                 return 0;
             }
+
             break;
         }
         case WM_KEYDOWN:
-            if(wParam == VK_CONTROL || wParam == VK_TAB)
+        {
+            if (wParam == VK_CONTROL || wParam == VK_TAB)
             {
-                if(GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(VK_TAB) & 0x8000)
+                if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(VK_TAB) & 0x8000)
                 {
                     mouse_unlock();
                     return 0;
                 }
             }
+
             if (wParam == VK_CONTROL || wParam == VK_MENU)
             {
                 if ((GetAsyncKeyState(VK_RMENU) & 0x8000) && GetAsyncKeyState(VK_RCONTROL) & 0x8000)
@@ -489,32 +496,34 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     return 0;
                 }
             }
-            break;
 
+            break;
+        }
         case WM_KEYUP:
+        {
             if (wParam == VK_SNAPSHOT)
                 ss_take_screenshot(g_ddraw->primary);
 
             break;
-            
-
+        }
         /* button up messages reactivate cursor lock */
         case WM_LBUTTONUP:
         case WM_RBUTTONUP:
         case WM_MBUTTONUP:
+        {
             if (!g_ddraw->devmode && !g_ddraw->locked)
             {
                 int x = GET_X_LPARAM(lParam);
                 int y = GET_Y_LPARAM(lParam);
-                
-                if (x > g_ddraw->render.viewport.x + g_ddraw->render.viewport.width || 
-                    x < g_ddraw->render.viewport.x || 
+
+                if (x > g_ddraw->render.viewport.x + g_ddraw->render.viewport.width ||
+                    x < g_ddraw->render.viewport.x ||
                     y > g_ddraw->render.viewport.y + g_ddraw->render.viewport.height ||
                     y < g_ddraw->render.viewport.y)
                 {
                     g_ddraw->cursor.x = g_ddraw->width / 2;
                     g_ddraw->cursor.y = g_ddraw->height / 2;
-                }    
+                }
                 else
                 {
                     g_ddraw->cursor.x = (x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w;
@@ -525,7 +534,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 return 0;
             }
             /* fall through for lParam */
-
+        }
         /* down messages are ignored if we have no cursor lock */
         case WM_XBUTTONDBLCLK:
         case WM_XBUTTONDOWN:
@@ -539,15 +548,15 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_RBUTTONDOWN:
         case WM_MBUTTONDOWN:
         case WM_MOUSEMOVE:
-
+        {
             if (!g_ddraw->devmode)
             {
                 if (!g_ddraw->locked)
                 {
                     return 0;
                 }
-                
-                if(g_ddraw->adjmouse)
+
+                if (g_ddraw->adjmouse)
                 {
                     fake_GetCursorPos(NULL); /* update our own cursor */
                     lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
@@ -561,7 +570,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 g_ddraw->cursor.y = GET_Y_LPARAM(lParam);
             }
             break;
-
+        }
         case WM_PARENTNOTIFY:
         {
             if (!g_ddraw->handlemouse)
@@ -585,6 +594,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                             g_ddraw->cursor.y = (y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h;
 
                             g_ddraw->hidecursor = FALSE;
+
                             mouse_lock();
                         }
                         break;

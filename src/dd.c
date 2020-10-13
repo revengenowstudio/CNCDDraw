@@ -31,6 +31,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
         DWORD flags = 99998;
         DWORD fixed_output = 99998;
         DEVMODE m;
+
         memset(&m, 0, sizeof(DEVMODE));
         m.dmSize = sizeof(DEVMODE);
 
@@ -88,7 +89,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
                 if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                 {
-                    dprintf("    DDENUMRET_CANCEL returned, stopping\n");
+                    dprintf("     DDENUMRET_CANCEL returned, stopping\n");
                     break;
                 }
             }
@@ -127,7 +128,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
-                dprintf("    DDENUMRET_CANCEL returned, stopping\n");
+                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
                 break;
             }
 
@@ -139,7 +140,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
-                dprintf("    DDENUMRET_CANCEL returned, stopping\n");
+                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
                 break;
             }
         }
@@ -178,7 +179,7 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
 
 HRESULT dd_RestoreDisplayMode()
 {
-    if(!g_ddraw->render.run)
+    if (!g_ddraw->render.run)
     {
         return DD_OK;
     }
@@ -198,13 +199,17 @@ HRESULT dd_RestoreDisplayMode()
         }
 
         if (g_ddraw->renderer == d3d9_render_main)
+        {
             d3d9_release();
+        }
     }
     
-    if(!g_ddraw->windowed)
+    if (!g_ddraw->windowed)
     {
         if (g_ddraw->renderer != d3d9_render_main)
+        {
             ChangeDisplaySettings(NULL, 0);
+        }
     }
 
     return DD_OK;
@@ -325,6 +330,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
     {
         g_ddraw->render.width = g_ddraw->width;
     }
+
     if (g_ddraw->render.height < g_ddraw->height)
     {
         g_ddraw->render.height = g_ddraw->height;
@@ -340,6 +346,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
     g_ddraw->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
     g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
     g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
+
     if(g_ddraw->render.bpp)
     {
         g_ddraw->render.mode.dmFields |= DM_BITSPERPEL;
@@ -605,7 +612,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     PIXELFORMATDESCRIPTOR pfd;
 
     /* Red Alert for some weird reason does this on Windows XP */
-    if(hwnd == NULL)
+    if (hwnd == NULL)
     {
         return DD_OK;
     }
@@ -634,6 +641,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
             pfd.iPixelType = PFD_TYPE_RGBA;
             pfd.cColorBits = g_ddraw->render.bpp ? g_ddraw->render.bpp : g_ddraw->mode.dmBitsPerPel;
             pfd.iLayerType = PFD_MAIN_PLANE;
+
             SetPixelFormat(g_ddraw->render.hdc, ChoosePixelFormat(g_ddraw->render.hdc, &pfd), &pfd);
         }
 

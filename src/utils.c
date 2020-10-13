@@ -31,19 +31,26 @@ void util_limit_game_ticks()
     else
     {
         static DWORD next_game_tick;
+
         if (!next_game_tick)
         {
             next_game_tick = timeGetTime();
             return;
         }
+
         next_game_tick += g_ddraw->ticks_limiter.tick_length;
         DWORD tick_count = timeGetTime();
 
         int sleep_time = next_game_tick - tick_count;
+
         if (sleep_time <= 0 || sleep_time > g_ddraw->ticks_limiter.tick_length)
+        {
             next_game_tick = tick_count;
+        }
         else
+        {
             Sleep(sleep_time);
+        }
     }
 }
 
@@ -169,6 +176,7 @@ BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWO
                 out_res->cy = lowest.cy = m.dmPelsHeight;
             }
         }
+
         memset(&m, 0, sizeof(DEVMODE));
         m.dmSize = sizeof(DEVMODE);
         i++;
@@ -185,11 +193,13 @@ void util_toggle_fullscreen()
     if (g_ddraw->windowed)
     {
         mouse_unlock();
+
         g_config.window_state = g_ddraw->windowed = FALSE;
         real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         g_ddraw->altenter = TRUE;
         dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
         util_update_bnet_pos(0, 0);
+
         mouse_lock();
     }
     else
@@ -198,9 +208,13 @@ void util_toggle_fullscreen()
         g_config.window_state = g_ddraw->windowed = TRUE;
 
         if (g_ddraw->renderer == d3d9_render_main)
+        {
             d3d9_reset();
+        }
         else
+        {
             ChangeDisplaySettings(NULL, g_ddraw->bnet_active ? CDS_FULLSCREEN : 0);
+        }
 
         dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
         mouse_lock();
@@ -213,6 +227,7 @@ BOOL util_unadjust_window_rect(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwEx
     SetRectEmpty(&rc);
 
     BOOL fRc = AdjustWindowRectEx(&rc, dwStyle, fMenu, dwExStyle);
+
     if (fRc)
     {
         prc->left -= rc.left;
@@ -290,7 +305,9 @@ BOOL util_detect_cutscene()
     static BYTE* should_stretch = (BYTE*)0x00607D78;
 
     if (g_ddraw->width <= CUTSCENE_WIDTH || g_ddraw->height <= CUTSCENE_HEIGHT)
+    {
         return FALSE;
+    }
 
     if (g_ddraw->isredalert)
     {
@@ -298,6 +315,7 @@ BOOL util_detect_cutscene()
         {
             return TRUE;
         }
+
         return FALSE;
     }
     else if (g_ddraw->iscnc1)

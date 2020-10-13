@@ -407,10 +407,10 @@ static void ogl_init_scale_program()
 
     glBindBuffer(GL_ARRAY_BUFFER, g_ogl.scale_vbos[1]);
     GLfloat tex_coord[] = {
-        0.0f,    0.0f,
+        0.0f,           0.0f,
         g_ogl.scale_w,  0.0f,
         g_ogl.scale_w,  g_ogl.scale_h,
-        0.0f,    g_ogl.scale_h,
+        0.0f,           g_ogl.scale_h,
     };
     glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coord), tex_coord, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -820,7 +820,9 @@ static void ogl_render()
                 tick_end = timeGetTime();
 
                 if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
+                {
                     Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
+                }
             }
         }
     }

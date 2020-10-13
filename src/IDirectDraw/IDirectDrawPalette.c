@@ -29,8 +29,10 @@ ULONG __stdcall IDirectDrawPalette__Release(IDirectDrawPaletteImpl* This)
     if (This->ref == 0)
     {
         dprintf("     Released (%p)\n", This);
+
         if (g_ddraw)
             g_ddraw->last_freed_palette = This;
+
         HeapFree(GetProcessHeap(), 0, This);
     }
 

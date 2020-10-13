@@ -90,7 +90,9 @@ BOOL d3d9_create()
 BOOL d3d9_on_device_lost()
 {
     if (g_d3d9.device && IDirect3DDevice9_TestCooperativeLevel(g_d3d9.device) == D3DERR_DEVICENOTRESET)
+    {
         return d3d9_reset();
+    }
 
     return FALSE;
 }
@@ -103,7 +105,9 @@ BOOL d3d9_reset()
     g_d3d9.params.BackBufferFormat = g_d3d9.bits_per_pixel == 16 ? D3DFMT_R5G6B5 : D3DFMT_X8R8G8B8;
 
     if (g_d3d9.device && SUCCEEDED(IDirect3DDevice9_Reset(g_d3d9.device, &g_d3d9.params)))
+    {
         return d3d9_set_states();
+    }
 
     return FALSE;
 }
@@ -173,7 +177,12 @@ static BOOL d3d9_create_resouces()
 
     err = err || FAILED(
         IDirect3DDevice9_CreateVertexBuffer(
-            g_d3d9.device, sizeof(CUSTOMVERTEX) * 4, 0, D3DFVF_XYZRHW | D3DFVF_TEX1, D3DPOOL_MANAGED, &g_d3d9.vertex_buf, NULL));
+            g_d3d9.device, 
+            sizeof(CUSTOMVERTEX) * 4, 0, 
+            D3DFVF_XYZRHW | D3DFVF_TEX1, 
+            D3DPOOL_MANAGED, 
+            &g_d3d9.vertex_buf, 
+            NULL));
 
     err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->incutscene, 0), TRUE);
 
@@ -414,7 +423,9 @@ DWORD WINAPI d3d9_render_main(void)
         IDirect3DDevice9_EndScene(g_d3d9.device);
 
         if (g_ddraw->bnet_active)
+        {
             IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+        }
 
         if (FAILED(IDirect3DDevice9_Present(g_d3d9.device, NULL, NULL, NULL, NULL)))
         {
@@ -459,7 +470,9 @@ DWORD WINAPI d3d9_render_main(void)
                 tick_end = timeGetTime();
 
                 if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
+                {
                     Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
+                }
             }
         }
     }

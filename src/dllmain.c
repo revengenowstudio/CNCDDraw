@@ -161,7 +161,9 @@ HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnk
     IDirectDraw_AddRef(dst_ddraw);
 
     if (!g_ddraw->real_dll)
+    {
         g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
+    }
 
     if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
     {
