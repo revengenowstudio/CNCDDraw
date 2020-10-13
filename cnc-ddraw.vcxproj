@@ -140,8 +140,8 @@
     <TargetName>ddraw</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugLog|Win32'">
-    <OutDir>$(SolutionDir)bin\Release\</OutDir>
-    <IntDir>$(SolutionDir)bin\Release\</IntDir>
+    <OutDir>$(SolutionDir)bin\DebugLog\</OutDir>
+    <IntDir>$(SolutionDir)bin\DebugLog\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <TargetName>ddraw</TargetName>
   </PropertyGroup>
