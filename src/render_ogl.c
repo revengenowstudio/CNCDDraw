@@ -175,7 +175,8 @@ static void ogl_create_textures(int width, int height)
     g_ogl.surface_tex_height =
         height <= 512 ? 512 : height <= 1024 ? 1024 : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    g_ogl.surface_tex = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, g_ogl.surface_tex_width * g_ogl.surface_tex_height * sizeof(int));
+    g_ogl.surface_tex = 
+        HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, g_ogl.surface_tex_width * g_ogl.surface_tex_height * sizeof(int));
 
     g_ogl.adjust_alignment = (width % 4) != 0;
 
@@ -316,8 +317,8 @@ static void ogl_init_main_program()
 
             glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
             GLfloat tex_coord[] = {
-                0.0f,   0.0f,
-                0.0f,   g_ogl.scale_h,
+                0.0f,          0.0f,
+                0.0f,          g_ogl.scale_h,
                 g_ogl.scale_w, g_ogl.scale_h,
                 g_ogl.scale_w, 0.0f,
             };
@@ -338,10 +339,10 @@ static void ogl_init_main_program()
 
             glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
             GLfloat tex_coord[] = {
-                0.0f,   0.0f,
+                0.0f,          0.0f,
                 g_ogl.scale_w, 0.0f,
                 g_ogl.scale_w, g_ogl.scale_h,
-                0.0f,   g_ogl.scale_h,
+                0.0f,          g_ogl.scale_h,
             };
             glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coord), tex_coord, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -511,10 +512,10 @@ static void ogl_init_scale_program()
             glBindVertexArray(g_ogl.main_vao);
             glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
             GLfloat tex_coord_pal[] = {
-                0.0f,   0.0f,
+                0.0f,          0.0f,
                 g_ogl.scale_w, 0.0f,
                 g_ogl.scale_w, g_ogl.scale_h,
-                0.0f,   g_ogl.scale_h,
+                0.0f,          g_ogl.scale_h,
             };
             glBufferData(GL_ARRAY_BUFFER, sizeof(tex_coord_pal), tex_coord_pal, GL_STATIC_DRAW);
             glVertexAttribPointer(g_ogl.main_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -538,9 +539,13 @@ static void ogl_render()
         g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
 
     if (g_ogl.main_program)
+    {
         glUseProgram(g_ogl.main_program);
+    }
     else if (g_ddraw->bpp == 16)
+    {
         glEnable(GL_TEXTURE_2D);
+    }
 
     while (g_ogl.use_opengl && g_ddraw->render.run &&
         (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
@@ -625,6 +630,7 @@ static void ogl_render()
             }
 
             static int error_check_count = 0;
+
             if (error_check_count < 20)
             {
                 glClear(GL_COLOR_BUFFER_BIT);
@@ -673,8 +679,8 @@ static void ogl_render()
                 glBindVertexArray(g_ogl.main_vao);
                 glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
                 GLfloat texCoord[] = {
-                    0.0f,   0.0f,
-                    0.0f,   g_ogl.scale_h,
+                    0.0f,          0.0f,
+                    0.0f,          g_ogl.scale_h,
                     g_ogl.scale_w, g_ogl.scale_h,
                     g_ogl.scale_w, 0.0f,
                 };
@@ -689,10 +695,10 @@ static void ogl_render()
                 glBindVertexArray(g_ogl.main_vao);
                 glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
                 GLfloat texCoord[] = {
-                    0.0f,    0.0f,
+                    0.0f,           0.0f,
                     g_ogl.scale_w,  0.0f,
                     g_ogl.scale_w,  g_ogl.scale_h,
-                    0.0f,    g_ogl.scale_h,
+                    0.0f,           g_ogl.scale_h,
                 };
                 glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
                 glVertexAttribPointer(g_ogl.main_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
@@ -732,11 +738,15 @@ static void ogl_render()
             glBindTexture(GL_TEXTURE_2D, 0);
 
             if (g_ddraw->child_window_exists)
+            {
                 glViewport(0, g_ddraw->render.height - g_ddraw->height, g_ddraw->width, g_ddraw->height);
+            }
             else
+            {
                 glViewport(
                     g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
                     g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+            }
 
             // apply filter
 
@@ -761,10 +771,10 @@ static void ogl_render()
         else
         {
             glBegin(GL_TRIANGLE_FAN);
-            glTexCoord2f(0, 0);             glVertex2f(-1, 1);
-            glTexCoord2f(g_ogl.scale_w, 0);        glVertex2f(1, 1);
-            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);   glVertex2f(1, -1);
-            glTexCoord2f(0, g_ogl.scale_h);        glVertex2f(-1, -1);
+            glTexCoord2f(0,             0);              glVertex2f(-1,  1);
+            glTexCoord2f(g_ogl.scale_w, 0);              glVertex2f( 1,  1);
+            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);  glVertex2f( 1, -1);
+            glTexCoord2f(0,             g_ogl.scale_h);  glVertex2f(-1, -1);
             glEnd();
         }
 

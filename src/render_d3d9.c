@@ -250,21 +250,21 @@ static BOOL d3d9_set_states()
 
 static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
 {
-    float vpX = stretch ? (float)g_ddraw->render.viewport.x : 0.0f;
-    float vpY = stretch ? (float)g_ddraw->render.viewport.y : 0.0f;
+    float vp_x = stretch ? (float)g_ddraw->render.viewport.x : 0.0f;
+    float vp_y = stretch ? (float)g_ddraw->render.viewport.y : 0.0f;
 
-    float vpW = stretch ? (float)(g_ddraw->render.viewport.width + g_ddraw->render.viewport.x) : (float)g_ddraw->width;
-    float vpH = stretch ? (float)(g_ddraw->render.viewport.height + g_ddraw->render.viewport.y) : (float)g_ddraw->height;
+    float vp_w = stretch ? (float)(g_ddraw->render.viewport.width + g_ddraw->render.viewport.x) : (float)g_ddraw->width;
+    float vp_h = stretch ? (float)(g_ddraw->render.viewport.height + g_ddraw->render.viewport.y) : (float)g_ddraw->height;
 
-    float sH = in_cutscene ? g_d3d9.scale_h * ((float)CUTSCENE_HEIGHT / g_ddraw->height) : g_d3d9.scale_h;
-    float sW = in_cutscene ? g_d3d9.scale_w * ((float)CUTSCENE_WIDTH / g_ddraw->width) : g_d3d9.scale_w;
+    float s_h = in_cutscene ? g_d3d9.scale_h * ((float)CUTSCENE_HEIGHT / g_ddraw->height) : g_d3d9.scale_h;
+    float s_w = in_cutscene ? g_d3d9.scale_w * ((float)CUTSCENE_WIDTH / g_ddraw->width) : g_d3d9.scale_w;
 
     CUSTOMVERTEX vertices[] =
     {
-        { vpX - 0.5f, vpH - 0.5f, 0.0f, 1.0f, 0.0f, sH },
-        { vpX - 0.5f, vpY - 0.5f, 0.0f, 1.0f, 0.0f, 0.0f },
-        { vpW - 0.5f, vpH - 0.5f, 0.0f, 1.0f, sW,   sH },
-        { vpW - 0.5f, vpY - 0.5f, 0.0f, 1.0f, sW,   0.0f }
+        { vp_x - 0.5f, vp_h - 0.5f, 0.0f, 1.0f, 0.0f, s_h },
+        { vp_x - 0.5f, vp_y - 0.5f, 0.0f, 1.0f, 0.0f, 0.0f },
+        { vp_w - 0.5f, vp_h - 0.5f, 0.0f, 1.0f, s_w,  s_h },
+        { vp_w - 0.5f, vp_y - 0.5f, 0.0f, 1.0f, s_w,  0.0f }
     };
 
     void *data;

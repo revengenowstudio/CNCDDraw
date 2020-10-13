@@ -83,8 +83,8 @@ typedef struct cnc_ddraw
     BOOL devmode;
     BOOL vsync;
     BOOL vhack;
-	BOOL isredalert;
-	BOOL iscnc1;
+    BOOL isredalert;
+    BOOL iscnc1;
     LONG incutscene;
     DWORD (WINAPI *renderer)(void);
     BOOL fullscreen;
