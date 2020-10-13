@@ -56,13 +56,15 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
         else if (IsEqualGUID(&IID_IDirect3D2, riid) || IsEqualGUID(&IID_IDirect3D3, riid) || IsEqualGUID(&IID_IDirect3D7, riid))
         {
             dprintf("     GUID = %08X (IID_IDirect3DX)\n", ((GUID*)riid)->Data1);
+
+            ret = E_FAIL;
         }
         else
         {
             dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
-        }
 
-        ret = S_OK;
+            ret = S_OK;
+        }
     }
 
     dprintf("<- %s\n", __FUNCTION__);
