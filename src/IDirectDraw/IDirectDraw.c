@@ -1,5 +1,6 @@
 #include <initguid.h>
 #include "IDirectDraw.h"
+#include "IDirect3D.h"
 #include "dd.h"
 #include "ddclipper.h"
 #include "ddpalette.h"
@@ -27,6 +28,34 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
             IDirectDraw_AddRef(dd);
 
             ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirectDraw, riid))
+        {
+            dprintf("     GUID = %08X (IID_IDirectDraw)\n", ((GUID*)riid)->Data1);
+
+            IDirectDrawImpl* dd = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
+            dd->lpVtbl = &g_dd_vtbl1;
+
+            *obj = dd;
+            IDirectDraw_AddRef(dd);
+
+            ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirect3D, riid))
+        {
+            dprintf("     GUID = %08X (IID_IDirect3D)\n", ((GUID*)riid)->Data1);
+
+            IDirect3DImpl* d3d = (IDirect3DImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
+            d3d->lpVtbl = &g_d3d_vtbl1;
+
+            *obj = d3d;
+            d3d->lpVtbl->AddRef(d3d);
+
+            ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirect3D2, riid) || IsEqualGUID(&IID_IDirect3D3, riid) || IsEqualGUID(&IID_IDirect3D7, riid))
+        {
+            dprintf("     GUID = %08X (IID_IDirect3DX)\n", ((GUID*)riid)->Data1);
         }
         else
         {

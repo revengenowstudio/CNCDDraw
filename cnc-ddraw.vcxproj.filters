@@ -19,6 +19,9 @@
     <Filter Include="Source Files\IDirectDraw">
       <UniqueIdentifier>{37ee5b88-e57f-4c55-a43e-e475cf4e8920}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\IDirect3D">
+      <UniqueIdentifier>{e6c62066-0a71-4531-ad9a-eb428abc6f44}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\debug.c">
@@ -123,6 +126,9 @@
     <ClCompile Include="src\opengl_utils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\IDirect3D\IDirect3D.c">
+      <Filter>Source Files\IDirect3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ddraw.h">
@@ -210,6 +216,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\opengl_utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IDirect3D.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

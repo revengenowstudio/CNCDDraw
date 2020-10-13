@@ -32,6 +32,7 @@
     </ClCompile>
     <ClCompile Include="src\directinput.c" />
     <ClCompile Include="src\dllmain.c" />
+    <ClCompile Include="src\IDirect3D\IDirect3D.c" />
     <ClCompile Include="src\utils.c" />
     <ClCompile Include="src\hook.c" />
     <ClCompile Include="src\IDirectDraw\IDirectDraw.c" />
@@ -58,6 +59,7 @@
     <ClInclude Include="inc\directinput.h" />
     <ClInclude Include="inc\dllmain.h" />
     <ClInclude Include="inc\glcorearb.h" />
+    <ClInclude Include="inc\IDirect3D.h" />
     <ClInclude Include="inc\utils.h" />
     <ClInclude Include="inc\hook.h" />
     <ClInclude Include="inc\IDirectDraw.h" />

@@ -17,6 +17,7 @@ FILES = src/debug.c \
         src/render_ogl.c \
         src/render_gdi.c \
         src/render_d3d9.c \
+        src/IDirect3D/IDirect3D.c \
         src/mouse.c \
         src/winapi_hooks.c \
         src/screenshot.c \
