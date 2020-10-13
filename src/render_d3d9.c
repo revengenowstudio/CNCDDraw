@@ -7,6 +7,7 @@
 #include "render_d3d9.h"
 #include "utils.h"
 #include "wndproc.h"
+#include "debug.h"
 
 
 static BOOL d3d9_create_resouces();
@@ -313,7 +314,7 @@ DWORD WINAPI d3d9_render_main(void)
         (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
-        DrawFrameInfoStart();
+        dbg_draw_frame_info_start();
 #endif
 
         static int tex_index = 0, palIndex = 0;
@@ -422,7 +423,7 @@ DWORD WINAPI d3d9_render_main(void)
         }
 
 #if _DEBUG
-        DrawFrameInfoEnd();
+        dbg_draw_frame_info_end();
 #endif
         
         if (g_ddraw->fps_limiter.tick_length > 0)

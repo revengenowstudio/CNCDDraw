@@ -24,7 +24,7 @@ extern DWORD g_dbg_frame_count;
 //#define _DEBUG 1
 
 //use OutputDebugStringA rather than printf
-#define _DEBUG_S 1
+//#define _DEBUG_S 1
 
 //log everything (slow)
 //#define _DEBUG_X 1

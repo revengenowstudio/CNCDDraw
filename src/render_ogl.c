@@ -7,6 +7,7 @@
 #include "render_gdi.h"
 #include "render_ogl.h"
 #include "utils.h"
+#include "debug.h"
 
 
 static HGLRC ogl_create_context(HDC hdc);
@@ -545,7 +546,7 @@ static void ogl_render()
         (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
-        DrawFrameInfoStart();
+        dbg_draw_frame_info_start();
 #endif
 
         g_ogl.scale_w = (float)g_ddraw->width / g_ogl.surface_tex_width;
@@ -773,7 +774,7 @@ static void ogl_render()
         SwapBuffers(g_ddraw->render.hdc);
 
 #if _DEBUG
-        DrawFrameInfoEnd();
+        dbg_draw_frame_info_end();
 #endif
 
         if (g_ddraw->fps_limiter.tick_length > 0)

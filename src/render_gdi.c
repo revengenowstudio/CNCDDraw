@@ -5,6 +5,7 @@
 #include "opengl_utils.h"
 #include "utils.h"
 #include "wndproc.h"
+#include "debug.h"
 
 
 DWORD WINAPI gdi_render_main(void)
@@ -52,7 +53,7 @@ DWORD WINAPI gdi_render_main(void)
         (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
     {
 #if _DEBUG
-        DrawFrameInfoStart();
+        dbg_draw_frame_info_start();
 #endif
 
         if (g_ddraw->fps_limiter.tick_length > 0)
@@ -145,7 +146,7 @@ DWORD WINAPI gdi_render_main(void)
         LeaveCriticalSection(&g_ddraw->cs);
 
 #if _DEBUG
-        DrawFrameInfoEnd();
+        dbg_draw_frame_info_end();
 #endif
 
         if (g_ddraw->fps_limiter.tick_length > 0)

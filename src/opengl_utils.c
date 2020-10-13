@@ -229,7 +229,7 @@ BOOL oglu_ext_exists(char *ext, HDC hdc)
     return FALSE;
 }
 
-GLuint oglu_build_program(const GLchar *vertSource, const GLchar *fragSource)
+GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source)
 {
     if (!glCreateShader || !glShaderSource || !glCompileShader || !glCreateProgram ||
         !glAttachShader || !glLinkProgram || !glUseProgram || !glDetachShader)
@@ -241,8 +241,8 @@ GLuint oglu_build_program(const GLchar *vertSource, const GLchar *fragSource)
     if (!vert_shader || !frag_shader)
         return 0;
 
-    glShaderSource(vert_shader, 1, &vertSource, NULL);
-    glShaderSource(frag_shader, 1, &fragSource, NULL);
+    glShaderSource(vert_shader, 1, &vert_source, NULL);
+    glShaderSource(frag_shader, 1, &frag_source, NULL);
 
     GLint is_compiled = 0;
 
@@ -305,11 +305,11 @@ GLuint oglu_build_program(const GLchar *vertSource, const GLchar *fragSource)
     return program;
 }
 
-GLuint oglu_build_program_from_file(const char *filePath)
+GLuint oglu_build_program_from_file(const char *file_path)
 {
     GLuint program = 0;
 
-    FILE *file = fopen(filePath, "rb");
+    FILE *file = fopen(file_path, "rb");
     if (file)
     {
         fseek(file, 0, SEEK_END);
