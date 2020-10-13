@@ -164,11 +164,11 @@ HRESULT __stdcall IDirectDraw__GetGDISurface(IDirectDrawImpl* This, LPDIRECTDRAW
     return ret;
 }
 
-HRESULT __stdcall IDirectDraw__GetMonitorFrequency(IDirectDrawImpl* This, LPDWORD a)
+HRESULT __stdcall IDirectDraw__GetMonitorFrequency(IDirectDrawImpl* This, LPDWORD lpdwFreq)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = dd_GetMonitorFrequency(lpdwFreq);
+    dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
 

@@ -177,6 +177,12 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
     return DD_OK;
 }
 
+HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq)
+{
+    *lpdwFreq = 60;
+    return DD_OK;
+}
+
 HRESULT dd_RestoreDisplayMode()
 {
     if (!g_ddraw->render.run)
