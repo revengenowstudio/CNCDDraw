@@ -92,6 +92,8 @@ int dbg_printf(const char *fmt, ...)
     ret = vfprintf(stdout, fmt, args);
     va_end(args);
 
+    fflush(stdout);
+
     LeaveCriticalSection(&cs);
 
     return ret;
