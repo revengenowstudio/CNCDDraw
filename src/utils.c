@@ -89,17 +89,25 @@ void util_update_bnet_pos(int new_x, int new_y)
         if (rc.bottom - rc.top <= g_ddraw->height)
         {
             if (rc.bottom > mainrc.bottom && abs(mainrc.bottom - rc.bottom) > abs(adj_y))
+            {
                 adj_y = mainrc.bottom - rc.bottom;
+            }
             else if (rc.top < mainrc.top && abs(mainrc.top - rc.top) > abs(adj_y))
+            {
                 adj_y = mainrc.top - rc.top;
+            }
         }
 
         if (rc.right - rc.left <= g_ddraw->width)
         {
             if (rc.right > mainrc.right && abs(mainrc.right - rc.right) > abs(adj_x))
+            {
                 adj_x = mainrc.right - rc.right;
+            }
             else if (rc.left < mainrc.left && abs(mainrc.left - rc.left) > abs(adj_x))
+            {
                 adj_x = mainrc.left - rc.left;
+            }
         }
 
         hwnd = FindWindowEx(HWND_DESKTOP, hwnd, "SDlgDialog", NULL);

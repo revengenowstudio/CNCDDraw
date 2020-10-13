@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include "dllmain.h"
 #include "dd.h"
 #include "hook.h"
 #include "ddsurface.h"
@@ -10,8 +11,6 @@
 #include "debug.h"
 #include "utils.h"
 
-
-void *g_fake_primary_surface_export; // hack for some warcraft II tools
 
 HRESULT dds_AddAttachedSurface(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE lpDDSurface)
 {
@@ -713,6 +712,7 @@ HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPal
 HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
 {
     HWND hwnd = g_ddraw->bnet_active ? FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL) : NULL;
+
     if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
         if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
@@ -831,11 +831,11 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         dst_surface->bmi->bmiHeader.biBitCount = dst_surface->bpp;
         dst_surface->bmi->bmiHeader.biCompression = dst_surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
 
-        WORD c_clr_bits = (WORD)(dst_surface->bmi->bmiHeader.biPlanes * dst_surface->bmi->bmiHeader.biBitCount);
-        if (c_clr_bits < 24)
-            dst_surface->bmi->bmiHeader.biClrUsed = (1 << c_clr_bits);
+        WORD clr_bits = (WORD)(dst_surface->bmi->bmiHeader.biPlanes * dst_surface->bmi->bmiHeader.biBitCount);
+        if (clr_bits < 24)
+            dst_surface->bmi->bmiHeader.biClrUsed = (1 << clr_bits);
 
-        dst_surface->bmi->bmiHeader.biSizeImage = ((dst_surface->width * c_clr_bits + 31) & ~31) / 8 * dst_surface->height;
+        dst_surface->bmi->bmiHeader.biSizeImage = ((dst_surface->width * clr_bits + 31) & ~31) / 8 * dst_surface->height;
 
         if (dst_surface->bpp == 8)
         {

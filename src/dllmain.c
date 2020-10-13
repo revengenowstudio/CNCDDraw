@@ -17,6 +17,9 @@ DWORD AmdPowerXpressRequestHighPerformance = 1;
 // export for cncnet cnc games
 BOOL GameHandlesClose;
 
+// export for some warcraft II tools
+void *g_fake_primary_surface_export;
+
 
 HMODULE g_ddraw_module;
 

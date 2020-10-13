@@ -231,9 +231,9 @@ int WINAPI fake_GetSystemMetrics(int nIndex)
 
 BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
-    UINT reqFlags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER;
+    UINT req_flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER;
 
-    if (g_ddraw && g_ddraw->hwnd == hWnd && (uFlags & reqFlags) != reqFlags)
+    if (g_ddraw && g_ddraw->hwnd == hWnd && (uFlags & req_flags) != req_flags)
         return TRUE;
 
     return real_SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);

@@ -56,6 +56,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
         memset(&m, 0, sizeof(DEVMODE));
         m.dmSize = sizeof(DEVMODE);
         i = 0;
+
         while (EnumDisplaySettings(NULL, i, &m))
         {
             if (refresh_rate == m.dmDisplayFrequency &&
@@ -91,6 +92,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     break;
                 }
             }
+
             memset(&m, 0, sizeof(DEVMODE));
             m.dmSize = sizeof(DEVMODE);
             i++;
@@ -264,6 +266,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         g_ddraw->render.mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
         g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
         g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
+
         if (g_ddraw->render.bpp)
         {
             g_ddraw->render.mode.dmFields |= DM_BITSPERPEL;
@@ -300,7 +303,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
 
     BOOL border = g_ddraw->border;
 
-    if(g_ddraw->fullscreen)
+    if (g_ddraw->fullscreen)
     {
         g_ddraw->render.width = g_ddraw->mode.dmPelsWidth;
         g_ddraw->render.height = g_ddraw->mode.dmPelsHeight;
@@ -318,11 +321,11 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         }
     }
 
-    if(g_ddraw->render.width < g_ddraw->width)
+    if (g_ddraw->render.width < g_ddraw->width)
     {
         g_ddraw->render.width = g_ddraw->width;
     }
-    if(g_ddraw->render.height < g_ddraw->height)
+    if (g_ddraw->render.height < g_ddraw->height)
     {
         g_ddraw->render.height = g_ddraw->height;
     }
@@ -431,12 +434,16 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         }
     }
 
-    if (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main) 
+    if (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main)
+    {
         g_ddraw->render.height++;
+    }
 
     if (!g_ddraw->handlemouse)
+    {
         g_ddraw->boxing = maintas = FALSE;
-    
+    }
+
     g_ddraw->render.viewport.width = g_ddraw->render.width;
     g_ddraw->render.viewport.height = g_ddraw->render.height;
     g_ddraw->render.viewport.x = 0;
@@ -505,15 +512,19 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         int cx = g_ddraw->mode.dmPelsHeight ? g_ddraw->mode.dmPelsHeight : g_ddraw->render.height;
         int x = (g_config.window_rect.left != -32000) ? g_config.window_rect.left : (cy / 2) - (g_ddraw->render.width / 2);
         int y = (g_config.window_rect.top != -32000) ? g_config.window_rect.top : (cx / 2) - (g_ddraw->render.height / 2);
+        
         RECT dst = { x, y, g_ddraw->render.width + x, g_ddraw->render.height + y };
+        
         AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), FALSE);
         real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         real_MoveWindow(g_ddraw->hwnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
         BOOL d3d9_active = FALSE;
+
         if (g_ddraw->renderer == d3d9_render_main)
         {
             d3d9_active = d3d9_create();
+
             if (!d3d9_active)
             {
                 d3d9_release();
@@ -535,9 +546,11 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         }
 
         BOOL d3d9_active = FALSE;
+
         if (g_ddraw->renderer == d3d9_render_main)
         {
             d3d9_active = d3d9_create();
+
             if (!d3d9_active)
             {
                 d3d9_release();
@@ -554,7 +567,9 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         }
 
         if (g_ddraw->wine)
+        {
             real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_MINIMIZEBOX);
+        }
 
         real_SetWindowPos(g_ddraw->hwnd, HWND_TOPMOST, 0, 0, g_ddraw->render.width, g_ddraw->render.height, SWP_SHOWWINDOW);
         g_ddraw->last_set_window_pos_tick = timeGetTime();
@@ -562,12 +577,12 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         mouse_lock();
     }
     
-    if(g_ddraw->render.viewport.x != 0 || g_ddraw->render.viewport.y != 0)
+    if (g_ddraw->render.viewport.x != 0 || g_ddraw->render.viewport.y != 0)
     {
         RedrawWindow(g_ddraw->hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
     }
 
-    if(g_ddraw->render.thread == NULL)
+    if (g_ddraw->render.thread == NULL)
     {
         InterlockedExchange(&g_ddraw->render.palette_updated, TRUE);
         InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
@@ -636,7 +651,9 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
         g_ddraw->iscnc1 = strcmp(g_ddraw->title, "Command & Conquer") == 0;
 
         if (g_ddraw->vhack && !g_ddraw->isredalert && !g_ddraw->iscnc1)
+        {
             g_ddraw->vhack = 0;
+        }
     }
 
     return DD_OK;
@@ -668,19 +685,26 @@ HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h)
     else
     {
         static DWORD next_game_tick;
+
         if (!next_game_tick)
         {
             next_game_tick = timeGetTime();
             return DD_OK;
         }
+
         next_game_tick += g_ddraw->flip_limiter.tick_length;
         DWORD tick_count = timeGetTime();
 
         int sleep_time = next_game_tick - tick_count;
+
         if (sleep_time <= 0 || sleep_time > g_ddraw->flip_limiter.tick_length)
+        {
             next_game_tick = tick_count;
+        }
         else
+        {
             Sleep(sleep_time);
+        }
     }
 
     return DD_OK;
@@ -723,7 +747,7 @@ ULONG dd_Release()
             }
         }
 
-        if(g_ddraw->render.hdc)
+        if (g_ddraw->render.hdc)
         {
             ReleaseDC(g_ddraw->hwnd, g_ddraw->render.hdc);
             g_ddraw->render.hdc = NULL;
@@ -754,8 +778,10 @@ ULONG dd_Release()
 
         /* restore old wndproc, subsequent ddraw creation will otherwise fail */
         real_SetWindowLongA(g_ddraw->hwnd, GWL_WNDPROC, (LONG)g_ddraw->wndproc);
+
         HeapFree(GetProcessHeap(), 0, g_ddraw);
         g_ddraw = NULL;
+
         return 0;
     }
 

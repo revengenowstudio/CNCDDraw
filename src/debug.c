@@ -59,11 +59,11 @@ double dbg_counter_stop()
 
 void dbg_debug_string(const char *format, ...)
 {
-	va_list args;
-	va_start(args, format);
+    va_list args;
+    va_start(args, format);
     char buffer[512] = { 0 };
-	_vsnprintf(buffer, sizeof(buffer), format, args);
-	OutputDebugStringA(buffer);
+    _vsnprintf(buffer, sizeof(buffer), format, args);
+    OutputDebugStringA(buffer);
 }
 
 int dbg_printf(const char *fmt, ...)

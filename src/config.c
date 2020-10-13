@@ -11,9 +11,9 @@
 #include "debug.h"
 
 
-static BOOL cfg_get_bool(LPCSTR key, BOOL defaultValue);
-static int cfg_get_int(LPCSTR key, int defaultValue);
-static DWORD cfg_get_string(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize);
+static BOOL cfg_get_bool(LPCSTR key, BOOL default_value);
+static int cfg_get_int(LPCSTR key, int default_value);
+static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size);
 static void cfg_create_ini();
 
 cnc_ddraw_config g_config = 
@@ -71,6 +71,7 @@ void cfg_load()
     //can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency
 
     int max_ticks = cfg_get_int("maxgameticks", 0);
+
     if (max_ticks > 0 && max_ticks <= 1000)
     {
         if (g_ddraw->accurate_timers)
@@ -93,10 +94,14 @@ void cfg_load()
     }
 
     if ((g_ddraw->fullscreen = cfg_get_bool("fullscreen", FALSE)))
+    {
         g_config.window_rect.left = g_config.window_rect.top = -32000;
+    }
 
     if (!(g_ddraw->handlemouse = cfg_get_bool("handlemouse", TRUE)))
+    {
         g_ddraw->adjmouse = TRUE;
+    }
 
     if (cfg_get_bool("singlecpu", TRUE))
     {
@@ -114,7 +119,9 @@ void cfg_load()
     g_ddraw->render.bpp = cfg_get_int("bpp", 0);
 
     if (g_ddraw->render.bpp != 16 && g_ddraw->render.bpp != 24 && g_ddraw->render.bpp != 32)
+    {
         g_ddraw->render.bpp = 0;
+    }
 
     // to do: read .glslp config file instead of the shader and apply the correct settings
     cfg_get_string("shader", "", g_ddraw->shader, sizeof(g_ddraw->shader));
@@ -498,10 +505,10 @@ static void cfg_create_ini()
     }
 }
 
-static DWORD cfg_get_string(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DWORD outSize)
+static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size)
 {
     DWORD s = GetPrivateProfileStringA(
-        g_config.process_file_name, key, "", outString, outSize, g_config.ini_path);
+        g_config.process_file_name, key, "", out_string, out_size, g_config.ini_path);
 
     if (s > 0)
     {
@@ -517,21 +524,21 @@ static DWORD cfg_get_string(LPCSTR key, LPCSTR defaultValue, LPSTR outString, DW
             return s;
     }
 
-    return GetPrivateProfileStringA("ddraw", key, defaultValue, outString, outSize, g_config.ini_path);
+    return GetPrivateProfileStringA("ddraw", key, default_value, out_string, out_size, g_config.ini_path);
 }
 
-static BOOL cfg_get_bool(LPCSTR key, BOOL defaultValue)
+static BOOL cfg_get_bool(LPCSTR key, BOOL default_value)
 {
     char value[8];
-    cfg_get_string(key, defaultValue ? "Yes" : "No", value, sizeof(value));
+    cfg_get_string(key, default_value ? "Yes" : "No", value, sizeof(value));
 
     return (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0 || _stricmp(value, "1") == 0);
 }
 
-static int cfg_get_int(LPCSTR key, int defaultValue)
+static int cfg_get_int(LPCSTR key, int default_value)
 {
     char def_value[16];
-    _snprintf(def_value, sizeof(def_value), "%d", defaultValue);
+    _snprintf(def_value, sizeof(def_value), "%d", default_value);
 
     char value[16];
     cfg_get_string(key, def_value, value, sizeof(value));
