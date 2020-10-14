@@ -151,10 +151,8 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
 HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
 {
-    if (lpDDDriverCaps)
+    if(lpDDDriverCaps)
     {
-        memset(lpDDDriverCaps, 0, sizeof(DDCAPS));
-
         lpDDDriverCaps->dwSize = sizeof(DDCAPS);
         lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP;
         lpDDDriverCaps->dwCKeyCaps = 0;
@@ -171,9 +169,9 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
         lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
     }
 
-    if (lpDDEmulCaps)
+    if(lpDDEmulCaps)
     {
-        memset(lpDDEmulCaps, 0, sizeof(DDCAPS));
+        lpDDEmulCaps->dwSize = 0;
     }
 
     return DD_OK;
