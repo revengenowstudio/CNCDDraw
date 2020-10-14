@@ -21,7 +21,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     
     switch(uMsg)
     {
-        //case WM_NCACTIVATE:
         case WM_GETMINMAXINFO:
         case WM_MOVING:
         case WM_NCLBUTTONDOWN:
@@ -29,6 +28,15 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_NCPAINT:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
+        }
+        case WM_NCACTIVATE:
+        {
+            if (g_ddraw->noactivateapp)
+            {
+                return DefWindowProc(hWnd, uMsg, wParam, lParam);
+            }
+
+            break;
         }
         case WM_NCHITTEST:
         {

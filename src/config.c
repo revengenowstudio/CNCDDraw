@@ -281,7 +281,7 @@ static void cfg_create_ini()
             "; Use the following settings in case there are any issues with the game\n"
             "\n"
             "\n"
-            "; Hide WM_ACTIVATEAPP messages to prevent problems on alt+tab\n"
+            "; Hide WM_ACTIVATEAPP and WM_NCACTIVATE messages to prevent problems on alt+tab\n"
             "noactivateapp=false\n"
             "\n"
             "; Max game ticks per second, possible values: -1 = disabled, 0 = emulate 60hz vblank, 1-1000 = custom game speed\n"
