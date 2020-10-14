@@ -155,7 +155,6 @@ void hook_create(char *module_name, char *function_name, PROC new_function, PROC
     if (g_hook_method == 1)
     {
         hook_patch_iat(GetModuleHandle(NULL), module_name, function_name, new_function);
-        hook_patch_iat(GetModuleHandle("storm.dll"), module_name, function_name, new_function);
     }
 }
 
@@ -212,12 +211,6 @@ void hook_revert(char *module_name, char *function_name, PROC new_function, PROC
             GetModuleHandle(NULL), 
             module_name, 
             function_name, 
-            GetProcAddress(GetModuleHandle(module_name), function_name));
-
-        hook_patch_iat(
-            GetModuleHandle("storm.dll"),
-            module_name,
-            function_name,
             GetProcAddress(GetModuleHandle(module_name), function_name));
     }
 }

@@ -68,6 +68,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 dprintfex("     %d: %dx%d@%d %d bpp\n", (int)i, (int)m.dmPelsWidth, (int)m.dmPelsHeight, (int)m.dmDisplayFrequency, (int)m.dmBitsPerPel);
 
                 memset(&s, 0, sizeof(DDSURFACEDESC));
+
                 s.dwSize = sizeof(DDSURFACEDESC);
                 s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
                 s.dwHeight = m.dmPelsHeight;
@@ -117,6 +118,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
         for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
         {
             memset(&s, 0, sizeof(DDSURFACEDESC));
+
             s.dwSize = sizeof(DDSURFACEDESC);
             s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
             s.dwHeight = resolutions[i].cy;
@@ -273,6 +275,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         g_ddraw->altenter = FALSE;
 
         memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
+
         g_ddraw->render.mode.dmSize = sizeof(DEVMODE);
         g_ddraw->render.mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
         g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
@@ -322,6 +325,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         if (g_ddraw->windowed) //windowed-fullscreen aka borderless
         {
             border = FALSE;
+
             g_config.window_rect.left = -32000;
             g_config.window_rect.top = -32000;
 
@@ -348,12 +352,13 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
     mouse_unlock();
 	
     memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
+
     g_ddraw->render.mode.dmSize = sizeof(DEVMODE);
     g_ddraw->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
     g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
     g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-    if(g_ddraw->render.bpp)
+    if (g_ddraw->render.bpp)
     {
         g_ddraw->render.mode.dmFields |= DM_BITSPERPEL;
         g_ddraw->render.mode.dmBitsPerPel = g_ddraw->render.bpp;
@@ -736,9 +741,11 @@ ULONG dd_Release()
     if (g_ddraw->ref == 0)
     {
         if (g_ddraw->bpp)
+        {
             cfg_save();
+        }
 
-        if(g_ddraw->render.run)
+        if (g_ddraw->render.run)
         {
             EnterCriticalSection(&g_ddraw->cs);
             g_ddraw->render.run = FALSE;

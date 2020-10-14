@@ -82,14 +82,14 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 
         if (!set_dpi_aware)
         {
-            HMODULE hUser32 = GetModuleHandle("user32.dll");
+            HMODULE huser32 = GetModuleHandle("user32.dll");
             
-            if (hUser32)
+            if (huser32)
             {
                 typedef BOOL(__stdcall* SETPROCESSDPIAWAREPROC)();
 
                 SETPROCESSDPIAWAREPROC set_aware = 
-                    (SETPROCESSDPIAWAREPROC)GetProcAddress(hUser32, "SetProcessDPIAware");
+                    (SETPROCESSDPIAWAREPROC)GetProcAddress(huser32, "SetProcessDPIAware");
 
                 if (set_aware)
                     set_aware();
