@@ -502,26 +502,31 @@ HRESULT dds_DeleteAttachedSurface(IDirectDrawSurfaceImpl *This, DWORD dwFlags, L
 
 HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSurfaceDesc)
 {
-    lpDDSurfaceDesc->dwSize = sizeof(DDSURFACEDESC);
-    lpDDSurfaceDesc->dwFlags = DDSD_WIDTH|DDSD_HEIGHT|DDSD_PITCH|DDSD_PIXELFORMAT|DDSD_LPSURFACE;
-    lpDDSurfaceDesc->dwWidth = This->width;
-    lpDDSurfaceDesc->dwHeight = This->height;
-    lpDDSurfaceDesc->lPitch = This->l_pitch;
-    lpDDSurfaceDesc->lpSurface = This->surface;
-    lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
-    lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
-    lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
-    lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps | DDSCAPS_VIDEOMEMORY;
+    if (lpDDSurfaceDesc)
+    {
+        memset(lpDDSurfaceDesc, 0, sizeof(DDSURFACEDESC));
 
-    if (This->bpp == 8)
-    {
-        lpDDSurfaceDesc->ddpfPixelFormat.dwFlags |= DDPF_PALETTEINDEXED8;
-    }
-    else if (This->bpp == 16)
-    {
-        lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
-        lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
-        lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
+        lpDDSurfaceDesc->dwSize = sizeof(DDSURFACEDESC);
+        lpDDSurfaceDesc->dwFlags = DDSD_WIDTH | DDSD_HEIGHT | DDSD_PITCH | DDSD_PIXELFORMAT | DDSD_LPSURFACE;
+        lpDDSurfaceDesc->dwWidth = This->width;
+        lpDDSurfaceDesc->dwHeight = This->height;
+        lpDDSurfaceDesc->lPitch = This->l_pitch;
+        lpDDSurfaceDesc->lpSurface = This->surface;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+        lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
+        lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps | DDSCAPS_VIDEOMEMORY;
+
+        if (This->bpp == 8)
+        {
+            lpDDSurfaceDesc->ddpfPixelFormat.dwFlags |= DDPF_PALETTEINDEXED8;
+        }
+        else if (This->bpp == 16)
+        {
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
+        }
     }
 
     return DD_OK;
@@ -633,13 +638,11 @@ HRESULT dds_GetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE FAR *lp
 
 HRESULT dds_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT ddpfPixelFormat)
 {
-    DWORD size = ddpfPixelFormat->dwSize;
-
-    if (size == sizeof(DDPIXELFORMAT))
+    if (ddpfPixelFormat)
     {
         memset(ddpfPixelFormat, 0, sizeof(DDPIXELFORMAT));
 
-        ddpfPixelFormat->dwSize = size;
+        ddpfPixelFormat->dwSize = sizeof(DDPIXELFORMAT);
         ddpfPixelFormat->dwFlags = DDPF_RGB;
         ddpfPixelFormat->dwRGBBitCount = This->bpp;
 
