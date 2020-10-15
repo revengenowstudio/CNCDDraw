@@ -228,9 +228,9 @@ HRESULT __stdcall IDirectDrawSurface__GetPalette(IDirectDrawSurfaceImpl *This, L
 
 HRESULT __stdcall IDirectDrawSurface__GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT ddpfPixelFormat)
 {
-    dprintf("-> %s(This=%p, ...)\n", __FUNCTION__, This);
+    dprintfex("-> %s(This=%p, ...)\n", __FUNCTION__, This);
     HRESULT ret = dds_GetPixelFormat(This, ddpfPixelFormat);
-    dprintf("<- %s\n", __FUNCTION__);
+    dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
 
