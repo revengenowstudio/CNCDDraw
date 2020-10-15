@@ -501,6 +501,12 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
+            "; Dungeon Keeper 2\n"
+            "[DKII]\n"
+            "maxgameticks=60\n"
+            "noactivateapp=true\n"
+            "dk2hack=true\n"
+            "\n"
 
             , fh);
         fclose(fh);

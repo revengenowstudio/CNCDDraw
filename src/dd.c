@@ -741,8 +741,8 @@ ULONG dd_Release()
 
     if (g_ddraw->dk2hack)
     {
-        g_ddraw->dk2hack = FALSE;
-        g_ddraw->ref--;
+        static BOOL once; 
+        if (!once) once = g_ddraw->ref-- + 1;
     }
 
     if (g_ddraw->ref == 0)
