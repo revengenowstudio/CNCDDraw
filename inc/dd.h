@@ -100,6 +100,7 @@ typedef struct cnc_ddraw
     BOOL accurate_timers;
     BOOL resizable;
     BOOL sierrahack;
+    BOOL dk2hack;
     BOOL nonexclusive;
     BOOL bnet_active;
     BOOL bnet_was_fullscreen;

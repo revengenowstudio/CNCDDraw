@@ -739,6 +739,12 @@ ULONG dd_Release()
 {
     g_ddraw->ref--;
 
+    if (g_ddraw->dk2hack)
+    {
+        g_ddraw->dk2hack = FALSE;
+        g_ddraw->ref--;
+    }
+
     if (g_ddraw->ref == 0)
     {
         if (g_ddraw->bpp)

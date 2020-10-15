@@ -49,6 +49,7 @@ void cfg_load()
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
     g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
+    g_ddraw->dk2hack = cfg_get_bool("dk2hack", FALSE); // Dungeon Keeper 2 hack
 
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
