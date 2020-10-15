@@ -11,11 +11,13 @@ HRESULT dd_CreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR *lplpDDClipper, 
         return DDERR_INVALIDPARAMS;
 
     IDirectDrawClipperImpl *c = (IDirectDrawClipperImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawClipperImpl));
-    c->lpVtbl = &g_ddc_vtbl;
+    
     dprintf("     Clipper = %p\n", c);
-    *lplpDDClipper = (LPDIRECTDRAWCLIPPER)c;
 
+    c->lpVtbl = &g_ddc_vtbl;
     IDirectDrawClipper_AddRef(c);
+
+    *lplpDDClipper = (LPDIRECTDRAWCLIPPER)c;
 
     return DD_OK;
 }

@@ -879,7 +879,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
 
         if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
         {
-            g_fake_primary_surface_export = dst_surface->surface;
+            FakePrimarySurface = dst_surface->surface;
         }
 
         SelectObject(dst_surface->hdc, dst_surface->bitmap);

@@ -7,7 +7,6 @@
 #include "debug.h"
 #include "config.h"
 #include "directinput.h"
-#include "IDirectDraw.h"
 #include "hook.h"
 
 // exports to force usage of discrete high performance graphics device
@@ -18,7 +17,7 @@ DWORD AmdPowerXpressRequestHighPerformance = 1;
 BOOL GameHandlesClose;
 
 // export for some warcraft II tools
-void *g_fake_primary_surface_export;
+PVOID FakePrimarySurface;
 
 
 HMODULE g_ddraw_module;
@@ -138,49 +137,15 @@ HRESULT WINAPI DirectDrawCreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR* l
 HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter)
 {
     dprintf("-> %s(lpGUID=%p, lplpDD=%p, pUnkOuter=%p)\n", __FUNCTION__, lpGUID, lplpDD, pUnkOuter);
-
-    if (g_ddraw)
-    {
-        /* FIXME: check the calling module before passing the call! */
-        if (g_ddraw->DirectDrawCreate)
-        {
-            dprintf("<- %s\n", __FUNCTION__);
-            return g_ddraw->DirectDrawCreate(lpGUID, lplpDD, pUnkOuter);
-        }
-            
-        dprintf("<- %s\n", __FUNCTION__);
-        return DDERR_DIRECTDRAWALREADYCREATED;
-    }
-
-    g_ddraw = (cnc_ddraw*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(cnc_ddraw));
-
-    IDirectDrawImpl* dst_ddraw = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
-    dst_ddraw->lpVtbl = &g_dd_vtbl1;
-
-    *lplpDD = (LPDIRECTDRAW)dst_ddraw;
-    IDirectDraw_AddRef(dst_ddraw);
-
-    if (!g_ddraw->real_dll)
-    {
-        g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
-    }
-
-    if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
-    {
-        g_ddraw->DirectDrawCreate =
-            (HRESULT(WINAPI*)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
-
-        if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
-            g_ddraw->DirectDrawCreate = NULL;
-    }
-
-    InitializeCriticalSection(&g_ddraw->cs);
-
-    g_ddraw->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
-    g_ddraw->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
-
-    cfg_load();
-
+    HRESULT ret = dd_CreateEx(lpGUID, (LPVOID*)lplpDD, &IID_IDirectDraw, pUnkOuter);
     dprintf("<- %s\n", __FUNCTION__);
-    return DD_OK;
+    return ret;
+}
+
+HRESULT WINAPI DirectDrawCreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter)
+{
+    dprintf("-> %s(lpGUID=%p, lplpDD=%p, riid=%08X, pUnkOuter=%p)\n", __FUNCTION__, lpGuid, lplpDD, iid, pUnkOuter);
+    HRESULT ret = dd_CreateEx(lpGuid, lplpDD, iid, pUnkOuter);
+    dprintf("<- %s\n", __FUNCTION__);
+    return ret;
 }

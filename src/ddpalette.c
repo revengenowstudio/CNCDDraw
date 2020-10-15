@@ -53,13 +53,14 @@ HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStar
 HRESULT dd_CreatePalette(DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, LPDIRECTDRAWPALETTE FAR * lpDDPalette, IUnknown FAR * unkOuter)
 {
     IDirectDrawPaletteImpl *p = (IDirectDrawPaletteImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawPaletteImpl));
-    p->lpVtbl = &g_ddp_vtbl;
+  
     dprintf("     Palette = %p\n", p);
-    *lpDDPalette = (LPDIRECTDRAWPALETTE)p;
 
+    p->lpVtbl = &g_ddp_vtbl;
     ddp_SetEntries(p, dwFlags, 0, 256, lpDDColorArray);
-
     IDirectDrawPalette_AddRef(p);
+
+    *lpDDPalette = (LPDIRECTDRAWPALETTE)p;
 
     return DD_OK;
 }

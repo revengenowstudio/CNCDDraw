@@ -1,4 +1,5 @@
 #include <windows.h>
+#include "IDirectDraw.h"
 #include "ddraw.h"
 #include "dd.h"
 #include "hook.h"
@@ -819,5 +820,63 @@ HRESULT dd_GetAvailableVidMem(void* lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFre
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB)
 {
     *lpbIsInVB = TRUE;
+    return DD_OK;
+}
+
+HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter)
+{
+    if (g_ddraw)
+    {
+        /* FIXME: check the calling module before passing the call! */
+        if (iid && IsEqualGUID(&IID_IDirectDraw, iid) && g_ddraw->DirectDrawCreate)
+        {
+            return g_ddraw->DirectDrawCreate(lpGuid, (LPDIRECTDRAW*)lplpDD, pUnkOuter);
+        }
+
+        return DDERR_DIRECTDRAWALREADYCREATED;
+    }
+
+    g_ddraw = (cnc_ddraw*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(cnc_ddraw));
+
+    IDirectDrawImpl* dd = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
+    
+    if (iid && IsEqualGUID(&IID_IDirectDraw, iid))
+    {
+        dprintf("     GUID = %08X (IID_IDirectDraw), ddraw = %p\n", ((GUID*)iid)->Data1, dd);
+
+        dd->lpVtbl = &g_dd_vtbl1;
+    }
+    else
+    {
+        dprintf("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : NULL, dd);
+
+        dd->lpVtbl = &g_dd_vtblx;
+    }
+
+    IDirectDraw_AddRef(dd);
+
+    *lplpDD = (LPVOID)dd;
+
+    if (!g_ddraw->real_dll)
+    {
+        g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
+    }
+
+    if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
+    {
+        g_ddraw->DirectDrawCreate =
+            (HRESULT(WINAPI*)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
+
+        if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
+            g_ddraw->DirectDrawCreate = NULL;
+    }
+
+    InitializeCriticalSection(&g_ddraw->cs);
+
+    g_ddraw->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
+    g_ddraw->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
+
+    cfg_load();
+
     return DD_OK;
 }

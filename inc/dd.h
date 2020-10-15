@@ -17,6 +17,7 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps);
 HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq);
 HRESULT dd_GetAvailableVidMem(void* lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
+HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 
 typedef struct speed_limiter
 {
