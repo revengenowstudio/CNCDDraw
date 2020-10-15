@@ -291,16 +291,16 @@ HRESULT __stdcall IDirectDraw__GetSurfaceFromDC(IDirectDrawImpl* This, HDC hdc, 
 HRESULT __stdcall IDirectDraw__RestoreAllSurfaces(IDirectDrawImpl* This)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DDERR_INVALIDOBJECT;
+    HRESULT ret = DD_OK;
     dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
 HRESULT __stdcall IDirectDraw__TestCooperativeLevel(IDirectDrawImpl* This)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DDERR_INVALIDOBJECT;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintfex("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DD_OK;
+    dprintfex("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 

@@ -260,9 +260,9 @@ HRESULT __stdcall IDirectDrawSurface__Lock(IDirectDrawSurfaceImpl *This, LPRECT 
 
 HRESULT __stdcall IDirectDrawSurface__ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
 {
-    dprintfex("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    dprintfex("-> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DD_OK;
-    dprintfex("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
 

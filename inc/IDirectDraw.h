@@ -9,6 +9,9 @@
 DEFINE_GUID(IID_IDirectDraw4, 0x9c59509a, 0x39bd, 0x11d1, 0x8c, 0x4a, 0x00, 0xc0, 0x4f, 0xd9, 0x30, 0xc5);
 DEFINE_GUID(IID_IDirectDraw7, 0x15e65ec0, 0x3b9c, 0x11d2, 0xb9, 0x2f, 0x00, 0x60, 0x97, 0x97, 0xea, 0x5b);
 
+typedef BOOL(FAR PASCAL* LPDDENUMCALLBACKEXA)(GUID FAR*, LPSTR, LPSTR, LPVOID, HMONITOR);
+typedef BOOL(FAR PASCAL* LPDDENUMCALLBACKEXW)(GUID FAR*, LPWSTR, LPWSTR, LPVOID, HMONITOR);
+
 extern struct IDirectDrawImplVtbl g_dd_vtbl1;
 extern struct IDirectDrawImplVtbl g_dd_vtblx;
 

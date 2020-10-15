@@ -2,6 +2,7 @@
 #include <ddraw.h>
 #include <stdio.h>
 #include "dllmain.h"
+#include "IDirectDraw.h"
 #include "dd.h"
 #include "ddclipper.h"
 #include "debug.h"
@@ -115,6 +116,30 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     return TRUE;
 }
 
+HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter)
+{
+    dprintf("-> %s(lpGUID=%p, lplpDD=%p, pUnkOuter=%p)\n", __FUNCTION__, lpGUID, lplpDD, pUnkOuter);
+    HRESULT ret = dd_CreateEx(lpGUID, (LPVOID*)lplpDD, &IID_IDirectDraw, pUnkOuter);
+    dprintf("<- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT WINAPI DirectDrawCreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR* lplpDDClipper, IUnknown FAR* pUnkOuter)
+{
+    dprintf("-> %s(dwFlags=%08X, DDClipper=%p, unkOuter=%p)\n", __FUNCTION__, (int)dwFlags, lplpDDClipper, pUnkOuter);
+    HRESULT ret = dd_CreateClipper(dwFlags, lplpDDClipper, pUnkOuter);
+    dprintf("<- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT WINAPI DirectDrawCreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter)
+{
+    dprintf("-> %s(lpGUID=%p, lplpDD=%p, riid=%08X, pUnkOuter=%p)\n", __FUNCTION__, lpGuid, lplpDD, iid, pUnkOuter);
+    HRESULT ret = dd_CreateEx(lpGuid, lplpDD, iid, pUnkOuter);
+    dprintf("<- %s\n", __FUNCTION__);
+    return ret;
+}
+
 HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContext)
 {
     dprintf("-> %s(lpCallback=%p, lpContext=%p)\n", __FUNCTION__, lpCallback, lpContext);
@@ -126,26 +151,35 @@ HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContex
     return DD_OK;
 }
 
-HRESULT WINAPI DirectDrawCreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR* lplpDDClipper, IUnknown FAR* pUnkOuter)
+HRESULT DirectDrawEnumerateExA(LPDDENUMCALLBACKEXA lpCallback, LPVOID lpContext, DWORD dwFlags)
 {
-    dprintf("-> %s(dwFlags=%08X, DDClipper=%p, unkOuter=%p)\n", __FUNCTION__, (int)dwFlags, lplpDDClipper, pUnkOuter);
-    HRESULT ret = dd_CreateClipper(dwFlags, lplpDDClipper, pUnkOuter);
+    dprintf("-> %s(lpCallback=%p, lpContext=%p, dwFlags=%d)\n", __FUNCTION__, lpCallback, lpContext, dwFlags);
+
+    if (lpCallback)
+        lpCallback(NULL, "display", "(null)", lpContext, NULL);
+
     dprintf("<- %s\n", __FUNCTION__);
-    return ret;
+    return DD_OK;
 }
 
-HRESULT WINAPI DirectDrawCreate(GUID FAR* lpGUID, LPDIRECTDRAW FAR* lplpDD, IUnknown FAR* pUnkOuter)
+HRESULT WINAPI DirectDrawEnumerateExW(LPDDENUMCALLBACKEXW lpCallback, LPVOID lpContext, DWORD dwFlags)
 {
-    dprintf("-> %s(lpGUID=%p, lplpDD=%p, pUnkOuter=%p)\n", __FUNCTION__, lpGUID, lplpDD, pUnkOuter);
-    HRESULT ret = dd_CreateEx(lpGUID, (LPVOID*)lplpDD, &IID_IDirectDraw, pUnkOuter);
+    dprintf("-> %s(lpCallback=%p, lpContext=%p, dwFlags=%d)\n", __FUNCTION__, lpCallback, lpContext, dwFlags);
+
+    if (lpCallback)
+        lpCallback(NULL, L"display", L"(null)", lpContext, NULL);
+
     dprintf("<- %s\n", __FUNCTION__);
-    return ret;
+    return DD_OK;
 }
 
-HRESULT WINAPI DirectDrawCreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter)
+HRESULT WINAPI DirectDrawEnumerateW(LPDDENUMCALLBACKW lpCallback, LPVOID lpContext)
 {
-    dprintf("-> %s(lpGUID=%p, lplpDD=%p, riid=%08X, pUnkOuter=%p)\n", __FUNCTION__, lpGuid, lplpDD, iid, pUnkOuter);
-    HRESULT ret = dd_CreateEx(lpGuid, lplpDD, iid, pUnkOuter);
+    dprintf("-> %s(lpCallback=%p, lpContext=%p)\n", __FUNCTION__, lpCallback, lpContext);
+
+    if (lpCallback)
+        lpCallback(NULL, L"display", L"(null)", lpContext);
+
     dprintf("<- %s\n", __FUNCTION__);
-    return ret;
+    return DD_OK;
 }
