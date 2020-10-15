@@ -827,7 +827,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 {
     if (g_ddraw)
     {
-        /* FIXME: check the calling module before passing the call! */
+        /* Passthrough required for WIN XP - FIXME: check the calling module before passing the call! */
         if (iid && IsEqualGUID(&IID_IDirectDraw, iid) && g_ddraw->DirectDrawCreate)
         {
             return g_ddraw->DirectDrawCreate(lpGuid, (LPDIRECTDRAW*)lplpDD, pUnkOuter);

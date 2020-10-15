@@ -41,7 +41,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 
             while (s)
             {
-                if (_strcmpi(s, "WIN95") == 0 || strcmpi(s, "WIN98") == 0 || strcmpi(s, "NT4SP5") == 0)
+                if (_strcmpi(s, "WIN95") == 0 || _strcmpi(s, "WIN98") == 0 || _strcmpi(s, "NT4SP5") == 0)
                 {
                     char mes[128] = { 0 };
 

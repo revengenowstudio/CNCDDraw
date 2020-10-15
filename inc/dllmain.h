@@ -5,7 +5,7 @@
 #include <windows.h>
 
 extern BOOL GameHandlesClose;
-extern void* FakePrimarySurface;
+extern PVOID FakePrimarySurface;
 extern HMODULE g_ddraw_module;
 
 typedef enum PROCESS_DPI_AWARENESS {
