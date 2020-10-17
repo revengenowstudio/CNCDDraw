@@ -27,9 +27,9 @@ Note: If you use cnc-ddraw with a game that got its own windowed mode built in t
 
 Most common compatibility settings are the following 3:
 
-- "noactivateapp=" - Set this to true if there are issues on Alt+Tab.
-- "maxgameticks=" - Set this to 60 if the game is running too fast or if it's flickering. If it still doesn't work, try a lower value.
-- "handlemouse=" - Set this to false if your cursor is invisible at some places in the game.
+- noactivateapp - Set this to true if there are issues on Alt+Tab.
+- handlemouse - Set this to false if your cursor is invisible at some places in the game.
+- maxgameticks - Set this to 60 if the game is running too fast or if it's flickering. If it still doesn't work, try a lower value.
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
 
