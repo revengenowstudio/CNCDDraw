@@ -154,7 +154,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
 HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
 {
-    if(lpDDDriverCaps)
+    if (lpDDDriverCaps)
     {
         lpDDDriverCaps->dwSize = sizeof(DDCAPS);
         lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP;
@@ -172,7 +172,7 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
         lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
     }
 
-    if(lpDDEmulCaps)
+    if (lpDDEmulCaps)
     {
         lpDDEmulCaps->dwSize = 0;
     }
@@ -647,6 +647,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
             g_ddraw->render.hdc = GetDC(g_ddraw->hwnd);
 
             memset(&pfd, 0, sizeof(PIXELFORMATDESCRIPTOR));
+
             pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
             pfd.nVersion = 1;
             pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | (g_ddraw->renderer == ogl_render_main ? PFD_SUPPORT_OPENGL : 0);
