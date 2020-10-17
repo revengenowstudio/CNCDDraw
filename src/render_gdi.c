@@ -50,7 +50,7 @@ DWORD WINAPI gdi_render_main(void)
     }
 
     while (g_ddraw->render.run &&
-        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
+        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, INFINITE) != WAIT_FAILED))
     {
 #if _DEBUG
         dbg_draw_frame_info_start();

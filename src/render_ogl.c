@@ -548,7 +548,7 @@ static void ogl_render()
     }
 
     while (g_ogl.use_opengl && g_ddraw->render.run &&
-        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, 200) != WAIT_FAILED))
+        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, INFINITE) != WAIT_FAILED))
     {
 #if _DEBUG
         dbg_draw_frame_info_start();

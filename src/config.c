@@ -476,6 +476,8 @@ static void cfg_create_ini()
             "renderer=opengl\n"
             "nonexclusive=true\n"
             "maxgameticks=25\n"
+            "maxfps=25\n"
+            "forcefps=true\n"
             "\n"
             "; Twisted Metal 2\n"
             "[Tm2]\n"
