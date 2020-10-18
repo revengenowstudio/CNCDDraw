@@ -547,8 +547,10 @@ static void ogl_render()
         glEnable(GL_TEXTURE_2D);
     }
 
+    DWORD timeout = g_ddraw->render.minfps > 0 ? g_ddraw->render.minfps_tick_len : INFINITE;
+
     while (g_ogl.use_opengl && g_ddraw->render.run &&
-        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, INFINITE) != WAIT_FAILED))
+        (g_ddraw->render.minfps < 0 || WaitForSingleObject(g_ddraw->render.sem, timeout) != WAIT_FAILED))
     {
 #if _DEBUG
         dbg_draw_frame_info_start();

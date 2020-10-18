@@ -54,7 +54,8 @@ typedef struct cnc_ddraw
     struct
     {
         int maxfps;
-        BOOL forcefps;
+        int minfps;
+        DWORD minfps_tick_len;
         int width;
         int height;
         int bpp;

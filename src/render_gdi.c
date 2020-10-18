@@ -49,8 +49,10 @@ DWORD WINAPI gdi_render_main(void)
         g_ddraw->fps_limiter.tick_length = len + (g_ddraw->accurate_timers ? 0.5f : 0.0f);
     }
 
+    DWORD timeout = g_ddraw->render.minfps > 0 ? g_ddraw->render.minfps_tick_len : INFINITE;
+
     while (g_ddraw->render.run &&
-        (g_ddraw->render.forcefps || WaitForSingleObject(g_ddraw->render.sem, INFINITE) != WAIT_FAILED))
+        (g_ddraw->render.minfps < 0 || WaitForSingleObject(g_ddraw->render.sem, timeout) != WAIT_FAILED))
     {
 #if _DEBUG
         dbg_draw_frame_info_start();
