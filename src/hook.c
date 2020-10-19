@@ -39,6 +39,62 @@ LOADLIBRARYWPROC real_LoadLibraryW = LoadLibraryW;
 LOADLIBRARYEXAPROC real_LoadLibraryExA = LoadLibraryExA;
 LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
 
+static hook_list g_hooks[] =
+{
+    {
+        "user32.dll",
+        TRUE,
+        {
+            { "GetCursorPos", (PROC)fake_GetCursorPos, (PROC*)&real_GetCursorPos },
+            { "ClipCursor", (PROC)fake_ClipCursor, (PROC*)&real_ClipCursor },
+            { "ShowCursor", (PROC)fake_ShowCursor, (PROC*)&real_ShowCursor },
+            { "SetCursor", (PROC)fake_SetCursor, (PROC*)&real_SetCursor },
+            { "GetWindowRect", (PROC)fake_GetWindowRect, (PROC*)&real_GetWindowRect },
+            { "GetClientRect", (PROC)fake_GetClientRect, (PROC*)&real_GetClientRect },
+            { "ClientToScreen", (PROC)fake_ClientToScreen, (PROC*)&real_ClientToScreen },
+            { "ScreenToClient", (PROC)fake_ScreenToClient, (PROC*)&real_ScreenToClient },
+            { "SetCursorPos", (PROC)fake_SetCursorPos, (PROC*)&real_SetCursorPos },
+            { "GetClipCursor", (PROC)fake_GetClipCursor, (PROC*)&real_GetClipCursor },
+            { "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC*)&real_WindowFromPoint },
+            { "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC*)&real_GetCursorInfo },
+            { "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC*)&real_GetSystemMetrics },
+            { "SetWindowPos", (PROC)fake_SetWindowPos, (PROC*)&real_SetWindowPos },
+            { "MoveWindow", (PROC)fake_MoveWindow, (PROC*)&real_MoveWindow },
+            { "SendMessageA", (PROC)fake_SendMessageA, (PROC*)&real_SendMessageA },
+            { "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC*)&real_SetWindowLongA },
+            { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow },
+            { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA },
+            { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow },
+            { "", NULL }
+        }
+    },
+    {
+        "gdi32.dll",
+        TRUE,
+        {
+            { "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps },
+            { "", NULL }
+        }
+    },
+    {
+        "kernel32.dll",
+        FALSE,
+        {
+            { "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA },
+            { "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW },
+            { "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA },
+            { "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW },
+            { "", NULL }
+        }
+    },
+    {
+        "",
+        FALSE,
+        {
+            { "", NULL }
+        }
+    }
+};
 
 void hook_patch_iat(HMODULE hmod, char *module_name, char *function_name, PROC new_function)
 {
@@ -109,15 +165,24 @@ void hook_patch_iat(HMODULE hmod, char *module_name, char *function_name, PROC n
 #endif
 }
 
-void hook_create(char *module_name, char *function_name, PROC new_function, PROC *function)
+void hook_create(hook_list* hooks)
 {
 #ifdef _MSC_VER
     if (g_hook_method == 2)
     {
-        DetourTransactionBegin();
-        DetourUpdateThread(GetCurrentThread());
-        DetourAttach((PVOID *)function, (PVOID)new_function);
-        DetourTransactionCommit();
+        for (int i = 0; hooks[i].module_name[0]; i++)
+        {
+            if (!hooks[i].enabled)
+                continue;
+
+            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourAttach((PVOID*)hooks[i].data[x].function, (PVOID)hooks[i].data[x].new_function);
+                DetourTransactionCommit();
+            }
+        }
     }
 
     if (g_hook_method == 3 || g_hook_method == 4)
@@ -144,7 +209,20 @@ void hook_create(char *module_name, char *function_name, PROC new_function, PROC
 
                     if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        hook_patch_iat(hmod, module_name, function_name, new_function);
+                        for (int i = 0; hooks[i].module_name[0]; i++)
+                        {
+                            if (!hooks[i].enabled)
+                                continue;
+
+                            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+                            {
+                                hook_patch_iat(
+                                    hmod,
+                                    hooks[i].module_name,
+                                    hooks[i].data[x].function_name,
+                                    hooks[i].data[x].new_function);
+                            }
+                        }
                     }
                 }
             }
@@ -154,19 +232,41 @@ void hook_create(char *module_name, char *function_name, PROC new_function, PROC
 
     if (g_hook_method == 1)
     {
-        hook_patch_iat(GetModuleHandle(NULL), module_name, function_name, new_function);
+        for (int i = 0; hooks[i].module_name[0]; i++)
+        {
+            if (!hooks[i].enabled)
+                continue;
+
+            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+            {
+                hook_patch_iat(
+                    GetModuleHandle(NULL), 
+                    hooks[i].module_name, 
+                    hooks[i].data[x].function_name,
+                    hooks[i].data[x].new_function);
+            }
+        }
     }
 }
 
-void hook_revert(char *module_name, char *function_name, PROC new_function, PROC *function)
+void hook_revert(hook_list* hooks)
 {
 #ifdef _MSC_VER
     if (g_hook_method == 2)
     {
-        DetourTransactionBegin();
-        DetourUpdateThread(GetCurrentThread());
-        DetourDetach((PVOID *)function, (PVOID)new_function);
-        DetourTransactionCommit();
+        for (int i = 0; hooks[i].module_name[0]; i++)
+        {
+            if (!hooks[i].enabled)
+                continue;
+
+            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourDetach((PVOID*)hooks[i].data[x].function, (PVOID)hooks[i].data[x].new_function);
+                DetourTransactionCommit();
+            }
+        }
     }
 
     if (g_hook_method == 3 || g_hook_method == 4)
@@ -193,11 +293,20 @@ void hook_revert(char *module_name, char *function_name, PROC new_function, PROC
 
                     if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        hook_patch_iat(
-                            hmod,
-                            module_name,
-                            function_name,
-                            GetProcAddress(GetModuleHandle(module_name), function_name));
+                        for (int i = 0; hooks[i].module_name[0]; i++)
+                        {
+                            if (!hooks[i].enabled)
+                                continue;
+
+                            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+                            {
+                                hook_patch_iat(
+                                    hmod,
+                                    hooks[i].module_name,
+                                    hooks[i].data[x].function_name,
+                                    GetProcAddress(GetModuleHandle(hooks[i].module_name), hooks[i].data[x].function_name));
+                            }
+                        }
                     }
                 }
             }
@@ -207,11 +316,20 @@ void hook_revert(char *module_name, char *function_name, PROC new_function, PROC
 
     if (g_hook_method == 1)
     {
-        hook_patch_iat(
-            GetModuleHandle(NULL), 
-            module_name, 
-            function_name, 
-            GetProcAddress(GetModuleHandle(module_name), function_name));
+        for (int i = 0; hooks[i].module_name[0]; i++)
+        {
+            if (!hooks[i].enabled)
+                continue;
+
+            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+            {
+                hook_patch_iat(
+                    GetModuleHandle(NULL),
+                    hooks[i].module_name,
+                    hooks[i].data[x].function_name,
+                    GetProcAddress(GetModuleHandle(hooks[i].module_name), hooks[i].data[x].function_name));
+            }
+        }
     }
 }
 
@@ -236,35 +354,18 @@ void hook_init()
 
         g_hook_active = TRUE;
 
-        hook_create("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
-        hook_create("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
-        hook_create("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
-        hook_create("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
-        hook_create("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
-        hook_create("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
-        hook_create("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
-        hook_create("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
-        hook_create("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
-        hook_create("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
-        hook_create("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
-        hook_create("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
-        hook_create("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
-        hook_create("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
-        hook_create("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
-        hook_create("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
-        hook_create("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
-        hook_create("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
-        hook_create("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
-        hook_create("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
-        hook_create("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
-
         if (g_hook_method == 4)
         {
-            hook_create("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
-            hook_create("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
-            hook_create("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
-            hook_create("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
+            for (int i = 0; g_hooks[i].module_name[0]; i++)
+            {
+                if (_stricmp(g_hooks[i].module_name, "kernel32.dll") == 0)
+                {
+                    g_hooks[i].enabled = TRUE;
+                }
+            }
         }
+
+        hook_create((hook_list*)&g_hooks);
     }
 }
 
@@ -284,34 +385,6 @@ void hook_exit()
         }
 #endif
 
-        hook_revert("user32.dll", "GetCursorPos", (PROC)fake_GetCursorPos, (PROC *)&real_GetCursorPos);
-        hook_revert("user32.dll", "ClipCursor", (PROC)fake_ClipCursor, (PROC *)&real_ClipCursor);
-        hook_revert("user32.dll", "ShowCursor", (PROC)fake_ShowCursor, (PROC *)&real_ShowCursor);
-        hook_revert("user32.dll", "SetCursor", (PROC)fake_SetCursor, (PROC *)&real_SetCursor);
-        hook_revert("user32.dll", "GetWindowRect", (PROC)fake_GetWindowRect, (PROC *)&real_GetWindowRect);
-        hook_revert("user32.dll", "GetClientRect", (PROC)fake_GetClientRect, (PROC *)&real_GetClientRect);
-        hook_revert("user32.dll", "ClientToScreen", (PROC)fake_ClientToScreen, (PROC *)&real_ClientToScreen);
-        hook_revert("user32.dll", "ScreenToClient", (PROC)fake_ScreenToClient, (PROC *)&real_ScreenToClient);
-        hook_revert("user32.dll", "SetCursorPos", (PROC)fake_SetCursorPos, (PROC *)&real_SetCursorPos);
-        hook_revert("user32.dll", "GetClipCursor", (PROC)fake_GetClipCursor, (PROC *)&real_GetClipCursor);
-        hook_revert("user32.dll", "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC *)&real_WindowFromPoint);
-        hook_revert("user32.dll", "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC *)&real_GetCursorInfo);
-        hook_revert("user32.dll", "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC *)&real_GetSystemMetrics);
-        hook_revert("user32.dll", "SetWindowPos", (PROC)fake_SetWindowPos, (PROC *)&real_SetWindowPos);
-        hook_revert("user32.dll", "MoveWindow", (PROC)fake_MoveWindow, (PROC *)&real_MoveWindow);
-        hook_revert("user32.dll", "SendMessageA", (PROC)fake_SendMessageA, (PROC *)&real_SendMessageA);
-        hook_revert("user32.dll", "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC *)&real_SetWindowLongA);
-        hook_revert("user32.dll", "EnableWindow", (PROC)fake_EnableWindow, (PROC *)&real_EnableWindow);
-        hook_revert("user32.dll", "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC *)&real_CreateWindowExA);
-        hook_revert("user32.dll", "DestroyWindow", (PROC)fake_DestroyWindow, (PROC *)&real_DestroyWindow);
-        hook_revert("gdi32.dll",  "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps);
-
-        if (g_hook_method == 4)
-        {
-            hook_revert("kernel32.dll", "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA);
-            hook_revert("kernel32.dll", "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW);
-            hook_revert("kernel32.dll", "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA);
-            hook_revert("kernel32.dll", "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW);
-        }
+        hook_revert((hook_list*)&g_hooks);
     }
 }

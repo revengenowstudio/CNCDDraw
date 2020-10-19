@@ -5,6 +5,9 @@
 #include <windows.h>
 
 
+typedef struct hook_list_data { char function_name[32]; PROC new_function; PROC* function; } hook_list_data;
+typedef struct hook_list { char module_name[32]; BOOL enabled; struct hook_list_data data[32]; } hook_list;
+
 typedef BOOL (WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
 typedef int (WINAPI* SHOWCURSORPROC)(BOOL);
@@ -63,7 +66,7 @@ extern BOOL g_hook_active;
 void hook_init();
 void hook_exit();
 void hook_patch_iat(HMODULE hMod, char *moduleName, char *functionName, PROC newFunction);
-void hook_create(char *moduleName, char *functionName, PROC newFunction, PROC *function);
-void hook_revert(char *moduleName, char *functionName, PROC newFunction, PROC *function);
+void hook_create(struct hook_list* hooks);
+void hook_revert(struct hook_list* hooks);
 
 #endif
