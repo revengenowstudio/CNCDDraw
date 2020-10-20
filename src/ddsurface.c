@@ -43,15 +43,27 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
         if (src_rect.right > src_surface->width)
             src_rect.right = src_surface->width;
 
+        if (src_rect.left > src_rect.right)
+            src_rect.left = src_rect.right;
+
         if (src_rect.bottom > src_surface->height)
             src_rect.bottom = src_surface->height;
+
+        if (src_rect.bottom > src_rect.top)
+            src_rect.bottom = src_rect.top;
     }
 
     if (dst_rect.right > This->width)
         dst_rect.right = This->width;
 
+    if (dst_rect.left > dst_rect.right)
+        dst_rect.left = dst_rect.right;
+
     if (dst_rect.bottom > This->height)
         dst_rect.bottom = This->height;
+
+    if (dst_rect.bottom > dst_rect.top)
+        dst_rect.bottom = dst_rect.top;
 
     int src_w = src_rect.right - src_rect.left;
     int src_h = src_rect.bottom - src_rect.top;
@@ -64,7 +76,7 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
     int dst_y = dst_rect.top;
 
 
-    if (This->surface && (dwFlags & DDBLT_COLORFILL))
+    if (This->surface && (dwFlags & DDBLT_COLORFILL) && dst_w > 0 && dst_h > 0)
     {
         unsigned char *dst = (unsigned char *)This->surface + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
         unsigned char *first_row = dst;
@@ -110,7 +122,7 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
         }
     }
 
-    if (src_surface)
+    if (src_surface && src_w > 0 && src_h > 0 && dst_w > 0 && dst_h > 0)
     {
         if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
         {
@@ -396,8 +408,14 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
         if (src_rect.right > src_surface->width)
             src_rect.right = src_surface->width;
 
+        if (src_rect.left > src_rect.right)
+            src_rect.left = src_rect.right;
+
         if (src_rect.bottom > src_surface->height)
             src_rect.bottom = src_surface->height;
+
+        if (src_rect.bottom > src_rect.top)
+            src_rect.bottom = src_rect.top;
     }
 
     int src_x = src_rect.left;
@@ -408,13 +426,19 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
     if (dst_rect.right > This->width)
         dst_rect.right = This->width;
 
+    if (dst_rect.left > dst_rect.right)
+        dst_rect.left = dst_rect.right;
+
     if (dst_rect.bottom > This->height)
         dst_rect.bottom = This->height;
+
+    if (dst_rect.bottom > dst_rect.top)
+        dst_rect.bottom = dst_rect.top;
 
     int dst_w = dst_rect.right - dst_rect.left;
     int dst_h = dst_rect.bottom - dst_rect.top;
 
-    if (src_surface)
+    if (src_surface && dst_w > 0 && dst_h > 0)
     {
         if (flags & DDBLTFAST_SRCCOLORKEY)
         {
@@ -467,8 +491,7 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
             unsigned int dst_pitch = dst_w * This->lx_pitch;
 
-            int i;
-            for (i = 0; i < dst_h; i++)
+            for (int i = 0; i < dst_h; i++)
             {
                 memcpy(dst, src, dst_pitch);
 
