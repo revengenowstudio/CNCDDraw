@@ -65,7 +65,7 @@ static hook_list g_hooks[] =
             { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow },
             { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA },
             { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow },
-            { "", NULL }
+            { "", NULL, NULL }
         }
     },
     {
@@ -73,7 +73,7 @@ static hook_list g_hooks[] =
         TRUE,
         {
             { "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps },
-            { "", NULL }
+            { "", NULL, NULL }
         }
     },
     {
@@ -84,21 +84,35 @@ static hook_list g_hooks[] =
             { "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW },
             { "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA },
             { "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW },
-            { "", NULL }
+            { "", NULL, NULL }
         }
     },
     {
         "",
         FALSE,
         {
-            { "", NULL }
+            { "", NULL, NULL }
         }
     }
 };
 
-void hook_patch_iat(HMODULE hmod, char *module_name, char *function_name, PROC new_function)
+void hook_patch_iat(HMODULE hmod, BOOL unhook, char* module_name, char* function_name, PROC new_function)
 {
-    if (!hmod || hmod == INVALID_HANDLE_VALUE || !new_function)
+    hook_list hooks[2];
+    memset(&hooks, 0, sizeof(hooks));
+
+    hooks[0].enabled = TRUE;
+    hooks[0].data[0].new_function = new_function;
+
+    strncpy(hooks[0].module_name, module_name, sizeof(hooks[0].module_name)-1);
+    strncpy(hooks[0].data[0].function_name, function_name, sizeof(hooks[0].data[0].function_name) - 1);
+
+    hook_patch_iat_list(hmod, unhook, (hook_list*)&hooks);
+}
+
+void hook_patch_iat_list(HMODULE hmod, BOOL unhook, hook_list* hooks)
+{
+    if (!hmod || hmod == INVALID_HANDLE_VALUE || !hooks)
         return;
 
 #ifdef _MSC_VER
@@ -121,37 +135,69 @@ void hook_patch_iat(HMODULE hmod, char *module_name, char *function_name, PROC n
 
         while (import_desc->FirstThunk)
         {
-            char* imp_module_name = (char*)((DWORD)dos_header + (DWORD)(import_desc->Name));
-
-            if (_stricmp(imp_module_name, module_name) == 0)
+            for (int i = 0; hooks[i].module_name[0]; i++)
             {
-                PIMAGE_THUNK_DATA first_thunk =
-                    (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->FirstThunk);
+                if (!hooks[i].enabled)
+                    continue;
 
-                PIMAGE_THUNK_DATA original_first_thunk =
-                    (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->OriginalFirstThunk);
+                char* imp_module_name = (char*)((DWORD)dos_header + (DWORD)(import_desc->Name));
 
-                while (first_thunk->u1.Function && original_first_thunk->u1.AddressOfData)
+                if (_stricmp(imp_module_name, hooks[i].module_name) == 0)
                 {
-                    PIMAGE_IMPORT_BY_NAME import =
-                        (PIMAGE_IMPORT_BY_NAME)((DWORD)dos_header + original_first_thunk->u1.AddressOfData);
+                    PIMAGE_THUNK_DATA first_thunk =
+                        (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->FirstThunk);
 
-                    if ((original_first_thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0 &&
-                        _stricmp((const char*)import->Name, function_name) == 0)
+                    PIMAGE_THUNK_DATA original_first_thunk =
+                        (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->OriginalFirstThunk);
+
+                    while (first_thunk->u1.Function && original_first_thunk->u1.AddressOfData)
                     {
-                        DWORD old_protect;
+                        PIMAGE_IMPORT_BY_NAME import =
+                            (PIMAGE_IMPORT_BY_NAME)((DWORD)dos_header + original_first_thunk->u1.AddressOfData);
 
-                        if (VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &old_protect))
+                        if ((original_first_thunk->u1.Ordinal & IMAGE_ORDINAL_FLAG) == 0)
                         {
-                            first_thunk->u1.Function = (DWORD)new_function;
-                            VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), old_protect, &old_protect);
+                            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+                            {
+                                if (!unhook && !hooks[i].data[x].new_function)
+                                    continue;
+
+                                if (_stricmp((const char*)import->Name, hooks[i].data[x].function_name) == 0)
+                                {
+                                    DWORD old_protect;
+
+                                    if (VirtualProtect(
+                                        &first_thunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &old_protect))
+                                    {
+                                        if (unhook)
+                                        {
+                                            DWORD org = 
+                                                (DWORD)GetProcAddress(
+                                                    GetModuleHandle(hooks[i].module_name), 
+                                                    hooks[i].data[x].function_name);
+
+                                            if (org)
+                                            {
+                                                first_thunk->u1.Function = org;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            first_thunk->u1.Function = (DWORD)hooks[i].data[x].new_function;
+                                        }
+
+                                        VirtualProtect(
+                                            &first_thunk->u1.Function, sizeof(DWORD), old_protect, &old_protect);
+                                    }
+
+                                    break;
+                                }
+                            }
                         }
 
-                        break;
+                        first_thunk++;
+                        original_first_thunk++;
                     }
-
-                    first_thunk++;
-                    original_first_thunk++;
                 }
             }
 
@@ -209,20 +255,7 @@ void hook_create(hook_list* hooks)
 
                     if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        for (int i = 0; hooks[i].module_name[0]; i++)
-                        {
-                            if (!hooks[i].enabled)
-                                continue;
-
-                            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
-                            {
-                                hook_patch_iat(
-                                    hmod,
-                                    hooks[i].module_name,
-                                    hooks[i].data[x].function_name,
-                                    hooks[i].data[x].new_function);
-                            }
-                        }
+                        hook_patch_iat_list(hmod, FALSE, hooks);
                     }
                 }
             }
@@ -232,20 +265,7 @@ void hook_create(hook_list* hooks)
 
     if (g_hook_method == 1)
     {
-        for (int i = 0; hooks[i].module_name[0]; i++)
-        {
-            if (!hooks[i].enabled)
-                continue;
-
-            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
-            {
-                hook_patch_iat(
-                    GetModuleHandle(NULL), 
-                    hooks[i].module_name, 
-                    hooks[i].data[x].function_name,
-                    hooks[i].data[x].new_function);
-            }
-        }
+        hook_patch_iat_list(GetModuleHandle(NULL), FALSE, hooks);
     }
 }
 
@@ -293,20 +313,7 @@ void hook_revert(hook_list* hooks)
 
                     if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
                     {
-                        for (int i = 0; hooks[i].module_name[0]; i++)
-                        {
-                            if (!hooks[i].enabled)
-                                continue;
-
-                            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
-                            {
-                                hook_patch_iat(
-                                    hmod,
-                                    hooks[i].module_name,
-                                    hooks[i].data[x].function_name,
-                                    GetProcAddress(GetModuleHandle(hooks[i].module_name), hooks[i].data[x].function_name));
-                            }
-                        }
+                        hook_patch_iat_list(hmod, TRUE, hooks);
                     }
                 }
             }
@@ -316,20 +323,7 @@ void hook_revert(hook_list* hooks)
 
     if (g_hook_method == 1)
     {
-        for (int i = 0; hooks[i].module_name[0]; i++)
-        {
-            if (!hooks[i].enabled)
-                continue;
-
-            for (int x = 0; hooks[i].data[x].function_name[0]; x++)
-            {
-                hook_patch_iat(
-                    GetModuleHandle(NULL),
-                    hooks[i].module_name,
-                    hooks[i].data[x].function_name,
-                    GetProcAddress(GetModuleHandle(hooks[i].module_name), hooks[i].data[x].function_name));
-            }
-        }
+        hook_patch_iat_list(GetModuleHandle(NULL), TRUE, hooks);
     }
 }
 

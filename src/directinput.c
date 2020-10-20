@@ -89,14 +89,10 @@ static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, 
 
 void dinput_hook()
 {
-    hook_patch_iat(GetModuleHandle(NULL), "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
 }
 
 void dinput_unhook()
 {
-    hook_patch_iat(
-        GetModuleHandle(NULL), 
-        "dinput.dll", 
-        "DirectInputCreateA", 
-        (PROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA"));
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
 }
