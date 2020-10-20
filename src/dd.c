@@ -180,6 +180,37 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
     return DD_OK;
 }
 
+HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc)
+{
+    if (lpDDSurfaceDesc)
+    {
+        memset(lpDDSurfaceDesc, 0, sizeof(DDSURFACEDESC));
+
+        lpDDSurfaceDesc->dwSize = sizeof(DDSURFACEDESC);
+        lpDDSurfaceDesc->dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
+        lpDDSurfaceDesc->dwHeight = g_ddraw->height ? g_ddraw->height : 768;
+        lpDDSurfaceDesc->dwWidth = g_ddraw->width ? g_ddraw->width : 1024;
+        lpDDSurfaceDesc->lPitch = lpDDSurfaceDesc->dwWidth;
+        lpDDSurfaceDesc->dwRefreshRate = 60;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
+
+        lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
+        lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = 8;
+
+        if (g_ddraw->bpp != 8)
+        {
+            lpDDSurfaceDesc->lPitch = lpDDSurfaceDesc->dwWidth * 2;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = 16;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
+        }
+    }
+
+    return DD_OK;
+}
+
 HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq)
 {
     *lpdwFreq = 60;

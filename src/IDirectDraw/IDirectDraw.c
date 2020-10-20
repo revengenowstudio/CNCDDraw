@@ -176,11 +176,11 @@ HRESULT __stdcall IDirectDraw__GetCaps(IDirectDrawImpl* This, LPDDCAPS lpDDDrive
     return ret;
 }
 
-HRESULT __stdcall IDirectDraw__GetDisplayMode(IDirectDrawImpl* This, LPDDSURFACEDESC a)
+HRESULT __stdcall IDirectDraw__GetDisplayMode(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DDERR_UNSUPPORTEDMODE;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = dd_GetDisplayMode(lpDDSurfaceDesc);
+    dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
 
