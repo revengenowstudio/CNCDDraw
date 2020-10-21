@@ -105,6 +105,7 @@ typedef struct cnc_ddraw
     BOOL dk2hack;
     BOOL nonexclusive;
     BOOL fixchildwindows;
+    BOOL d3d9linear;
     BOOL bnet_active;
     BOOL bnet_was_fullscreen;
     BOOL bnet_was_upscaled;

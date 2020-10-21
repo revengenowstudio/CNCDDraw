@@ -252,6 +252,14 @@ static BOOL d3d9_set_states()
         err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[0]));
         err = err || FAILED(IDirect3DDevice9_SetPixelShader(g_d3d9.device, g_d3d9.pixel_shader));
     }
+    else
+    {
+        if (g_ddraw->d3d9linear)
+        {
+            IDirect3DDevice9_SetSamplerState(g_d3d9.device, 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR);
+            IDirect3DDevice9_SetSamplerState(g_d3d9.device, 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+        }
+    }
 
     D3DVIEWPORT9 view_data = {
         g_ddraw->render.viewport.x,
