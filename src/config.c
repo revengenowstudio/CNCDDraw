@@ -48,6 +48,7 @@ void cfg_load()
     g_ddraw->accurate_timers = cfg_get_bool("accuratetimers", FALSE);
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
+    g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
     g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
     g_ddraw->dk2hack = cfg_get_bool("dk2hack", FALSE); // Dungeon Keeper 2 hack
 
@@ -493,6 +494,7 @@ static void cfg_create_ini()
             "nonexclusive=true\n"
             "maxgameticks=60\n"
             "handlemouse=false\n"
+            "fixchildwindows=false\n"
             "\n"
             "; Caesar III\n"
             "[c3]\n"

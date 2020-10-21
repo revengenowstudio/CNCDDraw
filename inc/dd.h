@@ -104,6 +104,7 @@ typedef struct cnc_ddraw
     BOOL sierrahack;
     BOOL dk2hack;
     BOOL nonexclusive;
+    BOOL fixchildwindows;
     BOOL bnet_active;
     BOOL bnet_was_fullscreen;
     BOOL bnet_was_upscaled;

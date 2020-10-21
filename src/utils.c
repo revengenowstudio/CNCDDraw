@@ -281,13 +281,16 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
     {
         g_ddraw->child_window_exists = TRUE;
 
-        HDC hdc = GetDC(hwnd);
+        if (g_ddraw->fixchildwindows)
+        {
+            HDC hdc = GetDC(hwnd);
 
-        MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+            MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
 
-        BitBlt(hdc, 0, 0, size.right, size.bottom, this->hdc, pos.left, pos.top, SRCCOPY);
+            BitBlt(hdc, 0, 0, size.right, size.bottom, this->hdc, pos.left, pos.top, SRCCOPY);
 
-        ReleaseDC(hwnd, hdc);
+            ReleaseDC(hwnd, hdc);
+        }
     }
 
     return FALSE;
