@@ -312,7 +312,7 @@ static void cfg_create_ini()
             "; Note: Set this to a low value such as 5 or 10 if some parts of the game are not being displayed (e.g. menus or loading screens)\n"
             "minfps=0\n"
             "\n"
-            "; Disable fullscreen-exclusive mode for the OpenGL renderer\n"
+            "; Disable fullscreen-exclusive mode for the direct3d9/opengl renderers\n"
             "; Note: Can be used in case some GUI elements like buttons/textboxes/videos/etc.. are invisible\n"
             "nonexclusive=false\n"
             "\n"

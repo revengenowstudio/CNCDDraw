@@ -43,6 +43,15 @@ BOOL d3d9_create()
 
     if (g_d3d9.hmodule)
     {
+        if (g_ddraw->nonexclusive)
+        {
+            int (WINAPI* d3d9_enable_shim)(BOOL) =
+                (int (WINAPI*)(BOOL))GetProcAddress(g_d3d9.hmodule, "Direct3D9EnableMaximizedWindowedModeShim");
+
+            if (d3d9_enable_shim)
+                d3d9_enable_shim(TRUE);
+        }
+
         IDirect3D9 *(WINAPI *d3d_create9)(UINT) =
             (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(g_d3d9.hmodule, "Direct3DCreate9");
 
