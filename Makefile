@@ -13,6 +13,7 @@ FILES = src/IDirect3D/IDirect3D.c \
         src/IDirectDraw/IDirectDrawPalette.c \
         src/IDirectDraw/IDirectDrawClipper.c \
         src/IDirectDraw/IDirectDrawSurface.c \
+        src/IAMMediaStream/IAMMediaStream.c \
         src/dd.c \
         src/ddpalette.c \
         src/ddsurface.c \

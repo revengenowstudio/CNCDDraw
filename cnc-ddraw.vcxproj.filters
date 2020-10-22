@@ -22,6 +22,9 @@
     <Filter Include="Source Files\IDirect3D">
       <UniqueIdentifier>{e6c62066-0a71-4531-ad9a-eb428abc6f44}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\IAMMediaStream">
+      <UniqueIdentifier>{b6d5d0fc-844e-4068-8a1e-1b0386f359fc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\debug.c">
@@ -138,6 +141,9 @@
     <ClCompile Include="src\IDirect3D\IDirect3D7.c">
       <Filter>Source Files\IDirect3D</Filter>
     </ClCompile>
+    <ClCompile Include="src\IAMMediaStream\IAMMediaStream.c">
+      <Filter>Source Files\IAMMediaStream</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ddraw.h">
@@ -228,6 +234,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\IDirect3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\IAMMediaStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

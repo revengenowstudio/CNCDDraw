@@ -1,6 +1,7 @@
 #include <initguid.h>
 #include "IDirectDraw.h"
 #include "IDirect3D.h"
+#include "IAMMediaStream.h"
 #include "dd.h"
 #include "ddclipper.h"
 #include "ddpalette.h"
@@ -95,11 +96,24 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             ret = S_OK;
         }
-        else
+        else if (IsEqualGUID(&IID_IMediaStream, riid) || IsEqualGUID(&IID_IAMMediaStream, riid))
         {
-            dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
+            IAMMediaStreamImpl* ms = (IAMMediaStreamImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IAMMediaStreamImpl));
+
+            dprintf("     GUID = %08X (IID_IXXMediaStream)\n", ((GUID*)riid)->Data1);
+
+            ms->lpVtbl = &g_ms_vtbl;
+            ms->lpVtbl->AddRef(ms);
+
+            *obj = ms;
 
             ret = S_OK;
+        }
+        else
+        {
+            dprintf("NOT_IMPLEMENTED     GUID = %08X\n", ((GUID*)riid)->Data1);
+
+            ret = E_FAIL;
         }
     }
 
