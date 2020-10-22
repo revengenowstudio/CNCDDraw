@@ -520,6 +520,10 @@ static void cfg_create_ini()
             "noactivateapp=true\n"
             "dk2hack=true\n"
             "\n"
+            "; Chris Sawyer's Locomotion\n"
+            "[LOCO]\n"
+            "handlemouse=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
