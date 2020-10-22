@@ -100,7 +100,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
         {
             IAMMediaStreamImpl* ms = (IAMMediaStreamImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IAMMediaStreamImpl));
 
-            dprintf("     GUID = %08X (IID_IXXMediaStream)\n", ((GUID*)riid)->Data1);
+            dprintf("     GUID = %08X (IID_IXXMediaStream), ms = %p\n", ((GUID*)riid)->Data1, ms);
 
             ms->lpVtbl = &g_ms_vtbl;
             ms->lpVtbl->AddRef(ms);
