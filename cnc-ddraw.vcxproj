@@ -33,6 +33,9 @@
     <ClCompile Include="src\directinput.c" />
     <ClCompile Include="src\dllmain.c" />
     <ClCompile Include="src\IDirect3D\IDirect3D.c" />
+    <ClCompile Include="src\IDirect3D\IDirect3D2.c" />
+    <ClCompile Include="src\IDirect3D\IDirect3D3.c" />
+    <ClCompile Include="src\IDirect3D\IDirect3D7.c" />
     <ClCompile Include="src\utils.c" />
     <ClCompile Include="src\hook.c" />
     <ClCompile Include="src\IDirectDraw\IDirectDraw.c" />

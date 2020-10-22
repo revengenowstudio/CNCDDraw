@@ -45,24 +45,55 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
         }
         else if (IsEqualGUID(&IID_IDirect3D, riid))
         {
-            IDirect3DImpl* d3d = (IDirect3DImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
+            IDirect3DImpl* d3d = (IDirect3DImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirect3DImpl));
             
             dprintf("     GUID = %08X (IID_IDirect3D), d3d = %p\n", ((GUID*)riid)->Data1, d3d);
             
-            d3d->lpVtbl = &g_d3d_vtbl1;
+            d3d->lpVtbl = &g_d3d_vtbl;
             d3d->lpVtbl->AddRef(d3d);
 
             *obj = d3d;
 
             ret = S_OK;
         }
-        else if (IsEqualGUID(&IID_IDirect3D2, riid) || 
-                 IsEqualGUID(&IID_IDirect3D3, riid) ||
-                 IsEqualGUID(&IID_IDirect3D7, riid))
+        else if (IsEqualGUID(&IID_IDirect3D2, riid))
         {
-            dprintf("     GUID = %08X (IID_IDirect3DX)\n", ((GUID*)riid)->Data1);
+            IDirect3D2Impl* d3d = (IDirect3D2Impl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirect3D2Impl));
 
-            ret = E_FAIL;
+            dprintf("     GUID = %08X (IID_IDirect3D2), d3d = %p\n", ((GUID*)riid)->Data1, d3d);
+
+            d3d->lpVtbl = &g_d3d2_vtbl;
+            d3d->lpVtbl->AddRef(d3d);
+
+            *obj = d3d;
+
+            ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirect3D3, riid))
+        {
+            IDirect3D3Impl* d3d = (IDirect3D3Impl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirect3D3Impl));
+
+            dprintf("     GUID = %08X (IID_IDirect3D3), d3d = %p\n", ((GUID*)riid)->Data1, d3d);
+
+            d3d->lpVtbl = &g_d3d3_vtbl;
+            d3d->lpVtbl->AddRef(d3d);
+
+            *obj = d3d;
+
+            ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirect3D7, riid))
+        {
+            IDirect3D7Impl* d3d = (IDirect3D7Impl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirect3D7Impl));
+
+            dprintf("     GUID = %08X (IID_IDirect3D7), d3d = %p\n", ((GUID*)riid)->Data1, d3d);
+
+            d3d->lpVtbl = &g_d3d7_vtbl;
+            d3d->lpVtbl->AddRef(d3d);
+
+            *obj = d3d;
+
+            ret = S_OK;
         }
         else
         {

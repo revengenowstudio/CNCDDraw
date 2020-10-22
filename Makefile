@@ -5,19 +5,22 @@ LDFLAGS   = -Iinc -Wall -Wl,--enable-stdcall-fixup -s
 CFLAGS    = -std=c99
 LIBS      = -lgdi32 -lwinmm
 
-FILES = src/debug.c \
-        src/dd.c \
-        src/ddpalette.c \
-        src/ddsurface.c \
-        src/ddclipper.c \
+FILES = src/IDirect3D/IDirect3D.c \
+        src/IDirect3D/IDirect3D2.c \
+        src/IDirect3D/IDirect3D3.c \
+        src/IDirect3D/IDirect3D7.c \
         src/IDirectDraw/IDirectDraw.c \
         src/IDirectDraw/IDirectDrawPalette.c \
         src/IDirectDraw/IDirectDrawClipper.c \
         src/IDirectDraw/IDirectDrawSurface.c \
+        src/dd.c \
+        src/ddpalette.c \
+        src/ddsurface.c \
+        src/ddclipper.c \
         src/render_ogl.c \
         src/render_gdi.c \
         src/render_d3d9.c \
-        src/IDirect3D/IDirect3D.c \
+        src/debug.c \
         src/mouse.c \
         src/winapi_hooks.c \
         src/screenshot.c \

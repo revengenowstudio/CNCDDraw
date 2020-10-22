@@ -129,6 +129,15 @@
     <ClCompile Include="src\IDirect3D\IDirect3D.c">
       <Filter>Source Files\IDirect3D</Filter>
     </ClCompile>
+    <ClCompile Include="src\IDirect3D\IDirect3D2.c">
+      <Filter>Source Files\IDirect3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirect3D\IDirect3D3.c">
+      <Filter>Source Files\IDirect3D</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IDirect3D\IDirect3D7.c">
+      <Filter>Source Files\IDirect3D</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ddraw.h">

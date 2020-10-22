@@ -2,7 +2,7 @@
 #include "debug.h"
 
 
-HRESULT __stdcall IDirect3D__QueryInterface(IDirect3DImpl* This, REFIID riid, void** obj)
+HRESULT __stdcall IDirect3D7__QueryInterface(IDirect3D7Impl* This, REFIID riid, void** obj)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
     HRESULT ret = E_FAIL;
@@ -10,7 +10,7 @@ HRESULT __stdcall IDirect3D__QueryInterface(IDirect3DImpl* This, REFIID riid, vo
     return ret;
 }
 
-ULONG __stdcall IDirect3D__AddRef(IDirect3DImpl* This)
+ULONG __stdcall IDirect3D7__AddRef(IDirect3D7Impl* This)
 {
     dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
     ULONG ret = ++This->ref;
@@ -18,7 +18,7 @@ ULONG __stdcall IDirect3D__AddRef(IDirect3DImpl* This)
     return ret;
 }
 
-ULONG __stdcall IDirect3D__Release(IDirect3DImpl* This)
+ULONG __stdcall IDirect3D7__Release(IDirect3D7Impl* This)
 {
     dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
 
@@ -35,7 +35,7 @@ ULONG __stdcall IDirect3D__Release(IDirect3DImpl* This)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__Initialize(IDirect3DImpl* This, int a)
+HRESULT __stdcall IDirect3D7__EnumDevices(IDirect3D7Impl* This, int a, int b)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = E_FAIL;
@@ -43,7 +43,7 @@ HRESULT __stdcall IDirect3D__Initialize(IDirect3DImpl* This, int a)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__EnumDevices(IDirect3DImpl* This, int a, int b)
+HRESULT __stdcall IDirect3D7__CreateDevice(IDirect3D7Impl* This, int a, int b, int c)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = E_FAIL;
@@ -51,7 +51,7 @@ HRESULT __stdcall IDirect3D__EnumDevices(IDirect3DImpl* This, int a, int b)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__CreateLight(IDirect3DImpl* This, int a, int b)
+HRESULT __stdcall IDirect3D7__CreateVertexBuffer(IDirect3D7Impl* This, int a, int b, int c)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = E_FAIL;
@@ -59,7 +59,7 @@ HRESULT __stdcall IDirect3D__CreateLight(IDirect3DImpl* This, int a, int b)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__CreateMaterial(IDirect3DImpl* This, int a, int b)
+HRESULT __stdcall IDirect3D7__EnumZBufferFormats(IDirect3D7Impl* This, int a, int b, int c)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = E_FAIL;
@@ -67,7 +67,7 @@ HRESULT __stdcall IDirect3D__CreateMaterial(IDirect3DImpl* This, int a, int b)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__CreateViewport(IDirect3DImpl* This, int a, int b)
+HRESULT __stdcall IDirect3D7__EvictManagedTextures(IDirect3D7Impl* This)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = E_FAIL;
@@ -75,25 +75,16 @@ HRESULT __stdcall IDirect3D__CreateViewport(IDirect3DImpl* This, int a, int b)
     return ret;
 }
 
-HRESULT __stdcall IDirect3D__FindDevice(IDirect3DImpl* This, int a, int b)
-{
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = E_FAIL;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
-    return ret;
-}
-
-struct IDirect3DImplVtbl g_d3d_vtbl =
+struct IDirect3D7ImplVtbl g_d3d7_vtbl =
 {
     /* IUnknown */
-    IDirect3D__QueryInterface,
-    IDirect3D__AddRef,
-    IDirect3D__Release,
-    /* IDirect3DImpl */
-    IDirect3D__Initialize,
-    IDirect3D__EnumDevices,
-    IDirect3D__CreateLight,
-    IDirect3D__CreateMaterial,
-    IDirect3D__CreateViewport,
-    IDirect3D__FindDevice,
+    IDirect3D7__QueryInterface,
+    IDirect3D7__AddRef,
+    IDirect3D7__Release,
+    /* IDirect3D7Impl */
+    IDirect3D7__EnumDevices,
+    IDirect3D7__CreateDevice,
+    IDirect3D7__CreateVertexBuffer,
+    IDirect3D7__EnumZBufferFormats,
+    IDirect3D7__EvictManagedTextures,
 };
