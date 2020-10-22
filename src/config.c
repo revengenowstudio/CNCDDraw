@@ -524,6 +524,20 @@ static void cfg_create_ini()
             "[LOCO]\n"
             "handlemouse=false\n"
             "\n"
+            "; Age of Wonders\n"
+            "[AoWSM]\n"
+            "windowed=true\n"
+            "fullscreen=false\n"
+            "renderer=gdi\n"
+            "hook=2\n"
+            "\n"
+            "; Age of Wonders 2\n"
+            "[AoW2]\n"
+            "windowed=true\n"
+            "fullscreen=false\n"
+            "renderer=gdi\n"
+            "hook=2\n"
+            "\n"
 
             , fh);
         fclose(fh);
