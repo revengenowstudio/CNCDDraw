@@ -182,7 +182,7 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
             }
             else
             {
-                dprintfex("     DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
+                dprintfex("NOT_IMPLEMENTED     DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
             }
         }
         else
@@ -628,9 +628,9 @@ HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
 
 HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
 {
-    if ((This->width % 4))
+    if ((This->l_pitch % 4))
     {
-        dprintf("     GetDC: width=%d height=%d\n", This->width, This->height);
+        dprintf("NOT_IMPLEMENTED     GetDC: width=%d height=%d\n", This->width, This->height);
     }
 
     RGBQUAD *data = 
@@ -913,7 +913,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         dprintf("     dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
     }
 
-    dprintf("     dst_surface = %p (%dx%d@%d)\n", dst_surface, (int)dst_surface->width, (int)dst_surface->height, (int)dst_surface->bpp);
+    dprintf("     surface = %p (%dx%d@%d)\n", dst_surface, (int)dst_surface->width, (int)dst_surface->height, (int)dst_surface->bpp);
 
     *lpDDSurface = (LPDIRECTDRAWSURFACE)dst_surface;
 
