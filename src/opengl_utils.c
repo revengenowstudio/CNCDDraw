@@ -81,6 +81,7 @@ PFNGLCHECKFRAMEBUFFERSTATUSPROC glCheckFramebufferStatus;
 PFNGLDELETEFRAMEBUFFERSPROC glDeleteFramebuffers;
 PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT;
 PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
+PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 PFNGLTEXBUFFERPROC glTexBuffer;
 
 HMODULE g_oglu_hmodule;
@@ -206,7 +207,13 @@ void oglu_init()
         glCheckFramebufferStatus && glUniform4f && glActiveTexture && glUniform1i &&
         glGetAttribLocation && glGenBuffers && glBindBuffer && glBufferData && glVertexAttribPointer &&
         glEnableVertexAttribArray && glUniform2fv && glUniformMatrix4fv && glGenVertexArrays && glBindVertexArray &&
-        glGetUniformLocation && glversion && glversion[0] != '2';
+        glGetUniformLocation;
+
+    if (g_oglu_got_version3 && glversion && glversion[0] == '2') // macOS
+    {
+        g_oglu_got_version3 = FALSE;
+        wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)xwglGetProcAddress("wglCreateContextAttribsARB");
+    }
 }
 
 BOOL oglu_ext_exists(char *ext, HDC hdc)

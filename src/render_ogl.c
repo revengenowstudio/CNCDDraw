@@ -10,6 +10,7 @@
 #include "debug.h"
 
 
+static HGLRC ogl_create_core_context(HDC hdc);
 static HGLRC ogl_create_context(HDC hdc);
 static void ogl_set_max_fps();
 static void ogl_build_programs();
@@ -32,6 +33,9 @@ DWORD WINAPI ogl_render_main(void)
     if (g_ogl.context)
     {
         oglu_init();
+
+        g_ogl.context = ogl_create_core_context(g_ddraw->render.hdc);
+
         ogl_set_max_fps();
         ogl_build_programs();
         ogl_create_textures(g_ddraw->width, g_ddraw->height);
@@ -56,6 +60,34 @@ DWORD WINAPI ogl_render_main(void)
     }
 
     return 0;
+}
+
+static HGLRC ogl_create_core_context(HDC hdc)
+{
+    if (!wglCreateContextAttribsARB)
+        return g_ogl.context;
+
+    int attribs[] = { 
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 2,
+        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0 };
+
+    HGLRC context = wglCreateContextAttribsARB(hdc, 0, attribs);
+    BOOL made_current = context && xwglMakeCurrent(hdc, context);
+    
+    if (made_current)
+    {
+        g_oglu_got_version3 = TRUE;
+        xwglDeleteContext(g_ogl.context);
+        return context;
+    }
+    else if (context)
+    {
+        xwglDeleteContext(context);
+    }
+
+    return g_ogl.context;
 }
 
 static HGLRC ogl_create_context(HDC hdc)

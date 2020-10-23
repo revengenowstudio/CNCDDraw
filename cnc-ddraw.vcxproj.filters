@@ -239,6 +239,9 @@
     <ClInclude Include="inc\IAMMediaStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\wglext.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc">
