@@ -538,6 +538,14 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
+            "; Stronghold Crusader HD\n"
+            "[Stronghold Crusader]\n"
+            "handlemouse=false\n"
+            "\n"
+            "; Stronghold Crusader Extreme HD\n"
+            "[Stronghold_Crusader_Extreme]\n"
+            "handlemouse=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
