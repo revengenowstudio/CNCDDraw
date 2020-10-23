@@ -79,8 +79,8 @@ static HGLRC ogl_create_core_context(HDC hdc)
     
     if (made_current)
     {
-        g_oglu_got_version3 = TRUE;
         xwglDeleteContext(g_ogl.context);
+        oglu_init();
         return context;
     }
     else if (context)
@@ -169,10 +169,20 @@ static void ogl_build_programs()
         if (g_ddraw->bpp == 8)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER, PALETTE_FRAG_SHADER);
+
+            if (!g_ogl.main_program)
+            {
+                g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_CORE, PALETTE_FRAG_SHADER_CORE);
+            }
         }
         else if (g_ddraw->bpp == 16)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER, PASSTHROUGH_FRAG_SHADER);
+
+            if (!g_ogl.main_program)
+            {
+                g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_CORE, PASSTHROUGH_FRAG_SHADER_CORE);
+            }
         }
 
         if (g_ogl.main_program)
