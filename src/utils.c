@@ -151,7 +151,7 @@ void util_update_bnet_pos(int new_x, int new_y)
 BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWORD min_height, DWORD max_width, DWORD max_height)
 {
     BOOL result = FALSE;
-    int org_ratio = (int)(ratio * 100);
+    int org_ratio = (int)((ratio + 0.005f) * 100);
     SIZE lowest = { .cx = max_width + 1, .cy = max_height + 1 };
     DWORD i = 0;
     DEVMODE m;
@@ -167,7 +167,7 @@ BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWO
             m.dmPelsWidth < lowest.cx &&
             m.dmPelsHeight < lowest.cy)
         {
-            int res_ratio = (int)(((float)m.dmPelsWidth / m.dmPelsHeight) * 100);
+            int res_ratio = (int)((((float)m.dmPelsWidth / m.dmPelsHeight) + 0.005f) * 100);
 
             if (res_ratio == org_ratio)
             {
