@@ -487,26 +487,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         case WM_KEYDOWN:
         {
-            if (wParam == VK_F11)
-            {
-                if (g_ddraw->render.thread)
-                {
-                    EnterCriticalSection(&g_ddraw->cs);
-                    g_ddraw->render.run = FALSE;
-                    ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
-                    LeaveCriticalSection(&g_ddraw->cs);
-                    WaitForSingleObject(g_ddraw->render.thread, INFINITE);
-
-                    InterlockedExchange(&g_ddraw->render.palette_updated, TRUE);
-                    InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
-                    ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
-                    g_ddraw->render.run = TRUE;
-                    g_ddraw->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)g_ddraw->renderer, NULL, 0, NULL);
-                }
-
-                return 0;
-            }
-
             if (wParam == VK_CONTROL || wParam == VK_TAB)
             {
                 if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(VK_TAB) & 0x8000)
