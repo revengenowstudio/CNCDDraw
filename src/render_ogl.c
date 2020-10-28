@@ -187,6 +187,24 @@ static void ogl_build_programs()
 
         if (g_ogl.main_program)
         {
+            static WIN32_FIND_DATA findFileData;
+            static HANDLE hFind;
+
+            if (!hFind)
+            {
+                hFind = FindFirstFile("Shaders\\*.glsl", &findFileData);
+            }
+            else if (hFind != INVALID_HANDLE_VALUE)
+            {
+                FindNextFile(hFind, &findFileData);
+            }
+
+            if (hFind != INVALID_HANDLE_VALUE)
+            {
+                strcpy(g_ddraw->shader, "Shaders\\");
+                strcat(g_ddraw->shader, findFileData.cFileName);
+            }
+
             g_ogl.scale_program = oglu_build_program_from_file(g_ddraw->shader);
         }
         else
@@ -595,9 +613,17 @@ static void ogl_render()
     while (g_ogl.use_opengl && g_ddraw->render.run &&
         (g_ddraw->render.minfps < 0 || WaitForSingleObject(g_ddraw->render.sem, timeout) != WAIT_FAILED))
     {
-#if _DEBUG
         dbg_draw_frame_info_start();
-#endif
+
+        RECT debugrc = { 0, 0, g_ddraw->width, g_ddraw->height };
+
+        if (g_ddraw->primary)
+        {
+            if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
+                SetDIBColorTable(g_ddraw->primary->hdc, 0, 256, g_ddraw->primary->palette->data_rgb);
+
+            DrawText(g_ddraw->primary->hdc, g_ddraw->shader, -1, &debugrc, DT_NOCLIP | DT_RIGHT);
+        }
 
         g_ogl.scale_w = (float)g_ddraw->width / g_ogl.surface_tex_width;
         g_ogl.scale_h = (float)g_ddraw->height / g_ogl.surface_tex_height;
@@ -832,9 +858,7 @@ static void ogl_render()
 
         SwapBuffers(g_ddraw->render.hdc);
 
-#if _DEBUG
         dbg_draw_frame_info_end();
-#endif
 
         if (g_ddraw->fps_limiter.tick_length > 0)
         {
