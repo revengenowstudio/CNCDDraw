@@ -187,6 +187,13 @@ BOOL WINAPI fake_ScreenToClient(HWND hWnd, LPPOINT lpPoint)
 BOOL WINAPI fake_SetCursorPos(int X, int Y)
 {
     POINT pt = { X, Y };
+
+    if (g_ddraw && g_ddraw->adjmouse)
+    {
+        pt.x *= g_ddraw->render.scale_w;
+        pt.y *= g_ddraw->render.scale_h;
+    }
+
     return g_ddraw && real_ClientToScreen(g_ddraw->hwnd, &pt) && real_SetCursorPos(pt.x, pt.y);
 }
 
