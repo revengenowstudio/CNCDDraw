@@ -10,12 +10,14 @@
 
 DWORD WINAPI gdi_render_main(void)
 {
-    DWORD warning_end_tick = timeGetTime() + (15 * 1000);
-    char warning_text[512] = { 0 };
+    static DWORD warning_end_tick = 0;
+    static char warning_text[512] = { 0 };
 
     if (g_ddraw->show_driver_warning)
     {
         g_ddraw->show_driver_warning = FALSE;
+
+        warning_end_tick = timeGetTime() + (15 * 1000);
 
         if (!g_ddraw->windowed)
             PostMessage(g_ddraw->hwnd, WM_AUTORENDERER, 0, 0);
@@ -65,7 +67,7 @@ DWORD WINAPI gdi_render_main(void)
 
         if (g_ddraw->primary && (g_ddraw->bpp == 16 || (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)))
         {
-            if (warning_text[0])
+            if (warning_end_tick)
             {
                 if (timeGetTime() < warning_end_tick)
                 {
@@ -74,7 +76,7 @@ DWORD WINAPI gdi_render_main(void)
                 }
                 else
                 {
-                    warning_text[0] = 0;
+                    warning_end_tick = 0;
                 }
             }
 
