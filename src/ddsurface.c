@@ -709,6 +709,9 @@ HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
 
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPalette)
 {
+    if (!lpDDPalette)
+        return DDERR_INVALIDPARAMS;
+
     IDirectDrawPalette_AddRef(lpDDPalette);
 
     if (This->palette)

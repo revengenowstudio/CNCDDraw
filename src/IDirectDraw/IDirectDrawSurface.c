@@ -1,4 +1,6 @@
+#include <initguid.h>
 #include "IDirectDrawSurface.h"
+#include "IDirectDrawGammaControl.h"
 #include "ddsurface.h"
 #include "dd.h"
 #include "debug.h"
@@ -9,14 +11,36 @@ HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *Thi
     dprintf("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
     HRESULT ret = S_OK;
 
-    if (riid && !IsEqualGUID(&IID_IDirectDrawSurface, riid))
+    if (riid)
     {
-        dprintf("     GUID = %08X\n", ((GUID *)riid)->Data1);
+        if (IsEqualGUID(&IID_IDirectDrawGammaControl, riid))
+        {
+            IDirectDrawGammaControlImpl* gc = (IDirectDrawGammaControlImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawGammaControlImpl));
 
-        IDirectDrawSurface_AddRef(This);
+            dprintf("     GUID = %08X (IID_IDirectDrawGammaControl), gammacontrol = %p\n", ((GUID*)riid)->Data1, gc);
+
+            gc->lpVtbl = &g_ddgc_vtbl;
+            gc->lpVtbl->AddRef(gc);
+
+            *obj = gc;
+
+            ret = S_OK;
+        }
+        else if (!IsEqualGUID(&IID_IDirectDrawSurface, riid))
+        {
+            dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
+
+            IDirectDrawSurface_AddRef(This);
+
+            *obj = This;
+        }
+        else
+        {
+            dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
+
+            *obj = This;
+        }
     }
-
-    *obj = This;
 
     dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;

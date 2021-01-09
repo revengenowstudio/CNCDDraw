@@ -37,6 +37,7 @@
     <ClCompile Include="src\IDirect3D\IDirect3D3.c" />
     <ClCompile Include="src\IDirect3D\IDirect3D7.c" />
     <ClCompile Include="src\IAMMediaStream\IAMMediaStream.c" />
+    <ClCompile Include="src\IDirectDraw\IDirectDrawGammaControl.c" />
     <ClCompile Include="src\utils.c" />
     <ClCompile Include="src\hook.c" />
     <ClCompile Include="src\IDirectDraw\IDirectDraw.c" />
@@ -65,6 +66,7 @@
     <ClInclude Include="inc\glcorearb.h" />
     <ClInclude Include="inc\IDirect3D.h" />
     <ClInclude Include="inc\IAMMediaStream.h" />
+    <ClInclude Include="inc\IDirectDrawGammaControl.h" />
     <ClInclude Include="inc\utils.h" />
     <ClInclude Include="inc\hook.h" />
     <ClInclude Include="inc\IDirectDraw.h" />
