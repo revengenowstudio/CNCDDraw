@@ -478,7 +478,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             BOOL context_code = (lParam & (1 << 29)) != 0;
             BOOL key_state    = (lParam & (1 << 30)) != 0;
 
-            if (wParam == VK_RETURN && context_code && !key_state)
+            if (wParam == VK_RETURN && !g_ddraw->fullscreen && context_code && !key_state)
             {
                 util_toggle_fullscreen();
                 return 0;
