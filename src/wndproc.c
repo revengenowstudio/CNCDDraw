@@ -457,7 +457,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 }
 
                 //if (!wParam)
-                //    return 0;
+                return 0;
             }
             break;
         case WM_AUTORENDERER:
