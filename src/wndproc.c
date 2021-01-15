@@ -575,8 +575,19 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             if (g_ddraw->devmode)
             {
                 mouse_lock();
-                g_ddraw->cursor.x = GET_X_LPARAM(lParam);
-                g_ddraw->cursor.y = GET_Y_LPARAM(lParam);
+
+                if (g_ddraw->adjmouse)
+                {
+                    g_ddraw->cursor.x = GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w;
+                    g_ddraw->cursor.y = GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h;
+
+                    lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
+                }
+                else
+                {
+                    g_ddraw->cursor.x = GET_X_LPARAM(lParam);
+                    g_ddraw->cursor.y = GET_Y_LPARAM(lParam);
+                }
             }
             break;
         }
