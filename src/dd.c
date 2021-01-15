@@ -290,16 +290,6 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
                 g_ddraw->fullscreen = FALSE;
             }
         }
-
-        const int IDR_MYMENU = 93;
-
-        const HANDLE hbicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, real_GetSystemMetrics(SM_CXICON), real_GetSystemMetrics(SM_CYICON), 0);
-        if (hbicon)
-            real_SendMessageA(g_ddraw->hwnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
-
-        const HANDLE hsicon = LoadImage(GetModuleHandle(0), MAKEINTRESOURCE(IDR_MYMENU), IMAGE_ICON, real_GetSystemMetrics(SM_CXSMICON), real_GetSystemMetrics(SM_CYSMICON), 0);
-        if (hsicon)
-            real_SendMessageA(g_ddraw->hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);
     }
 
     if (g_ddraw->altenter)
