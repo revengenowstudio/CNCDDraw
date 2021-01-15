@@ -589,6 +589,15 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     g_ddraw->cursor.y = GET_Y_LPARAM(lParam);
                 }
             }
+
+            if (GET_X_LPARAM(lParam) > g_ddraw->width || GET_Y_LPARAM(lParam) > g_ddraw->height)
+            {
+                g_ddraw->cursor.x = GET_X_LPARAM(lParam) > g_ddraw->width ? g_ddraw->width : GET_X_LPARAM(lParam);
+                g_ddraw->cursor.y = GET_Y_LPARAM(lParam) > g_ddraw->height ? g_ddraw->height : GET_Y_LPARAM(lParam);
+
+                lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
+            }
+
             break;
         }
         case WM_PARENTNOTIFY:
