@@ -49,7 +49,7 @@ void cfg_load()
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
     g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
-    g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", FALSE);
+    g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
     g_ddraw->dk2hack = cfg_get_bool("dk2hack", FALSE); // Dungeon Keeper 2 hack
 
@@ -285,6 +285,9 @@ static void cfg_create_ini()
             "\n"
             "; Enable C&C video resize hack - Stretches C&C cutscenes to fullscreen\n"
             "vhack=false\n"
+            "\n"
+            "; Enable linear (D3DTEXF_LINEAR) upscaling filter for the direct3d9 renderer (16 bit color depth games only)\n"
+            "d3d9linear=true\n"
             "\n"
             "\n"
             "\n"
