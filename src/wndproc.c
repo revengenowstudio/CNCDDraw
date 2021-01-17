@@ -456,8 +456,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     break;
                 }
 
-                //if (!wParam)
-                return 0;
+                if (g_ddraw->noactivateapp)
+                    return 0;
+
+                if (g_ddraw->windowed && !wParam)
+                    return 0;
             }
             break;
         case WM_AUTORENDERER:
