@@ -58,7 +58,7 @@ void cfg_load()
     g_config.window_rect.left = cfg_get_int("posX", -32000);
     g_config.window_rect.top = cfg_get_int("posY", -32000);
 
-    g_config.save_settings = cfg_get_int("savesettings", 2);
+    g_config.save_settings = cfg_get_int("savesettings", 1);
 
 #ifdef _MSC_VER
     g_hook_method = cfg_get_int("hook", 4);
@@ -278,7 +278,7 @@ static void cfg_create_ini()
             "\n"
             "; Save window position/size/state on game exit and restore it automatically on next game start\n"
             "; Possible values: 0 = disabled, 1 = save to global 'ddraw' section, 2 = save to game specific section\n"
-            "savesettings=2\n"
+            "savesettings=1\n"
             "\n"
             "; Should the window be resizeable by the user in windowed mode?\n"
             "resizeable=true\n"
