@@ -31,6 +31,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
     {
 #if _DEBUG 
         dbg_init();
+        dprintf("cnc-ddraw = %p\n", hDll);
 #endif
         g_ddraw_module = hDll;
 

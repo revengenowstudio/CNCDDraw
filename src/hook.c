@@ -4,6 +4,7 @@
 #include "dd.h"
 #include "winapi_hooks.h"
 #include "hook.h"
+#include "debug.h"
 #include "dllmain.h"
 
 #ifdef _MSC_VER
@@ -233,15 +234,15 @@ void hook_create(hook_list* hooks)
 
     if (g_hook_method == 3 || g_hook_method == 4)
     {
-        WCHAR game_exe_path[MAX_PATH] = { 0 };
-        WCHAR game_dir[MAX_PATH] = { 0 };
+        char game_exe_path[MAX_PATH] = { 0 };
+        char game_dir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameW(NULL, game_exe_path, MAX_PATH))
+        if (GetModuleFileNameA(NULL, game_exe_path, MAX_PATH))
         {
-            _wsplitpath(game_exe_path, NULL, game_dir, NULL, NULL);
+            _splitpath(game_exe_path, NULL, game_dir, NULL, NULL);
 
-            WCHAR mod_path[MAX_PATH] = { 0 };
-            WCHAR mod_dir[MAX_PATH] = { 0 };
+            char mod_path[MAX_PATH] = { 0 };
+            char mod_dir[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
 
             while (hmod = DetourEnumerateModules(hmod))
@@ -249,11 +250,13 @@ void hook_create(hook_list* hooks)
                 if (hmod == g_ddraw_module)
                     continue;
 
-                if (GetModuleFileNameW(hmod, mod_path, MAX_PATH))
+                if (GetModuleFileNameA(hmod, mod_path, MAX_PATH))
                 {
-                    _wsplitpath(mod_path, NULL, mod_dir, NULL, NULL);
+                    dprintfex("Module %s = %p\n", mod_path, hmod);
 
-                    if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
+                    _splitpath(mod_path, NULL, mod_dir, NULL, NULL);
+
+                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
                     {
                         hook_patch_iat_list(hmod, FALSE, hooks);
                     }
@@ -291,15 +294,15 @@ void hook_revert(hook_list* hooks)
 
     if (g_hook_method == 3 || g_hook_method == 4)
     {
-        WCHAR game_exe_path[MAX_PATH] = { 0 };
-        WCHAR game_dir[MAX_PATH] = { 0 };
+        char game_exe_path[MAX_PATH] = { 0 };
+        char game_dir[MAX_PATH] = { 0 };
 
-        if (GetModuleFileNameW(NULL, game_exe_path, MAX_PATH))
+        if (GetModuleFileNameA(NULL, game_exe_path, MAX_PATH))
         {
-            _wsplitpath(game_exe_path, NULL, game_dir, NULL, NULL);
+            _splitpath(game_exe_path, NULL, game_dir, NULL, NULL);
 
-            WCHAR mod_path[MAX_PATH] = { 0 };
-            WCHAR mod_dir[MAX_PATH] = { 0 };
+            char mod_path[MAX_PATH] = { 0 };
+            char mod_dir[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
 
             while (hmod = DetourEnumerateModules(hmod))
@@ -307,11 +310,11 @@ void hook_revert(hook_list* hooks)
                 if (hmod == g_ddraw_module)
                     continue;
 
-                if (GetModuleFileNameW(hmod, mod_path, MAX_PATH))
+                if (GetModuleFileNameA(hmod, mod_path, MAX_PATH))
                 {
-                    _wsplitpath(mod_path, NULL, mod_dir, NULL, NULL);
+                    _splitpath(mod_path, NULL, mod_dir, NULL, NULL);
 
-                    if (_wcsnicmp(game_dir, mod_dir, wcslen(game_dir)) == 0)
+                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
                     {
                         hook_patch_iat_list(hmod, TRUE, hooks);
                     }
