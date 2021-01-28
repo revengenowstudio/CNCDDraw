@@ -4,7 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-
+int dbg_exception_handler(EXCEPTION_POINTERS* exception);
 void dbg_counter_start();
 double dbg_counter_stop();
 void dbg_debug_string(const char *format, ...);

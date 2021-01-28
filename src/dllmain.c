@@ -32,6 +32,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 #if _DEBUG 
         dbg_init();
         dprintf("cnc-ddraw = %p\n", hDll);
+        SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)dbg_exception_handler);
 #endif
         g_ddraw_module = hDll;
 

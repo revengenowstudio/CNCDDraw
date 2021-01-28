@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <dbghelp.h>>
 #include <stdio.h>
 #include "dd.h"
 #include "ddraw.h"
@@ -11,6 +12,37 @@ DWORD g_dbg_frame_count = 0;
 
 static LONGLONG g_dbg_counter_start_time = 0;
 static double g_dbg_counter_freq = 0.0;
+
+#if _DEBUG 
+int dbg_exception_handler(EXCEPTION_POINTERS* exception)
+{
+    HANDLE dmp =
+        CreateFile(
+            "cnc-ddraw.dmp",
+            GENERIC_READ | GENERIC_WRITE,
+            FILE_SHARE_WRITE | FILE_SHARE_READ,
+            0,
+            CREATE_ALWAYS,
+            0,
+            0);
+
+    MINIDUMP_EXCEPTION_INFORMATION info;
+    info.ThreadId = GetCurrentThreadId();
+    info.ExceptionPointers = exception;
+    info.ClientPointers = TRUE;
+
+    MiniDumpWriteDump(
+        GetCurrentProcess(),
+        GetCurrentProcessId(),
+        dmp,
+        0,
+        &info,
+        NULL,
+        NULL);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
 
 void dbg_init()
 {
