@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <dbghelp.h>>
+#include <dbghelp.h>
 #include <stdio.h>
 #include "dd.h"
 #include "ddraw.h"
