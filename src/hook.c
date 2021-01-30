@@ -243,6 +243,7 @@ void hook_create(hook_list* hooks)
 
             char mod_path[MAX_PATH] = { 0 };
             char mod_dir[MAX_PATH] = { 0 };
+            char mod_filename[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
 
             while (hmod = DetourEnumerateModules(hmod))
@@ -254,7 +255,11 @@ void hook_create(hook_list* hooks)
                 {
                     dprintfex("Module %s = %p\n", mod_path, hmod);
 
-                    _splitpath(mod_path, NULL, mod_dir, NULL, NULL);
+                    _splitpath(mod_path, NULL, mod_dir, mod_filename, NULL);
+
+                    /* Don't hook reshade/swiftshader/mesa3d */
+                    if (_strcmpi(mod_filename, "opengl32") == 0 || _strcmpi(mod_filename, "d3d9") == 0)
+                        continue;
 
                     if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
                     {
