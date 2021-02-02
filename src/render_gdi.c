@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include "fps_limiter.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "opengl_utils.h"
@@ -30,26 +31,7 @@ DWORD WINAPI gdi_render_main(void)
 
     Sleep(500);
 
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
-
-    int max_fps = g_ddraw->render.maxfps;
-
-    g_ddraw->fps_limiter.tick_length_ns = 0;
-    g_ddraw->fps_limiter.tick_length = 0;
-
-    if (max_fps < 0)
-        max_fps = g_ddraw->mode.dmDisplayFrequency;
-
-    if (max_fps > 1000)
-        max_fps = 0;
-
-    if (max_fps > 0)
-    {
-        float len = 1000.0f / max_fps;
-        g_ddraw->fps_limiter.tick_length_ns = len * 10000;
-        g_ddraw->fps_limiter.tick_length = len + (g_ddraw->accurate_timers ? 0.5f : 0.0f);
-    }
+    fpsl_init();
 
     DWORD timeout = g_ddraw->render.minfps > 0 ? g_ddraw->render.minfps_tick_len : INFINITE;
 
@@ -60,8 +42,7 @@ DWORD WINAPI gdi_render_main(void)
         dbg_draw_frame_info_start();
 #endif
 
-        if (g_ddraw->fps_limiter.tick_length > 0)
-            tick_start = timeGetTime();
+        fpsl_frame_start();
 
         EnterCriticalSection(&g_ddraw->cs);
 
@@ -155,35 +136,7 @@ DWORD WINAPI gdi_render_main(void)
         dbg_draw_frame_info_end();
 #endif
 
-        if (g_ddraw->fps_limiter.tick_length > 0)
-        {
-            if (g_ddraw->fps_limiter.htimer)
-            {
-                FILETIME ft = { 0 };
-                GetSystemTimeAsFileTime(&ft);
-
-                if (CompareFileTime((FILETIME*)&g_ddraw->fps_limiter.due_time, &ft) == -1)
-                {
-                    memcpy(&g_ddraw->fps_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
-                }
-                else
-                {
-                    WaitForSingleObject(g_ddraw->fps_limiter.htimer, g_ddraw->fps_limiter.tick_length * 2);
-                }
-
-                g_ddraw->fps_limiter.due_time.QuadPart += g_ddraw->fps_limiter.tick_length_ns;
-                SetWaitableTimer(g_ddraw->fps_limiter.htimer, &g_ddraw->fps_limiter.due_time, 0, NULL, NULL, FALSE);
-            }
-            else
-            {
-                tick_end = timeGetTime();
-
-                if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
-                {
-                    Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
-                }
-            }
-        }
+        fpsl_frame_end();
     }
 
     return TRUE;

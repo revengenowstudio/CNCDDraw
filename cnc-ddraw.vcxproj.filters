@@ -147,6 +147,9 @@
     <ClCompile Include="src\IDirectDraw\IDirectDrawGammaControl.c">
       <Filter>Source Files\IDirectDraw</Filter>
     </ClCompile>
+    <ClCompile Include="src\fps_limiter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ddraw.h">
@@ -246,6 +249,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="inc\IDirectDrawGammaControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\fps_limiter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

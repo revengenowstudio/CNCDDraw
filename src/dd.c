@@ -9,6 +9,7 @@
 #include "render_d3d9.h"
 #include "render_gdi.h"
 #include "render_ogl.h"
+#include "fps_limiter.h"
 #include "debug.h"
 #include "utils.h"
 
@@ -817,11 +818,11 @@ ULONG dd_Release()
             g_ddraw->flip_limiter.htimer = NULL;
         }
 
-        if (g_ddraw->fps_limiter.htimer)
+        if (g_fpsl.htimer)
         {
-            CancelWaitableTimer(g_ddraw->fps_limiter.htimer);
-            CloseHandle(g_ddraw->fps_limiter.htimer);
-            g_ddraw->fps_limiter.htimer = NULL;
+            CancelWaitableTimer(g_fpsl.htimer);
+            CloseHandle(g_fpsl.htimer);
+            g_fpsl.htimer = NULL;
         }
 
         DeleteCriticalSection(&g_ddraw->cs);

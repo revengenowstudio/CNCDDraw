@@ -33,6 +33,7 @@ FILES = src/IDirect3D/IDirect3D.c \
         src/dllmain.c \
         src/wndproc.c \
         src/utils.c \
+        src/fps_limiter.c \
         src/opengl_utils.c
 
 all:

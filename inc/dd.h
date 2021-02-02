@@ -118,7 +118,6 @@ typedef struct cnc_ddraw
     BOOL show_driver_warning;
     speed_limiter ticks_limiter;
     speed_limiter flip_limiter;
-    speed_limiter fps_limiter;
     
 } cnc_ddraw;
 

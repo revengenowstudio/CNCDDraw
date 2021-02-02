@@ -32,6 +32,7 @@
     </ClCompile>
     <ClCompile Include="src\directinput.c" />
     <ClCompile Include="src\dllmain.c" />
+    <ClCompile Include="src\fps_limiter.c" />
     <ClCompile Include="src\IDirect3D\IDirect3D.c" />
     <ClCompile Include="src\IDirect3D\IDirect3D2.c" />
     <ClCompile Include="src\IDirect3D\IDirect3D3.c" />
@@ -63,6 +64,7 @@
     <ClInclude Include="inc\ddclipper.h" />
     <ClInclude Include="inc\directinput.h" />
     <ClInclude Include="inc\dllmain.h" />
+    <ClInclude Include="inc\fps_limiter.h" />
     <ClInclude Include="inc\glcorearb.h" />
     <ClInclude Include="inc\IDirect3D.h" />
     <ClInclude Include="inc\IAMMediaStream.h" />

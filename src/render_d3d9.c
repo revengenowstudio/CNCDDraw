@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <d3d9.h>
+#include "fps_limiter.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "d3d9shader.h"
@@ -13,7 +14,6 @@
 static BOOL d3d9_create_resouces();
 static BOOL d3d9_set_states();
 static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch);
-static void d3d9_set_max_fps();
 
 static d3d9_renderer g_d3d9;
 
@@ -305,35 +305,12 @@ static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
     return FALSE;
 }
 
-static void d3d9_set_max_fps()
-{
-    int max_fps = g_ddraw->render.maxfps;
-
-    g_ddraw->fps_limiter.tick_length_ns = 0;
-    g_ddraw->fps_limiter.tick_length = 0;
-
-    if (max_fps < 0 || g_ddraw->vsync)
-        max_fps = g_ddraw->mode.dmDisplayFrequency;
-
-    if (max_fps > 1000)
-        max_fps = 0;
-
-    if (max_fps > 0)
-    {
-        float len = 1000.0f / max_fps;
-        g_ddraw->fps_limiter.tick_length_ns = len * 10000;
-        g_ddraw->fps_limiter.tick_length = len;// + 0.5f;
-    }
-}
-
 DWORD WINAPI d3d9_render_main(void)
 {
     Sleep(500);
 
-    d3d9_set_max_fps();
+    fpsl_init();
 
-    DWORD tick_start = 0;
-    DWORD tick_end = 0;
     BOOL needs_update = FALSE;
 
     DWORD timeout = g_ddraw->render.minfps > 0 ? g_ddraw->render.minfps_tick_len : 200;
@@ -347,8 +324,7 @@ DWORD WINAPI d3d9_render_main(void)
 
         static int tex_index = 0, palIndex = 0;
 
-        if (g_ddraw->fps_limiter.tick_length > 0)
-            tick_start = timeGetTime();
+        fpsl_frame_start();
 
         EnterCriticalSection(&g_ddraw->cs);
 
@@ -456,44 +432,7 @@ DWORD WINAPI d3d9_render_main(void)
         dbg_draw_frame_info_end();
 #endif
         
-        if (g_ddraw->fps_limiter.tick_length > 0)
-        {
-            if (g_ddraw->fps_limiter.htimer)
-            {
-                if (g_ddraw->vsync)
-                {
-                    WaitForSingleObject(g_ddraw->fps_limiter.htimer, g_ddraw->fps_limiter.tick_length * 2);
-                    LARGE_INTEGER due_time = { .QuadPart = -g_ddraw->fps_limiter.tick_length_ns };
-                    SetWaitableTimer(g_ddraw->fps_limiter.htimer, &due_time, 0, NULL, NULL, FALSE);
-                }
-                else
-                {
-                    FILETIME ft = { 0 };
-                    GetSystemTimeAsFileTime(&ft);
-
-                    if (CompareFileTime((FILETIME *)&g_ddraw->fps_limiter.due_time, &ft) == -1)
-                    {
-                        memcpy(&g_ddraw->fps_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
-                    }
-                    else
-                    {
-                        WaitForSingleObject(g_ddraw->fps_limiter.htimer, g_ddraw->fps_limiter.tick_length * 2);
-                    }
-
-                    g_ddraw->fps_limiter.due_time.QuadPart += g_ddraw->fps_limiter.tick_length_ns;
-                    SetWaitableTimer(g_ddraw->fps_limiter.htimer, &g_ddraw->fps_limiter.due_time, 0, NULL, NULL, FALSE);
-                }
-            }
-            else
-            {
-                tick_end = timeGetTime();
-
-                if (tick_end - tick_start < g_ddraw->fps_limiter.tick_length)
-                {
-                    Sleep(g_ddraw->fps_limiter.tick_length - (tick_end - tick_start));
-                }
-            }
-        }
+        fpsl_frame_end();
     }
     return 0;
 }

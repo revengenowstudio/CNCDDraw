@@ -1,7 +1,7 @@
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
 #include <d3d9.h>
+#include "fps_limiter.h"
 #include "config.h"
 #include "dd.h"
 #include "render_d3d9.h"
@@ -78,7 +78,7 @@ void cfg_load()
     }
 
     if (g_ddraw->accurate_timers || g_ddraw->vsync)
-        g_ddraw->fps_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
+        g_fpsl.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
     //can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency
 
     int max_ticks = cfg_get_int("maxgameticks", 0);
