@@ -72,7 +72,7 @@ BOOL fpsl_wait_for_vblank()
     return FALSE;
 }
 
-BOOL fpsl_dwn_is_enabled()
+BOOL fpsl_dwm_is_enabled()
 {
     BOOL dwm_enabled = FALSE;
 
@@ -92,7 +92,7 @@ void fpsl_frame_end()
 {
     if (g_ddraw->render.maxfps < 0 || g_ddraw->vsync)
     {
-        if (fpsl_dwn_is_enabled() && g_fpsl.DwmFlush && SUCCEEDED(g_fpsl.DwmFlush()))
+        if (fpsl_dwm_is_enabled() && g_fpsl.DwmFlush && SUCCEEDED(g_fpsl.DwmFlush()))
             return;
 
         if (fpsl_wait_for_vblank())

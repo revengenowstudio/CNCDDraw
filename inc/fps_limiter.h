@@ -45,7 +45,7 @@ extern fps_limiter g_fpsl;
 
 void fpsl_init();
 BOOL fpsl_wait_for_vblank();
-BOOL fpsl_dwn_is_enabled();
+BOOL fpsl_dwm_is_enabled();
 void fpsl_frame_start();
 void fpsl_frame_end();
 
