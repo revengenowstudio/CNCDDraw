@@ -33,6 +33,8 @@ typedef struct fps_limiter
     D3DKMT_WAITFORVERTICALBLANKEVENT vblank_event;
     D3DKMT_OPENADAPTERFROMHDC adapter;
     D3DKMT_CLOSEADAPTER close_adapter;
+    HMODULE gdi32_dll;
+    HMODULE dwmapi_dll;
     HRESULT(WINAPI* DwmFlush)(VOID);
     HRESULT(WINAPI* DwmIsCompositionEnabled)(BOOL*);
     NTSTATUS(WINAPI* D3DKMTWaitForVerticalBlankEvent)(const D3DKMT_WAITFORVERTICALBLANKEVENT* Arg1);

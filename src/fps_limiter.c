@@ -32,23 +32,29 @@ void fpsl_init()
         g_fpsl.D3DKMTCloseAdapter(&g_fpsl.close_adapter);
     }
 
+    if (!g_fpsl.gdi32_dll)
+        g_fpsl.gdi32_dll = LoadLibraryA("gdi32.dll");
+
+    if (!g_fpsl.dwmapi_dll)
+        g_fpsl.dwmapi_dll = LoadLibraryA("dwmapi.dll");
+
     g_fpsl.DwmFlush =
-        (HRESULT(WINAPI*)(VOID))GetProcAddress(GetModuleHandleA("Dwmapi.dll"), "DwmFlush");
+        (HRESULT(WINAPI*)(VOID))GetProcAddress(g_fpsl.dwmapi_dll, "DwmFlush");
 
     g_fpsl.DwmIsCompositionEnabled =
-        (HRESULT(WINAPI*)(BOOL*))GetProcAddress(GetModuleHandleA("Dwmapi.dll"), "DwmIsCompositionEnabled");
+        (HRESULT(WINAPI*)(BOOL*))GetProcAddress(g_fpsl.dwmapi_dll, "DwmIsCompositionEnabled");
 
     g_fpsl.D3DKMTWaitForVerticalBlankEvent =
         (NTSTATUS(WINAPI*)(const D3DKMT_WAITFORVERTICALBLANKEVENT * Arg1))
-        GetProcAddress(GetModuleHandleA("gdi32.dll"), "D3DKMTWaitForVerticalBlankEvent");
+        GetProcAddress(g_fpsl.gdi32_dll, "D3DKMTWaitForVerticalBlankEvent");
 
     g_fpsl.D3DKMTOpenAdapterFromHdc =
         (NTSTATUS(WINAPI*)(D3DKMT_OPENADAPTERFROMHDC * Arg1))
-        GetProcAddress(GetModuleHandleA("gdi32.dll"), "D3DKMTOpenAdapterFromHdc");
+        GetProcAddress(g_fpsl.gdi32_dll, "D3DKMTOpenAdapterFromHdc");
 
     g_fpsl.D3DKMTCloseAdapter =
         (NTSTATUS(WINAPI*)(D3DKMT_CLOSEADAPTER * Arg1))
-        GetProcAddress(GetModuleHandleA("gdi32.dll"), "D3DKMTCloseAdapter");
+        GetProcAddress(g_fpsl.gdi32_dll, "D3DKMTCloseAdapter");
 }
 
 BOOL fpsl_wait_for_vblank()
