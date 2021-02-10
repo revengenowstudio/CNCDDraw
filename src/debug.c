@@ -26,19 +26,24 @@ int dbg_exception_handler(EXCEPTION_POINTERS* exception)
             0,
             0);
 
-    MINIDUMP_EXCEPTION_INFORMATION info;
-    info.ThreadId = GetCurrentThreadId();
-    info.ExceptionPointers = exception;
-    info.ClientPointers = TRUE;
+    if (dmp)
+    {
+        MINIDUMP_EXCEPTION_INFORMATION info;
+        info.ThreadId = GetCurrentThreadId();
+        info.ExceptionPointers = exception;
+        info.ClientPointers = TRUE;
 
-    MiniDumpWriteDump(
-        GetCurrentProcess(),
-        GetCurrentProcessId(),
-        dmp,
-        0,
-        &info,
-        NULL,
-        NULL);
+        MiniDumpWriteDump(
+            GetCurrentProcess(),
+            GetCurrentProcessId(),
+            dmp,
+            0,
+            &info,
+            NULL,
+            NULL);
+
+        CloseHandle(dmp);
+    }
 
     return EXCEPTION_EXECUTE_HANDLER;
 }
