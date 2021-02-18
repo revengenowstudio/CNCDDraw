@@ -17,6 +17,7 @@ void dbg_dump_dds_caps(DWORD caps);
 void dbg_dump_dds_flags(DWORD flags);
 void dbg_dump_dds_blt_fast_flags(DWORD flags);
 void dbg_dump_dds_lock_flags(DWORD flags);
+char* dbg_mes_to_str(int id);
 
 extern double g_dbg_frame_time;
 extern DWORD g_dbg_frame_count;

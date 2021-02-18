@@ -10,10 +10,22 @@
 #include "winapi_hooks.h"
 #include "wndproc.h"
 #include "utils.h"
+#include "debug.h"
 
 
 LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    /*
+    dprintf(
+        "     uMsg = %s (%d), wParam = %08X (%d), lParam = %08X (%d)\n",
+        dbg_mes_to_str(uMsg),
+        uMsg,
+        wParam,
+        wParam,
+        lParam,
+        lParam);
+    */
+
     RECT rc = { 0, 0, g_ddraw->render.width, g_ddraw->render.height };
 
     static BOOL in_size_move = FALSE;
