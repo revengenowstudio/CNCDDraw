@@ -377,8 +377,18 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }
 
-        /* C&C and RA really don't want to close down */
         case WM_SYSCOMMAND:
+
+            if (wParam == SC_MAXIMIZE)
+            {
+                if (g_ddraw->resizable)
+                {
+                    util_toggle_maximize();
+                }
+
+                return 0;
+            }
+
             if (wParam == SC_CLOSE && !GameHandlesClose)
             {
                 exit(0);
@@ -487,36 +497,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (g_ddraw->resizable)
             {
-                RECT work_rc;
-                RECT client_rc;
-
-                if (real_GetClientRect(g_ddraw->hwnd, &client_rc) && 
-                    SystemParametersInfo(SPI_GETWORKAREA, 0, &work_rc, 0))
-                {
-                    if (client_rc.right != g_ddraw->width || client_rc.bottom != g_ddraw->height)
-                    {
-                        util_set_window_rect(
-                            (work_rc.right / 2) - (g_ddraw->width / 2),
-                            (work_rc.bottom / 2) - (g_ddraw->height / 2),
-                            g_ddraw->width, 
-                            g_ddraw->height, 
-                            0);
-                    }
-                    else if (
-                        util_unadjust_window_rect(
-                            &work_rc, 
-                            GetWindowLong(g_ddraw->hwnd, GWL_STYLE), 
-                            FALSE, 
-                            GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE)))
-                    {
-                        util_set_window_rect(
-                            work_rc.left, 
-                            work_rc.top, 
-                            work_rc.right - work_rc.left, 
-                            work_rc.bottom - work_rc.top, 
-                            0);
-                    }
-                }
+                util_toggle_maximize();
             }
 
             return 0;
