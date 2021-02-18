@@ -64,7 +64,7 @@ void cfg_load()
     g_hook_method = cfg_get_int("hook", 4);
 #endif
     
-    g_ddraw->render.maxfps = cfg_get_int("maxfps", 60);
+    g_ddraw->render.maxfps = cfg_get_int("maxfps", -1);
     g_ddraw->render.minfps = cfg_get_int("minfps", 0);
 
     if (g_ddraw->render.minfps > 1000)
@@ -249,7 +249,7 @@ static void cfg_create_ini()
             "\n"
             "; Real rendering rate, -1 = screen rate, 0 = unlimited, n = cap\n"
             "; Note: Does not have an impact on the game speed, to limit your game speed use 'maxgameticks='\n"
-            "maxfps=60\n"
+            "maxfps=-1\n"
             "\n"
             "; Vertical synchronization, enable if you get tearing - (Requires 'renderer=auto/opengl/direct3d9')\n"
             "; Note: vsync=true can fix tearing but it will cause input lag\n"
