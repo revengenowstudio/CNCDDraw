@@ -123,12 +123,12 @@ BOOL d3d9_reset()
 
 BOOL d3d9_release()
 {
-    if (g_d3d9.vertex_buf)
+    if (g_d3d9.pixel_shader)
     {
-        IDirect3DVertexBuffer9_Release(g_d3d9.vertex_buf);
-        g_d3d9.vertex_buf = NULL;
+        IDirect3DPixelShader9_Release(g_d3d9.pixel_shader);
+        g_d3d9.pixel_shader = NULL;
     }
-    
+
     int i;
     for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
     {
@@ -144,11 +144,11 @@ BOOL d3d9_release()
             g_d3d9.palette_tex[i] = NULL;
         }
     }
-    
-    if (g_d3d9.pixel_shader)
+
+    if (g_d3d9.vertex_buf)
     {
-        IDirect3DPixelShader9_Release(g_d3d9.pixel_shader);
-        g_d3d9.pixel_shader = NULL;
+        IDirect3DVertexBuffer9_Release(g_d3d9.vertex_buf);
+        g_d3d9.vertex_buf = NULL;
     }
 
     if (g_d3d9.device)
