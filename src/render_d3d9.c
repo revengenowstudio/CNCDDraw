@@ -59,6 +59,8 @@ BOOL d3d9_create()
         {
             g_d3d9.bits_per_pixel = g_ddraw->render.bpp ? g_ddraw->render.bpp : g_ddraw->mode.dmBitsPerPel;
 
+            memset(&g_d3d9.params, 0, sizeof(g_d3d9.params));
+
             g_d3d9.params.Windowed = g_ddraw->windowed;
             g_d3d9.params.SwapEffect = D3DSWAPEFFECT_DISCARD;
             g_d3d9.params.hDeviceWindow = g_ddraw->hwnd;
