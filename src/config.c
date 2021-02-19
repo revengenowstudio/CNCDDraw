@@ -81,19 +81,19 @@ void cfg_load()
         g_fpsl.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
     //can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency
 
-    int max_ticks = cfg_get_int("maxgameticks", 0);
+    g_ddraw->maxgameticks = cfg_get_int("maxgameticks", 0);
 
-    if (max_ticks > 0 && max_ticks <= 1000)
+    if (g_ddraw->maxgameticks > 0 && g_ddraw->maxgameticks <= 1000)
     {
         if (g_ddraw->accurate_timers)
             g_ddraw->ticks_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
-        float len = 1000.0f / max_ticks;
+        float len = 1000.0f / g_ddraw->maxgameticks;
         g_ddraw->ticks_limiter.tick_length_ns = len * 10000;
         g_ddraw->ticks_limiter.tick_length = len + 0.5f;
     }
 
-    if (max_ticks >= 0)
+    if (g_ddraw->maxgameticks >= 0 || g_ddraw->maxgameticks == -2)
     {
         //always using 60 fps for flip...
         if (g_ddraw->accurate_timers)
@@ -298,7 +298,7 @@ static void cfg_create_ini()
             "; Hide WM_ACTIVATEAPP and WM_NCACTIVATE messages to prevent problems on alt+tab\n"
             "noactivateapp=false\n"
             "\n"
-            "; Max game ticks per second, possible values: -1 = disabled, 0 = emulate 60hz vblank, 1-1000 = custom game speed\n"
+            "; Max game ticks per second, possible values: -1 = disabled, -2 = refresh rate, 0 = emulate 60hz vblank, 1-1000 = custom game speed\n"
             "; Note: Can be used to slow down a too fast running game, fix flickering or too fast animations\n"
             "; Note: Usually one of the following values will work: 60 / 30 / 25 / 20 / 15 (lower value = slower game speed)\n"
             "maxgameticks=0\n"

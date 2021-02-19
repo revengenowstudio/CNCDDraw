@@ -704,6 +704,12 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 
 HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h)
 {
+    if (g_ddraw->maxgameticks == -2)
+    {
+        if (fpsl_dwm_flush())
+            return DD_OK;
+    }
+
     if (!g_ddraw->flip_limiter.tick_length)
         return DD_OK;
 

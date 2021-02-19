@@ -47,12 +47,14 @@ typedef struct fps_limiter
     D3DKMTOPENADAPTERFROMHDCPROC D3DKMTOpenAdapterFromHdc;
     D3DKMTCLOSEADAPTERPROC D3DKMTCloseAdapter;
     BOOL got_adapter;
+    BOOL initialized;
 } fps_limiter;
 
 extern fps_limiter g_fpsl;
 
 void fpsl_init();
 BOOL fpsl_wait_for_vblank();
+BOOL fpsl_dwm_flush();
 BOOL fpsl_dwm_is_enabled();
 void fpsl_frame_start();
 void fpsl_frame_end();
