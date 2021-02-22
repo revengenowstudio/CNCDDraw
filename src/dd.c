@@ -706,7 +706,7 @@ HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h)
 {
     if (g_ddraw->maxgameticks == -2)
     {
-        if (fpsl_dwm_flush() || fpsl_wait_for_vblank(FALSE))
+        if (fpsl_dwm_flush() || fpsl_wait_for_vblank(g_ddraw->render.maxfps >= 0 && !g_ddraw->vsync))
             return DD_OK;
     }
 
