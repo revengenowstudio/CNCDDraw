@@ -53,7 +53,7 @@ typedef struct fps_limiter
 extern fps_limiter g_fpsl;
 
 void fpsl_init();
-BOOL fpsl_wait_for_vblank();
+BOOL fpsl_wait_for_vblank(BOOL open_adapter);
 BOOL fpsl_dwm_flush();
 BOOL fpsl_dwm_is_enabled();
 void fpsl_frame_start();

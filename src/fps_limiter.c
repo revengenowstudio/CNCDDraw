@@ -76,22 +76,25 @@ void fpsl_init()
     g_fpsl.initialized = TRUE;
 }
 
-BOOL fpsl_wait_for_vblank()
+BOOL fpsl_wait_for_vblank(BOOL open_adapter)
 {
-    if (g_fpsl.initialized && g_fpsl.D3DKMTOpenAdapterFromHdc && !g_fpsl.got_adapter)
+    if (g_fpsl.initialized)
     {
-        g_fpsl.adapter.hDc = g_ddraw->render.hdc;
-
-        if (g_fpsl.D3DKMTOpenAdapterFromHdc(&g_fpsl.adapter) == 0)
+        if (open_adapter && g_fpsl.D3DKMTOpenAdapterFromHdc && !g_fpsl.got_adapter)
         {
-            g_fpsl.vblank_event.hAdapter = g_fpsl.adapter.hAdapter;
-            g_fpsl.got_adapter = TRUE;
-        }
-    }
+            g_fpsl.adapter.hDc = g_ddraw->render.hdc;
 
-    if (g_fpsl.got_adapter && g_fpsl.D3DKMTWaitForVerticalBlankEvent)
-    {
-        return g_fpsl.D3DKMTWaitForVerticalBlankEvent(&g_fpsl.vblank_event) == 0;
+            if (g_fpsl.D3DKMTOpenAdapterFromHdc(&g_fpsl.adapter) == 0)
+            {
+                g_fpsl.vblank_event.hAdapter = g_fpsl.adapter.hAdapter;
+                g_fpsl.got_adapter = TRUE;
+            }
+        }
+
+        if (g_fpsl.got_adapter && g_fpsl.D3DKMTWaitForVerticalBlankEvent)
+        {
+            return g_fpsl.D3DKMTWaitForVerticalBlankEvent(&g_fpsl.vblank_event) == 0;
+        }
     }
 
     return FALSE;
@@ -122,7 +125,7 @@ void fpsl_frame_end()
 {
     if (g_ddraw->render.maxfps < 0 || g_ddraw->vsync)
     {
-        if (fpsl_dwm_flush() || fpsl_wait_for_vblank())
+        if (fpsl_dwm_flush() || fpsl_wait_for_vblank(TRUE))
             return;
     }
 
