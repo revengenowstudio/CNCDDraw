@@ -37,7 +37,7 @@ BOOL oglu_load_dll();
 void oglu_init();
 BOOL oglu_ext_exists(char *ext, HDC hdc);
 GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source);
-GLuint oglu_build_program_from_file(const char *file_path);
+GLuint oglu_build_program_from_file(const char *file_path, BOOL core_profile);
 
 extern PFNGLVIEWPORTPROC glViewport;
 extern PFNGLBINDTEXTUREPROC glBindTexture;

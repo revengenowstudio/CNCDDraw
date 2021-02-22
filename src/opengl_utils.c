@@ -317,7 +317,7 @@ GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source)
     return program;
 }
 
-GLuint oglu_build_program_from_file(const char *file_path)
+GLuint oglu_build_program_from_file(const char *file_path, BOOL core_profile)
 {
     GLuint program = 0;
 
@@ -344,6 +344,15 @@ GLuint oglu_build_program_from_file(const char *file_path)
 
                 if (version_start)
                 {
+                    if (core_profile)
+                    {
+                        if (strnicmp(version_start, "#version 130", 12) == 0 || 
+                            strnicmp(version_start, "#version 140", 12) == 0)
+                        {
+                            memcpy(version_start, "#version 150", 12);
+                        }
+                    }
+
                     const char deli[2] = "\n";
                     char *version = strtok(version_start, deli);
 
@@ -358,8 +367,10 @@ GLuint oglu_build_program_from_file(const char *file_path)
                 }
                 else
                 {
-                    strcpy(vert_source, "#define VERTEX\n");
-                    strcpy(frag_source, "#define FRAGMENT\n");
+                    strcpy(vert_source, core_profile ? "#version 150\n" : "#version 130\n");
+                    strcpy(frag_source, core_profile ? "#version 150\n" : "#version 130\n");
+                    strcat(vert_source, "#define VERTEX\n");
+                    strcat(frag_source, "#define FRAGMENT\n");
                     strcat(vert_source, source);
                     strcat(frag_source, source);
 

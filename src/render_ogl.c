@@ -140,7 +140,7 @@ static void ogl_build_programs()
 
         if (g_ogl.main_program)
         {
-            g_ogl.scale_program = oglu_build_program_from_file(g_ddraw->shader);
+            g_ogl.scale_program = oglu_build_program_from_file(g_ddraw->shader, wglCreateContextAttribsARB != NULL);
         }
         else
         {
