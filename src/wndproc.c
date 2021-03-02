@@ -707,5 +707,5 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
     }
 
-    return g_ddraw->wndproc(hWnd, uMsg, wParam, lParam);
+    return CallWindowProcA(g_ddraw->wndproc, hWnd, uMsg, wParam, lParam);
 }

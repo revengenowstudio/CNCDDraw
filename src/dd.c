@@ -660,9 +660,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     {
         hook_init();
 
-        g_ddraw->wndproc = (LRESULT(CALLBACK *)(HWND, UINT, WPARAM, LPARAM))GetWindowLong(hwnd, GWL_WNDPROC);
-
-        real_SetWindowLongA(g_ddraw->hwnd, GWL_WNDPROC, (LONG)fake_WndProc);
+        g_ddraw->wndproc = (WNDPROC)real_SetWindowLongA(g_ddraw->hwnd, GWL_WNDPROC, (LONG)fake_WndProc);
 
         if (!g_ddraw->render.hdc)
         {

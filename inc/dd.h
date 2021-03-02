@@ -80,7 +80,7 @@ typedef struct cnc_ddraw
     } render;
 
     HWND hwnd;
-    LRESULT (CALLBACK *wndproc)(HWND, UINT, WPARAM, LPARAM);
+    WNDPROC wndproc;
     struct { float x; float y; } cursor;
     BOOL locked;
     BOOL adjmouse;
