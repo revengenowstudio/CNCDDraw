@@ -107,6 +107,7 @@ typedef struct cnc_ddraw
     BOOL fixchildwindows;
     BOOL d3d9linear;
     int maxgameticks;
+    BOOL alt_key_down;
     BOOL bnet_active;
     BOOL bnet_was_fullscreen;
     BOOL bnet_was_upscaled;

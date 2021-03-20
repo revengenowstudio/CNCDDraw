@@ -501,11 +501,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     break;
                 }
 
-                if (g_ddraw->noactivateapp)
-                    return 0;
+                if (wParam && g_ddraw->alt_key_down)
+                    PostMessageA(g_ddraw->hwnd, WM_SYSKEYUP, VK_MENU, 0);
 
-                if (g_ddraw->windowed && !wParam)
-                    return 0;
+                return 0;
             }
             break;
         case WM_AUTORENDERER:
@@ -534,6 +533,20 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             {
                 util_toggle_fullscreen();
                 return 0;
+            }
+
+            if (wParam == VK_MENU)
+            {
+                g_ddraw->alt_key_down = TRUE;
+            }
+
+            break;
+        }
+        case WM_SYSKEYUP:
+        {
+            if (wParam == VK_MENU)
+            {
+                g_ddraw->alt_key_down = FALSE;
             }
 
             break;
