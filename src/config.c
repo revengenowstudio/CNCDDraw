@@ -539,6 +539,14 @@ static void cfg_create_ini()
             "[Stronghold_Crusader_Extreme]\n"
             "handlemouse=false\n"
             "\n"
+            "; Cultures 2\n"
+            "[Cultures2]\n"
+            "handlemouse=false\n"
+            "\n"
+            "; Cultures 2 MP\n"
+            "[Cultures2MP]\n"
+            "handlemouse=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
