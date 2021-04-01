@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <windowsx.h>
 #include "dd.h"
 #include "hook.h"
 #include "config.h"
@@ -260,6 +261,14 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
 
 LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
+    if (g_ddraw && g_ddraw->adjmouse && Msg == WM_MOUSEMOVE)
+    {
+        int x = GET_X_LPARAM(lParam) * g_ddraw->render.scale_w;
+        int y = GET_Y_LPARAM(lParam) * g_ddraw->render.scale_h;
+
+        lParam = MAKELPARAM(x, y);
+    }
+
     LRESULT result = real_SendMessageA(hWnd, Msg, wParam, lParam);
 
     if (result && g_ddraw && Msg == CB_GETDROPPEDCONTROLRECT)
