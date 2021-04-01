@@ -261,7 +261,7 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
 
 LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    if (g_ddraw && g_ddraw->adjmouse && Msg == WM_MOUSEMOVE)
+    if (g_ddraw && g_ddraw->hwnd == hWnd && g_ddraw->adjmouse && Msg == WM_MOUSEMOVE)
     {
         int x = GET_X_LPARAM(lParam) * g_ddraw->render.scale_w;
         int y = GET_Y_LPARAM(lParam) * g_ddraw->render.scale_h;
