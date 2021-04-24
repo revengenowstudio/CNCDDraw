@@ -690,7 +690,15 @@ HRESULT dds_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDDSURFACEDES
 {
     dbg_dump_dds_lock_flags(dwFlags);
 
-    return dds_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    HRESULT ret = dds_GetSurfaceDesc(This, lpDDSurfaceDesc);
+
+    if (lpDestRect && lpDDSurfaceDesc && lpDestRect->left >= 0 && lpDestRect->top >= 0)
+    {
+        lpDDSurfaceDesc->lpSurface = 
+            (char*)This->surface + (lpDestRect->left * This->lx_pitch) + (lpDestRect->top * This->l_pitch);
+    }
+
+    return ret;
 }
 
 HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
