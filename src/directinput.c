@@ -6,11 +6,13 @@
 #include "dd.h"
 
 typedef HRESULT (WINAPI *DIRECTINPUTCREATEAPROC)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
+typedef HRESULT (WINAPI *DIRECTINPUT8CREATEPROC)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN);
 typedef HRESULT (WINAPI *DICREATEDEVICEPROC)(IDirectInputA*, REFGUID, LPDIRECTINPUTDEVICEA *, LPUNKNOWN);
 typedef HRESULT (WINAPI *DIDSETCOOPERATIVELEVELPROC)(IDirectInputDeviceA *, HWND, DWORD);
 typedef HRESULT (WINAPI *DIDGETDEVICEDATAPROC)(IDirectInputDeviceA*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 
 static DIRECTINPUTCREATEAPROC real_DirectInputCreateA;
+static DIRECTINPUT8CREATEPROC real_DirectInput8Create;
 static DICREATEDEVICEPROC real_di_CreateDevice;
 static DIDSETCOOPERATIVELEVELPROC real_did_SetCooperativeLevel;
 static DIDGETDEVICEDATAPROC real_did_GetDeviceData;
@@ -87,12 +89,35 @@ static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, 
     return result;
 }
 
+HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPDIRECTINPUT8* ppvOut, LPUNKNOWN punkOuter)
+{
+    dprintf("DirectInput8Create\n");
+
+    real_DirectInput8Create =
+        (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
+
+    if (!real_DirectInput8Create)
+        return DIERR_GENERIC;
+
+    HRESULT result = real_DirectInput8Create(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+
+    if (SUCCEEDED(result) && !real_di_CreateDevice)
+    {
+        real_di_CreateDevice =
+            (DICREATEDEVICEPROC)hook_func((PROC*)&(*ppvOut)->lpVtbl->CreateDevice, (PROC)fake_di_CreateDevice);
+    }
+
+    return result;
+}
+
 void dinput_hook()
 {
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
 }
 
 void dinput_unhook()
 {
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
 }
