@@ -547,6 +547,11 @@ static void cfg_create_ini()
             "[Cultures2MP]\n"
             "handlemouse=false\n"
             "\n"
+            "; Blade & Sword\n"
+            "[comeon]\n"
+            "renderer=opengl\n"
+            "nonexclusive=true\n"
+            "\n"
 
             , fh);
         fclose(fh);

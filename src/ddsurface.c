@@ -200,13 +200,41 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
                 unsigned int dst_pitch = width * This->lx_pitch;
 
-                int i;
-                for (i = 0; i < height; i++)
+                if (This == src_surface)
                 {
-                    memcpy(dst, src, dst_pitch);
+                    if (dst_y > src_y)
+                    {
+                        src += src_surface->l_pitch * height;
+                        dst += This->l_pitch * height;
 
-                    src += src_surface->l_pitch;
-                    dst += This->l_pitch;
+                        for (int i = height; i-- > 0;)
+                        {
+                            src -= src_surface->l_pitch;
+                            dst -= This->l_pitch;
+
+                            memmove(dst, src, dst_pitch);
+                        }
+                    }
+                    else
+                    {
+                        for (int i = 0; i < height; i++)
+                        {
+                            memmove(dst, src, dst_pitch);
+
+                            src += src_surface->l_pitch;
+                            dst += This->l_pitch;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < height; i++)
+                    {
+                        memcpy(dst, src, dst_pitch);
+
+                        src += src_surface->l_pitch;
+                        dst += This->l_pitch;
+                    }
                 }
             }
             else
@@ -491,12 +519,41 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
             unsigned int dst_pitch = dst_w * This->lx_pitch;
 
-            for (int i = 0; i < dst_h; i++)
+            if (This == src_surface)
             {
-                memcpy(dst, src, dst_pitch);
+                if (dst_y > src_y)
+                {
+                    src += src_surface->l_pitch * dst_h;
+                    dst += This->l_pitch * dst_h;
 
-                src += src_surface->l_pitch;
-                dst += This->l_pitch;
+                    for (int i = dst_h; i-- > 0;)
+                    {
+                        src -= src_surface->l_pitch;
+                        dst -= This->l_pitch;
+
+                        memmove(dst, src, dst_pitch);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < dst_h; i++)
+                    {
+                        memmove(dst, src, dst_pitch);
+
+                        src += src_surface->l_pitch;
+                        dst += This->l_pitch;
+                    }
+                }
+            }
+            else
+            {
+                for (int i = 0; i < dst_h; i++)
+                {
+                    memcpy(dst, src, dst_pitch);
+
+                    src += src_surface->l_pitch;
+                    dst += This->l_pitch;
+                }
             }
         }
     }
