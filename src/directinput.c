@@ -94,7 +94,7 @@ HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID 
     dprintf("DirectInput8Create\n");
 
     real_DirectInput8Create =
-        (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
+        (DIRECTINPUT8CREATEPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
 
     if (!real_DirectInput8Create)
         return DIERR_GENERIC;
