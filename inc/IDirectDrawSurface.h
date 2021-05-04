@@ -35,6 +35,8 @@ typedef struct IDirectDrawSurfaceImpl
     DWORD last_flip_tick;
     DWORD last_blt_tick;
 
+    struct IDirectDrawSurfaceImpl *backbuffer;
+
 } IDirectDrawSurfaceImpl;
 
 typedef struct IDirectDrawSurfaceImplVtbl IDirectDrawSurfaceImplVtbl;

@@ -86,6 +86,9 @@ ULONG __stdcall IDirectDrawSurface__Release(IDirectDrawSurfaceImpl *This)
         if (This->bmi)
             HeapFree(GetProcessHeap(), 0, This->bmi);
 
+        if (This->backbuffer)
+            IDirectDrawSurface_Release(This->backbuffer);
+
         if(This->palette && (!g_ddraw || (void*)This->palette != g_ddraw->last_freed_palette))
         {
             IDirectDrawPalette_Release(This->palette);

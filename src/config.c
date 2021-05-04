@@ -50,6 +50,7 @@ void cfg_load()
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
     g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
+    g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
     g_ddraw->dk2hack = cfg_get_bool("dk2hack", FALSE); // Dungeon Keeper 2 hack
 
@@ -551,6 +552,11 @@ static void cfg_create_ini()
             "[comeon]\n"
             "renderer=opengl\n"
             "nonexclusive=true\n"
+            "\n"
+            "; Tzar: The Burden of the Crown\n"
+            "; Note: Must set 'DIRECTXDEVICE=0' in 'Tzar.ini'\n"
+            "[Tzar]\n"
+            "handlemouse=false\n"
             "\n"
 
             , fh);

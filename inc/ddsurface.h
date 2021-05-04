@@ -26,6 +26,8 @@ HRESULT dds_Lock(IDirectDrawSurfaceImpl* This, LPRECT lpDestRect, LPDDSURFACEDES
 HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl* This, DWORD flags, LPDDCOLORKEY colorKey);
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWPALETTE lpDDPalette);
 HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPVOID lpRect);
+void* dds_GetBuffer(IDirectDrawSurfaceImpl* This);
+HDC dds_GetHDC(IDirectDrawSurfaceImpl* This);
 HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR* lpDDSurface, IUnknown FAR* unkOuter);
 
 

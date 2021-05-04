@@ -75,10 +75,12 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
     int dst_x = dst_rect.left;
     int dst_y = dst_rect.top;
 
+    void* dst_buf = dds_GetBuffer(This);
+    void* src_buf = dds_GetBuffer(src_surface);
 
-    if (This->surface && (dwFlags & DDBLT_COLORFILL) && dst_w > 0 && dst_h > 0)
+    if (dst_buf && (dwFlags & DDBLT_COLORFILL) && dst_w > 0 && dst_h > 0)
     {
-        unsigned char *dst = (unsigned char *)This->surface + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
+        unsigned char *dst = (unsigned char *)dst_buf + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
         unsigned char *first_row = dst;
         unsigned int dst_pitch = dst_w * This->lx_pitch;
         int x, i;
@@ -151,11 +153,11 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
                         for (x1 = 0; x1 < width; x1++)
                         {
-                            unsigned char c = ((unsigned char *)src_surface->surface)[x1 + src_x + ysrc];
+                            unsigned char c = ((unsigned char *)src_buf)[x1 + src_x + ysrc];
 
                             if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                             {
-                                ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
+                                ((unsigned char *)dst_buf)[x1 + dst_x + ydst] = c;
                             }
                         }
                     }
@@ -170,11 +172,11 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
                         for (x1 = 0; x1 < width; x1++)
                         {
-                            unsigned short c = ((unsigned short *)src_surface->surface)[x1 + src_x + ysrc];
+                            unsigned short c = ((unsigned short *)src_buf)[x1 + src_x + ysrc];
 
                             if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                             {
-                                ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
+                                ((unsigned short *)dst_buf)[x1 + dst_x + ydst] = c;
                             }
                         }
                     }
@@ -193,10 +195,10 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                 int height = dst_h > src_h ? src_h : dst_h;
 
                 unsigned char *src = 
-                    (unsigned char *)src_surface->surface + (src_x * src_surface->lx_pitch) + (src_surface->l_pitch * src_y);
+                    (unsigned char *)src_buf + (src_x * src_surface->lx_pitch) + (src_surface->l_pitch * src_y);
 
                 unsigned char *dst = 
-                    (unsigned char *)This->surface + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
+                    (unsigned char *)dst_buf + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
 
                 unsigned int dst_pitch = width * This->lx_pitch;
 
@@ -316,8 +318,8 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                         if (This->bpp == 8)
                         {
                             unsigned char *d, *s, v;
-                            unsigned char *src = (unsigned char *)src_surface->surface;
-                            unsigned char *dst = (unsigned char *)This->surface;
+                            unsigned char *src = (unsigned char *)src_buf;
+                            unsigned char *dst = (unsigned char *)dst_buf;
 
                             do {
                                 switch (current->type)
@@ -355,8 +357,8 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                         else if (This->bpp == 16)
                         {
                             unsigned short *d, *s, v;
-                            unsigned short *src = (unsigned short *)src_surface->surface;
-                            unsigned short *dst = (unsigned short *)This->surface;
+                            unsigned short *src = (unsigned short *)src_buf;
+                            unsigned short *dst = (unsigned short *)dst_buf;
 
                             do {
                                 switch (current->type)
@@ -466,6 +468,9 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
     int dst_w = dst_rect.right - dst_rect.left;
     int dst_h = dst_rect.bottom - dst_rect.top;
 
+    void* dst_buf = dds_GetBuffer(This);
+    void* src_buf = dds_GetBuffer(src_surface);
+
     if (src_surface && dst_w > 0 && dst_h > 0)
     {
         if (flags & DDBLTFAST_SRCCOLORKEY)
@@ -480,11 +485,11 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
                     for (x1 = 0; x1 < dst_w; x1++)
                     {
-                        unsigned char c = ((unsigned char *)src_surface->surface)[x1 + src_x + ysrc];
+                        unsigned char c = ((unsigned char *)src_buf)[x1 + src_x + ysrc];
 
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned char *)This->surface)[x1 + dst_x + ydst] = c;
+                            ((unsigned char *)dst_buf)[x1 + dst_x + ydst] = c;
                         }
                     }
                 }
@@ -499,11 +504,11 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
                     for (x1 = 0; x1 < dst_w; x1++)
                     {
-                        unsigned short c = ((unsigned short *)src_surface->surface)[x1 + src_x + ysrc];
+                        unsigned short c = ((unsigned short *)src_buf)[x1 + src_x + ysrc];
                         
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned short *)This->surface)[x1 + dst_x + ydst] = c;
+                            ((unsigned short *)dst_buf)[x1 + dst_x + ydst] = c;
                         }
                     }
                 }
@@ -512,10 +517,10 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
         else
         {
             unsigned char *src =
-                (unsigned char *)src_surface->surface + (src_x * src_surface->lx_pitch) + (src_surface->l_pitch * src_y);
+                (unsigned char *)src_buf + (src_x * src_surface->lx_pitch) + (src_surface->l_pitch * src_y);
 
             unsigned char *dst =
-                (unsigned char *)This->surface + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
+                (unsigned char *)dst_buf + (dst_x * This->lx_pitch) + (This->l_pitch * dst_y);
 
             unsigned int dst_pitch = dst_w * This->lx_pitch;
 
@@ -591,7 +596,7 @@ HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSur
         lpDDSurfaceDesc->dwWidth = This->width;
         lpDDSurfaceDesc->dwHeight = This->height;
         lpDDSurfaceDesc->lPitch = This->l_pitch;
-        lpDDSurfaceDesc->lpSurface = This->surface;
+        lpDDSurfaceDesc->lpSurface = dds_GetBuffer(This);
         lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
         lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
         lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
@@ -634,6 +639,19 @@ HRESULT dds_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE surface, DWOR
 {
     if(This->caps & DDSCAPS_PRIMARYSURFACE && g_ddraw->render.run)
     {
+        if (This->backbuffer)
+        {
+            EnterCriticalSection(&g_ddraw->cs);
+            void* surface = InterlockedExchangePointer(&This->surface, This->backbuffer->surface);
+            HBITMAP bitmap = (HBITMAP)InterlockedExchangePointer(&This->bitmap, This->backbuffer->bitmap);
+            HDC hdc = (HDC)InterlockedExchangePointer(&This->hdc, This->backbuffer->hdc);
+
+            InterlockedExchangePointer(&This->backbuffer->surface, surface);
+            InterlockedExchangePointer(&This->backbuffer->bitmap, bitmap);
+            InterlockedExchangePointer(&This->backbuffer->hdc, hdc);
+            LeaveCriticalSection(&g_ddraw->cs);
+        }
+
         This->last_flip_tick = timeGetTime();
 
         InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
@@ -659,8 +677,16 @@ HRESULT dds_GetAttachedSurface(IDirectDrawSurfaceImpl *This, LPDDSCAPS lpDdsCaps
 {
     if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && (lpDdsCaps->dwCaps & DDSCAPS_BACKBUFFER))
     {
-        IDirectDrawSurface_AddRef(This);
-        *surface = (LPDIRECTDRAWSURFACE)This;
+        if (This->backbuffer)
+        {
+            IDirectDrawSurface_AddRef(This->backbuffer);
+            *surface = (LPDIRECTDRAWSURFACE)This->backbuffer;
+        }
+        else
+        {
+            IDirectDrawSurface_AddRef(This);
+            *surface = (LPDIRECTDRAWSURFACE)This;
+        }
     }
 
     return DD_OK;
@@ -696,9 +722,9 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
         NULL;
 
     if (data)
-        SetDIBColorTable(This->hdc, 0, 256, data);
+        SetDIBColorTable(dds_GetHDC(This), 0, 256, data);
 
-    *a = This->hdc;
+    *a = dds_GetHDC(This);
     return DD_OK;
 }
 
@@ -752,7 +778,7 @@ HRESULT dds_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDDSURFACEDES
     if (lpDestRect && lpDDSurfaceDesc && lpDestRect->left >= 0 && lpDestRect->top >= 0)
     {
         lpDDSurfaceDesc->lpSurface = 
-            (char*)This->surface + (lpDestRect->left * This->lx_pitch) + (lpDestRect->top * This->l_pitch);
+            (char*)dds_GetBuffer(This) + (lpDestRect->left * This->lx_pitch) + (lpDestRect->top * This->l_pitch);
     }
 
     return ret;
@@ -810,12 +836,12 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
     if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
         if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
-            SetDIBColorTable(g_ddraw->primary->hdc, 0, 256, g_ddraw->primary->palette->data_rgb);
+            SetDIBColorTable(dds_GetHDC(g_ddraw->primary), 0, 256, g_ddraw->primary->palette->data_rgb);
 
         //GdiTransparentBlt idea taken from Aqrit's war2 ddraw
 
         RGBQUAD quad;
-        GetDIBColorTable(g_ddraw->primary->hdc, 0xFE, 1, &quad);
+        GetDIBColorTable(dds_GetHDC(g_ddraw->primary), 0xFE, 1, &quad);
         COLORREF color = RGB(quad.rgbRed, quad.rgbGreen, quad.rgbBlue);
         BOOL erase = FALSE;
 
@@ -835,7 +861,7 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
                     0,
                     rc.right - rc.left,
                     rc.bottom - rc.top,
-                    g_ddraw->primary->hdc,
+                    dds_GetHDC(g_ddraw->primary),
                     rc.left,
                     rc.top,
                     rc.right - rc.left,
@@ -876,6 +902,28 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
     }
 
     return DD_OK;
+}
+
+void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
+{
+    if (!This)
+        return NULL;
+
+    if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
+        return (void*)InterlockedExchangeAdd(&This->surface, 0);
+
+    return This->surface;
+}
+
+HDC dds_GetHDC(IDirectDrawSurfaceImpl* This)
+{
+    if (!This)
+        return NULL;
+
+    if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
+        return (HDC)InterlockedExchangeAdd(&This->hdc, 0);
+
+    return This->hdc;
 }
 
 HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *lpDDSurface, IUnknown FAR * unkOuter)
@@ -980,6 +1028,19 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
     if (lpDDSurfaceDesc->dwFlags & DDSD_BACKBUFFERCOUNT)
     {
         dprintf("     dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
+
+        if (g_ddraw->backbuffer)
+        {
+            DDSURFACEDESC desc;
+            memset(&desc, 0, sizeof(DDSURFACEDESC));
+
+            desc.ddsCaps.dwCaps |= DDSCAPS_BACKBUFFER;
+
+            desc.dwWidth = dst_surface->width;
+            desc.dwHeight = dst_surface->height;
+
+            dd_CreateSurface(&desc, &dst_surface->backbuffer, unkOuter);
+        }
     }
 
     dprintf("     surface = %p (%dx%d@%d)\n", dst_surface, (int)dst_surface->width, (int)dst_surface->height, (int)dst_surface->bpp);

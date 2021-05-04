@@ -106,6 +106,7 @@ typedef struct cnc_ddraw
     BOOL nonexclusive;
     BOOL fixchildwindows;
     BOOL d3d9linear;
+    BOOL backbuffer;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL bnet_active;

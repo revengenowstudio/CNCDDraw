@@ -9,7 +9,7 @@
 
 BOOL ss_take_screenshot(struct IDirectDrawSurfaceImpl *src)
 {
-    if (!src || !src->palette || !src->surface)
+    if (!src || !src->palette || !dds_GetBuffer(src))
         return FALSE;
 
     int i;
@@ -54,7 +54,7 @@ BOOL ss_take_screenshot(struct IDirectDrawSurfaceImpl *src)
     state.info_raw.bitdepth = 8;
     state.encoder.auto_convert = 0;
 
-    unsigned int error = lodepng_encode(&png, &pngsize, src->surface, src->width, src->height, &state);
+    unsigned int error = lodepng_encode(&png, &pngsize, dds_GetBuffer(src), src->width, src->height, &state);
 
     if (!error) 
         lodepng_save_file(png, pngsize, filename);

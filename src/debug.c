@@ -146,9 +146,9 @@ void dbg_draw_frame_info_start()
     if (g_ddraw->primary)
     {
         if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
-            SetDIBColorTable(g_ddraw->primary->hdc, 0, 256, g_ddraw->primary->palette->data_rgb);
-
-        DrawText(g_ddraw->primary->hdc, debug_text, -1, &debugrc, DT_NOCLIP);
+            SetDIBColorTable(dds_GetHDC(g_ddraw->primary), 0, 256, g_ddraw->primary->palette->data_rgb);
+        
+        DrawText(dds_GetHDC(g_ddraw->primary), debug_text, -1, &debugrc, DT_NOCLIP);
     }
         
     DWORD tick_start = timeGetTime();
