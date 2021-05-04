@@ -623,14 +623,23 @@ HRESULT dds_EnumAttachedSurfaces(IDirectDrawSurfaceImpl *This, LPVOID lpContext,
     static DDSURFACEDESC dd_surface_desc;
     memset(&dd_surface_desc, 0, sizeof(DDSURFACEDESC));
 
-    dds_GetSurfaceDesc(This, &dd_surface_desc);
-    This->caps |= DDSCAPS_BACKBUFFER; // Nox hack
-    lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This, &dd_surface_desc, lpContext);
+    if (This->backbuffer)
+    {
+        dds_GetSurfaceDesc(This->backbuffer, &dd_surface_desc);
+        IDirectDrawSurface_AddRef(This->backbuffer);
+        lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This->backbuffer, &dd_surface_desc, lpContext);
+    }
+    else if (!g_ddraw->backbuffer)
+    {
+        dds_GetSurfaceDesc(This, &dd_surface_desc);
+        This->caps |= DDSCAPS_BACKBUFFER; // Nox hack
+        lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This, &dd_surface_desc, lpContext);
 
-    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && !(This->caps & DDSCAPS_BACKBUFFER))
-        IDirectDrawSurface_AddRef(This);
+        if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && !(This->caps & DDSCAPS_BACKBUFFER))
+            IDirectDrawSurface_AddRef(This);
 
-    This->caps &= ~DDSCAPS_BACKBUFFER;
+        This->caps &= ~DDSCAPS_BACKBUFFER;
+    }
 
     return DD_OK;
 }
