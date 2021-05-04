@@ -30,6 +30,14 @@ HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStar
 
     for (i = dwStartingEntry, x = 0; i < dwStartingEntry + dwCount; i++, x++)
     {
+        /* Knights and Merchants video palette bug test code
+        if (i == 0 && lpEntries[0].peBlue == 255 && lpEntries[0].peRed == 255 && lpEntries[0].peGreen == 255 && g_ddraw->width == 640 && g_ddraw->height == 480)
+        {
+            lpEntries[0].peBlue = 0;
+            lpEntries[0].peRed = 0;
+            lpEntries[0].peGreen = 0;
+        }
+        */
         This->data_bgr[i] = (lpEntries[x].peBlue << 16) | (lpEntries[x].peGreen << 8) | lpEntries[x].peRed;
 
         if (This->data_rgb)
