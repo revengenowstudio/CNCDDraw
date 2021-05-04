@@ -916,6 +916,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
     {
         if (dst_surface->width == 622 && dst_surface->height == 51) dst_surface->width = 624; //AoE2
         if (dst_surface->width == 71 && dst_surface->height == 24) dst_surface->width = 72; //Commandos
+        if (dst_surface->width == 343 && g_ddraw->bpp == 16) dst_surface->width = 344; //Blade & Sword
 
         dst_surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
         dst_surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
