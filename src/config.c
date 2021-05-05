@@ -558,6 +558,10 @@ static void cfg_create_ini()
             "[Tzar]\n"
             "handlemouse=false\n"
             "\n"
+            "; Jagged Alliance 2\n"
+            "[ja2]\n"
+            "hook=0\n"
+            "\n"
 
             , fh);
         fclose(fh);
