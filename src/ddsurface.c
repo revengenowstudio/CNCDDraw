@@ -15,6 +15,15 @@
 HRESULT dds_AddAttachedSurface(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE lpDDSurface)
 {
     IDirectDrawSurface_AddRef(lpDDSurface);
+
+    if (g_ddraw->backbuffer && !This->backbuffer)
+    {
+        IDirectDrawSurfaceImpl* surface = (IDirectDrawSurfaceImpl*)lpDDSurface;
+        surface->caps |= DDSCAPS_BACKBUFFER;
+
+        This->backbuffer = surface;
+    }
+
     return DD_OK;
 }
 
@@ -672,21 +681,21 @@ HRESULT dds_EnumAttachedSurfaces(IDirectDrawSurfaceImpl *This, LPVOID lpContext,
 
 HRESULT dds_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE surface, DWORD flags)
 {
-    if(This->caps & DDSCAPS_PRIMARYSURFACE && g_ddraw->render.run)
+    if (This->backbuffer)
     {
-        if (This->backbuffer)
-        {
-            EnterCriticalSection(&g_ddraw->cs);
-            void* surface = InterlockedExchangePointer(&This->surface, This->backbuffer->surface);
-            HBITMAP bitmap = (HBITMAP)InterlockedExchangePointer(&This->bitmap, This->backbuffer->bitmap);
-            HDC hdc = (HDC)InterlockedExchangePointer(&This->hdc, This->backbuffer->hdc);
+        EnterCriticalSection(&g_ddraw->cs);
+        void* surface = InterlockedExchangePointer(&This->surface, This->backbuffer->surface);
+        HBITMAP bitmap = (HBITMAP)InterlockedExchangePointer(&This->bitmap, This->backbuffer->bitmap);
+        HDC hdc = (HDC)InterlockedExchangePointer(&This->hdc, This->backbuffer->hdc);
 
-            InterlockedExchangePointer(&This->backbuffer->surface, surface);
-            InterlockedExchangePointer(&This->backbuffer->bitmap, bitmap);
-            InterlockedExchangePointer(&This->backbuffer->hdc, hdc);
-            LeaveCriticalSection(&g_ddraw->cs);
-        }
+        InterlockedExchangePointer(&This->backbuffer->surface, surface);
+        InterlockedExchangePointer(&This->backbuffer->bitmap, bitmap);
+        InterlockedExchangePointer(&This->backbuffer->hdc, hdc);
+        LeaveCriticalSection(&g_ddraw->cs);
+    }
 
+    if (This->caps & DDSCAPS_PRIMARYSURFACE && g_ddraw->render.run)
+    {
         This->last_flip_tick = timeGetTime();
 
         InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
