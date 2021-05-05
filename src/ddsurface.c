@@ -185,6 +185,27 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
             else
             {
                 dprintfex("NOT_IMPLEMENTED     DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
+
+                /* Use GdiTransparentBlt temporary until own code was written */
+
+                HDC src_dc;
+                dds_GetDC(src_surface, &src_dc);
+
+                HDC dst_dc;
+                dds_GetDC(This, &dst_dc);
+
+                GdiTransparentBlt(
+                    dst_dc, 
+                    dst_x, 
+                    dst_y, 
+                    dst_w, 
+                    dst_h, 
+                    src_dc, 
+                    src_x, 
+                    src_y, 
+                    src_w, 
+                    src_h, 
+                    color_key.dwColorSpaceLowValue);
             }
         }
         else
