@@ -621,7 +621,12 @@ HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSur
         lpDDSurfaceDesc->ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
         lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
         lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = This->bpp;
-        lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps | DDSCAPS_VIDEOMEMORY;
+        lpDDSurfaceDesc->ddsCaps.dwCaps = This->caps;
+
+        if ((This->caps & DDSCAPS_PRIMARYSURFACE) || (This->caps & DDSCAPS_BACKBUFFER))
+        {
+            lpDDSurfaceDesc->ddsCaps.dwCaps |= DDSCAPS_VIDEOMEMORY;
+        }
 
         if (This->bpp == 8)
         {
