@@ -14,14 +14,17 @@
 
 HRESULT dds_AddAttachedSurface(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE lpDDSurface)
 {
-    IDirectDrawSurface_AddRef(lpDDSurface);
-
-    if (g_ddraw->backbuffer && !This->backbuffer)
+    if (lpDDSurface)
     {
-        IDirectDrawSurfaceImpl* surface = (IDirectDrawSurfaceImpl*)lpDDSurface;
-        surface->caps |= DDSCAPS_BACKBUFFER;
+        IDirectDrawSurface_AddRef(lpDDSurface);
 
-        This->backbuffer = surface;
+        if (g_ddraw->backbuffer && !This->backbuffer)
+        {
+            IDirectDrawSurfaceImpl* surface = (IDirectDrawSurfaceImpl*)lpDDSurface;
+            surface->caps |= DDSCAPS_BACKBUFFER;
+
+            This->backbuffer = surface;
+        }
     }
 
     return DD_OK;
@@ -611,7 +614,12 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
 HRESULT dds_DeleteAttachedSurface(IDirectDrawSurfaceImpl *This, DWORD dwFlags, LPDIRECTDRAWSURFACE lpDDSurface)
 {
-    IDirectDrawSurface_Release(lpDDSurface);
+    if (lpDDSurface)
+    {
+        IDirectDrawSurface_Release(lpDDSurface);
+        This->backbuffer = NULL;
+    }
+
     return DD_OK;
 }
 
