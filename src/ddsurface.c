@@ -784,8 +784,18 @@ HRESULT dds_Lock(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDDSURFACEDES
 
     HRESULT ret = dds_GetSurfaceDesc(This, lpDDSurfaceDesc);
 
-    if (lpDestRect && lpDDSurfaceDesc && lpDestRect->left >= 0 && lpDestRect->top >= 0)
+    if (lpDestRect && lpDDSurfaceDesc)
     {
+        if (lpDestRect->left < 0 || 
+            lpDestRect->top < 0 || 
+            lpDestRect->left > lpDestRect->right || 
+            lpDestRect->top > lpDestRect->bottom ||
+            lpDestRect->right > This->width ||
+            lpDestRect->bottom > This->height)
+        {
+            return DDERR_INVALIDPARAMS;
+        }
+
         lpDDSurfaceDesc->lpSurface = 
             (char*)dds_GetBuffer(This) + (lpDestRect->left * This->lx_pitch) + (lpDestRect->top * This->l_pitch);
     }
