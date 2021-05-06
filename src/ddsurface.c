@@ -52,6 +52,12 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
     if (src_surface)
     {
+        if (src_rect.left < 0)
+            src_rect.left = 0;
+
+        if (src_rect.top < 0)
+            src_rect.top = 0;
+
         if (src_rect.right > src_surface->width)
             src_rect.right = src_surface->width;
 
@@ -64,6 +70,12 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
         if (src_rect.top > src_rect.bottom)
             src_rect.top = src_rect.bottom;
     }
+
+    if (dst_rect.left < 0)
+        dst_rect.left = 0;
+
+    if (dst_rect.top < 0)
+        dst_rect.top = 0;
 
     if (dst_rect.right > This->width)
         dst_rect.right = This->width;
@@ -468,6 +480,12 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
     {
         memcpy(&src_rect, lpSrcRect, sizeof(src_rect));
 
+        if (src_rect.left < 0)
+            src_rect.left = 0;
+
+        if (src_rect.top < 0)
+            src_rect.top = 0;
+
         if (src_rect.right > src_surface->width)
             src_rect.right = src_surface->width;
 
@@ -486,6 +504,12 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
     RECT dst_rect = { dst_x, dst_y, (src_rect.right - src_rect.left) + dst_x, (src_rect.bottom - src_rect.top) + dst_y };
 
+    if (dst_rect.left < 0)
+        dst_rect.left = 0;
+
+    if (dst_rect.top < 0)
+        dst_rect.top = 0;
+
     if (dst_rect.right > This->width)
         dst_rect.right = This->width;
 
@@ -498,6 +522,8 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
     if (dst_rect.top > dst_rect.bottom)
         dst_rect.top = dst_rect.bottom;
 
+    dst_x = dst_rect.left;
+    dst_y = dst_rect.top;
     int dst_w = dst_rect.right - dst_rect.left;
     int dst_h = dst_rect.bottom - dst_rect.top;
 
