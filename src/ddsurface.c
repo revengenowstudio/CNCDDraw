@@ -155,81 +155,53 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
             DDCOLORKEY color_key;
 
             color_key.dwColorSpaceLowValue =
-                (dwFlags & DDBLT_KEYSRCOVERRIDE) ? 
+                (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
                     lpDDBltFx->ddckSrcColorkey.dwColorSpaceLowValue : src_surface->color_key.dwColorSpaceLowValue;
 
             color_key.dwColorSpaceHighValue =
                 (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
                     lpDDBltFx->ddckSrcColorkey.dwColorSpaceHighValue : src_surface->color_key.dwColorSpaceHighValue;
-            
-            if (!is_stretch_blt)
+
+            float scale_w = (float)src_w / dst_w;
+            float scale_h = (float)src_h / dst_h;
+
+            if (This->bpp == 8)
             {
-                int width = dst_w > src_w ? src_w : dst_w;
-                int height = dst_h > src_h ? src_h : dst_h;
-
-                if (This->bpp == 8)
+                int y1, x1;
+                for (y1 = 0; y1 < dst_h; y1++)
                 {
-                    int y1, x1;
-                    for (y1 = 0; y1 < height; y1++)
+                    int ydst = This->width * (y1 + dst_y);
+                    int ysrc = src_surface->width * ((int)(y1 * scale_h) + src_y);
+
+                    for (x1 = 0; x1 < dst_w; x1++)
                     {
-                        int ydst = This->width * (y1 + dst_y);
-                        int ysrc = src_surface->width * (y1 + src_y);
+                        unsigned char c = ((unsigned char*)src_buf)[(int)(x1 * scale_w) + src_x + ysrc];
 
-                        for (x1 = 0; x1 < width; x1++)
+                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                         {
-                            unsigned char c = ((unsigned char *)src_buf)[x1 + src_x + ysrc];
-
-                            if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
-                            {
-                                ((unsigned char *)dst_buf)[x1 + dst_x + ydst] = c;
-                            }
-                        }
-                    }
-                }
-                else if (This->bpp == 16)
-                {
-                    int y1, x1;
-                    for (y1 = 0; y1 < height; y1++)
-                    {
-                        int ydst = This->width * (y1 + dst_y);
-                        int ysrc = src_surface->width * (y1 + src_y);
-
-                        for (x1 = 0; x1 < width; x1++)
-                        {
-                            unsigned short c = ((unsigned short *)src_buf)[x1 + src_x + ysrc];
-
-                            if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
-                            {
-                                ((unsigned short *)dst_buf)[x1 + dst_x + ydst] = c;
-                            }
+                            ((unsigned char*)dst_buf)[x1 + dst_x + ydst] = c;
                         }
                     }
                 }
             }
-            else
+            else if (This->bpp == 16)
             {
-                dprintfex("NOT_IMPLEMENTED     DDBLT_KEYSRC / DDBLT_KEYSRCOVERRIDE does not support stretching\n");
+                int y1, x1;
+                for (y1 = 0; y1 < dst_h; y1++)
+                {
+                    int ydst = This->width * (y1 + dst_y);
+                    int ysrc = src_surface->width * ((int)(y1 * scale_h) + src_y);
 
-                /* Use GdiTransparentBlt temporary until own code was written */
+                    for (x1 = 0; x1 < dst_w; x1++)
+                    {
+                        unsigned short c = ((unsigned short*)src_buf)[(int)(x1 * scale_w) + src_x + ysrc];
 
-                HDC src_dc;
-                dds_GetDC(src_surface, &src_dc);
-
-                HDC dst_dc;
-                dds_GetDC(This, &dst_dc);
-
-                GdiTransparentBlt(
-                    dst_dc, 
-                    dst_x, 
-                    dst_y, 
-                    dst_w, 
-                    dst_h, 
-                    src_dc, 
-                    src_x, 
-                    src_y, 
-                    src_w, 
-                    src_h, 
-                    color_key.dwColorSpaceLowValue);
+                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
+                        {
+                            ((unsigned short*)dst_buf)[x1 + dst_x + ydst] = c;
+                        }
+                    }
+                }
             }
         }
         else
