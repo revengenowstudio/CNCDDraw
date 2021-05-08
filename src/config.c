@@ -51,8 +51,8 @@ void cfg_load()
     g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
+    g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);
     g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
-    g_ddraw->dk2hack = cfg_get_bool("dk2hack", FALSE); // Dungeon Keeper 2 hack
 
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
@@ -509,7 +509,7 @@ static void cfg_create_ini()
             "[DKII]\n"
             "maxgameticks=60\n"
             "noactivateapp=true\n"
-            "dk2hack=true\n"
+            "passthrough=false\n"
             "\n"
             "; Chris Sawyer's Locomotion\n"
             "[LOCO]\n"

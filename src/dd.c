@@ -766,12 +766,6 @@ ULONG dd_Release()
 {
     g_ddraw->ref--;
 
-    if (g_ddraw->dk2hack)
-    {
-        static BOOL once; 
-        if (!once) once = g_ddraw->ref-- + 1;
-    }
-
     if (g_ddraw->ref == 0)
     {
         if (g_ddraw->bpp)
@@ -860,16 +854,39 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 {
     if (g_ddraw)
     {
-        /* Passthrough required for WIN XP - FIXME: check the calling module before passing the call! */
-        if (iid && IsEqualGUID(&IID_IDirectDraw, iid) && g_ddraw->DirectDrawCreate)
+        if (g_ddraw->passthrough)
         {
-            return g_ddraw->DirectDrawCreate(lpGuid, (LPDIRECTDRAW*)lplpDD, pUnkOuter);
+            if (iid && IsEqualGUID(&IID_IDirectDraw, iid))
+            {
+                if (!g_ddraw->real_dll)
+                    g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
+
+                if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
+                    g_ddraw->DirectDrawCreate = (DIRECTDRAWCREATEPROC)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
+
+                if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
+                    g_ddraw->DirectDrawCreate = NULL;
+
+                if (g_ddraw->DirectDrawCreate)
+                    return g_ddraw->DirectDrawCreate(lpGuid, (LPDIRECTDRAW*)lplpDD, pUnkOuter);
+            }
+
+            return DDERR_DIRECTDRAWALREADYCREATED;
         }
-
-        return DDERR_DIRECTDRAWALREADYCREATED;
     }
+    else
+    {
+        g_ddraw = (cnc_ddraw*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(cnc_ddraw));
+        g_ddraw->ref++;
 
-    g_ddraw = (cnc_ddraw*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(cnc_ddraw));
+        InitializeCriticalSection(&g_ddraw->cs);
+
+        g_ddraw->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
+        g_ddraw->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
+
+        cfg_load();
+        g_ddraw->ref--;
+    }
 
     IDirectDrawImpl* dd = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
     
@@ -889,27 +906,6 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     IDirectDraw_AddRef(dd);
 
     *lplpDD = (LPVOID)dd;
-
-    if (!g_ddraw->real_dll)
-    {
-        g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
-    }
-
-    if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
-    {
-        g_ddraw->DirectDrawCreate =
-            (HRESULT(WINAPI*)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*))GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
-
-        if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
-            g_ddraw->DirectDrawCreate = NULL;
-    }
-
-    InitializeCriticalSection(&g_ddraw->cs);
-
-    g_ddraw->render.sem = CreateSemaphore(NULL, 0, 1, NULL);
-    g_ddraw->wine = GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version") != 0;
-
-    cfg_load();
 
     return DD_OK;
 }

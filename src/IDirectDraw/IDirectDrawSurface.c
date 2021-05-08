@@ -205,11 +205,11 @@ HRESULT __stdcall IDirectDrawSurface__GetCaps(IDirectDrawSurfaceImpl *This, LPDD
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawSurface__GetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER FAR *a)
+HRESULT __stdcall IDirectDrawSurface__GetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER FAR *lpClipper)
 {
-    dprintfex("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintfex("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintfex("-> %s(This=%p, lpClipper=%p)\n", __FUNCTION__, This, lpClipper);
+    HRESULT ret = dds_GetClipper(This, lpClipper);
+    dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
 
@@ -221,10 +221,10 @@ HRESULT __stdcall IDirectDrawSurface__GetColorKey(IDirectDrawSurfaceImpl *This, 
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawSurface__GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
+HRESULT __stdcall IDirectDrawSurface__GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
 {
-    dprintfex("-> %s(This=%p, ...)\n", __FUNCTION__, This);
-    HRESULT ret = dds_GetDC(This, a);
+    dprintfex("-> %s(This=%p, lpHDC=%p)\n", __FUNCTION__, This);
+    HRESULT ret = dds_GetDC(This, lpHDC);
     dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -301,11 +301,11 @@ HRESULT __stdcall IDirectDrawSurface__Restore(IDirectDrawSurfaceImpl *This)
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawSurface__SetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER a)
+HRESULT __stdcall IDirectDrawSurface__SetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER lpClipper)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintf("-> %s(This=%p, lpClipper=%p)\n", __FUNCTION__, This);
+    HRESULT ret = dds_SetClipper(This, lpClipper);
+    dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
 

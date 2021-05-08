@@ -748,6 +748,14 @@ HRESULT dds_GetCaps(IDirectDrawSurfaceImpl *This, LPDDSCAPS lpDDSCaps)
     return DD_OK;
 }
 
+HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* a)
+{
+    if (a)
+        *a = This->clipper;
+
+    return DD_OK;
+}
+
 HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
 {
     if (colorKey)
@@ -759,7 +767,7 @@ HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
     return DD_OK;
 }
 
-HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
+HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
 {
     if ((This->l_pitch % 4))
     {
@@ -774,7 +782,9 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *a)
     if (data)
         SetDIBColorTable(dds_GetHDC(This), 0, 256, data);
 
-    *a = dds_GetHDC(This);
+    if (lpHDC)
+        *lpHDC = dds_GetHDC(This);
+
     return DD_OK;
 }
 
@@ -855,6 +865,12 @@ HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
         This->color_key.dwColorSpaceLowValue = colorKey->dwColorSpaceLowValue;
     }
 
+    return DD_OK;
+}
+
+HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER lpClipper)
+{
+    This->clipper = (IDirectDrawClipperImpl*)lpClipper;
     return DD_OK;
 }
 
@@ -989,6 +1005,19 @@ HDC dds_GetHDC(IDirectDrawSurfaceImpl* This)
 HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *lpDDSurface, IUnknown FAR * unkOuter)
 {
     dbg_dump_dds_flags(lpDDSurfaceDesc->dwFlags);
+    dbg_dump_dds_caps(lpDDSurfaceDesc->ddsCaps.dwCaps);
+
+    if ((lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE) && 
+        g_ddraw->primary && 
+        g_ddraw->primary->width == g_ddraw->width &&
+        g_ddraw->primary->height == g_ddraw->height &&
+        g_ddraw->primary->bpp == g_ddraw->bpp)
+    {
+        *lpDDSurface = (LPDIRECTDRAWSURFACE)g_ddraw->primary;
+        IDirectDrawSurface_AddRef(g_ddraw->primary);
+
+        return DD_OK;
+    }
 
     IDirectDrawSurfaceImpl *dst_surface = (IDirectDrawSurfaceImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawSurfaceImpl));
 
@@ -996,31 +1025,22 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
 
     lpDDSurfaceDesc->dwFlags |= DDSD_CAPS;
 
-    /* private stuff */
-    dst_surface->bpp = g_ddraw->bpp;
+    dst_surface->bpp = g_ddraw->bpp == 0 ? 16 : g_ddraw->bpp;
     dst_surface->flags = lpDDSurfaceDesc->dwFlags;
+    dst_surface->caps = lpDDSurfaceDesc->ddsCaps.dwCaps;
 
-    if(lpDDSurfaceDesc->dwFlags & DDSD_CAPS)
+    if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
     {
-        if(lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
-        {
-            g_ddraw->primary = dst_surface;
-
-            dst_surface->width = g_ddraw->width;
-            dst_surface->height = g_ddraw->height;
-        }
-
-        dbg_dump_dds_caps(lpDDSurfaceDesc->ddsCaps.dwCaps);
-        dst_surface->caps = lpDDSurfaceDesc->ddsCaps.dwCaps;
+        dst_surface->width = g_ddraw->width;
+        dst_surface->height = g_ddraw->height;
     }
-
-    if( !(lpDDSurfaceDesc->dwFlags & DDSD_CAPS) || !(lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE) )
+    else
     {
         dst_surface->width = lpDDSurfaceDesc->dwWidth;
         dst_surface->height = lpDDSurfaceDesc->dwHeight;
     }
 
-    if(dst_surface->width && dst_surface->height)
+    if (dst_surface->width && dst_surface->height)
     {
         if (dst_surface->width == 622 && dst_surface->height == 51) dst_surface->width = 624; //AoE2
         if (dst_surface->width == 71 && dst_surface->height == 24) dst_surface->width = 72; //Commandos
@@ -1079,6 +1099,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
 
         if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
         {
+            g_ddraw->primary = dst_surface;
             FakePrimarySurface = dst_surface->surface;
         }
 

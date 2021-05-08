@@ -4,6 +4,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "IDirectDrawPalette.h"
+#include "IDirectDrawClipper.h"
 #include "ddraw.h"
 
 
@@ -22,7 +23,7 @@ typedef struct IDirectDrawSurfaceImpl
     DWORD flags;
     DWORD caps;
 
-    IDirectDrawPaletteImpl *palette;
+    IDirectDrawPaletteImpl* palette;
 
     void *surface;
     DWORD l_pitch;
@@ -35,7 +36,8 @@ typedef struct IDirectDrawSurfaceImpl
     DWORD last_flip_tick;
     DWORD last_blt_tick;
 
-    struct IDirectDrawSurfaceImpl *backbuffer;
+    struct IDirectDrawSurfaceImpl* backbuffer;
+    struct IDirectDrawClipperImpl* clipper;
 
 } IDirectDrawSurfaceImpl;
 

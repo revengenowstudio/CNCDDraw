@@ -6,6 +6,8 @@
 #include "ddraw.h"
 
 
+typedef HRESULT(WINAPI* DIRECTDRAWCREATEPROC)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
+
 ULONG dd_AddRef();
 ULONG dd_Release();
 HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback);
@@ -46,11 +48,11 @@ typedef struct cnc_ddraw
     DEVMODE mode;
     struct IDirectDrawSurfaceImpl *primary;
     char title[128];
-    HMODULE real_dll;
+    CRITICAL_SECTION cs;
 
     /* real export from system32\ddraw.dll */
-    HRESULT (WINAPI *DirectDrawCreate)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
-    CRITICAL_SECTION cs;
+    HMODULE real_dll;
+    DIRECTDRAWCREATEPROC DirectDrawCreate;
 
     struct
     {
@@ -102,11 +104,11 @@ typedef struct cnc_ddraw
     BOOL accurate_timers;
     BOOL resizable;
     BOOL sierrahack;
-    BOOL dk2hack;
     BOOL nonexclusive;
     BOOL fixchildwindows;
     BOOL d3d9linear;
     BOOL backbuffer;
+    BOOL passthrough;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL bnet_active;

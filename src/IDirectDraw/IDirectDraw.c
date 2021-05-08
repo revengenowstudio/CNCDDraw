@@ -113,7 +113,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
         {
             dprintf("NOT_IMPLEMENTED     GUID = %08X\n", ((GUID*)riid)->Data1);
 
-            ret = E_FAIL;
+            ret = E_NOINTERFACE;
         }
     }
 

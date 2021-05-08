@@ -18,12 +18,14 @@ HRESULT dds_EnumAttachedSurfaces(IDirectDrawSurfaceImpl* This, LPVOID lpContext,
 HRESULT dds_Flip(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWSURFACE surface, DWORD flags);
 HRESULT dds_GetAttachedSurface(IDirectDrawSurfaceImpl* This, LPDDSCAPS lpDdsCaps, LPDIRECTDRAWSURFACE FAR* surface);
 HRESULT dds_GetCaps(IDirectDrawSurfaceImpl* This, LPDDSCAPS lpDDSCaps);
+HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* lpClipper);
 HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl* This, DWORD flags, LPDDCOLORKEY colorKey);
-HRESULT dds_GetDC(IDirectDrawSurfaceImpl* This, HDC FAR* a);
+HRESULT dds_GetDC(IDirectDrawSurfaceImpl* This, HDC FAR* lpHDC);
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWPALETTE FAR* lplpDDPalette);
 HRESULT dds_GetPixelFormat(IDirectDrawSurfaceImpl* This, LPDDPIXELFORMAT ddpfPixelFormat);
 HRESULT dds_Lock(IDirectDrawSurfaceImpl* This, LPRECT lpDestRect, LPDDSURFACEDESC lpDDSurfaceDesc, DWORD dwFlags, HANDLE hEvent);
 HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl* This, DWORD flags, LPDDCOLORKEY colorKey);
+HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER lpClipper);
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWPALETTE lpDDPalette);
 HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPVOID lpRect);
 void* dds_GetBuffer(IDirectDrawSurfaceImpl* This);
