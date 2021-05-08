@@ -870,7 +870,14 @@ HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
 
 HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER lpClipper)
 {
+    if (lpClipper)
+        IDirectDrawClipper_AddRef(lpClipper);
+
+    if (This->clipper)
+        IDirectDrawClipper_Release(This->clipper);
+
     This->clipper = (IDirectDrawClipperImpl*)lpClipper;
+
     return DD_OK;
 }
 
