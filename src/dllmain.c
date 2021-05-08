@@ -10,9 +10,6 @@
 #include "directinput.h"
 #include "hook.h"
 
-// exports to force usage of discrete high performance graphics device
-DWORD NvOptimusEnablement = 1;
-DWORD AmdPowerXpressRequestHighPerformance = 1;
 
 // export for cncnet cnc games
 BOOL GameHandlesClose;

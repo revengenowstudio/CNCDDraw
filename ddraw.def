@@ -9,6 +9,4 @@ EXPORTS
     DirectDrawEnumerateExW                    @13
     DirectDrawEnumerateW                      @14
     GameHandlesClose                          DATA
-    NvOptimusEnablement                       DATA
-    AmdPowerXpressRequestHighPerformance      DATA
     pvBmpBits = FakePrimarySurface            DATA
