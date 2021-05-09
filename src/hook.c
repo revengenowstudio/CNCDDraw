@@ -1,6 +1,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
+#include <psapi.h>
 #include "dd.h"
 #include "winapi_hooks.h"
 #include "hook.h"
@@ -231,6 +232,7 @@ void hook_create(hook_list* hooks)
             }
         }
     }
+#endif
 
     if (g_hook_method == 3 || g_hook_method == 4)
     {
@@ -245,8 +247,17 @@ void hook_create(hook_list* hooks)
             char mod_dir[MAX_PATH] = { 0 };
             char mod_filename[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
+            HANDLE process = NULL;
 
+#ifndef _MSC_VER
+            HMODULE mods[512];
+            memset(mods, 0, sizeof(mods));
+            process = GetCurrentProcess();
+            EnumProcessModules(process, mods, sizeof(mods) - sizeof(mods[0]), NULL);
+            for (int i = 0; i < sizeof(mods) / sizeof(mods[0]) && (hmod = mods[i]); i++)
+#else
             while (hmod = DetourEnumerateModules(hmod))
+#endif
             {
                 if (hmod == g_ddraw_module)
                     continue;
@@ -267,9 +278,11 @@ void hook_create(hook_list* hooks)
                     }
                 }
             }
+
+            if (process)
+                CloseHandle(process);
         }
     }
-#endif
 
     if (g_hook_method == 1)
     {
@@ -296,6 +309,7 @@ void hook_revert(hook_list* hooks)
             }
         }
     }
+#endif
 
     if (g_hook_method == 3 || g_hook_method == 4)
     {
@@ -309,8 +323,17 @@ void hook_revert(hook_list* hooks)
             char mod_path[MAX_PATH] = { 0 };
             char mod_dir[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
+            HANDLE process = NULL;
 
+#ifndef _MSC_VER
+            HMODULE mods[512];
+            memset(mods, 0, sizeof(mods));
+            process = GetCurrentProcess();
+            EnumProcessModules(process, mods, sizeof(mods) - sizeof(mods[0]), NULL);
+            for (int i = 0; i < sizeof(mods) / sizeof(mods[0]) && (hmod = mods[i]); i++)
+#else
             while (hmod = DetourEnumerateModules(hmod))
+#endif
             {
                 if (hmod == g_ddraw_module)
                     continue;
@@ -325,9 +348,11 @@ void hook_revert(hook_list* hooks)
                     }
                 }
             }
+
+            if (process)
+                CloseHandle(process);
         }
     }
-#endif
 
     if (g_hook_method == 1)
     {

@@ -898,7 +898,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     }
     else
     {
-        dprintf("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : NULL, dd);
+        dprintf("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : 0, dd);
 
         dd->lpVtbl = &g_dd_vtblx;
     }

@@ -61,9 +61,7 @@ void cfg_load()
 
     g_config.save_settings = cfg_get_int("savesettings", 1);
 
-#ifdef _MSC_VER
     g_hook_method = cfg_get_int("hook", 4);
-#endif
     
     g_ddraw->render.maxfps = cfg_get_int("maxfps", -1);
     g_ddraw->render.minfps = cfg_get_int("minfps", 0);

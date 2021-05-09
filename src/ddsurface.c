@@ -748,10 +748,10 @@ HRESULT dds_GetCaps(IDirectDrawSurfaceImpl *This, LPDDSCAPS lpDDSCaps)
     return DD_OK;
 }
 
-HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* a)
+HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* lpClipper)
 {
-    if (a)
-        *a = This->clipper;
+    if (lpClipper)
+        *lpClipper = (LPDIRECTDRAWCLIPPER)This->clipper;
 
     return DD_OK;
 }
@@ -993,7 +993,7 @@ void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
         return NULL;
 
     if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
-        return (void*)InterlockedExchangeAdd(&This->surface, 0);
+        return (void*)InterlockedExchangeAdd((LONG*)&This->surface, 0);
 
     return This->surface;
 }
@@ -1004,7 +1004,7 @@ HDC dds_GetHDC(IDirectDrawSurfaceImpl* This)
         return NULL;
 
     if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
-        return (HDC)InterlockedExchangeAdd(&This->hdc, 0);
+        return (HDC)InterlockedExchangeAdd((LONG*)&This->hdc, 0);
 
     return This->hdc;
 }
@@ -1127,7 +1127,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
             desc.dwWidth = dst_surface->width;
             desc.dwHeight = dst_surface->height;
 
-            dd_CreateSurface(&desc, &dst_surface->backbuffer, unkOuter);
+            dd_CreateSurface(&desc, (LPDIRECTDRAWSURFACE*)&dst_surface->backbuffer, unkOuter);
         }
     }
 
