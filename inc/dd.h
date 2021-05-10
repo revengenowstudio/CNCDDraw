@@ -83,7 +83,7 @@ typedef struct cnc_ddraw
 
     HWND hwnd;
     WNDPROC wndproc;
-    struct { float x; float y; } cursor;
+    struct { DWORD x; DWORD y; } cursor;
     BOOL locked;
     BOOL adjmouse;
     BOOL devmode;

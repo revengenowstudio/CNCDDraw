@@ -436,12 +436,12 @@ static void ogl_init_scale_program()
 
     float input_size[2], output_size[2], texture_size[2];
 
-    input_size[0] = g_ddraw->width;
-    input_size[1] = g_ddraw->height;
-    texture_size[0] = g_ogl.surface_tex_width;
-    texture_size[1] = g_ogl.surface_tex_height;
-    output_size[0] = g_ddraw->render.viewport.width;
-    output_size[1] = g_ddraw->render.viewport.height;
+    input_size[0] = (float)g_ddraw->width;
+    input_size[1] = (float)g_ddraw->height;
+    texture_size[0] = (float)g_ogl.surface_tex_width;
+    texture_size[1] = (float)g_ogl.surface_tex_height;
+    output_size[0] = (float)g_ddraw->render.viewport.width;
+    output_size[1] = (float)g_ddraw->render.viewport.height;
 
     glUniform2fv(glGetUniformLocation(g_ogl.scale_program, "OutputSize"), 1, output_size);
     glUniform2fv(glGetUniformLocation(g_ogl.scale_program, "TextureSize"), 1, texture_size);

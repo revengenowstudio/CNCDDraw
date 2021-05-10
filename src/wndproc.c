@@ -227,19 +227,19 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                             case WMSZ_LEFT:
                             case WMSZ_RIGHT:
                             {
-                                windowrc->bottom += scaleH * clientrc.right - clientrc.bottom;
+                                windowrc->bottom += (LONG)(scaleH * clientrc.right - clientrc.bottom);
                                 break;
                             }
                             case WMSZ_TOP:
                             case WMSZ_BOTTOM:
                             {
-                                windowrc->right += scaleW * clientrc.bottom - clientrc.right;
+                                windowrc->right += (LONG)(scaleW * clientrc.bottom - clientrc.right);
                                 break;
                             }
                             case WMSZ_TOPRIGHT:
                             case WMSZ_TOPLEFT:
                             {
-                                windowrc->top -= scaleH * clientrc.right - clientrc.bottom;
+                                windowrc->top -= (LONG)(scaleH * clientrc.right - clientrc.bottom);
                                 break;
                             }
                         }
@@ -600,8 +600,8 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 }
                 else
                 {
-                    g_ddraw->cursor.x = (x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w;
-                    g_ddraw->cursor.y = (y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h;
+                    g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
+                    g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
                 }
 
                 mouse_lock();
@@ -643,8 +643,8 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                 if (g_ddraw->adjmouse)
                 {
-                    g_ddraw->cursor.x = GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w;
-                    g_ddraw->cursor.y = GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h;
+                    g_ddraw->cursor.x = (DWORD)(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w);
+                    g_ddraw->cursor.y = (DWORD)(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h);
 
                     lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
                 }
@@ -684,8 +684,8 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                             int x = GET_X_LPARAM(lParam);
                             int y = GET_Y_LPARAM(lParam);
 
-                            g_ddraw->cursor.x = (x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w;
-                            g_ddraw->cursor.y = (y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h;
+                            g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
+                            g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
 
                             g_ddraw->hidecursor = FALSE;
 

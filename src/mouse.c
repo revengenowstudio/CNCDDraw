@@ -44,13 +44,13 @@ void mouse_lock()
         
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
         
-        rc.bottom -= (g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h;
+        rc.bottom -= (LONG)((g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h);
 
         if(g_ddraw->adjmouse)
         {
             real_SetCursorPos(
-                rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w), 
-                rc.top + ((g_ddraw->cursor.y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h));
+                (int)(rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w)), 
+                (int)(rc.top + ((g_ddraw->cursor.y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
         }
         else
         {
@@ -130,7 +130,7 @@ void mouse_unlock()
         ReleaseCapture();
         
         real_SetCursorPos(
-            rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w), 
-            rc.top + g_ddraw->render.viewport.y + ((g_ddraw->cursor.y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h));
+            (int)(rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w)), 
+            (int)(rc.top + g_ddraw->render.viewport.y + ((g_ddraw->cursor.y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
     }
 }

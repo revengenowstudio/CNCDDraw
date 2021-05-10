@@ -512,12 +512,12 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
     else if (maintas)
     {
         g_ddraw->render.viewport.width = g_ddraw->render.width;
-        g_ddraw->render.viewport.height = ((float)g_ddraw->height / g_ddraw->width) * g_ddraw->render.viewport.width;
+        g_ddraw->render.viewport.height = (int)(((float)g_ddraw->height / g_ddraw->width) * g_ddraw->render.viewport.width);
         
         if (g_ddraw->render.viewport.height > g_ddraw->render.height)
         {
             g_ddraw->render.viewport.width = 
-                ((float)g_ddraw->render.viewport.width / g_ddraw->render.viewport.height) * g_ddraw->render.height;
+                (int)(((float)g_ddraw->render.viewport.width / g_ddraw->render.viewport.height) * g_ddraw->render.height);
                 
             g_ddraw->render.viewport.height = g_ddraw->render.height;
         }

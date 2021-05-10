@@ -21,8 +21,8 @@ void fpsl_init()
     if (max_fps > 0)
     {
         float len = 1000.0f / max_fps;
-        g_fpsl.tick_length_ns = len * 10000;
-        g_fpsl.tick_length = len;// + 0.5f;
+        g_fpsl.tick_length_ns = (LONGLONG)(len * 10000);
+        g_fpsl.tick_length = (DWORD)len;// + 0.5f;
     }
 
     if (g_fpsl.got_adapter && g_fpsl.D3DKMTCloseAdapter)

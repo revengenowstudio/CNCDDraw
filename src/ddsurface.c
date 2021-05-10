@@ -1056,7 +1056,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         dst_surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
         dst_surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
         dst_surface->bmi->bmiHeader.biWidth = dst_surface->width;
-        dst_surface->bmi->bmiHeader.biHeight = -(dst_surface->height + 200);
+        dst_surface->bmi->bmiHeader.biHeight = -((int)dst_surface->height + 200);
         dst_surface->bmi->bmiHeader.biPlanes = 1;
         dst_surface->bmi->bmiHeader.biBitCount = dst_surface->bpp;
         dst_surface->bmi->bmiHeader.biCompression = dst_surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
@@ -1093,7 +1093,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
 
         dst_surface->hdc = CreateCompatibleDC(g_ddraw->render.hdc);
         dst_surface->bitmap = CreateDIBSection(dst_surface->hdc, dst_surface->bmi, DIB_RGB_COLORS, (void **)&dst_surface->surface, NULL, 0);
-        dst_surface->bmi->bmiHeader.biHeight = -dst_surface->height;
+        dst_surface->bmi->bmiHeader.biHeight = -((int)dst_surface->height);
 
         if (!dst_surface->bitmap)
         {

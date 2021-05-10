@@ -56,8 +56,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
         if(g_ddraw->adjmouse)
         {
-            g_ddraw->cursor.x = pt.x * g_ddraw->render.unscale_w;
-            g_ddraw->cursor.y = pt.y * g_ddraw->render.unscale_h;
+            g_ddraw->cursor.x = (DWORD)(pt.x * g_ddraw->render.unscale_w);
+            g_ddraw->cursor.y = (DWORD)(pt.y * g_ddraw->render.unscale_h);
         }
         else
         {
@@ -89,8 +89,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
     if (lpPoint)
     {
-        lpPoint->x = (int)g_ddraw->cursor.x;
-        lpPoint->y = (int)g_ddraw->cursor.y;
+        lpPoint->x = g_ddraw->cursor.x;
+        lpPoint->y = g_ddraw->cursor.y;
     }
     
     return TRUE;
@@ -194,8 +194,8 @@ BOOL WINAPI fake_SetCursorPos(int X, int Y)
 
     if (g_ddraw && g_ddraw->adjmouse)
     {
-        pt.x *= g_ddraw->render.scale_w;
-        pt.y *= g_ddraw->render.scale_h;
+        pt.x = (LONG)(pt.x * g_ddraw->render.scale_w);
+        pt.y = (LONG)(pt.y * g_ddraw->render.scale_h);
     }
 
     return g_ddraw && real_ClientToScreen(g_ddraw->hwnd, &pt) && real_SetCursorPos(pt.x, pt.y);
@@ -263,8 +263,8 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 {
     if (g_ddraw && g_ddraw->hwnd == hWnd && g_ddraw->adjmouse && Msg == WM_MOUSEMOVE)
     {
-        int x = GET_X_LPARAM(lParam) * g_ddraw->render.scale_w;
-        int y = GET_Y_LPARAM(lParam) * g_ddraw->render.scale_h;
+        int x = (int)(GET_X_LPARAM(lParam) * g_ddraw->render.scale_w);
+        int y = (int)(GET_Y_LPARAM(lParam) * g_ddraw->render.scale_h);
 
         lParam = MAKELPARAM(x, y);
     }

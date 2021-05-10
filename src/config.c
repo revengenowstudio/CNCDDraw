@@ -73,7 +73,7 @@ void cfg_load()
 
     if (g_ddraw->render.minfps > 0)
     {
-        g_ddraw->render.minfps_tick_len = 1000.0f / g_ddraw->render.minfps;
+        g_ddraw->render.minfps_tick_len = (DWORD)(1000.0f / g_ddraw->render.minfps);
     }
 
     if (g_ddraw->accurate_timers || g_ddraw->vsync)
@@ -88,8 +88,8 @@ void cfg_load()
             g_ddraw->ticks_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
         float len = 1000.0f / g_ddraw->maxgameticks;
-        g_ddraw->ticks_limiter.tick_length_ns = len * 10000;
-        g_ddraw->ticks_limiter.tick_length = len + 0.5f;
+        g_ddraw->ticks_limiter.tick_length_ns = (LONGLONG)(len * 10000);
+        g_ddraw->ticks_limiter.tick_length = (DWORD)(len + 0.5f);
     }
 
     if (g_ddraw->maxgameticks >= 0 || g_ddraw->maxgameticks == -2)
@@ -99,8 +99,8 @@ void cfg_load()
             g_ddraw->flip_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
         float flip_len = 1000.0f / 60;
-        g_ddraw->flip_limiter.tick_length_ns = flip_len * 10000;
-        g_ddraw->flip_limiter.tick_length = flip_len + 0.5f;
+        g_ddraw->flip_limiter.tick_length_ns = (LONGLONG)(flip_len * 10000);
+        g_ddraw->flip_limiter.tick_length = (DWORD)(flip_len + 0.5f);
     }
 
     if ((g_ddraw->fullscreen = cfg_get_bool("fullscreen", FALSE)))

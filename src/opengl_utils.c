@@ -346,8 +346,8 @@ GLuint oglu_build_program_from_file(const char *file_path, BOOL core_profile)
                 {
                     if (core_profile)
                     {
-                        if (strnicmp(version_start, "#version 130", 12) == 0 || 
-                            strnicmp(version_start, "#version 140", 12) == 0)
+                        if (_strnicmp(version_start, "#version 130", 12) == 0 || 
+                            _strnicmp(version_start, "#version 140", 12) == 0)
                         {
                             memcpy(version_start, "#version 150", 12);
                         }
