@@ -162,43 +162,65 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                 (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
                     lpDDBltFx->ddckSrcColorkey.dwColorSpaceHighValue : src_surface->color_key.dwColorSpaceHighValue;
 
+            BOOL got_fx = (dwFlags & DDBLT_DDFX) && lpDDBltFx;
+            BOOL mirror_left_right = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORLEFTRIGHT);
+            BOOL mirror_up_down = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORUPDOWN);
+
             float scale_w = (float)src_w / dst_w;
             float scale_h = (float)src_h / dst_h;
 
             if (This->bpp == 8)
             {
-                int y1, x1;
-                for (y1 = 0; y1 < dst_h; y1++)
+                for (int y = 0; y < dst_h; y++)
                 {
-                    int ydst = This->width * (y1 + dst_y);
-                    int ysrc = src_surface->width * ((int)(y1 * scale_h) + src_y);
+                    int scaled_y = (int)(y * scale_h);
 
-                    for (x1 = 0; x1 < dst_w; x1++)
+                    if (mirror_up_down)
+                        scaled_y = src_h - 1 - scaled_y;
+
+                    int rc_src_y = src_surface->width * (scaled_y + src_y);
+                    int rc_dst_y = This->width * (y + dst_y);
+
+                    for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned char c = ((unsigned char*)src_buf)[(int)(x1 * scale_w) + src_x + ysrc];
+                        int scaled_x = (int)(x * scale_w);
+
+                        if (mirror_left_right)
+                            scaled_x = src_w - 1 - scaled_x;
+
+                        unsigned char c = ((unsigned char*)src_buf)[scaled_x + src_x + rc_src_y];
 
                         if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned char*)dst_buf)[x1 + dst_x + ydst] = c;
+                            ((unsigned char*)dst_buf)[x + dst_x + rc_dst_y] = c;
                         }
                     }
                 }
             }
             else if (This->bpp == 16)
             {
-                int y1, x1;
-                for (y1 = 0; y1 < dst_h; y1++)
+                for (int y = 0; y < dst_h; y++)
                 {
-                    int ydst = This->width * (y1 + dst_y);
-                    int ysrc = src_surface->width * ((int)(y1 * scale_h) + src_y);
+                    int scaled_y = (int)(y * scale_h);
 
-                    for (x1 = 0; x1 < dst_w; x1++)
+                    if (mirror_up_down)
+                        scaled_y = src_h - 1 - scaled_y;
+
+                    int rc_src_y = src_surface->width * (scaled_y + src_y);
+                    int rc_dst_y = This->width * (y + dst_y);
+
+                    for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned short c = ((unsigned short*)src_buf)[(int)(x1 * scale_w) + src_x + ysrc];
+                        int scaled_x = (int)(x * scale_w);
+
+                        if (mirror_left_right)
+                            scaled_x = src_w - 1 - scaled_x;
+
+                        unsigned short c = ((unsigned short*)src_buf)[scaled_x + src_x + rc_src_y];
 
                         if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned short*)dst_buf)[x1 + dst_x + ydst] = c;
+                            ((unsigned short*)dst_buf)[x + dst_x + rc_dst_y] = c;
                         }
                     }
                 }
@@ -508,38 +530,36 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
         {
             if (This->bpp == 8)
             {
-                int y1, x1;
-                for (y1 = 0; y1 < dst_h; y1++)
+                for (int y = 0; y < dst_h; y++)
                 {
-                    int ydst = This->width * (y1 + dst_y);
-                    int ysrc = src_surface->width * (y1 + src_y);
+                    int rc_dst_y = This->width * (y + dst_y);
+                    int rc_src_y = src_surface->width * (y + src_y);
 
-                    for (x1 = 0; x1 < dst_w; x1++)
+                    for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned char c = ((unsigned char *)src_buf)[x1 + src_x + ysrc];
+                        unsigned char c = ((unsigned char *)src_buf)[x + src_x + rc_src_y];
 
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned char *)dst_buf)[x1 + dst_x + ydst] = c;
+                            ((unsigned char *)dst_buf)[x + dst_x + rc_dst_y] = c;
                         }
                     }
                 }
             }
             else if (This->bpp == 16)
             {
-                int y1, x1;
-                for (y1 = 0; y1 < dst_h; y1++)
+                for (int y = 0; y < dst_h; y++)
                 {
-                    int ydst = This->width * (y1 + dst_y);
-                    int ysrc = src_surface->width * (y1 + src_y);
+                    int rc_dst_y = This->width * (y + dst_y);
+                    int rc_src_y = src_surface->width * (y + src_y);
 
-                    for (x1 = 0; x1 < dst_w; x1++)
+                    for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned short c = ((unsigned short *)src_buf)[x1 + src_x + ysrc];
+                        unsigned short c = ((unsigned short *)src_buf)[x + src_x + rc_src_y];
                         
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned short *)dst_buf)[x1 + dst_x + ydst] = c;
+                            ((unsigned short *)dst_buf)[x + dst_x + rc_dst_y] = c;
                         }
                     }
                 }
