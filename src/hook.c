@@ -2,6 +2,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <psapi.h>
+#include "directinput.h"
 #include "dd.h"
 #include "winapi_hooks.h"
 #include "hook.h"
@@ -367,21 +368,31 @@ void hook_init()
 #ifdef _MSC_VER
         if (!g_hook_active && g_hook_method == 3)
         {
-            FARPROC proc = GetProcAddress(GetModuleHandle("kernelbase.dll"), "LoadLibraryExW");
+            real_DirectInputCreateA = (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
 
-            if (proc)
-                real_LoadLibraryExW = (LOADLIBRARYEXWPROC)proc;
+            if (real_DirectInputCreateA)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourAttach((PVOID*)&real_DirectInputCreateA, (PVOID)fake_DirectInputCreateA);
+                DetourTransactionCommit();
+            }
 
-            DetourTransactionBegin();
-            DetourUpdateThread(GetCurrentThread());
-            DetourAttach((PVOID*)&real_LoadLibraryExW, (PVOID)fake_LoadLibraryExW);
-            DetourTransactionCommit();
+            real_DirectInput8Create = (DIRECTINPUT8CREATEPROC)GetProcAddress(LoadLibraryA("dinput8.dll"), "DirectInput8Create");
+
+            if (real_DirectInput8Create)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourAttach((PVOID*)&real_DirectInput8Create, (PVOID)fake_DirectInput8Create);
+                DetourTransactionCommit();
+            }
         }
 #endif
 
         g_hook_active = TRUE;
 
-        if (g_hook_method == 4)
+        if (g_hook_method == 3 || g_hook_method == 4)
         {
             for (int i = 0; g_hooks[i].module_name[0]; i++)
             {
@@ -405,10 +416,21 @@ void hook_exit()
 #ifdef _MSC_VER
         if (g_hook_method == 3)
         {
-            DetourTransactionBegin();
-            DetourUpdateThread(GetCurrentThread());
-            DetourDetach((PVOID*)&real_LoadLibraryExW, (PVOID)fake_LoadLibraryExW);
-            DetourTransactionCommit();
+            if (real_DirectInputCreateA)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourDetach((PVOID*)&real_DirectInputCreateA, (PVOID)fake_DirectInputCreateA);
+                DetourTransactionCommit();
+            }
+
+            if (real_DirectInput8Create)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourDetach((PVOID*)&real_DirectInput8Create, (PVOID)fake_DirectInput8Create);
+                DetourTransactionCommit();
+            }
         }
 #endif
 

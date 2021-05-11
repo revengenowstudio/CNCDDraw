@@ -1,18 +1,14 @@
 
 #include <windows.h>
-#include <dinput.h>
+#include "directinput.h"
 #include "debug.h"
 #include "hook.h"
 #include "dd.h"
 
-typedef HRESULT (WINAPI *DIRECTINPUTCREATEAPROC)(HINSTANCE, DWORD, LPDIRECTINPUTA*, LPUNKNOWN);
-typedef HRESULT (WINAPI *DIRECTINPUT8CREATEPROC)(HINSTANCE, DWORD, REFIID, LPDIRECTINPUT8*, LPUNKNOWN);
-typedef HRESULT (WINAPI *DICREATEDEVICEPROC)(IDirectInputA*, REFGUID, LPDIRECTINPUTDEVICEA *, LPUNKNOWN);
-typedef HRESULT (WINAPI *DIDSETCOOPERATIVELEVELPROC)(IDirectInputDeviceA *, HWND, DWORD);
-typedef HRESULT (WINAPI *DIDGETDEVICEDATAPROC)(IDirectInputDeviceA*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 
-static DIRECTINPUTCREATEAPROC real_DirectInputCreateA;
-static DIRECTINPUT8CREATEPROC real_DirectInput8Create;
+DIRECTINPUTCREATEAPROC real_DirectInputCreateA;
+DIRECTINPUT8CREATEPROC real_DirectInput8Create;
+
 static DICREATEDEVICEPROC real_di_CreateDevice;
 static DIDSETCOOPERATIVELEVELPROC real_did_SetCooperativeLevel;
 static DIDGETDEVICEDATAPROC real_did_GetDeviceData;
@@ -68,12 +64,15 @@ static HRESULT WINAPI fake_di_CreateDevice(IDirectInputA *This, REFGUID rguid, L
     return result;
 }
 
-static HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter)
+HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter)
 {
     dprintf("DirectInputCreateA\n");
 
-    real_DirectInputCreateA =
-        (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
+    if (!real_DirectInputCreateA)
+    {
+        real_DirectInputCreateA =
+            (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
+    }
 
     if (!real_DirectInputCreateA)
         return DIERR_GENERIC;
@@ -93,8 +92,11 @@ HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID 
 {
     dprintf("DirectInput8Create\n");
 
-    real_DirectInput8Create =
-        (DIRECTINPUT8CREATEPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
+    if (!real_DirectInput8Create)
+    {
+        real_DirectInput8Create =
+            (DIRECTINPUT8CREATEPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
+    }
 
     if (!real_DirectInput8Create)
         return DIERR_GENERIC;
