@@ -13,8 +13,6 @@ typedef HRESULT(WINAPI* DIDGETDEVICEDATAPROC)(IDirectInputDeviceA*, DWORD, LPDID
 extern DIRECTINPUTCREATEAPROC real_DirectInputCreateA;
 extern DIRECTINPUT8CREATEPROC real_DirectInput8Create;
 
-void dinput_hook();
-void dinput_unhook();
 HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter);
 HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPDIRECTINPUT8* ppvOut, LPUNKNOWN punkOuter);
 

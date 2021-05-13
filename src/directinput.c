@@ -111,15 +111,3 @@ HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID 
 
     return result;
 }
-
-void dinput_hook()
-{
-    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
-    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
-}
-
-void dinput_unhook()
-{
-    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
-    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
-}

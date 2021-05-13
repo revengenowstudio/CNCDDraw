@@ -7,7 +7,6 @@
 #include "ddclipper.h"
 #include "debug.h"
 #include "config.h"
-#include "directinput.h"
 #include "hook.h"
 
 
@@ -96,7 +95,7 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         }
 
         timeBeginPeriod(1);
-        dinput_hook();
+        hook_early_init();
         break;
     }
     case DLL_PROCESS_DETACH:
@@ -107,7 +106,6 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
 
         timeEndPeriod(1);
         hook_exit();
-        dinput_unhook();
         break;
     }
     }

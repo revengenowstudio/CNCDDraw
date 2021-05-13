@@ -407,6 +407,12 @@ void hook_init()
     }
 }
 
+void hook_early_init()
+{
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
+}
+
 void hook_exit()
 {
     if (g_hook_active)
@@ -436,4 +442,7 @@ void hook_exit()
 
         hook_revert((hook_list*)&g_hooks);
     }
+
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
 }
