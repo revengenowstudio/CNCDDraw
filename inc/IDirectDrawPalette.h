@@ -17,6 +17,7 @@ typedef struct IDirectDrawPaletteImpl
 
     int data_bgr[256];
     RGBQUAD* data_rgb;
+    DWORD flags;
 
 } IDirectDrawPaletteImpl;
 

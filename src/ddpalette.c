@@ -30,14 +30,6 @@ HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStar
 
     for (i = dwStartingEntry, x = 0; i < dwStartingEntry + dwCount; i++, x++)
     {
-        /* Knights and Merchants video palette bug test code
-        if (i == 0 && lpEntries[0].peBlue == 255 && lpEntries[0].peRed == 255 && lpEntries[0].peGreen == 255 && g_ddraw->width == 640 && g_ddraw->height == 480)
-        {
-            lpEntries[0].peBlue = 0;
-            lpEntries[0].peRed = 0;
-            lpEntries[0].peGreen = 0;
-        }
-        */
         This->data_bgr[i] = (lpEntries[x].peBlue << 16) | (lpEntries[x].peGreen << 8) | lpEntries[x].peRed;
 
         if (This->data_rgb)
@@ -46,6 +38,25 @@ HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStar
             This->data_rgb[i].rgbGreen = lpEntries[x].peGreen;
             This->data_rgb[i].rgbBlue = lpEntries[x].peBlue;
             This->data_rgb[i].rgbReserved = 0;
+        }
+    }
+
+    if (!(This->flags & DDPCAPS_ALLOW256))
+    {
+        This->data_bgr[0] = 0;
+        This->data_bgr[255] = (255 << 16) | (255 << 8) | 255;
+
+        if (This->data_rgb)
+        {
+            This->data_rgb[0].rgbRed = 0;
+            This->data_rgb[0].rgbGreen = 0;
+            This->data_rgb[0].rgbBlue = 0;
+            This->data_rgb[0].rgbReserved = 0;
+
+            This->data_rgb[255].rgbRed = 255;
+            This->data_rgb[255].rgbGreen = 255;
+            This->data_rgb[255].rgbBlue = 255;
+            This->data_rgb[255].rgbReserved = 0;
         }
     }
 
@@ -65,6 +76,7 @@ HRESULT dd_CreatePalette(DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, LPDIRECTD
     dprintf("     Palette = %p\n", p);
 
     p->lpVtbl = &g_ddp_vtbl;
+    p->flags = dwFlags;
     ddp_SetEntries(p, dwFlags, 0, 256, lpDDColorArray);
     IDirectDrawPalette_AddRef(p);
 
