@@ -158,7 +158,7 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
     if (lpDDDriverCaps)
     {
         lpDDDriverCaps->dwSize = sizeof(DDCAPS);
-        lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP;
+        lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP | DDCAPS_CANBLTSYSMEM;
         lpDDDriverCaps->dwCKeyCaps = 0;
         lpDDDriverCaps->dwPalCaps = DDPCAPS_8BIT | DDPCAPS_PRIMARYSURFACE;
         lpDDDriverCaps->dwVidMemTotal = 16777216;
