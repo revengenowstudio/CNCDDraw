@@ -70,16 +70,16 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             diffx = 0;
             diffy = 0;
 
-            if (g_ddraw->cursor.x > CUTSCENE_WIDTH)
+            if (g_ddraw->cursor.x > g_ddraw->upscale_hack_width)
             {
-                diffx = g_ddraw->cursor.x - CUTSCENE_WIDTH;
-                g_ddraw->cursor.x = CUTSCENE_WIDTH;
+                diffx = g_ddraw->cursor.x - g_ddraw->upscale_hack_width;
+                g_ddraw->cursor.x = g_ddraw->upscale_hack_width;
             }
                 
-            if (g_ddraw->cursor.y > CUTSCENE_HEIGHT)
+            if (g_ddraw->cursor.y > g_ddraw->upscale_hack_height)
             {
-                diffy = g_ddraw->cursor.y - CUTSCENE_HEIGHT;
-                g_ddraw->cursor.y = CUTSCENE_HEIGHT;
+                diffy = g_ddraw->cursor.y - g_ddraw->upscale_hack_height;
+                g_ddraw->cursor.y = g_ddraw->upscale_hack_height;
             }
 
             if (diffx || diffy)

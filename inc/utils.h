@@ -4,9 +4,6 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#define CUTSCENE_WIDTH 640
-#define CUTSCENE_HEIGHT 400
-
 
 void util_limit_game_ticks();
 void util_update_bnet_pos(int newX, int newY);

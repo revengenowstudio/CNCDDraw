@@ -341,7 +341,7 @@ BOOL util_detect_cutscene()
     static int* is_vqa_640 = (int*)0x0065D7BC;
     static BYTE* should_stretch = (BYTE*)0x00607D78;
 
-    if (g_ddraw->width <= CUTSCENE_WIDTH || g_ddraw->height <= CUTSCENE_HEIGHT)
+    if (g_ddraw->width <= g_ddraw->upscale_hack_width || g_ddraw->height <= g_ddraw->upscale_hack_height)
     {
         return FALSE;
     }
@@ -357,7 +357,13 @@ BOOL util_detect_cutscene()
     }
     else if (g_ddraw->iscnc1)
     {
-        return util_get_pixel(CUTSCENE_WIDTH + 1, 0) == 0 || util_get_pixel(CUTSCENE_WIDTH + 5, 1) == 0 ? TRUE : FALSE;
+        return 
+            util_get_pixel(g_ddraw->upscale_hack_width + 1, 0) == 0 || 
+            util_get_pixel(g_ddraw->upscale_hack_width + 5, 1) == 0;
+    }
+    else if (g_ddraw->iskkndx)
+    {
+        return util_get_pixel(g_ddraw->width - 3, 3) == 0;
     }
 
     return FALSE;

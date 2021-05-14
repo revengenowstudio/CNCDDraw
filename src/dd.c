@@ -690,8 +690,20 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 
         g_ddraw->isredalert = strcmp(g_ddraw->title, "Red Alert") == 0;
         g_ddraw->iscnc1 = strcmp(g_ddraw->title, "Command & Conquer") == 0;
+        g_ddraw->iskkndx = strcmp(g_ddraw->title, "KKND Xtreme") == 0;
 
-        if (g_ddraw->vhack && !g_ddraw->isredalert && !g_ddraw->iscnc1)
+        if (g_ddraw->iskkndx)
+        {
+            g_ddraw->upscale_hack_width = 640;
+            g_ddraw->upscale_hack_height = 480;
+        }
+        else if (g_ddraw->isredalert || g_ddraw->iscnc1)
+        {
+            g_ddraw->upscale_hack_width = 640;
+            g_ddraw->upscale_hack_height = 400;
+        }
+
+        if (g_ddraw->vhack && !g_ddraw->isredalert && !g_ddraw->iscnc1 && !g_ddraw->iskkndx)
         {
             g_ddraw->vhack = 0;
         }

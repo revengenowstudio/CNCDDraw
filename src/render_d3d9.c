@@ -284,8 +284,8 @@ static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
     float vp_w = stretch ? (float)(g_ddraw->render.viewport.width + g_ddraw->render.viewport.x) : (float)g_ddraw->width;
     float vp_h = stretch ? (float)(g_ddraw->render.viewport.height + g_ddraw->render.viewport.y) : (float)g_ddraw->height;
 
-    float s_h = in_cutscene ? g_d3d9.scale_h * ((float)CUTSCENE_HEIGHT / g_ddraw->height) : g_d3d9.scale_h;
-    float s_w = in_cutscene ? g_d3d9.scale_w * ((float)CUTSCENE_WIDTH / g_ddraw->width) : g_d3d9.scale_w;
+    float s_h = in_cutscene ? g_d3d9.scale_h * ((float)g_ddraw->upscale_hack_height / g_ddraw->height) : g_d3d9.scale_h;
+    float s_w = in_cutscene ? g_d3d9.scale_w * ((float)g_ddraw->upscale_hack_width / g_ddraw->width) : g_d3d9.scale_w;
 
     CUSTOMVERTEX vertices[] =
     {

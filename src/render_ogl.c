@@ -567,8 +567,8 @@ static void ogl_render()
             {
                 if (util_detect_cutscene())
                 {
-                    g_ogl.scale_w *= (float)CUTSCENE_WIDTH / g_ddraw->width;
-                    g_ogl.scale_h *= (float)CUTSCENE_HEIGHT / g_ddraw->height;
+                    g_ogl.scale_w *= (float)g_ddraw->upscale_hack_width / g_ddraw->width;
+                    g_ogl.scale_h *= (float)g_ddraw->upscale_hack_height / g_ddraw->height;
 
                     if (!InterlockedExchange(&g_ddraw->incutscene, TRUE))
                         scale_changed = TRUE;

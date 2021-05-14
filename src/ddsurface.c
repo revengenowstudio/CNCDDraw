@@ -36,6 +36,9 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
     dbg_dump_dds_blt_flags(dwFlags);
 
+    if (g_ddraw->iskkndx && (dwFlags & DDBLT_COLORFILL) && lpDestRect && lpDestRect->right == 640 && lpDestRect->bottom == 480)
+        lpDestRect = NULL;
+
     RECT src_rect = { 0, 0, src_surface ? src_surface->width : 0, src_surface ? src_surface->height : 0 };
     RECT dst_rect = { 0, 0, This->width, This->height };
 
