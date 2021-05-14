@@ -86,7 +86,7 @@ DWORD WINAPI gdi_render_main(void)
                     g_ddraw->render.viewport.width, 
                     g_ddraw->render.viewport.height,
                     0, 
-                    g_ddraw->height - 400, 
+                    g_ddraw->height - CUTSCENE_HEIGHT,
                     CUTSCENE_WIDTH, 
                     CUTSCENE_HEIGHT, 
                     g_ddraw->primary->surface,
