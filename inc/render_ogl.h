@@ -28,6 +28,7 @@ typedef struct ogl_renderer
     GLint frame_count_uni_loc;
     GLuint frame_buffer_id;
     GLuint frame_buffer_tex_id;
+    GLint scale_tex_coord_attr_loc;
     GLuint scale_vbos[3];
     GLuint scale_vao;
     BOOL use_opengl;

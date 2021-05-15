@@ -386,7 +386,7 @@ static void ogl_init_scale_program()
     glUseProgram(g_ogl.scale_program);
 
     GLint vertex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "VertexCoord");
-    GLint tex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "TexCoord");
+    g_ogl.scale_tex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "TexCoord");
     g_ogl.frame_count_uni_loc = glGetUniformLocation(g_ogl.scale_program, "FrameCount");
 
     glGenBuffers(3, g_ogl.scale_vbos);
@@ -420,8 +420,8 @@ static void ogl_init_scale_program()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, g_ogl.scale_vbos[1]);
-    glVertexAttribPointer(tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(tex_coord_attr_loc);
+    glVertexAttribPointer(g_ogl.scale_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(g_ogl.scale_tex_coord_attr_loc);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ogl.scale_vbos[2]);
@@ -675,17 +675,17 @@ static void ogl_render()
         {
             if (g_ogl.scale_program && g_ogl.main_program)
             {
-                glBindVertexArray(g_ogl.main_vao);
-                glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
+                glBindVertexArray(g_ogl.scale_vao);
+                glBindBuffer(GL_ARRAY_BUFFER, g_ogl.scale_vbos[1]);
                 GLfloat texCoord[] = {
-                    0.0f,          0.0f,
-                    0.0f,          g_ogl.scale_h,
-                    g_ogl.scale_w, g_ogl.scale_h,
-                    g_ogl.scale_w, 0.0f,
+                    0.0f,           0.0f,
+                    g_ogl.scale_w,  0.0f,
+                    g_ogl.scale_w,  g_ogl.scale_h,
+                    0.0f,           g_ogl.scale_h,
                 };
                 glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-                glVertexAttribPointer(g_ogl.main_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                glEnableVertexAttribArray(g_ogl.main_tex_coord_attr_loc);
+                glVertexAttribPointer(g_ogl.scale_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(g_ogl.scale_tex_coord_attr_loc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
             }
