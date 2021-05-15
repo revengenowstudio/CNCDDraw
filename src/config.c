@@ -559,6 +559,7 @@ static void cfg_create_ini()
             "\n"
             "; Moorhuhn\n"
             "[Moorhuhn]\n"
+            "renderer=opengl\n"
             "hook=3\n"
             "\n"
             "; Moorhuhn 2\n"
