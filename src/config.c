@@ -308,7 +308,7 @@ static void cfg_create_ini()
             "\n"
             "; Windows API Hooking, Possible values: 0 = disabled, 1 = IAT Hooking, 2 = Microsoft Detours, 3 = IAT+Detours Hooking (All Modules), 4 = IAT Hooking (All Modules)\n"
             "; Note: Change this value if windowed mode or upscaling isn't working properly\n"
-            "; Note: 'hook=2' will usually work for problematic games, but 'hook=2' must be combined with renderer=gdi\n"
+            "; Note: 'hook=2' will usually work for problematic games, but 'hook=2' should be combined with renderer=gdi\n"
             "hook=4\n"
             "\n"
             "; Force minimum FPS, possible values: 0 = disabled, -1 = use 'maxfps=' value, 1-1000 = custom FPS\n"
@@ -568,6 +568,12 @@ static void cfg_create_ini()
             "; KKND Xtreme (With high resolution patch)\n"
             "[KKNDgame]\n"
             "vhack=true\n"
+            "\n"
+            "; KKND2: Krossfire\n"
+            "[KKND2]\n"
+            "noactivateapp=true\n"
+            "renderer=gdi\n"
+            "hook=2\n"
             "\n"
 
             , fh);
