@@ -94,7 +94,7 @@ typedef struct cnc_ddraw
     BOOL isredalert;
     BOOL iscnc1;
     BOOL iskkndx;
-    LONG incutscene;
+    LONG upscale_hack_active;
     DWORD (WINAPI *renderer)(void);
     BOOL fullscreen;
     BOOL maintas;

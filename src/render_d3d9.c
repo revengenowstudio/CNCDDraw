@@ -13,7 +13,7 @@
 
 static BOOL d3d9_create_resouces();
 static BOOL d3d9_set_states();
-static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch);
+static BOOL d3d9_update_vertices(BOOL upscale_hack, BOOL stretch);
 
 static d3d9_renderer g_d3d9;
 
@@ -195,7 +195,7 @@ static BOOL d3d9_create_resouces()
             &g_d3d9.vertex_buf, 
             NULL));
 
-    err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->incutscene, 0), TRUE);
+    err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->upscale_hack_active, 0), TRUE);
 
     int i;
     for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
@@ -276,7 +276,7 @@ static BOOL d3d9_set_states()
     return !err;
 }
 
-static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
+static BOOL d3d9_update_vertices(BOOL upscale_hack, BOOL stretch)
 {
     float vp_x = stretch ? (float)g_ddraw->render.viewport.x : 0.0f;
     float vp_y = stretch ? (float)g_ddraw->render.viewport.y : 0.0f;
@@ -284,8 +284,8 @@ static BOOL d3d9_update_vertices(BOOL in_cutscene, BOOL stretch)
     float vp_w = stretch ? (float)(g_ddraw->render.viewport.width + g_ddraw->render.viewport.x) : (float)g_ddraw->width;
     float vp_h = stretch ? (float)(g_ddraw->render.viewport.height + g_ddraw->render.viewport.y) : (float)g_ddraw->height;
 
-    float s_h = in_cutscene ? g_d3d9.scale_h * ((float)g_ddraw->upscale_hack_height / g_ddraw->height) : g_d3d9.scale_h;
-    float s_w = in_cutscene ? g_d3d9.scale_w * ((float)g_ddraw->upscale_hack_width / g_ddraw->width) : g_d3d9.scale_w;
+    float s_h = upscale_hack ? g_d3d9.scale_h * ((float)g_ddraw->upscale_hack_height / g_ddraw->height) : g_d3d9.scale_h;
+    float s_w = upscale_hack ? g_d3d9.scale_w * ((float)g_ddraw->upscale_hack_width / g_ddraw->width) : g_d3d9.scale_w;
 
     CUSTOMVERTEX vertices[] =
     {
@@ -334,14 +334,14 @@ DWORD WINAPI d3d9_render_main(void)
         {
             if (g_ddraw->vhack)
             {
-                if (util_detect_cutscene())
+                if (util_detect_low_res_screen())
                 {
-                    if (!InterlockedExchange(&g_ddraw->incutscene, TRUE))
+                    if (!InterlockedExchange(&g_ddraw->upscale_hack_active, TRUE))
                         d3d9_update_vertices(TRUE, TRUE);
                 }
                 else
                 {
-                    if (InterlockedExchange(&g_ddraw->incutscene, FALSE))
+                    if (InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE))
                         d3d9_update_vertices(FALSE, TRUE);
                 }
             }

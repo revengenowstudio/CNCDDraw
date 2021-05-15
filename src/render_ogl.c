@@ -565,17 +565,17 @@ static void ogl_render()
         {
             if (g_ddraw->vhack)
             {
-                if (util_detect_cutscene())
+                if (util_detect_low_res_screen())
                 {
                     g_ogl.scale_w *= (float)g_ddraw->upscale_hack_width / g_ddraw->width;
                     g_ogl.scale_h *= (float)g_ddraw->upscale_hack_height / g_ddraw->height;
 
-                    if (!InterlockedExchange(&g_ddraw->incutscene, TRUE))
+                    if (!InterlockedExchange(&g_ddraw->upscale_hack_active, TRUE))
                         scale_changed = TRUE;
                 }
                 else
                 {
-                    if (InterlockedExchange(&g_ddraw->incutscene, FALSE))
+                    if (InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE))
                         scale_changed = TRUE;
                 }
             }

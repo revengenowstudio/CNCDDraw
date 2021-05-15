@@ -335,7 +335,7 @@ static unsigned char util_get_pixel(int x, int y)
     return ((unsigned char*)dds_GetBuffer(g_ddraw->primary))[y * g_ddraw->primary->l_pitch + x * g_ddraw->primary->lx_pitch];
 }
 
-BOOL util_detect_cutscene()
+BOOL util_detect_low_res_screen()
 {
     static int* in_movie = (int*)0x00665F58;
     static int* is_vqa_640 = (int*)0x0065D7BC;

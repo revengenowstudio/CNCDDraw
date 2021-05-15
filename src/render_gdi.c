@@ -61,10 +61,10 @@ DWORD WINAPI gdi_render_main(void)
                 }
             }
 
-            BOOL scale_cutscene = g_ddraw->vhack && util_detect_cutscene();
+            BOOL upscale_hack = g_ddraw->vhack && util_detect_low_res_screen();
 
             if (g_ddraw->vhack)
-                InterlockedExchange(&g_ddraw->incutscene, scale_cutscene);
+                InterlockedExchange(&g_ddraw->upscale_hack_active, upscale_hack);
 
             if (!g_ddraw->handlemouse)
             {
@@ -77,7 +77,7 @@ DWORD WINAPI gdi_render_main(void)
                 RECT rc = { 0, 0, g_ddraw->render.width, g_ddraw->render.height };
                 FillRect(g_ddraw->render.hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
             }
-            else if (scale_cutscene)
+            else if (upscale_hack)
             {
                 StretchDIBits(
                     g_ddraw->render.hdc, 
