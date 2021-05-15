@@ -436,5 +436,9 @@ DWORD WINAPI d3d9_render_main(void)
         
         fpsl_frame_end();
     }
+
+    if (g_ddraw->vhack)
+        InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE);
+
     return 0;
 }

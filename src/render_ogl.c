@@ -789,7 +789,8 @@ static void ogl_render()
         fpsl_frame_end();
     }
 
-    InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE);
+    if (g_ddraw->vhack)
+        InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE);
 }
 
 static void ogl_delete_context(HGLRC context)
