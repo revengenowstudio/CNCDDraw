@@ -306,7 +306,7 @@ HRESULT __stdcall IDirectDrawSurface__Restore(IDirectDrawSurfaceImpl *This)
 
 HRESULT __stdcall IDirectDrawSurface__SetClipper(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWCLIPPER lpClipper)
 {
-    dprintf("-> %s(This=%p, lpClipper=%p)\n", __FUNCTION__, This);
+    dprintf("-> %s(This=%p, lpClipper=%p)\n", __FUNCTION__, This, lpClipper);
     HRESULT ret = dds_SetClipper(This, lpClipper);
     dprintf("<- %s\n", __FUNCTION__);
     return ret;
