@@ -6,6 +6,7 @@
 #include "utils.h"
 #include "mouse.h"
 #include "wndproc.h"
+#include "render_gdi.h"
 
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
@@ -127,7 +128,10 @@ HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
 {
-    if (lpRect && g_ddraw)
+    if (lpRect && 
+        g_ddraw && 
+        g_ddraw->hwnd && 
+        (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         if (g_ddraw->hwnd == hWnd)
         {
@@ -156,7 +160,10 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
 
 BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
 {
-    if (lpRect && g_ddraw && g_ddraw->hwnd == hWnd)
+    if (lpRect && 
+        g_ddraw && 
+        g_ddraw->hwnd == hWnd && 
+        (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         lpRect->bottom = g_ddraw->height;
         lpRect->left = 0;
@@ -301,7 +308,10 @@ BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
 
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
 {
-    if (g_ddraw && g_ddraw->bpp && index == BITSPIXEL)
+    if (g_ddraw && 
+        g_ddraw->bpp && 
+        index == BITSPIXEL && 
+        (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         return g_ddraw->bpp;
     }
