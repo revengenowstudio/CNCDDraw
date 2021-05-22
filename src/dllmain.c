@@ -61,14 +61,25 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
         }
 
         BOOL set_dpi_aware = FALSE;
-        HMODULE hshcore = GetModuleHandle("shcore.dll");
-        
-        if (hshcore)
-        {
-            typedef HRESULT(__stdcall* SETPROCESSDPIAWERENESSPROC)(PROCESS_DPI_AWARENESS value);
 
+        HMODULE shcore_dll = GetModuleHandle("shcore.dll");
+        HMODULE user32_dll = GetModuleHandle("user32.dll");
+        
+        if (user32_dll)
+        {
+            SETPROCESSDPIAWARENESSCONTEXTPROC set_awareness_context =
+                (SETPROCESSDPIAWARENESSCONTEXTPROC)GetProcAddress(user32_dll, "SetProcessDpiAwarenessContext");
+
+            if (set_awareness_context)
+            {
+                set_dpi_aware = set_awareness_context(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+            }
+        }
+
+        if (!set_dpi_aware && shcore_dll)
+        {
             SETPROCESSDPIAWERENESSPROC set_awareness =
-                (SETPROCESSDPIAWERENESSPROC)GetProcAddress(hshcore, "SetProcessDpiAwareness");
+                (SETPROCESSDPIAWERENESSPROC)GetProcAddress(shcore_dll, "SetProcessDpiAwareness");
 
             if (set_awareness)
             {
@@ -78,20 +89,13 @@ BOOL WINAPI DllMain(HANDLE hDll, DWORD dwReason, LPVOID lpReserved)
             }
         }
 
-        if (!set_dpi_aware)
+        if (!set_dpi_aware && user32_dll)
         {
-            HMODULE huser32 = GetModuleHandle("user32.dll");
-            
-            if (huser32)
-            {
-                typedef BOOL(__stdcall* SETPROCESSDPIAWAREPROC)();
+            SETPROCESSDPIAWAREPROC set_aware = 
+                (SETPROCESSDPIAWAREPROC)GetProcAddress(user32_dll, "SetProcessDPIAware");
 
-                SETPROCESSDPIAWAREPROC set_aware = 
-                    (SETPROCESSDPIAWAREPROC)GetProcAddress(huser32, "SetProcessDPIAware");
-
-                if (set_aware)
-                    set_aware();
-            }
+            if (set_aware)
+                set_aware();
         }
 
         timeBeginPeriod(1);
