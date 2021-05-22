@@ -29,7 +29,6 @@ HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER lpClipp
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWPALETTE lpDDPalette);
 HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPVOID lpRect);
 void* dds_GetBuffer(IDirectDrawSurfaceImpl* This);
-HDC dds_GetHDC(IDirectDrawSurfaceImpl* This);
 HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR* lpDDSurface, IUnknown FAR* unkOuter);
 
 

@@ -792,21 +792,34 @@ HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY 
 
 HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
 {
+    if (!This)
+    {
+        if (lpHDC)
+            *lpHDC = NULL;
+
+        return DDERR_INVALIDPARAMS;
+    }
+
     if ((This->l_pitch % 4))
     {
         dprintf("NOT_IMPLEMENTED     GetDC: width=%d height=%d\n", This->width, This->height);
     }
 
     RGBQUAD *data = 
-        This->palette && This->palette->data_rgb ? This->palette->data_rgb :
+        This->palette ? This->palette->data_rgb :
         g_ddraw->primary && g_ddraw->primary->palette ? g_ddraw->primary->palette->data_rgb :
         NULL;
 
+    HDC dc = This->hdc;
+
+    if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
+        dc = (HDC)InterlockedExchangeAdd((LONG*)&This->hdc, 0);
+
     if (data)
-        SetDIBColorTable(dds_GetHDC(This), 0, 256, data);
+        SetDIBColorTable(dc, 0, 256, data);
 
     if (lpHDC)
-        *lpHDC = dds_GetHDC(This);
+        *lpHDC = dc;
 
     return DD_OK;
 }
@@ -916,21 +929,7 @@ HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPal
         IDirectDrawPalette_Release(This->palette);
     }
 
-    EnterCriticalSection(&g_ddraw->cs);
-
     This->palette = (IDirectDrawPaletteImpl *)lpDDPalette;
-    This->palette->data_rgb = &This->bmi->bmiColors[0];
-
-    int i;
-    for (i = 0; i < 256; i++)
-    {
-        This->palette->data_rgb[i].rgbRed = This->palette->data_bgr[i] & 0xFF;
-        This->palette->data_rgb[i].rgbGreen = (This->palette->data_bgr[i] >> 8) & 0xFF;
-        This->palette->data_rgb[i].rgbBlue = (This->palette->data_bgr[i] >> 16) & 0xFF;
-        This->palette->data_rgb[i].rgbReserved = 0;
-    }
-
-    LeaveCriticalSection(&g_ddraw->cs);
 
     return DD_OK;
 }
@@ -941,13 +940,13 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
 
     if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
-        if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
-            SetDIBColorTable(dds_GetHDC(g_ddraw->primary), 0, 256, g_ddraw->primary->palette->data_rgb);
+        HDC primary_dc;
+        dds_GetDC(g_ddraw->primary, &primary_dc);
 
         //GdiTransparentBlt idea taken from Aqrit's war2 ddraw
 
         RGBQUAD quad;
-        GetDIBColorTable(dds_GetHDC(g_ddraw->primary), 0xFE, 1, &quad);
+        GetDIBColorTable(primary_dc, 0xFE, 1, &quad);
         COLORREF color = RGB(quad.rgbRed, quad.rgbGreen, quad.rgbBlue);
         BOOL erase = FALSE;
 
@@ -967,7 +966,7 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
                     0,
                     rc.right - rc.left,
                     rc.bottom - rc.top,
-                    dds_GetHDC(g_ddraw->primary),
+                    primary_dc,
                     rc.left,
                     rc.top,
                     rc.right - rc.left,
@@ -1019,17 +1018,6 @@ void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
         return (void*)InterlockedExchangeAdd((LONG*)&This->surface, 0);
 
     return This->surface;
-}
-
-HDC dds_GetHDC(IDirectDrawSurfaceImpl* This)
-{
-    if (!This)
-        return NULL;
-
-    if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
-        return (HDC)InterlockedExchangeAdd((LONG*)&This->hdc, 0);
-
-    return This->hdc;
 }
 
 HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *lpDDSurface, IUnknown FAR * unkOuter)
@@ -1096,8 +1084,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
 
         if (dst_surface->bpp == 8)
         {
-            int i;
-            for (i = 0; i < 256; i++)
+            for (int i = 0; i < 256; i++)
             {
                 dst_surface->bmi->bmiColors[i].rgbRed = i;
                 dst_surface->bmi->bmiColors[i].rgbGreen = i;

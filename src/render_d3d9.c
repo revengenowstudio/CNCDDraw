@@ -324,13 +324,13 @@ DWORD WINAPI d3d9_render_main(void)
         dbg_draw_frame_info_start();
 #endif
 
-        static int tex_index = 0, palIndex = 0;
+        static int tex_index = 0, pal_index = 0;
 
         fpsl_frame_start();
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)))
+        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
         {
             if (g_ddraw->vhack)
             {
@@ -376,17 +376,17 @@ DWORD WINAPI d3d9_render_main(void)
 
             if (g_ddraw->bpp == 8 && InterlockedExchange(&g_ddraw->render.palette_updated, FALSE))
             {
-                if (++palIndex >= D3D9_TEXTURE_COUNT)
-                    palIndex = 0;
+                if (++pal_index >= D3D9_TEXTURE_COUNT)
+                    pal_index = 0;
 
                 RECT rc = { 0,0,256,1 };
 
-                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[palIndex])) &&
-                    SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.palette_tex[palIndex], 0, &lock_rc, &rc, 0)))
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[pal_index])) &&
+                    SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.palette_tex[pal_index], 0, &lock_rc, &rc, 0)))
                 {
                     memcpy(lock_rc.pBits, g_ddraw->primary->palette->data_rgb, 256 * sizeof(int));
 
-                    IDirect3DTexture9_UnlockRect(g_d3d9.palette_tex[palIndex], 0);
+                    IDirect3DTexture9_UnlockRect(g_d3d9.palette_tex[pal_index], 0);
                 }
             }
 

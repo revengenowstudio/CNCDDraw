@@ -46,14 +46,17 @@ DWORD WINAPI gdi_render_main(void)
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)))
+        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
         {
+            HDC primary_dc;
+            dds_GetDC(g_ddraw->primary, &primary_dc);
+
             if (warning_end_tick)
             {
                 if (timeGetTime() < warning_end_tick)
                 {
                     RECT rc = { 0, 0, g_ddraw->width, g_ddraw->height };
-                    DrawText(g_ddraw->primary->hdc, warning_text, -1, &rc, DT_NOCLIP | DT_CENTER);
+                    DrawText(primary_dc, warning_text, -1, &rc, DT_NOCLIP | DT_CENTER);
                 }
                 else
                 {
@@ -79,54 +82,47 @@ DWORD WINAPI gdi_render_main(void)
             }
             else if (upscale_hack)
             {
-                StretchDIBits(
+                StretchBlt(
                     g_ddraw->render.hdc, 
                     g_ddraw->render.viewport.x, 
                     g_ddraw->render.viewport.y,
                     g_ddraw->render.viewport.width, 
                     g_ddraw->render.viewport.height,
-                    0, 
-                    g_ddraw->height - g_ddraw->upscale_hack_height,
+                    primary_dc,
+                    0,
+                    0,
                     g_ddraw->upscale_hack_width,
                     g_ddraw->upscale_hack_height,
-                    g_ddraw->primary->surface,
-                    g_ddraw->primary->bmi, 
-                    DIB_RGB_COLORS, 
                     SRCCOPY);
             }
             else if (!g_ddraw->child_window_exists && 
                      (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height))
             {
-                StretchDIBits(
+                StretchBlt(
                     g_ddraw->render.hdc, 
                     g_ddraw->render.viewport.x, 
                     g_ddraw->render.viewport.y, 
                     g_ddraw->render.viewport.width, 
                     g_ddraw->render.viewport.height, 
+                    primary_dc,
                     0, 
                     0, 
                     g_ddraw->width, 
                     g_ddraw->height, 
-                    g_ddraw->primary->surface, 
-                    g_ddraw->primary->bmi, 
-                    DIB_RGB_COLORS, 
                     SRCCOPY);
             }
             else
             {
-                SetDIBitsToDevice(
+                BitBlt(
                     g_ddraw->render.hdc, 
                     0, 
                     0, 
                     g_ddraw->width, 
                     g_ddraw->height, 
+                    primary_dc,
                     0, 
                     0, 
-                    0, 
-                    g_ddraw->height, 
-                    g_ddraw->primary->surface, 
-                    g_ddraw->primary->bmi, 
-                    DIB_RGB_COLORS);
+                    SRCCOPY);
             } 
         }
 
