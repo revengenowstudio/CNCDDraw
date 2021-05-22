@@ -48,13 +48,13 @@ DWORD WINAPI gdi_render_main(void)
 
         if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
         {
-            HDC primary_dc;
-            dds_GetDC(g_ddraw->primary, &primary_dc);
-
             if (warning_end_tick)
             {
                 if (timeGetTime() < warning_end_tick)
                 {
+                    HDC primary_dc;
+                    dds_GetDC(g_ddraw->primary, &primary_dc);
+
                     RECT rc = { 0, 0, g_ddraw->width, g_ddraw->height };
                     DrawText(primary_dc, warning_text, -1, &rc, DT_NOCLIP | DT_CENTER);
                 }
@@ -75,6 +75,11 @@ DWORD WINAPI gdi_render_main(void)
                 EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
             }
 
+            if (g_ddraw->primary->palette)
+            {
+                memcpy(&g_ddraw->primary->bmi->bmiColors[0], g_ddraw->primary->palette->data_rgb, 256 * sizeof(int));
+            }
+
             if (g_ddraw->bnet_active)
             {
                 RECT rc = { 0, 0, g_ddraw->render.width, g_ddraw->render.height };
@@ -82,47 +87,54 @@ DWORD WINAPI gdi_render_main(void)
             }
             else if (upscale_hack)
             {
-                StretchBlt(
+                StretchDIBits(
                     g_ddraw->render.hdc, 
                     g_ddraw->render.viewport.x, 
                     g_ddraw->render.viewport.y,
                     g_ddraw->render.viewport.width, 
                     g_ddraw->render.viewport.height,
-                    primary_dc,
-                    0,
-                    0,
+                    0, 
+                    g_ddraw->height - g_ddraw->upscale_hack_height,
                     g_ddraw->upscale_hack_width,
                     g_ddraw->upscale_hack_height,
+                    g_ddraw->primary->surface,
+                    g_ddraw->primary->bmi, 
+                    DIB_RGB_COLORS, 
                     SRCCOPY);
             }
             else if (!g_ddraw->child_window_exists && 
                      (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height))
             {
-                StretchBlt(
+                StretchDIBits(
                     g_ddraw->render.hdc, 
                     g_ddraw->render.viewport.x, 
                     g_ddraw->render.viewport.y, 
                     g_ddraw->render.viewport.width, 
                     g_ddraw->render.viewport.height, 
-                    primary_dc,
                     0, 
                     0, 
                     g_ddraw->width, 
                     g_ddraw->height, 
+                    g_ddraw->primary->surface, 
+                    g_ddraw->primary->bmi, 
+                    DIB_RGB_COLORS, 
                     SRCCOPY);
             }
             else
             {
-                BitBlt(
+                SetDIBitsToDevice(
                     g_ddraw->render.hdc, 
                     0, 
                     0, 
                     g_ddraw->width, 
                     g_ddraw->height, 
-                    primary_dc,
                     0, 
                     0, 
-                    SRCCOPY);
+                    0, 
+                    g_ddraw->height, 
+                    g_ddraw->primary->surface, 
+                    g_ddraw->primary->bmi, 
+                    DIB_RGB_COLORS);
             } 
         }
 
