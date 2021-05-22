@@ -929,7 +929,11 @@ HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPal
         IDirectDrawPalette_Release(This->palette);
     }
 
-    This->palette = (IDirectDrawPaletteImpl *)lpDDPalette;
+    EnterCriticalSection(&g_ddraw->cs);
+
+    This->palette = (IDirectDrawPaletteImpl*)lpDDPalette;
+
+    LeaveCriticalSection(&g_ddraw->cs);
 
     return DD_OK;
 }
