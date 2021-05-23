@@ -75,6 +75,12 @@ void dbg_init()
             RegQueryValueExA(hkey, "BuildLab", NULL, NULL, (PVOID)&build, &build_size);
 
             dbg_printf("%s (%s)\n", name, build);
+
+            const char* (CDECL * wine_get_version)() = 
+                (void*)GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version");
+
+            if (wine_get_version)
+                dbg_printf("Wine version = %s\n", wine_get_version());
         }
     }
 }
