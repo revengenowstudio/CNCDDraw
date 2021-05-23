@@ -72,9 +72,10 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 memset(&s, 0, sizeof(DDSURFACEDESC));
 
                 s.dwSize = sizeof(DDSURFACEDESC);
-                s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
+                s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
                 s.dwHeight = m.dmPelsHeight;
                 s.dwWidth = m.dmPelsWidth;
+                s.lPitch = s.dwWidth;
                 s.dwRefreshRate = 60;
                 s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
 
@@ -83,6 +84,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 
                 if (g_ddraw->bpp == 16)
                 {
+                    s.lPitch = s.dwWidth * 2;
                     s.ddpfPixelFormat.dwFlags = DDPF_RGB;
                     s.ddpfPixelFormat.dwRGBBitCount = 16;
                     s.ddpfPixelFormat.dwRBitMask = 0xF800;
@@ -122,9 +124,10 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             memset(&s, 0, sizeof(DDSURFACEDESC));
 
             s.dwSize = sizeof(DDSURFACEDESC);
-            s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PIXELFORMAT;
+            s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
             s.dwHeight = resolutions[i].cy;
             s.dwWidth = resolutions[i].cx;
+            s.lPitch = s.dwWidth;
             s.dwRefreshRate = 60;
             s.ddpfPixelFormat.dwSize = sizeof(DDPIXELFORMAT);
             s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
@@ -136,6 +139,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 break;
             }
 
+            s.lPitch = s.dwWidth * 2;
             s.ddpfPixelFormat.dwFlags = DDPF_RGB;
             s.ddpfPixelFormat.dwRGBBitCount = 16;
             s.ddpfPixelFormat.dwRBitMask = 0xF800;
