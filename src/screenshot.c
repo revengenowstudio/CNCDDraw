@@ -7,12 +7,79 @@
 #include "ddsurface.h"
 #include "lodepng.h"
 
-BOOL ss_take_screenshot(struct IDirectDrawSurfaceImpl *src)
+
+static BOOL ss_screenshot_8bit(char* filename, IDirectDrawSurfaceImpl* src)
 {
-    if (!src || !src->palette || !dds_GetBuffer(src))
+    LodePNGState state;
+
+    lodepng_state_init(&state);
+
+    for (int i = 0; i < 256; i++)
+    {
+        RGBQUAD* c = &src->palette->data_rgb[i];
+        lodepng_palette_add(&state.info_png.color, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
+        lodepng_palette_add(&state.info_raw, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
+    }
+
+    state.info_png.color.colortype = LCT_PALETTE;
+    state.info_png.color.bitdepth = 8;
+    state.info_raw.colortype = LCT_PALETTE;
+    state.info_raw.bitdepth = 8;
+    state.encoder.auto_convert = 0;
+
+    unsigned char* dst_buf = NULL;
+    size_t dst_buf_size = 0;
+    unsigned int error = lodepng_encode(&dst_buf, &dst_buf_size, dds_GetBuffer(src), src->width, src->height, &state);
+
+    if (!error && dst_buf)
+        lodepng_save_file(dst_buf, dst_buf_size, filename);
+
+    lodepng_state_cleanup(&state);
+
+    if (dst_buf)
+        free(dst_buf);
+
+    return !error;
+}
+
+static BOOL ss_screenshot_16bit(char* filename, IDirectDrawSurfaceImpl* src)
+{
+    unsigned int error = TRUE;
+    unsigned int* src_buf = malloc(src->width * src->height * 4);
+
+    if (src_buf)
+    {
+        unsigned short* surface = (unsigned short*)dds_GetBuffer(src);
+
+        for (int y = 0; y < src->height; y++)
+        {
+            int src_y = y * src->width;
+
+            for (int x = 0; x < src->width; x++)
+            {
+                unsigned short pixel = surface[src_y + x];
+
+                BYTE red = ((pixel & 0xF800) >> 11) << 3;
+                BYTE green = ((pixel & 0x07E0) >> 5) << 2;
+                BYTE blue = ((pixel & 0x001F)) << 3;
+
+                src_buf[src_y + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+            }
+        }
+
+        error = lodepng_encode32_file(filename, (unsigned char*)src_buf, src->width, src->height);
+
+        free(src_buf);
+    }
+
+    return !error;
+}
+
+BOOL ss_take_screenshot(IDirectDrawSurfaceImpl *src)
+{
+    if (!src || !dds_GetBuffer(src))
         return FALSE;
 
-    int i;
     char title[128];
     char filename[128];
     char str_time[64];
@@ -20,7 +87,7 @@ BOOL ss_take_screenshot(struct IDirectDrawSurfaceImpl *src)
 
     strncpy(title, g_ddraw->title, sizeof(g_ddraw->title));
 
-    for (i = 0; i<strlen(title); i++) 
+    for (int i = 0; i<strlen(title); i++) 
     {
         if (title[i] == ' ')
         {
@@ -32,35 +99,17 @@ BOOL ss_take_screenshot(struct IDirectDrawSurfaceImpl *src)
         }
     }
 
-    strftime(str_time, 64, "%Y-%m-%d-%H_%M_%S", localtime(&t));
-    _snprintf(filename, 128, "%s-%s.png", title, str_time);
+    strftime(str_time, sizeof(str_time), "%Y-%m-%d-%H_%M_%S", localtime(&t));
+    _snprintf(filename, sizeof(filename), "%s-%s.png", title, str_time);
 
-    unsigned char* png;
-    size_t pngsize;
-    LodePNGState state;
-
-    lodepng_state_init(&state);
-    
-    for (i = 0; i < 256; i++)
+    if (src->bpp == 8 && src->palette)
     {
-        RGBQUAD *c = &src->palette->data_rgb[i];
-        lodepng_palette_add(&state.info_png.color, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
-        lodepng_palette_add(&state.info_raw, c->rgbRed, c->rgbGreen, c->rgbBlue, 255);
+        return ss_screenshot_8bit(filename, src);
+    }
+    else if (src->bpp == 16)
+    {
+        return ss_screenshot_16bit(filename, src);
     }
 
-    state.info_png.color.colortype = LCT_PALETTE;
-    state.info_png.color.bitdepth = 8;
-    state.info_raw.colortype = LCT_PALETTE;
-    state.info_raw.bitdepth = 8;
-    state.encoder.auto_convert = 0;
-
-    unsigned int error = lodepng_encode(&png, &pngsize, dds_GetBuffer(src), src->width, src->height, &state);
-
-    if (!error) 
-        lodepng_save_file(png, pngsize, filename);
-
-    lodepng_state_cleanup(&state);
-    free(png);
-
-    return !error;
+    return FALSE;;
 }
