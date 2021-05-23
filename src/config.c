@@ -581,6 +581,10 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
+            "; Wizardry 8\n"
+            "[Wiz8]\n"
+            "passthrough=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
