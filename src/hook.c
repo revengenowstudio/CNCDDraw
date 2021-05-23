@@ -378,6 +378,26 @@ void hook_init()
                 DetourTransactionCommit();
             }
 
+            real_DirectInputCreateW = (DIRECTINPUTCREATEWPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateW");
+
+            if (real_DirectInputCreateW)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourAttach((PVOID*)&real_DirectInputCreateW, (PVOID)fake_DirectInputCreateW);
+                DetourTransactionCommit();
+            }
+
+            real_DirectInputCreateEx = (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateEx");
+
+            if (real_DirectInputCreateEx)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourAttach((PVOID*)&real_DirectInputCreateEx, (PVOID)fake_DirectInputCreateEx);
+                DetourTransactionCommit();
+            }
+
             real_DirectInput8Create = (DIRECTINPUT8CREATEPROC)GetProcAddress(LoadLibraryA("dinput8.dll"), "DirectInput8Create");
 
             if (real_DirectInput8Create)
@@ -410,6 +430,8 @@ void hook_init()
 void hook_early_init()
 {
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateEx", (PROC)fake_DirectInputCreateEx);
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
 }
 
@@ -430,6 +452,22 @@ void hook_exit()
                 DetourTransactionCommit();
             }
 
+            if (real_DirectInputCreateW)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourDetach((PVOID*)&real_DirectInputCreateW, (PVOID)fake_DirectInputCreateW);
+                DetourTransactionCommit();
+            }
+
+            if (real_DirectInputCreateEx)
+            {
+                DetourTransactionBegin();
+                DetourUpdateThread(GetCurrentThread());
+                DetourDetach((PVOID*)&real_DirectInputCreateEx, (PVOID)fake_DirectInputCreateEx);
+                DetourTransactionCommit();
+            }
+
             if (real_DirectInput8Create)
             {
                 DetourTransactionBegin();
@@ -444,5 +482,7 @@ void hook_exit()
     }
 
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateEx", (PROC)fake_DirectInputCreateEx);
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput8.dll", "DirectInput8Create", (PROC)fake_DirectInput8Create);
 }
