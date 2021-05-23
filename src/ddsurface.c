@@ -1052,7 +1052,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
     dst_surface->flags = lpDDSurfaceDesc->dwFlags;
     dst_surface->caps = lpDDSurfaceDesc->ddsCaps.dwCaps;
 
-    if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
+    if (dst_surface->caps & DDSCAPS_PRIMARYSURFACE)
     {
         dst_surface->width = g_ddraw->width;
         dst_surface->height = g_ddraw->height;
@@ -1068,6 +1068,17 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         if (dst_surface->width == 622 && dst_surface->height == 51) dst_surface->width = 624; //AoE2
         if (dst_surface->width == 71 && dst_surface->height == 24) dst_surface->width = 72; //Commandos
         if (dst_surface->width == 343 && g_ddraw->bpp == 16) dst_surface->width = 344; //Blade & Sword
+
+        dst_surface->lx_pitch = dst_surface->bpp / 8;
+        dst_surface->l_pitch = dst_surface->width * dst_surface->lx_pitch;
+
+        if (g_ddraw->fixpitch && !(dst_surface->caps & (DDSCAPS_PRIMARYSURFACE | DDSCAPS_BACKBUFFER)))
+        {
+            while (dst_surface->l_pitch % 4)
+            {
+                dst_surface->l_pitch = ++dst_surface->width * dst_surface->lx_pitch;
+            }
+        }    
 
         dst_surface->bmi = HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(BITMAPINFOHEADER) + sizeof(RGBQUAD) * 256);
         dst_surface->bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -1103,9 +1114,6 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
             ((DWORD *)dst_surface->bmi->bmiColors)[2] = 0x001F;
         }
 
-        dst_surface->lx_pitch = dst_surface->bpp / 8;
-        dst_surface->l_pitch = dst_surface->width * dst_surface->lx_pitch;
-
         dst_surface->hdc = CreateCompatibleDC(g_ddraw->render.hdc);
         dst_surface->bitmap = CreateDIBSection(dst_surface->hdc, dst_surface->bmi, DIB_RGB_COLORS, (void **)&dst_surface->surface, NULL, 0);
         dst_surface->bmi->bmiHeader.biHeight = -((int)dst_surface->height);
@@ -1119,7 +1127,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
                     dst_surface->l_pitch * (dst_surface->height + 200) * dst_surface->lx_pitch);
         }
 
-        if (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE)
+        if (dst_surface->caps & DDSCAPS_PRIMARYSURFACE)
         {
             g_ddraw->primary = dst_surface;
             FakePrimarySurface = dst_surface->surface;
@@ -1128,7 +1136,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
         SelectObject(dst_surface->hdc, dst_surface->bitmap);
     }
 
-    if (lpDDSurfaceDesc->dwFlags & DDSD_BACKBUFFERCOUNT)
+    if (dst_surface->flags & DDSD_BACKBUFFERCOUNT)
     {
         dprintf("     dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
 

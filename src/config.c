@@ -48,6 +48,7 @@ void cfg_load()
     g_ddraw->accurate_timers = cfg_get_bool("accuratetimers", FALSE);
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
+    g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
     g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
@@ -318,6 +319,10 @@ static void cfg_create_ini()
             "; Disable fullscreen-exclusive mode for the direct3d9/opengl renderers\n"
             "; Note: Can be used in case some GUI elements like buttons/textboxes/videos/etc.. are invisible\n"
             "nonexclusive=false\n"
+            "\n"
+            "; Fixes issues where the pitch of a surface is not a multiple of 4\n"
+            "; Note: Enable this if some parts of the screen are being displayed diagonally\n"
+            "fixpitch=false\n"
             "\n"
             "; Force CPU0 affinity, avoids crashes/freezing, *might* have a performance impact\n"
             "singlecpu=true\n"

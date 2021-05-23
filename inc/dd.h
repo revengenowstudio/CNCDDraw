@@ -108,6 +108,7 @@ typedef struct cnc_ddraw
     BOOL resizable;
     BOOL sierrahack;
     BOOL nonexclusive;
+    BOOL fixpitch;
     BOOL fixchildwindows;
     BOOL d3d9linear;
     BOOL backbuffer;
