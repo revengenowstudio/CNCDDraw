@@ -14,7 +14,7 @@ void mouse_lock()
     if (g_ddraw->devmode)
     {
         if (g_ddraw->handlemouse)
-            while(real_ShowCursor(FALSE) > 0);
+            while(real_ShowCursor(FALSE) >= 0);
 
         return;
     }
@@ -61,7 +61,7 @@ void mouse_lock()
         {
             SetCapture(g_ddraw->hwnd);
             real_ClipCursor(&rc);
-            while (real_ShowCursor(FALSE) > 0);
+            while (real_ShowCursor(FALSE) >= 0);
         }
         else
         {
