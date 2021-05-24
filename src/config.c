@@ -589,6 +589,11 @@ static void cfg_create_ini()
             "[MECH]\n"
             "renderer=opengl\n"
             "\n"
+            "; Anstoss 3\n"
+            "[anstoss3]\n"
+            "renderer=gdi\n"
+            "handlemouse=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
