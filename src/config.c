@@ -585,6 +585,10 @@ static void cfg_create_ini()
             "[Wiz8]\n"
             "passthrough=false\n"
             "\n"
+            "; Steel Panthers: World At War\n"
+            "[MECH]\n"
+            "renderer=opengl\n"
+            "\n"
 
             , fh);
         fclose(fh);
