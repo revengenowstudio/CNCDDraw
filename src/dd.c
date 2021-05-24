@@ -278,6 +278,8 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
 
     if (!g_ddraw->mode.dmPelsWidth)
     {
+        ChangeDisplaySettings(NULL, 0);
+
         g_ddraw->mode.dmSize = sizeof(DEVMODE);
         g_ddraw->mode.dmDriverExtra = 0;
 
