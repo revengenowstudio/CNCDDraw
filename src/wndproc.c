@@ -38,6 +38,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_NCLBUTTONDOWN:
         case WM_NCLBUTTONUP:
         case WM_NCPAINT:
+        case WM_CANCELMODE:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }
