@@ -773,8 +773,10 @@ HRESULT dds_GetCaps(IDirectDrawSurfaceImpl *This, LPDDSCAPS lpDDSCaps)
 
 HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* lpClipper)
 {
-    if (lpClipper)
-        *lpClipper = (LPDIRECTDRAWCLIPPER)This->clipper;
+    if (!lpClipper)
+        return DDERR_INVALIDPARAMS;
+
+    *lpClipper = (LPDIRECTDRAWCLIPPER)This->clipper;
 
     if (This->clipper)
     {
@@ -834,8 +836,10 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
 
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE FAR *lplpDDPalette)
 {
-    if (lplpDDPalette)
-        *lplpDDPalette = (LPDIRECTDRAWPALETTE)This->palette;
+    if (!lplpDDPalette)
+        return DDERR_INVALIDPARAMS;
+
+    *lplpDDPalette = (LPDIRECTDRAWPALETTE)This->palette;
     
     if (This->palette)
     {
