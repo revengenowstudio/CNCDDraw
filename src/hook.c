@@ -270,7 +270,9 @@ void hook_create(hook_list* hooks)
                     _splitpath(mod_path, NULL, mod_dir, mod_filename, NULL);
 
                     /* Don't hook reshade/swiftshader/mesa3d */
-                    if (_strcmpi(mod_filename, "opengl32") == 0 || _strcmpi(mod_filename, "d3d9") == 0)
+                    if (_strcmpi(mod_filename, "opengl32") == 0 || 
+                        _strcmpi(mod_filename, "d3d9") == 0 || 
+                        _strcmpi(mod_filename, "Shw32") == 0)
                         continue;
 
                     if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
