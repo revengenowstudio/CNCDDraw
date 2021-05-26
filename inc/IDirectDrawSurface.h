@@ -84,6 +84,23 @@ struct IDirectDrawSurfaceImplVtbl
     HRESULT (__stdcall *UpdateOverlay)(IDirectDrawSurfaceImpl*, LPRECT, LPDIRECTDRAWSURFACE,LPRECT,DWORD, LPDDOVERLAYFX);
     HRESULT (__stdcall *UpdateOverlayDisplay)(IDirectDrawSurfaceImpl*, DWORD);
     HRESULT (__stdcall *UpdateOverlayZOrder)(IDirectDrawSurfaceImpl*, DWORD, LPDIRECTDRAWSURFACE);
+    // v2
+    HRESULT (__stdcall *GetDDInterface)(IDirectDrawSurfaceImpl*, LPVOID*);
+    HRESULT (__stdcall *PageLock)(IDirectDrawSurfaceImpl*, DWORD);
+    HRESULT (__stdcall *PageUnlock)(IDirectDrawSurfaceImpl*, DWORD);
+    // v3
+    HRESULT (__stdcall *SetSurfaceDesc)(IDirectDrawSurfaceImpl*, LPDDSURFACEDESC, DWORD);
+    // v4
+    HRESULT (__stdcall *SetPrivateData)(IDirectDrawSurfaceImpl*, REFGUID, LPVOID, DWORD, DWORD);
+    HRESULT (__stdcall *GetPrivateData)(IDirectDrawSurfaceImpl*, REFGUID, LPVOID, LPDWORD);
+    HRESULT (__stdcall *FreePrivateData)(IDirectDrawSurfaceImpl*, REFGUID);
+    HRESULT (__stdcall *GetUniquenessValue)(IDirectDrawSurfaceImpl*, LPDWORD);
+    HRESULT (__stdcall *ChangeUniquenessValue)(IDirectDrawSurfaceImpl*);
+    // v7
+    HRESULT (__stdcall *SetPriority)(IDirectDrawSurfaceImpl*, DWORD);
+    HRESULT (__stdcall *GetPriority)(IDirectDrawSurfaceImpl*, LPDWORD);
+    HRESULT (__stdcall *SetLOD)(IDirectDrawSurfaceImpl*, DWORD);
+    HRESULT (__stdcall *GetLOD)(IDirectDrawSurfaceImpl*, LPDWORD);
 };
 
 extern struct IDirectDrawSurfaceImplVtbl g_dds_vtbl;

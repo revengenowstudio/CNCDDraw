@@ -368,6 +368,110 @@ HRESULT __stdcall IDirectDrawSurface__UpdateOverlayZOrder(IDirectDrawSurfaceImpl
     return ret;
 }
 
+HRESULT __stdcall IDirectDrawSurface__GetDDInterface(IDirectDrawSurfaceImpl *This, LPVOID* lplpDD)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__PageLock(IDirectDrawSurfaceImpl *This, DWORD dwFlags)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DD_OK;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__PageUnlock(IDirectDrawSurfaceImpl *This, DWORD dwFlags)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DD_OK;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__SetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSD, DWORD dwFlags)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_UNSUPPORTED;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__SetPrivateData(IDirectDrawSurfaceImpl *This, REFGUID rtag, LPVOID lpData, DWORD dwSize, DWORD dwFlags)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_OUTOFMEMORY;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__GetPrivateData(IDirectDrawSurfaceImpl *This, REFGUID rtag, LPVOID lpBuffer, LPDWORD lpdwBufferSize)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_NOTFOUND;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__FreePrivateData(IDirectDrawSurfaceImpl *This, REFGUID rtag)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DD_OK;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__GetUniquenessValue(IDirectDrawSurfaceImpl *This, LPDWORD lpdwValue)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__ChangeUniquenessValue(IDirectDrawSurfaceImpl *This)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__SetPriority(IDirectDrawSurfaceImpl *This, DWORD dwPrio)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__GetPriority(IDirectDrawSurfaceImpl *This, LPDWORD lpdwPrio)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__SetLOD(IDirectDrawSurfaceImpl *This, DWORD dwLod)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
+HRESULT __stdcall IDirectDrawSurface__GetLOD(IDirectDrawSurfaceImpl *This, LPDWORD lpdwLod)
+{
+    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
 struct IDirectDrawSurfaceImplVtbl g_dds_vtbl =
 {
     /* IUnknown */
@@ -407,5 +511,22 @@ struct IDirectDrawSurfaceImplVtbl g_dds_vtbl =
     IDirectDrawSurface__Unlock,
     IDirectDrawSurface__UpdateOverlay,
     IDirectDrawSurface__UpdateOverlayDisplay,
-    IDirectDrawSurface__UpdateOverlayZOrder
+    IDirectDrawSurface__UpdateOverlayZOrder,
+    // v2
+    IDirectDrawSurface__GetDDInterface,
+    IDirectDrawSurface__PageLock,
+    IDirectDrawSurface__PageUnlock,
+    // v3
+    IDirectDrawSurface__SetSurfaceDesc,
+    // v4
+    IDirectDrawSurface__SetPrivateData,
+    IDirectDrawSurface__GetPrivateData,
+    IDirectDrawSurface__FreePrivateData,
+    IDirectDrawSurface__GetUniquenessValue,
+    IDirectDrawSurface__ChangeUniquenessValue,
+    // v7
+    IDirectDrawSurface__SetPriority,
+    IDirectDrawSurface__GetPriority,
+    IDirectDrawSurface__SetLOD,
+    IDirectDrawSurface__GetLOD
 };
