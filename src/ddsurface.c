@@ -776,7 +776,15 @@ HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* lp
     if (lpClipper)
         *lpClipper = (LPDIRECTDRAWCLIPPER)This->clipper;
 
-    return DD_OK;
+    if (This->clipper)
+    {
+        IDirectDrawClipper_AddRef(This->clipper);
+        return DD_OK;
+    }
+    else
+    {
+        return DDERR_NOCLIPPERATTACHED;
+    }
 }
 
 HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl *This, DWORD flags, LPDDCOLORKEY colorKey)
@@ -826,10 +834,12 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
 
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE FAR *lplpDDPalette)
 {
-    *lplpDDPalette = (LPDIRECTDRAWPALETTE)This->palette;
+    if (lplpDDPalette)
+        *lplpDDPalette = (LPDIRECTDRAWPALETTE)This->palette;
     
     if (This->palette)
     {
+        IDirectDrawPalette_AddRef(This->palette);
         return DD_OK;
     }
     else
@@ -919,20 +929,14 @@ HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER lpClipp
 
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPalette)
 {
-    if (!lpDDPalette)
-        return DDERR_INVALIDPARAMS;
-
-    IDirectDrawPalette_AddRef(lpDDPalette);
+    if (lpDDPalette)
+        IDirectDrawPalette_AddRef(lpDDPalette);
 
     if (This->palette)
-    {
         IDirectDrawPalette_Release(This->palette);
-    }
 
     EnterCriticalSection(&g_ddraw->cs);
-
     This->palette = (IDirectDrawPaletteImpl*)lpDDPalette;
-
     LeaveCriticalSection(&g_ddraw->cs);
 
     return DD_OK;
