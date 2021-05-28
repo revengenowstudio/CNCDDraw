@@ -594,6 +594,12 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "handlemouse=false\n"
             "\n"
+            "; Anno 1602\n"
+            "[1602]\n"
+            "handlemouse=false\n"
+            "renderer=gdi\n"
+            "hook=2\n"
+            "\n"
 
             , fh);
         fclose(fh);
