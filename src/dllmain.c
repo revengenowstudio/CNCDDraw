@@ -146,7 +146,7 @@ HRESULT WINAPI DirectDrawEnumerateA(LPDDENUMCALLBACK lpCallback, LPVOID lpContex
     dprintf("-> %s(lpCallback=%p, lpContext=%p)\n", __FUNCTION__, lpCallback, lpContext);
 
     if (lpCallback)
-        lpCallback(NULL, "display", "(null)", lpContext);
+        lpCallback(NULL, "Primary Display Driver", "display", lpContext);
 
     dprintf("<- %s\n", __FUNCTION__);
     return DD_OK;
@@ -157,7 +157,7 @@ HRESULT WINAPI DirectDrawEnumerateExA(LPDDENUMCALLBACKEXA lpCallback, LPVOID lpC
     dprintf("-> %s(lpCallback=%p, lpContext=%p, dwFlags=%d)\n", __FUNCTION__, lpCallback, lpContext, dwFlags);
 
     if (lpCallback)
-        lpCallback(NULL, "display", "(null)", lpContext, NULL);
+        lpCallback(NULL, "Primary Display Driver", "display", lpContext, NULL);
 
     dprintf("<- %s\n", __FUNCTION__);
     return DD_OK;
@@ -168,7 +168,7 @@ HRESULT WINAPI DirectDrawEnumerateExW(LPDDENUMCALLBACKEXW lpCallback, LPVOID lpC
     dprintf("-> %s(lpCallback=%p, lpContext=%p, dwFlags=%d)\n", __FUNCTION__, lpCallback, lpContext, dwFlags);
 
     if (lpCallback)
-        lpCallback(NULL, L"display", L"(null)", lpContext, NULL);
+        lpCallback(NULL, L"Primary Display Driver", L"display", lpContext, NULL);
 
     dprintf("<- %s\n", __FUNCTION__);
     return DD_OK;
@@ -179,7 +179,7 @@ HRESULT WINAPI DirectDrawEnumerateW(LPDDENUMCALLBACKW lpCallback, LPVOID lpConte
     dprintf("-> %s(lpCallback=%p, lpContext=%p)\n", __FUNCTION__, lpCallback, lpContext);
 
     if (lpCallback)
-        lpCallback(NULL, L"display", L"(null)", lpContext);
+        lpCallback(NULL, L"Primary Display Driver", L"display", lpContext);
 
     dprintf("<- %s\n", __FUNCTION__);
     return DD_OK;
