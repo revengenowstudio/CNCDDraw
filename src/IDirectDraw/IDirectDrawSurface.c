@@ -13,7 +13,21 @@ HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *Thi
 
     if (riid)
     {
-        if (IsEqualGUID(&IID_IDirectDrawGammaControl, riid))
+        if (IsEqualGUID(&IID_IDirectDrawSurface, riid) ||
+            IsEqualGUID(&IID_IDirectDrawSurface2, riid) ||
+            IsEqualGUID(&IID_IDirectDrawSurface3, riid) ||
+            IsEqualGUID(&IID_IDirectDrawSurface4, riid) ||
+            IsEqualGUID(&IID_IDirectDrawSurface7, riid))
+        {
+            dprintf("     GUID = %08X (IID_IDirectDrawSurfaceX)\n", ((GUID*)riid)->Data1);
+
+            IDirectDrawSurface_AddRef(This);
+
+            *obj = This;
+
+            ret = S_OK;
+        }
+        else if (IsEqualGUID(&IID_IDirectDrawGammaControl, riid))
         {
             IDirectDrawGammaControlImpl* gc = (IDirectDrawGammaControlImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawGammaControlImpl));
 
@@ -26,19 +40,11 @@ HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *Thi
 
             ret = S_OK;
         }
-        else if (!IsEqualGUID(&IID_IDirectDrawSurface, riid))
-        {
-            dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
-
-            IDirectDrawSurface_AddRef(This);
-
-            *obj = This;
-        }
         else
         {
-            dprintf("     GUID = %08X\n", ((GUID*)riid)->Data1);
+            dprintf("NOT_IMPLEMENTED     GUID = %08X\n", ((GUID*)riid)->Data1);
 
-            *obj = This;
+            ret = E_NOINTERFACE;
         }
     }
 
