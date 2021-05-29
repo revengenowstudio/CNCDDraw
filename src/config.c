@@ -601,6 +601,12 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
+            "; Hard Truck: Road to Victory\n"
+            "[htruck]\n"
+            "maxgameticks=25\n"
+            "renderer=opengl\n"
+            "noactivateapp=true\n"
+            "\n"
 
             , fh);
         fclose(fh);
