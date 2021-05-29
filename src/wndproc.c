@@ -445,29 +445,37 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
 
         case WM_MOUSELEAVE:
+        {
             mouse_unlock();
             return 0;
-
+        }
         case WM_ACTIVATE:
+        {
             if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
+            {
+                if (!g_ddraw->handlemouse)
+                    RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
+            }
+
+            //if (g_ddraw->windowed || g_ddraw->noactivateapp)
+                return 0;
+
+            break;
+        }
+        case WM_ACTIVATEAPP:
+        {
+            if (wParam)
             {
                 if (!g_ddraw->windowed)
                 {
                     if (g_ddraw->renderer != d3d9_render_main)
                     {
                         ChangeDisplaySettings(&g_ddraw->render.mode, CDS_FULLSCREEN);
-
-                        if (wParam == WA_ACTIVE)
-                        {
-                            mouse_lock();
-                        }
+                        mouse_lock();
                     }
                 }
-
-                if (!g_ddraw->handlemouse)
-                    RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
             }
-            else if (wParam == WA_INACTIVE)
+            else
             {
                 if (!g_ddraw->windowed && !g_ddraw->locked && g_ddraw->noactivateapp && !g_ddraw->devmode)
                     return 0;
@@ -477,7 +485,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 if (g_ddraw->wine && g_ddraw->last_set_window_pos_tick + 500 > timeGetTime())
                     return 0;
 
-                /* minimize our window on defocus when in fullscreen */
                 if (!g_ddraw->windowed)
                 {
                     if (g_ddraw->renderer != d3d9_render_main)
@@ -487,13 +494,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     }
                 }
             }
-            return 0;
 
-        case WM_ACTIVATEAPP:
-            /* C&C and RA stop drawing when they receive this with FALSE wParam, disable in windowed mode */
             if (g_ddraw->windowed || g_ddraw->noactivateapp)
             {
-                // let it pass through once (tiberian sun)
+                /* let it pass through once (tiberian sun) */
                 static BOOL one_time;
 
                 if (wParam && !one_time && !g_ddraw->handlemouse && g_ddraw->noactivateapp)
@@ -508,6 +512,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 return 0;
             }
             break;
+        }
         case WM_AUTORENDERER:
         {
             mouse_unlock();

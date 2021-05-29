@@ -59,7 +59,6 @@ void mouse_lock()
 
         if (g_ddraw->handlemouse)
         {
-            SetCapture(g_ddraw->hwnd);
             real_ClipCursor(&rc);
             while (real_ShowCursor(FALSE) >= 0);
         }
@@ -127,7 +126,6 @@ void mouse_unlock()
         }
 
         real_ClipCursor(NULL);
-        ReleaseCapture();
         
         real_SetCursorPos(
             (int)(rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w)), 
