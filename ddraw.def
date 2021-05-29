@@ -1,6 +1,10 @@
 LIBRARY     ddraw.dll
 
 EXPORTS
+    AcquireDDThreadLock                       @1
+    D3DParseUnknownCommand                    @3
+    DDInternalLock                            @5
+    DDInternalUnlock                          @6
     DirectDrawCreate                          @8
     DirectDrawCreateClipper                   @9
     DirectDrawCreateEx                        @10
@@ -8,5 +12,6 @@ EXPORTS
     DirectDrawEnumerateExA                    @12
     DirectDrawEnumerateExW                    @13
     DirectDrawEnumerateW                      @14
+    ReleaseDDThreadLock                       @21
     GameHandlesClose                          DATA
     pvBmpBits = FakePrimarySurface            DATA

@@ -184,3 +184,33 @@ HRESULT WINAPI DirectDrawEnumerateW(LPDDENUMCALLBACKW lpCallback, LPVOID lpConte
     dprintf("<- %s\n", __FUNCTION__);
     return DD_OK;
 }
+
+HRESULT WINAPI D3DParseUnknownCommand(LPVOID lpCmd, LPVOID* lpRetCmd)
+{
+    dprintf("-> %s()\n", __FUNCTION__);
+    return E_FAIL;
+}
+
+DWORD WINAPI AcquireDDThreadLock()
+{
+    dprintf("-> %s()\n", __FUNCTION__);
+    return 0;
+}
+
+DWORD WINAPI ReleaseDDThreadLock()
+{
+    dprintf("-> %s()\n", __FUNCTION__);
+    return 0;
+}
+
+DWORD WINAPI DDInternalLock(DWORD a, DWORD b)
+{
+    dprintf("-> %s()\n", __FUNCTION__);
+    return 0;
+}
+
+DWORD WINAPI DDInternalUnlock(DWORD a)
+{
+    dprintf("-> %s()\n", __FUNCTION__);
+    return 0;
+}
