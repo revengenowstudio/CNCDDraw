@@ -1021,6 +1021,17 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
     return DD_OK;
 }
 
+HRESULT dds_GetDDInterface(IDirectDrawSurfaceImpl* This, LPVOID* lplpDD)
+{
+    if (!lplpDD)
+        return DDERR_INVALIDPARAMS;
+
+    *lplpDD = This->ddraw;
+    IDirectDraw_AddRef(This->ddraw);
+
+    return DD_OK;
+}
+
 void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
 {
     if (!This)
@@ -1032,7 +1043,7 @@ void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
     return This->surface;
 }
 
-HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *lpDDSurface, IUnknown FAR * unkOuter)
+HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR *lpDDSurface, IUnknown FAR * unkOuter)
 {
     dbg_dump_dds_flags(lpDDSurfaceDesc->dwFlags);
     dbg_dump_dds_caps(lpDDSurfaceDesc->ddsCaps.dwCaps);
@@ -1059,6 +1070,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
     dst_surface->bpp = g_ddraw->bpp == 0 ? 16 : g_ddraw->bpp;
     dst_surface->flags = lpDDSurfaceDesc->dwFlags;
     dst_surface->caps = lpDDSurfaceDesc->ddsCaps.dwCaps;
+    dst_surface->ddraw = This;
 
     if (dst_surface->caps & DDSCAPS_PRIMARYSURFACE)
     {
@@ -1156,7 +1168,7 @@ HRESULT dd_CreateSurface(LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FA
             desc.dwWidth = dst_surface->width;
             desc.dwHeight = dst_surface->height;
 
-            dd_CreateSurface(&desc, (LPDIRECTDRAWSURFACE*)&dst_surface->backbuffer, unkOuter);
+            dd_CreateSurface(This, &desc, (LPDIRECTDRAWSURFACE*)&dst_surface->backbuffer, unkOuter);
         }
     }
 

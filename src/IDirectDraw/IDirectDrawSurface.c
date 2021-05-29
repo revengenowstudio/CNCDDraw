@@ -376,9 +376,9 @@ HRESULT __stdcall IDirectDrawSurface__UpdateOverlayZOrder(IDirectDrawSurfaceImpl
 
 HRESULT __stdcall IDirectDrawSurface__GetDDInterface(IDirectDrawSurfaceImpl *This, LPVOID* lplpDD)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DDERR_INVALIDOBJECT;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = dds_GetDDInterface(This, lplpDD);
+    dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
 

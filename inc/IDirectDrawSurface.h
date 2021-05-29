@@ -5,6 +5,7 @@
 #include <windows.h>
 #include "IDirectDrawPalette.h"
 #include "IDirectDrawClipper.h"
+#include "IDirectDraw.h"
 #include "ddraw.h"
 
 
@@ -41,6 +42,7 @@ typedef struct IDirectDrawSurfaceImpl
 
     struct IDirectDrawSurfaceImpl* backbuffer;
     struct IDirectDrawClipperImpl* clipper;
+    struct IDirectDrawImpl* ddraw;
 
 } IDirectDrawSurfaceImpl;
 
