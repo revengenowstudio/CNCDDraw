@@ -343,9 +343,9 @@ HRESULT __stdcall IDirectDraw__RestoreAllSurfaces(IDirectDrawImpl* This)
 
 HRESULT __stdcall IDirectDraw__TestCooperativeLevel(IDirectDrawImpl* This)
 {
-    dprintfex("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    dprintfex("-> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DD_OK;
-    dprintfex("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
 
