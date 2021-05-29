@@ -322,7 +322,7 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
             dds_GetDC(this, &src_dc);
 
-            MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+            real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
 
             BitBlt(dst_dc, 0, 0, size.right, size.bottom, src_dc, pos.left, pos.top, SRCCOPY);
 

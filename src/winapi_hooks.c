@@ -146,7 +146,7 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
         {
             if (real_GetWindowRect(hWnd, lpRect))
             {
-                MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)lpRect, 2);
+                real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)lpRect, 2);
 
                 return TRUE;
             }
@@ -282,7 +282,7 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
     {
         RECT *rc = (RECT *)lParam;
         if (rc)
-            MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)rc, 2);
+            real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)rc, 2);
     }
 
     return result;
@@ -304,6 +304,21 @@ BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
     }
 
     return real_EnableWindow(hWnd, bEnable);
+}
+
+int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UINT cPoints)
+{
+    if (g_ddraw && hWndFrom == g_ddraw->hwnd && hWndTo == HWND_DESKTOP)
+    {
+        return 0;
+    }
+
+    if (g_ddraw && hWndFrom == HWND_DESKTOP && hWndTo == g_ddraw->hwnd)
+    {
+        return 0;
+    }
+
+    return real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
 }
 
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
@@ -416,7 +431,7 @@ HWND WINAPI fake_CreateWindowExA(
             }
 
             real_GetClientRect(g_ddraw->hwnd, &g_ddraw->bnet_win_rect);
-            MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&g_ddraw->bnet_win_rect, 2);
+            real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&g_ddraw->bnet_win_rect, 2);
 
             int width = g_ddraw->bnet_win_rect.right - g_ddraw->bnet_win_rect.left;
             int height = g_ddraw->bnet_win_rect.bottom - g_ddraw->bnet_win_rect.top;

@@ -36,6 +36,7 @@ SETWINDOWLONGAPROC real_SetWindowLongA = SetWindowLongA;
 ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
 CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
 DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
+MAPWINDOWPOINTSPROC real_MapWindowPoints = MapWindowPoints;
 GETDEVICECAPSPROC real_GetDeviceCaps = GetDeviceCaps;
 LOADLIBRARYAPROC real_LoadLibraryA = LoadLibraryA;
 LOADLIBRARYWPROC real_LoadLibraryW = LoadLibraryW;
@@ -68,6 +69,7 @@ static hook_list g_hooks[] =
             { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow },
             { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA },
             { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow },
+            { "MapWindowPoints", (PROC)fake_MapWindowPoints, (PROC*)&real_MapWindowPoints },
             { "", NULL, NULL }
         }
     },

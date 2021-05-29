@@ -24,6 +24,7 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
 BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable);
 BOOL WINAPI fake_DestroyWindow(HWND hWnd);
+int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UINT cPoints);
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index);
 HMODULE WINAPI fake_LoadLibraryA(LPCSTR lpLibFileName);
 HMODULE WINAPI fake_LoadLibraryW(LPCWSTR lpLibFileName);
