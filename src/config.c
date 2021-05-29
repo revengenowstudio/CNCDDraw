@@ -552,6 +552,7 @@ static void cfg_create_ini()
             "[comeon]\n"
             "renderer=opengl\n"
             "nonexclusive=true\n"
+            "fixpitch=true\n"
             "\n"
             "; Tzar: The Burden of the Crown\n"
             "; Note: Must set 'DIRECTXDEVICE=0' in 'Tzar.ini'\n"
