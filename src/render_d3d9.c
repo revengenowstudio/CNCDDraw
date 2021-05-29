@@ -348,7 +348,7 @@ DWORD WINAPI d3d9_render_main(void)
 
             D3DLOCKED_RECT lock_rc;
 
-            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE))
+            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE) || g_ddraw->render.minfps == -2)
             {
                 if (++tex_index >= D3D9_TEXTURE_COUNT)
                     tex_index = 0;
@@ -374,7 +374,8 @@ DWORD WINAPI d3d9_render_main(void)
                 }
             }
 
-            if (g_ddraw->bpp == 8 && InterlockedExchange(&g_ddraw->render.palette_updated, FALSE))
+            if (g_ddraw->bpp == 8 && 
+                (InterlockedExchange(&g_ddraw->render.palette_updated, FALSE) || g_ddraw->render.minfps == -2))
             {
                 if (++pal_index >= D3D9_TEXTURE_COUNT)
                     pal_index = 0;

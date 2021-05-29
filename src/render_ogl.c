@@ -580,7 +580,8 @@ static void ogl_render()
                 }
             }
 
-            if (g_ddraw->bpp == 8 && InterlockedExchange(&g_ddraw->render.palette_updated, FALSE))
+            if (g_ddraw->bpp == 8 && 
+                (InterlockedExchange(&g_ddraw->render.palette_updated, FALSE) || g_ddraw->render.minfps == -2))
             {
                 if (++pal_index >= TEXTURE_COUNT)
                     pal_index = 0;
@@ -599,7 +600,7 @@ static void ogl_render()
                     g_ddraw->primary->palette->data_bgr);
             }
 
-            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE))
+            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE) || g_ddraw->render.minfps == -2)
             {
                 if (++tex_index >= TEXTURE_COUNT)
                     tex_index = 0;

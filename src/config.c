@@ -312,7 +312,7 @@ static void cfg_create_ini()
             "; Note: 'hook=2' will usually work for problematic games, but 'hook=2' should be combined with renderer=gdi\n"
             "hook=4\n"
             "\n"
-            "; Force minimum FPS, possible values: 0 = disabled, -1 = use 'maxfps=' value, 1-1000 = custom FPS\n"
+            "; Force minimum FPS, possible values: 0 = disabled, -1 = use 'maxfps=' value, -2 = same as -1 but force full redraw, 1-1000 = custom FPS\n"
             "; Note: Set this to a low value such as 5 or 10 if some parts of the game are not being displayed (e.g. menus or loading screens)\n"
             "minfps=0\n"
             "\n"
