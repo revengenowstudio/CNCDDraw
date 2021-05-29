@@ -841,6 +841,11 @@ ULONG dd_Release()
             g_fpsl.htimer = NULL;
         }
 
+        if (g_ddraw->real_dd)
+        {
+            g_ddraw->real_dd->lpVtbl->Release(g_ddraw->real_dd);
+        }
+
         DeleteCriticalSection(&g_ddraw->cs);
 
         /* restore old wndproc, subsequent ddraw creation will otherwise fail */

@@ -96,9 +96,12 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             ret = S_OK;
         }
-        else if (IsEqualGUID(&IID_IMediaStream, riid) || IsEqualGUID(&IID_IAMMediaStream, riid))
+        else if (
+            !g_ddraw->passthrough && 
+            (IsEqualGUID(&IID_IMediaStream, riid) || IsEqualGUID(&IID_IAMMediaStream, riid)))
         {
-            IAMMediaStreamImpl* ms = (IAMMediaStreamImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IAMMediaStreamImpl));
+            IAMMediaStreamImpl* ms = 
+                (IAMMediaStreamImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IAMMediaStreamImpl));
 
             dprintf("     GUID = %08X (IID_IXXMediaStream), ms = %p\n", ((GUID*)riid)->Data1, ms);
 
@@ -112,6 +115,24 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
         else
         {
             dprintf("NOT_IMPLEMENTED     GUID = %08X\n", ((GUID*)riid)->Data1);
+
+            if (g_ddraw->passthrough)
+            {
+                if (!g_ddraw->real_dll)
+                    g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
+
+                if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
+                    g_ddraw->DirectDrawCreate = (void*)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
+
+                if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
+                    g_ddraw->DirectDrawCreate = NULL;
+
+                if (!g_ddraw->real_dd && g_ddraw->DirectDrawCreate)
+                    g_ddraw->DirectDrawCreate(NULL, &g_ddraw->real_dd, NULL);
+
+                if (g_ddraw->real_dd)
+                    return g_ddraw->real_dd->lpVtbl->QueryInterface(g_ddraw->real_dd, riid, obj);
+            }
 
             ret = E_NOINTERFACE;
         }
@@ -176,7 +197,7 @@ HRESULT __stdcall IDirectDraw__CreatePalette(IDirectDrawImpl* This, DWORD dwFlag
 HRESULT __stdcall IDirectDraw__CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc, LPDIRECTDRAWSURFACE FAR* lpDDSurface, IUnknown FAR* unkOuter)
 {
     dprintf("-> %s(This=%p, lpDDSurfaceDesc=%p, lpDDSurface=%p, unkOuter=%p)\n", __FUNCTION__, This, lpDDSurfaceDesc, lpDDSurface, unkOuter);
-    HRESULT ret = dd_CreateSurface(lpDDSurfaceDesc, lpDDSurface, unkOuter);
+    HRESULT ret = dd_CreateSurface(This, lpDDSurfaceDesc, lpDDSurface, unkOuter);
     dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }

@@ -53,6 +53,7 @@ typedef struct cnc_ddraw
     /* real export from system32\ddraw.dll */
     HMODULE real_dll;
     DIRECTDRAWCREATEPROC DirectDrawCreate;
+    LPDIRECTDRAW real_dd;
 
     struct
     {
