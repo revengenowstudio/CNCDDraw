@@ -834,6 +834,22 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl *This, HDC FAR *lpHDC)
     return DD_OK;
 }
 
+HRESULT dds_ReleaseDC(IDirectDrawSurfaceImpl* This, HDC hDC)
+{
+    if ((This->caps & DDSCAPS_PRIMARYSURFACE) && g_ddraw->render.run)
+    {
+        InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
+
+        DWORD time = timeGetTime();
+
+        if (!(This->flags & DDSD_BACKBUFFERCOUNT) ||
+            (This->last_flip_tick + FLIP_REDRAW_TIMEOUT < time && This->last_blt_tick + FLIP_REDRAW_TIMEOUT < time))
+        {
+            ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
+        }
+    }
+}
+
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE FAR *lplpDDPalette)
 {
     if (!lplpDDPalette)

@@ -22,6 +22,7 @@ HRESULT dds_GetCaps(IDirectDrawSurfaceImpl* This, LPDDSCAPS lpDDSCaps);
 HRESULT dds_GetClipper(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWCLIPPER FAR* lpClipper);
 HRESULT dds_GetColorKey(IDirectDrawSurfaceImpl* This, DWORD flags, LPDDCOLORKEY colorKey);
 HRESULT dds_GetDC(IDirectDrawSurfaceImpl* This, HDC FAR* lpHDC);
+HRESULT dds_ReleaseDC(IDirectDrawSurfaceImpl* This, HDC hDC);
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl* This, LPDIRECTDRAWPALETTE FAR* lplpDDPalette);
 HRESULT dds_GetPixelFormat(IDirectDrawSurfaceImpl* This, LPDDPIXELFORMAT ddpfPixelFormat);
 HRESULT dds_Lock(IDirectDrawSurfaceImpl* This, LPRECT lpDestRect, LPDDSURFACEDESC lpDDSurfaceDesc, DWORD dwFlags, HANDLE hEvent);

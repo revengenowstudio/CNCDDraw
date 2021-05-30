@@ -294,10 +294,10 @@ HRESULT __stdcall IDirectDrawSurface__Lock(IDirectDrawSurfaceImpl *This, LPRECT 
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawSurface__ReleaseDC(IDirectDrawSurfaceImpl *This, HDC a)
+HRESULT __stdcall IDirectDrawSurface__ReleaseDC(IDirectDrawSurfaceImpl *This, HDC hDC)
 {
     dprintfex("-> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
+    HRESULT ret = dds_ReleaseDC(This, hDC);
     dprintfex("<- %s\n", __FUNCTION__);
     return ret;
 }
