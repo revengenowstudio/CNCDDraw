@@ -683,7 +683,6 @@ HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSur
 
 HRESULT dds_EnumAttachedSurfaces(IDirectDrawSurfaceImpl *This, LPVOID lpContext, LPDDENUMSURFACESCALLBACK lpEnumSurfacesCallback)
 {
-    /* this is not actually complete, but Carmageddon seems to call EnumAttachedSurfaces instead of GetSurfaceDesc to get the main surface description */
     static DDSURFACEDESC dd_surface_desc;
     memset(&dd_surface_desc, 0, sizeof(DDSURFACEDESC));
 
@@ -713,13 +712,15 @@ HRESULT dds_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE surface, DWOR
     if (This->backbuffer)
     {
         EnterCriticalSection(&g_ddraw->cs);
-        void* surface = InterlockedExchangePointer(&This->surface, This->backbuffer->surface);
-        HBITMAP bitmap = (HBITMAP)InterlockedExchangePointer(&This->bitmap, This->backbuffer->bitmap);
-        HDC hdc = (HDC)InterlockedExchangePointer(&This->hdc, This->backbuffer->hdc);
+        IDirectDrawSurfaceImpl* backbuffer = surface ? (IDirectDrawSurfaceImpl*)surface : This->backbuffer;
 
-        InterlockedExchangePointer(&This->backbuffer->surface, surface);
-        InterlockedExchangePointer(&This->backbuffer->bitmap, bitmap);
-        InterlockedExchangePointer(&This->backbuffer->hdc, hdc);
+        void* buf = InterlockedExchangePointer(&This->surface, backbuffer->surface);
+        HBITMAP bitmap = (HBITMAP)InterlockedExchangePointer(&This->bitmap, backbuffer->bitmap);
+        HDC dc = (HDC)InterlockedExchangePointer(&This->hdc, backbuffer->hdc);
+
+        InterlockedExchangePointer(&backbuffer->surface, buf);
+        InterlockedExchangePointer(&backbuffer->bitmap, bitmap);
+        InterlockedExchangePointer(&backbuffer->hdc, dc);
         LeaveCriticalSection(&g_ddraw->cs);
     }
 
@@ -1178,6 +1179,12 @@ HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc,
         {
             DDSURFACEDESC desc;
             memset(&desc, 0, sizeof(DDSURFACEDESC));
+
+            if (lpDDSurfaceDesc->dwBackBufferCount > 1)
+            {
+                desc.dwBackBufferCount = lpDDSurfaceDesc->dwBackBufferCount - 1;
+                desc.dwFlags |= DDSD_BACKBUFFERCOUNT;
+            }
 
             desc.ddsCaps.dwCaps |= DDSCAPS_BACKBUFFER;
 
