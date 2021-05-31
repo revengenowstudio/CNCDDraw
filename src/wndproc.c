@@ -555,6 +555,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 g_ddraw->alt_key_down = FALSE;
             }
 
+            if (wParam == VK_TAB)
+            {
+                return DefWindowProc(hWnd, uMsg, wParam, lParam);
+            }
+
             break;
         }
         case WM_KEYDOWN:
