@@ -96,6 +96,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             ret = S_OK;
         }
+        /*
         else if (
             !g_ddraw->passthrough && 
             (IsEqualGUID(&IID_IMediaStream, riid) || IsEqualGUID(&IID_IAMMediaStream, riid)))
@@ -112,27 +113,25 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             ret = S_OK;
         }
+        */
         else
         {
             dprintf("NOT_IMPLEMENTED     GUID = %08X\n", ((GUID*)riid)->Data1);
 
-            if (g_ddraw->passthrough)
-            {
-                if (!g_ddraw->real_dll)
-                    g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
+            if (!g_ddraw->real_dll)
+                g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
 
-                if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate = (void*)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
+            if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
+                g_ddraw->DirectDrawCreate = (void*)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
 
-                if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate = NULL;
+            if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
+                g_ddraw->DirectDrawCreate = NULL;
 
-                if (!g_ddraw->real_dd && g_ddraw->DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate(NULL, &g_ddraw->real_dd, NULL);
+            if (!g_ddraw->real_dd && g_ddraw->DirectDrawCreate)
+                g_ddraw->DirectDrawCreate(NULL, &g_ddraw->real_dd, NULL);
 
-                if (g_ddraw->real_dd)
-                    return g_ddraw->real_dd->lpVtbl->QueryInterface(g_ddraw->real_dd, riid, obj);
-            }
+            if (g_ddraw->real_dd)
+                return IDirectDraw_QueryInterface(g_ddraw->real_dd, riid, obj);
 
             ret = E_NOINTERFACE;
         }
