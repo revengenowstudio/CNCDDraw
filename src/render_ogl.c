@@ -48,7 +48,7 @@ DWORD WINAPI ogl_render_main(void)
         g_ogl.got_error = g_ogl.got_error || !ogl_texture_upload_test();
         g_ogl.got_error = g_ogl.got_error || !ogl_shader_test();
         g_ogl.got_error = g_ogl.got_error || glGetError() != GL_NO_ERROR;
-        g_ogl.use_opengl = (g_ogl.main_program || g_ddraw->bpp == 16) && !g_ogl.got_error;
+        g_ogl.use_opengl = (g_ogl.main_program || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !g_ogl.got_error;
 
         ogl_render();
 
@@ -128,7 +128,7 @@ static void ogl_build_programs()
                 g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_CORE, PALETTE_FRAG_SHADER_CORE);
             }
         }
-        else if (g_ddraw->bpp == 16)
+        else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER, PASSTHROUGH_FRAG_SHADER);
 
@@ -156,7 +156,7 @@ static void ogl_build_programs()
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_110, PALETTE_FRAG_SHADER_110);
         }
-        else if (g_ddraw->bpp == 16)
+        else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_110, PASSTHROUGH_FRAG_SHADER_110);
         }
@@ -192,7 +192,20 @@ static void ogl_create_textures(int width, int height)
 
         while (glGetError() != GL_NO_ERROR);
 
-        if (g_ddraw->bpp == 16)
+        if (g_ddraw->bpp == 32)
+        {
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA8,
+                g_ogl.surface_tex_width,
+                g_ogl.surface_tex_height,
+                0,
+                g_ogl.surface_format = GL_RGBA,
+                g_ogl.surface_type = GL_UNSIGNED_BYTE,
+                0);
+        }
+        else if (g_ddraw->bpp == 16)
         {
             glTexImage2D(
                 GL_TEXTURE_2D,
@@ -536,7 +549,7 @@ static void ogl_render()
     {
         glUseProgram(g_ogl.main_program);
     }
-    else if (g_ddraw->bpp == 16)
+    else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
     {
         glEnable(GL_TEXTURE_2D);
     }
@@ -561,7 +574,7 @@ static void ogl_render()
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
+        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->bpp == 32 || g_ddraw->primary->palette))
         {
             if (g_ddraw->vhack)
             {

@@ -69,6 +69,7 @@
     <ClInclude Include="inc\IDirect3D.h" />
     <ClInclude Include="inc\IAMMediaStream.h" />
     <ClInclude Include="inc\IDirectDrawGammaControl.h" />
+    <ClInclude Include="inc\patch.h" />
     <ClInclude Include="inc\utils.h" />
     <ClInclude Include="inc\hook.h" />
     <ClInclude Include="inc\IDirectDraw.h" />

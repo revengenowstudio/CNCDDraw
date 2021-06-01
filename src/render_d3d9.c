@@ -207,7 +207,7 @@ static BOOL d3d9_create_resouces()
                 tex_height,
                 1,
                 0,
-                g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : D3DFMT_L8,
+                g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : g_ddraw->bpp == 32 ? D3DFMT_X8B8G8R8 : D3DFMT_L8,
                 D3DPOOL_MANAGED,
                 &g_d3d9.surface_tex[i],
                 0));
@@ -238,7 +238,7 @@ static BOOL d3d9_create_resouces()
             IDirect3DDevice9_CreatePixelShader(g_d3d9.device, (DWORD *)D3D9_PALETTE_SHADER, &g_d3d9.pixel_shader));
     }
 
-    return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16) && !err;
+    return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !err;
 }
 
 static BOOL d3d9_set_states()
@@ -330,7 +330,7 @@ DWORD WINAPI d3d9_render_main(void)
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
+        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->bpp == 32 || g_ddraw->primary->palette))
         {
             if (g_ddraw->vhack)
             {

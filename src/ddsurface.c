@@ -149,6 +149,35 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                 }
             }
         }
+        else if (This->bpp == 32)
+        {
+            unsigned int* row1 = (unsigned int*)dst;
+            unsigned int color = lpDDBltFx->dwFillColor;
+
+            if ((color & 0xFF) == ((color >> 8) & 0xFF) &&
+                (color & 0xFF) == ((color >> 16) & 0xFF) &&
+                (color & 0xFF) == ((color >> 24) & 0xFF))
+            {
+                unsigned char c8 = (unsigned char)(color & 0xFF);
+
+                for (i = 0; i < dst_h; i++)
+                {
+                    memset(dst, c8, dst_pitch);
+                    dst += This->l_pitch;
+                }
+            }
+            else
+            {
+                for (x = 0; x < dst_w; x++)
+                    row1[x] = color;
+
+                for (i = 1; i < dst_h; i++)
+                {
+                    dst += This->l_pitch;
+                    memcpy(dst, first_row, dst_pitch);
+                }
+            }
+        }
     }
 
     if (src_surface && src_w > 0 && src_h > 0 && dst_w > 0 && dst_h > 0)
@@ -181,8 +210,8 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                     if (mirror_up_down)
                         scaled_y = src_h - 1 - scaled_y;
 
-                    int rc_src_y = src_surface->width * (scaled_y + src_y);
-                    int rc_dst_y = This->width * (y + dst_y);
+                    int src_row = src_surface->width * (scaled_y + src_y);
+                    int dst_row = This->width * (y + dst_y);
 
                     for (int x = 0; x < dst_w; x++)
                     {
@@ -191,11 +220,11 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                         if (mirror_left_right)
                             scaled_x = src_w - 1 - scaled_x;
 
-                        unsigned char c = ((unsigned char*)src_buf)[scaled_x + src_x + rc_src_y];
+                        unsigned char c = ((unsigned char*)src_buf)[scaled_x + src_x + src_row];
 
                         if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned char*)dst_buf)[x + dst_x + rc_dst_y] = c;
+                            ((unsigned char*)dst_buf)[x + dst_x + dst_row] = c;
                         }
                     }
                 }
@@ -209,8 +238,8 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                     if (mirror_up_down)
                         scaled_y = src_h - 1 - scaled_y;
 
-                    int rc_src_y = src_surface->width * (scaled_y + src_y);
-                    int rc_dst_y = This->width * (y + dst_y);
+                    int src_row = src_surface->width * (scaled_y + src_y);
+                    int dst_row = This->width * (y + dst_y);
 
                     for (int x = 0; x < dst_w; x++)
                     {
@@ -219,11 +248,39 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                         if (mirror_left_right)
                             scaled_x = src_w - 1 - scaled_x;
 
-                        unsigned short c = ((unsigned short*)src_buf)[scaled_x + src_x + rc_src_y];
+                        unsigned short c = ((unsigned short*)src_buf)[scaled_x + src_x + src_row];
 
                         if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned short*)dst_buf)[x + dst_x + rc_dst_y] = c;
+                            ((unsigned short*)dst_buf)[x + dst_x + dst_row] = c;
+                        }
+                    }
+                }
+            }
+            else if (This->bpp == 32)
+            {
+                for (int y = 0; y < dst_h; y++)
+                {
+                    int scaled_y = (int)(y * scale_h);
+
+                    if (mirror_up_down)
+                        scaled_y = src_h - 1 - scaled_y;
+
+                    int src_row = src_surface->width * (scaled_y + src_y);
+                    int dst_row = This->width * (y + dst_y);
+
+                    for (int x = 0; x < dst_w; x++)
+                    {
+                        int scaled_x = (int)(x * scale_w);
+
+                        if (mirror_left_right)
+                            scaled_x = src_w - 1 - scaled_x;
+
+                        unsigned int c = ((unsigned int*)src_buf)[scaled_x + src_x + src_row];
+
+                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
+                        {
+                            ((unsigned int*)dst_buf)[x + dst_x + dst_row] = c;
                         }
                     }
                 }
@@ -435,6 +492,45 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
                                 current = &pattern[++pattern_idx];
                             } while (current->type != END);
                         }
+                        else if (This->bpp == 32)
+                        {
+                            unsigned int* d, * s, v;
+                            unsigned int* src = (unsigned int*)src_buf;
+                            unsigned int* dst = (unsigned int*)dst_buf;
+
+                            do {
+                                switch (current->type)
+                                {
+                                case ONCE:
+                                    dst[dest_base + current->dst_index] =
+                                        src[source_base + current->src_index];
+                                    break;
+
+                                case REPEAT:
+                                    d = (dst + dest_base + current->dst_index);
+                                    v = src[source_base + current->src_index];
+
+                                    count = current->count;
+                                    while (count-- > 0)
+                                        *d++ = v;
+
+                                    break;
+
+                                case SEQUENCE:
+                                    d = dst + dest_base + current->dst_index;
+                                    s = src + source_base + current->src_index;
+
+                                    memcpy((void*)d, (void*)s, current->count * This->lx_pitch);
+                                    break;
+
+                                case END:
+                                default:
+                                    break;
+                                }
+
+                                current = &pattern[++pattern_idx];
+                            } while (current->type != END);
+                        }
                     }
                     free(pattern);
                 }
@@ -535,16 +631,16 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
             {
                 for (int y = 0; y < dst_h; y++)
                 {
-                    int rc_dst_y = This->width * (y + dst_y);
-                    int rc_src_y = src_surface->width * (y + src_y);
+                    int dst_row = This->width * (y + dst_y);
+                    int src_row = src_surface->width * (y + src_y);
 
                     for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned char c = ((unsigned char *)src_buf)[x + src_x + rc_src_y];
+                        unsigned char c = ((unsigned char *)src_buf)[x + src_x + src_row];
 
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned char *)dst_buf)[x + dst_x + rc_dst_y] = c;
+                            ((unsigned char *)dst_buf)[x + dst_x + dst_row] = c;
                         }
                     }
                 }
@@ -553,16 +649,34 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
             {
                 for (int y = 0; y < dst_h; y++)
                 {
-                    int rc_dst_y = This->width * (y + dst_y);
-                    int rc_src_y = src_surface->width * (y + src_y);
+                    int dst_row = This->width * (y + dst_y);
+                    int src_row = src_surface->width * (y + src_y);
 
                     for (int x = 0; x < dst_w; x++)
                     {
-                        unsigned short c = ((unsigned short *)src_buf)[x + src_x + rc_src_y];
+                        unsigned short c = ((unsigned short *)src_buf)[x + src_x + src_row];
                         
                         if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
                         {
-                            ((unsigned short *)dst_buf)[x + dst_x + rc_dst_y] = c;
+                            ((unsigned short *)dst_buf)[x + dst_x + dst_row] = c;
+                        }
+                    }
+                }
+            }
+            else if (This->bpp == 32)
+            {
+                for (int y = 0; y < dst_h; y++)
+                {
+                    int dst_row = This->width * (y + dst_y);
+                    int src_row = src_surface->width * (y + src_y);
+
+                    for (int x = 0; x < dst_w; x++)
+                    {
+                        unsigned int c = ((unsigned int*)src_buf)[x + src_x + src_row];
+
+                        if (c < src_surface->color_key.dwColorSpaceLowValue || c > src_surface->color_key.dwColorSpaceHighValue)
+                        {
+                            ((unsigned int*)dst_buf)[x + dst_x + dst_row] = c;
                         }
                     }
                 }
@@ -675,6 +789,12 @@ HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl *This, LPDDSURFACEDESC lpDDSur
             lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xF800;
             lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x07E0;
             lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x001F;
+        }
+        else if (This->bpp == 32)
+        {
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xFF0000;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x00FF00;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x0000FF;
         }
     }
 
@@ -888,6 +1008,12 @@ HRESULT dds_GetPixelFormat(IDirectDrawSurfaceImpl *This, LPDDPIXELFORMAT ddpfPix
             ddpfPixelFormat->dwRBitMask = 0xF800;
             ddpfPixelFormat->dwGBitMask = 0x07E0;
             ddpfPixelFormat->dwBBitMask = 0x001F;
+        }
+        else if (This->bpp == 32)
+        {
+            ddpfPixelFormat->dwRBitMask = 0xFF0000;
+            ddpfPixelFormat->dwGBitMask = 0x00FF00;
+            ddpfPixelFormat->dwBBitMask = 0x0000FF;
         }
 
         return DD_OK;
@@ -1121,7 +1247,7 @@ HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc,
         dst_surface->bmi->bmiHeader.biHeight = -((int)dst_surface->height + 200);
         dst_surface->bmi->bmiHeader.biPlanes = 1;
         dst_surface->bmi->bmiHeader.biBitCount = dst_surface->bpp;
-        dst_surface->bmi->bmiHeader.biCompression = dst_surface->bpp == 16 ? BI_BITFIELDS : BI_RGB;
+        dst_surface->bmi->bmiHeader.biCompression = dst_surface->bpp == 8 ? BI_RGB : BI_BITFIELDS;
 
         WORD clr_bits = (WORD)(dst_surface->bmi->bmiHeader.biPlanes * dst_surface->bmi->bmiHeader.biBitCount);
 
@@ -1144,9 +1270,15 @@ HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc,
         }
         else if (dst_surface->bpp == 16)
         {
-            ((DWORD *)dst_surface->bmi->bmiColors)[0] = 0xF800;
-            ((DWORD *)dst_surface->bmi->bmiColors)[1] = 0x07E0;
-            ((DWORD *)dst_surface->bmi->bmiColors)[2] = 0x001F;
+            ((DWORD*)dst_surface->bmi->bmiColors)[0] = 0xF800;
+            ((DWORD*)dst_surface->bmi->bmiColors)[1] = 0x07E0;
+            ((DWORD*)dst_surface->bmi->bmiColors)[2] = 0x001F;
+        }
+        else if (dst_surface->bpp == 32)
+        {
+            ((DWORD*)dst_surface->bmi->bmiColors)[0] = 0xFF0000;
+            ((DWORD*)dst_surface->bmi->bmiColors)[1] = 0x00FF00;
+            ((DWORD*)dst_surface->bmi->bmiColors)[2] = 0x0000FF;
         }
 
         dst_surface->hdc = CreateCompatibleDC(g_ddraw->render.hdc);

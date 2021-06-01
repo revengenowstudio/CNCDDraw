@@ -92,6 +92,16 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     s.ddpfPixelFormat.dwBBitMask = 0x001F;
                 }
 
+                if (g_ddraw->bpp == 32)
+                {
+                    s.lPitch = s.dwWidth * 4;
+                    s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+                    s.ddpfPixelFormat.dwRGBBitCount = 32;
+                    s.ddpfPixelFormat.dwRBitMask = 0xFF0000;
+                    s.ddpfPixelFormat.dwGBitMask = 0x00FF00;
+                    s.ddpfPixelFormat.dwBBitMask = 0x0000FF;
+                }
+
                 if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                 {
                     dprintf("     DDENUMRET_CANCEL returned, stopping\n");
@@ -151,6 +161,19 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 dprintf("     DDENUMRET_CANCEL returned, stopping\n");
                 break;
             }
+
+            s.lPitch = s.dwWidth * 4;
+            s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+            s.ddpfPixelFormat.dwRGBBitCount = 32;
+            s.ddpfPixelFormat.dwRBitMask = 0xFF0000;
+            s.ddpfPixelFormat.dwGBitMask = 0x00FF00;
+            s.ddpfPixelFormat.dwBBitMask = 0x0000FF;
+
+            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            {
+                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                break;
+            }
         }
     }
 
@@ -202,7 +225,16 @@ HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc)
         lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
         lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = 8;
 
-        if (g_ddraw->bpp != 8)
+        if (g_ddraw->bpp == 32)
+        {
+            lpDDSurfaceDesc->lPitch = lpDDSurfaceDesc->dwWidth * 4;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount = 32;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwRBitMask = 0xFF0000;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwGBitMask = 0x00FF00;
+            lpDDSurfaceDesc->ddpfPixelFormat.dwBBitMask = 0x0000FF;
+        }
+        else if (g_ddraw->bpp != 8)
         {
             lpDDSurfaceDesc->lPitch = lpDDSurfaceDesc->dwWidth * 2;
             lpDDSurfaceDesc->ddpfPixelFormat.dwFlags = DDPF_RGB;
@@ -262,7 +294,7 @@ HRESULT dd_RestoreDisplayMode()
 
 HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
 {
-    if (bpp != 8 && bpp != 16)
+    if (bpp != 8 && bpp != 16 && bpp != 32)
         return DDERR_INVALIDMODE;
 
     if (g_ddraw->render.thread)
