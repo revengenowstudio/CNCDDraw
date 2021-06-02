@@ -614,6 +614,12 @@ static void cfg_create_ini()
             "renderer=opengl\n"
             "noactivateapp=true\n"
             "\n"
+            "; Grand Theft Auto\n"
+            "[Grand Theft Auto]\n"
+            "renderer=opengl\n"
+            "fixwndprochook=true\n"
+            "singlecpu=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
