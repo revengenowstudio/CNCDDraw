@@ -111,6 +111,7 @@ typedef struct cnc_ddraw
     BOOL nonexclusive;
     BOOL fixpitch;
     BOOL fixchildwindows;
+    BOOL fixwndprochook;
     BOOL d3d9linear;
     BOOL backbuffer;
     BOOL passthrough;

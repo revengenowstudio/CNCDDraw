@@ -50,6 +50,7 @@ void cfg_load()
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
     g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
     g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
+    g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);

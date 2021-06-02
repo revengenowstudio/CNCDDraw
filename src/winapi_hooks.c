@@ -288,10 +288,34 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
     return result;
 }
 
+static WNDPROC g_compat_wndproc;
+LRESULT CALLBACK compat_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    return CallWindowProcA(g_compat_wndproc, hWnd, uMsg, wParam, lParam);
+}
+
 LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
 {
-    if (g_ddraw && g_ddraw->hwnd == hWnd && nIndex == GWL_STYLE)
-        return 0;
+    if (g_ddraw && g_ddraw->hwnd == hWnd)
+    {
+        if (nIndex == GWL_STYLE)
+            return 0;
+
+        if (nIndex == GWL_WNDPROC && g_ddraw->fixwndprochook)
+        {
+            if (dwNewLong == (LONG)compat_WndProc)
+            {
+                LONG result = real_SetWindowLongA(hWnd, nIndex, (LONG)g_compat_wndproc);
+                g_compat_wndproc = NULL;
+                return result;
+            }
+            else if (!g_compat_wndproc)
+            {
+                g_compat_wndproc = (WNDPROC)real_SetWindowLongA(hWnd, nIndex, dwNewLong);
+                return g_compat_wndproc ? (LONG)compat_WndProc : 0;
+            }
+        }
+    }
 
     return real_SetWindowLongA(hWnd, nIndex, dwNewLong);
 }
