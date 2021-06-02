@@ -280,7 +280,7 @@ static void ogl_create_textures(int width, int height)
     {
         glGenTextures(TEXTURE_COUNT, g_ogl.palette_tex_ids);
 
-        for (i = 0; i < TEXTURE_COUNT; i++)
+        for (int i = 0; i < TEXTURE_COUNT; i++)
         {
             glBindTexture(GL_TEXTURE_2D, g_ogl.palette_tex_ids[i]);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
