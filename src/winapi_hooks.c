@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include "debug.h"
 #include "dd.h"
 #include "hook.h"
 #include "config.h"
