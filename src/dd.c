@@ -120,6 +120,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
         {
             { 320, 200 },
             { 320, 240 },
+            { 512, 384 },
             { 640, 400 },
             { 640, 480 },
             { 800, 600 },
