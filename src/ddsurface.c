@@ -969,6 +969,8 @@ HRESULT dds_ReleaseDC(IDirectDrawSurfaceImpl* This, HDC hDC)
             ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
         }
     }
+
+    return DD_OK;
 }
 
 HRESULT dds_GetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE FAR *lplpDDPalette)
