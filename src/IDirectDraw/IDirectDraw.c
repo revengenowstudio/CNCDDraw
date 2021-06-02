@@ -316,7 +316,7 @@ HRESULT __stdcall IDirectDraw__SetCooperativeLevel(IDirectDrawImpl* This, HWND h
 HRESULT __stdcall IDirectDraw__SetDisplayMode(IDirectDrawImpl* This, DWORD width, DWORD height, DWORD bpp)
 {
     dprintf("-> %s(This=%p, width=%d, height=%d, bpp=%d)\n", __FUNCTION__, This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp);
-    HRESULT ret = dd_SetDisplayMode(width, height, bpp);
+    HRESULT ret = dd_SetDisplayMode(width, height, bpp, TRUE);
     dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -324,7 +324,7 @@ HRESULT __stdcall IDirectDraw__SetDisplayMode(IDirectDrawImpl* This, DWORD width
 HRESULT __stdcall IDirectDraw__SetDisplayModeX(IDirectDrawImpl* This, DWORD width, DWORD height, DWORD bpp, DWORD refreshRate, DWORD flags)
 {
     dprintf("-> %s(This=%p, width=%d, height=%d, bpp=%d, refreshRate=%d, flags=%d)\n", __FUNCTION__, This, (unsigned int)width, (unsigned int)height, (unsigned int)bpp, (unsigned int)refreshRate, (unsigned int)flags);
-    HRESULT ret = dd_SetDisplayMode(width, height, bpp);
+    HRESULT ret = dd_SetDisplayMode(width, height, bpp, TRUE);
     dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }

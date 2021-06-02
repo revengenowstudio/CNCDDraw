@@ -39,6 +39,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         case WM_NCLBUTTONUP:
         case WM_NCPAINT:
         case WM_CANCELMODE:
+        case WM_DISPLAYCHANGE:
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }
@@ -108,6 +109,21 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 }
             }
 
+            break;
+        }
+        case WM_SIZE_DDRAW:
+        {
+            uMsg = WM_SIZE;
+            break;
+        }
+        case WM_MOVE_DDRAW:
+        {
+            uMsg = WM_MOVE;
+            break;
+        }
+        case WM_DISPLAYCHANGE_DDRAW:
+        {
+            uMsg = WM_DISPLAYCHANGE;
             break;
         }
         case WM_D3D9DEVICELOST:
@@ -187,7 +203,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 in_size_move = FALSE;
 
                 if (!g_ddraw->render.thread)
-                    dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+                    dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
             }
             break;
         }
@@ -368,12 +384,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             
             if (!g_ddraw->handlemouse)
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
-
-            if (g_ddraw->sierrahack)
-            {
-                lParam = 0;
-                break;
-            }
 
             return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
         }

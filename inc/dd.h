@@ -12,7 +12,7 @@ ULONG dd_AddRef();
 ULONG dd_Release();
 HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback);
 HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h);
-HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp);
+HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game);
 HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags);
 HRESULT dd_RestoreDisplayMode();
 HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps);
@@ -107,7 +107,6 @@ typedef struct cnc_ddraw
     BOOL hidecursor;
     BOOL accurate_timers;
     BOOL resizable;
-    BOOL sierrahack;
     BOOL nonexclusive;
     BOOL fixpitch;
     BOOL fixchildwindows;

@@ -54,7 +54,6 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);
-    g_ddraw->sierrahack = cfg_get_bool("sierrahack", FALSE); // Sierra Caesar III, Pharaoh, and Zeus hack
 
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
@@ -501,17 +500,14 @@ static void cfg_create_ini()
             "; Caesar III\n"
             "[c3]\n"
             "handlemouse=false\n"
-            "sierrahack=true\n"
             "\n"
             "; Pharaoh\n"
             "[Pharaoh]\n"
             "handlemouse=false\n"
-            "sierrahack=true\n"
             "\n"
             "; Master of Olympus - Zeus\n"
             "[Zeus]\n"
             "handlemouse=false\n"
-            "sierrahack=true\n"
             "renderer=gdi\n"
             "hook=2\n"
             "\n"

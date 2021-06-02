@@ -231,7 +231,7 @@ void util_toggle_fullscreen()
         g_config.window_state = g_ddraw->windowed = FALSE;
         real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         g_ddraw->altenter = TRUE;
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
         util_update_bnet_pos(0, 0);
 
         mouse_lock();
@@ -250,7 +250,7 @@ void util_toggle_fullscreen()
             ChangeDisplaySettings(NULL, g_ddraw->bnet_active ? CDS_FULLSCREEN : 0);
         }
 
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
         mouse_lock();
     }
 }
@@ -300,7 +300,7 @@ void util_set_window_rect(int x, int y, int width, int height, UINT flags)
             g_config.window_rect.right = width;
         }
 
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
     }
 }
 

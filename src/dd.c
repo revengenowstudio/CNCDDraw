@@ -294,7 +294,7 @@ HRESULT dd_RestoreDisplayMode()
     return DD_OK;
 }
 
-HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
+HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game)
 {
     if (bpp != 8 && bpp != 16 && bpp != 32)
         return DDERR_INVALIDMODE;
@@ -644,7 +644,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         {
             g_ddraw->render.run = FALSE;
             g_ddraw->windowed = TRUE;
-            return dd_SetDisplayMode(width, height, bpp);
+            return dd_SetDisplayMode(width, height, bpp, FALSE);
         }
 
         if (g_ddraw->wine)
@@ -672,10 +672,11 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp)
         g_ddraw->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)g_ddraw->renderer, NULL, 0, NULL);
     }
 
-    if (g_ddraw->sierrahack)
+    if (set_by_game)
     {
-        PostMessageA(g_ddraw->hwnd, WM_MOVE, 0, MAKELPARAM(-32000, -32000));
-        PostMessageA(g_ddraw->hwnd, WM_DISPLAYCHANGE, g_ddraw->bpp, MAKELPARAM(g_ddraw->width, g_ddraw->height));
+        //real_SendMessageA(g_ddraw->hwnd, WM_SIZE_DDRAW, 0, MAKELPARAM(g_ddraw->width, g_ddraw->height));
+        real_SendMessageA(g_ddraw->hwnd, WM_MOVE_DDRAW, 0, MAKELPARAM(0, 0));
+        real_SendMessageA(g_ddraw->hwnd, WM_DISPLAYCHANGE_DDRAW, g_ddraw->bpp, MAKELPARAM(g_ddraw->width, g_ddraw->height));
     }
 
     return DD_OK;
