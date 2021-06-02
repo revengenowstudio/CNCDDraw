@@ -181,8 +181,7 @@ static void ogl_create_textures(int width, int height)
 
     glGenTextures(TEXTURE_COUNT, g_ogl.surface_tex_ids);
 
-    int i;
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    for (int i = 0; i < TEXTURE_COUNT; i++)
     {
         glBindTexture(GL_TEXTURE_2D, g_ogl.surface_tex_ids[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -201,7 +200,7 @@ static void ogl_create_textures(int width, int height)
                 g_ogl.surface_tex_width,
                 g_ogl.surface_tex_height,
                 0,
-                g_ogl.surface_format = GL_RGBA,
+                g_ogl.surface_format = GL_BGRA,
                 g_ogl.surface_type = GL_UNSIGNED_BYTE,
                 0);
         }

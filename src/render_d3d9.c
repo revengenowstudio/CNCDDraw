@@ -197,8 +197,7 @@ static BOOL d3d9_create_resouces()
 
     err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->upscale_hack_active, 0), TRUE);
 
-    int i;
-    for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
+    for (int i = 0; i < D3D9_TEXTURE_COUNT; i++)
     {
         err = err || FAILED(
             IDirect3DDevice9_CreateTexture(
@@ -207,7 +206,7 @@ static BOOL d3d9_create_resouces()
                 tex_height,
                 1,
                 0,
-                g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : g_ddraw->bpp == 32 ? D3DFMT_X8B8G8R8 : D3DFMT_L8,
+                g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : g_ddraw->bpp == 32 ? D3DFMT_X8R8G8B8 : D3DFMT_L8,
                 D3DPOOL_MANAGED,
                 &g_d3d9.surface_tex[i],
                 0));
