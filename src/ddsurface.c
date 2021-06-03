@@ -1084,9 +1084,22 @@ HRESULT dds_SetPalette(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWPALETTE lpDDPal
     if (This->palette)
         IDirectDrawPalette_Release(This->palette);
 
-    EnterCriticalSection(&g_ddraw->cs);
-    This->palette = (IDirectDrawPaletteImpl*)lpDDPalette;
-    LeaveCriticalSection(&g_ddraw->cs);
+    if (This->caps & DDSCAPS_PRIMARYSURFACE)
+    {
+        EnterCriticalSection(&g_ddraw->cs);
+        This->palette = (IDirectDrawPaletteImpl*)lpDDPalette;
+        LeaveCriticalSection(&g_ddraw->cs);
+
+        if (g_ddraw->render.run)
+        {
+            InterlockedExchange(&g_ddraw->render.palette_updated, TRUE);
+            ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
+        }
+    }
+    else
+    {
+        This->palette = (IDirectDrawPaletteImpl*)lpDDPalette;
+    }
 
     return DD_OK;
 }
