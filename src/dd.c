@@ -644,7 +644,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         {
             g_ddraw->render.run = FALSE;
             g_ddraw->windowed = TRUE;
-            return dd_SetDisplayMode(width, height, bpp, FALSE);
+            return dd_SetDisplayMode(width, height, bpp, set_by_game);
         }
 
         if (g_ddraw->wine)
