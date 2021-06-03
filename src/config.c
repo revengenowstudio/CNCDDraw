@@ -616,6 +616,18 @@ static void cfg_create_ini()
             "fixwndprochook=true\n"
             "singlecpu=false\n"
             "\n"
+            "; Grand Theft Auto: 1969\n"
+            "[gta_uk]\n"
+            "renderer=opengl\n"
+            "fixwndprochook=true\n"
+            "singlecpu=false\n"
+            "\n"
+            "; Grand Theft Auto: 1961\n"
+            "[Gta_61]\n"
+            "renderer=opengl\n"
+            "fixwndprochook=true\n"
+            "singlecpu=false\n"
+            "\n"
 
             , fh);
         fclose(fh);
