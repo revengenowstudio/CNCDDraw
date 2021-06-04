@@ -306,19 +306,37 @@ LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong)
         {
             if (dwNewLong == (LONG)compat_WndProc)
             {
-                LONG result = real_SetWindowLongA(hWnd, nIndex, (LONG)g_compat_wndproc);
-                g_compat_wndproc = NULL;
-                return result;
+                WNDPROC old = g_ddraw->wndproc = g_compat_wndproc;
+                //g_compat_wndproc = NULL;
+                return (LONG)old;
             }
-            else if (!g_compat_wndproc)
+            else
             {
-                g_compat_wndproc = (WNDPROC)real_SetWindowLongA(hWnd, nIndex, dwNewLong);
-                return g_compat_wndproc ? (LONG)compat_WndProc : 0;
+                if (dwNewLong != (LONG)g_ddraw->wndproc)
+                {
+                    g_compat_wndproc = g_ddraw->wndproc;
+                    g_ddraw->wndproc = (WNDPROC)dwNewLong;
+                }
+
+                return (LONG)compat_WndProc;
             }
         }
     }
 
     return real_SetWindowLongA(hWnd, nIndex, dwNewLong);
+}
+
+LONG WINAPI fake_GetWindowLongA(HWND hWnd, int nIndex)
+{
+    if (g_ddraw && g_ddraw->hwnd == hWnd)
+    {
+        if (nIndex == GWL_WNDPROC && g_ddraw->fixwndprochook)
+        {
+            return (LONG)compat_WndProc;
+        }
+    }
+
+    return real_GetWindowLongA(hWnd, nIndex);
 }
 
 BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)

@@ -33,6 +33,7 @@ SETWINDOWPOSPROC real_SetWindowPos = SetWindowPos;
 MOVEWINDOWPROC real_MoveWindow = MoveWindow;
 SENDMESSAGEAPROC real_SendMessageA = SendMessageA;
 SETWINDOWLONGAPROC real_SetWindowLongA = SetWindowLongA;
+GETWINDOWLONGAPROC real_GetWindowLongA = GetWindowLongA;
 ENABLEWINDOWPROC real_EnableWindow = EnableWindow;
 CREATEWINDOWEXAPROC real_CreateWindowExA = CreateWindowExA;
 DESTROYWINDOWPROC real_DestroyWindow = DestroyWindow;
@@ -66,6 +67,7 @@ static hook_list g_hooks[] =
             { "MoveWindow", (PROC)fake_MoveWindow, (PROC*)&real_MoveWindow },
             { "SendMessageA", (PROC)fake_SendMessageA, (PROC*)&real_SendMessageA },
             { "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC*)&real_SetWindowLongA },
+            { "GetWindowLongA", (PROC)fake_GetWindowLongA, (PROC*)&real_GetWindowLongA },
             { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow },
             { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA },
             { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow },
