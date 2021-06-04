@@ -842,6 +842,11 @@ HRESULT dds_Flip(IDirectDrawSurfaceImpl *This, LPDIRECTDRAWSURFACE surface, DWOR
         InterlockedExchangePointer(&backbuffer->bitmap, bitmap);
         InterlockedExchangePointer(&backbuffer->hdc, dc);
         LeaveCriticalSection(&g_ddraw->cs);
+
+        if (!surface && This->backbuffer->backbuffer)
+        {
+            dds_Flip(This->backbuffer, NULL, 0);
+        }
     }
 
     if (This->caps & DDSCAPS_PRIMARYSURFACE && g_ddraw->render.run)
