@@ -605,6 +605,8 @@ static void cfg_create_ini()
             "; Invictus\n"
             "[Invictus]\n"
             "handlemouse=false\n"
+            "fixwndprochook=true\n"
+            "renderer=opengl\n"
             "\n"
             "; Interstate 76\n"
             "[i76]\n"
