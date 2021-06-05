@@ -76,12 +76,12 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         case WM_SETCURSOR:
         {
-            // show resize cursor on window borders
+            /* show resize cursor on window borders */
             if ((HWND)wParam == g_ddraw->hwnd)
             {
                 WORD message = HIWORD(lParam);
 
-                if (message == WM_MOUSEMOVE)
+                if (message == WM_MOUSEMOVE || message == WM_LBUTTONDOWN)
                 {
                     WORD htcode = LOWORD(lParam);
 
