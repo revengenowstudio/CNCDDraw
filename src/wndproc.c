@@ -688,32 +688,29 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         }
         case WM_PARENTNOTIFY:
         {
-            if (!g_ddraw->handlemouse)
+            switch (LOWORD(wParam))
             {
-                switch (LOWORD(wParam))
+                case WM_DESTROY: //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
+                    redraw_count = 2;
+                    break;
+                case WM_LBUTTONDOWN:
+                case WM_MBUTTONDOWN:
+                case WM_RBUTTONDOWN:
+                case WM_XBUTTONDOWN:
                 {
-                    case WM_DESTROY: //Workaround for invisible menu on Load/Save/Delete in Tiberian Sun
-                        redraw_count = 2;
-                        break;
-                    case WM_LBUTTONDOWN:
-                    case WM_MBUTTONDOWN:
-                    case WM_RBUTTONDOWN:
-                    case WM_XBUTTONDOWN:
+                    if (!g_ddraw->devmode && !g_ddraw->locked)
                     {
-                        if (!g_ddraw->devmode && !g_ddraw->locked)
-                        {
-                            int x = GET_X_LPARAM(lParam);
-                            int y = GET_Y_LPARAM(lParam);
+                        int x = GET_X_LPARAM(lParam);
+                        int y = GET_Y_LPARAM(lParam);
 
-                            g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
-                            g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
+                        g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
+                        g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
 
-                            g_ddraw->hidecursor = FALSE;
+                        g_ddraw->hidecursor = FALSE;
 
-                            mouse_lock();
-                        }
-                        break;
+                        mouse_lock();
                     }
+                    break;
                 }
             }
             break;
