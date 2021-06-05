@@ -1222,8 +1222,8 @@ HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc,
     dbg_dump_dds_flags(lpDDSurfaceDesc->dwFlags);
     dbg_dump_dds_caps(lpDDSurfaceDesc->ddsCaps.dwCaps);
 
-    if (!g_ddraw->passthrough &&
-        (lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE) && 
+    if ((lpDDSurfaceDesc->ddsCaps.dwCaps & DDSCAPS_PRIMARYSURFACE) && 
+        !g_ddraw->passthrough &&
         g_ddraw->primary && 
         g_ddraw->primary->width == g_ddraw->width &&
         g_ddraw->primary->height == g_ddraw->height &&
