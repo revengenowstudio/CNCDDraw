@@ -281,7 +281,7 @@ static void cfg_create_ini()
             "savesettings=1\n"
             "\n"
             "; Should the window be resizeable by the user in windowed mode?\n"
-            "resizeable=true\n"
+            "resizable=true\n"
             "\n"
             "; Enable linear (D3DTEXF_LINEAR) upscaling filter for the direct3d9 renderer (16 bit color depth games only)\n"
             "d3d9linear=true\n"
