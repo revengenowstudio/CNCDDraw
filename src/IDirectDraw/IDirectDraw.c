@@ -252,7 +252,7 @@ HRESULT __stdcall IDirectDraw__GetDisplayMode(IDirectDrawImpl* This, LPDDSURFACE
 HRESULT __stdcall IDirectDraw__GetFourCCCodes(IDirectDrawImpl* This, LPDWORD a, LPDWORD b)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
+    HRESULT ret = DDERR_INVALIDOBJECT;
     dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
