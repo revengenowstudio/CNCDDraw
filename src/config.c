@@ -280,7 +280,7 @@ static void cfg_create_ini()
             "; Possible values: 0 = disabled, 1 = save to global 'ddraw' section, 2 = save to game specific section\n"
             "savesettings=1\n"
             "\n"
-            "; Should the window be resizeable by the user in windowed mode?\n"
+            "; Should the window be resizable by the user in windowed mode?\n"
             "resizable=true\n"
             "\n"
             "; Enable linear (D3DTEXF_LINEAR) upscaling filter for the direct3d9 renderer (16 bit color depth games only)\n"
