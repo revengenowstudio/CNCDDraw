@@ -193,7 +193,19 @@ HRESULT dds_Blt(IDirectDrawSurfaceImpl *This, LPRECT lpDestRect, LPDIRECTDRAWSUR
 
     if (src_surface && src_w > 0 && src_h > 0 && dst_w > 0 && dst_h > 0)
     {
-        if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
+        if (This->bpp != src_surface->bpp)
+        {
+            dprintfex("     NOT_IMPLEMENTED This->bpp=%u, src_surface->bpp=%u\n", This->bpp, src_surface->bpp);
+
+            HDC dst_dc;
+            dds_GetDC(This, &dst_dc);
+
+            HDC src_dc;
+            dds_GetDC(src_surface, &src_dc);
+
+            StretchBlt(dst_dc, dst_x, dst_y, dst_w, dst_h, src_dc, src_x, src_y, src_w, src_h, SRCCOPY);
+        }
+        else if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
         {
             DDCOLORKEY color_key;
 
@@ -636,7 +648,19 @@ HRESULT dds_BltFast(IDirectDrawSurfaceImpl *This, DWORD dst_x, DWORD dst_y, LPDI
 
     if (src_surface && dst_w > 0 && dst_h > 0)
     {
-        if (flags & DDBLTFAST_SRCCOLORKEY)
+        if (This->bpp != src_surface->bpp)
+        {
+            dprintfex("     NOT_IMPLEMENTED This->bpp=%u, src_surface->bpp=%u\n", This->bpp, src_surface->bpp);
+
+            HDC dst_dc;
+            dds_GetDC(This, &dst_dc);
+
+            HDC src_dc;
+            dds_GetDC(src_surface, &src_dc);
+
+            BitBlt(dst_dc, dst_x, dst_y, dst_w, dst_h, src_dc, src_x, src_y, SRCCOPY);
+        }
+        else if (flags & DDBLTFAST_SRCCOLORKEY)
         {
             if (This->bpp == 8)
             {
@@ -1245,6 +1269,29 @@ HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc,
     dst_surface->flags = lpDDSurfaceDesc->dwFlags;
     dst_surface->caps = lpDDSurfaceDesc->ddsCaps.dwCaps;
     dst_surface->ddraw = This;
+
+    if (dst_surface->flags & DDSD_PIXELFORMAT)
+    {
+        switch (lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount)
+        {
+        case 8:
+            dst_surface->bpp = 8;
+            break;
+        case 15:
+            dprintf("     NOT_IMPLEMENTED bpp=%u\n", lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+        case 16:
+            dst_surface->bpp = 16;
+            break;
+        case 24:
+            dprintf("     NOT_IMPLEMENTED bpp=%u\n", lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+        case 32:
+            dst_surface->bpp = 32;
+            break;
+        default:
+            dprintf("     NOT_IMPLEMENTED bpp=%u\n", lpDDSurfaceDesc->ddpfPixelFormat.dwRGBBitCount);
+            break;
+        }
+    }
 
     if (dst_surface->caps & DDSCAPS_PRIMARYSURFACE)
     {
