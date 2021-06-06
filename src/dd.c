@@ -131,8 +131,34 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             { 1920, 1080 },
         };
 
+        DWORD max_w = 0;
+        DWORD max_h = 0;
+        DEVMODE m;
+
+        memset(&m, 0, sizeof(DEVMODE));
+        m.dmSize = sizeof(DEVMODE);
+
+        if (EnumDisplaySettings(NULL, ENUM_REGISTRY_SETTINGS, &m))
+        {
+            max_w = m.dmPelsWidth;
+            max_h = m.dmPelsHeight;
+        }
+
         for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
         {
+            if ((max_w && resolutions[i].cx > max_w) || (max_h && resolutions[i].cy > max_h))
+            {
+                memset(&m, 0, sizeof(DEVMODE));
+
+                m.dmSize = sizeof(DEVMODE);
+                m.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+                m.dmPelsWidth = resolutions[i].cx;
+                m.dmPelsHeight = resolutions[i].cy;
+
+                if (ChangeDisplaySettings(&m, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                    continue;
+            }
+
             memset(&s, 0, sizeof(DDSURFACEDESC));
 
             s.dwSize = sizeof(DDSURFACEDESC);
