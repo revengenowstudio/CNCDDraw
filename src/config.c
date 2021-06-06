@@ -661,12 +661,6 @@ static void cfg_create_ini()
             "[Moorhuhn2]\n"
             "hook=3\n"
             "\n"
-            "; Master of Olympus - Zeus\n"
-            "[Zeus]\n"
-            "handlemouse=false\n"
-            "renderer=gdi\n"
-            "hook=2\n"
-            "\n"
             "; Outlaws\n"
             "[olwin]\n"
             "noactivateapp=true\n"
@@ -763,6 +757,10 @@ static void cfg_create_ini()
             "; War Wind\n"
             "[WW]\n"
             "renderer=opengl\n"
+            "\n"
+            "; Zeus and Poseidon\n"
+            "[Zeus]\n"
+            "handlemouse=false\n"
             "\n"
 
             , fh);
