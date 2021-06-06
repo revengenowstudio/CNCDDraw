@@ -131,14 +131,8 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             { 1920, 1080 },
         };
 
-        DWORD max_w = g_ddraw->mode.dmPelsWidth ? g_ddraw->mode.dmPelsWidth : real_GetSystemMetrics(SM_CXSCREEN);
-        DWORD max_h = g_ddraw->mode.dmPelsHeight ? g_ddraw->mode.dmPelsHeight : real_GetSystemMetrics(SM_CYSCREEN);
-
         for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
         {
-            if ((max_w && resolutions[i].cx > max_w) || (max_h && resolutions[i].cy > max_h))
-                continue;
-
             memset(&s, 0, sizeof(DDSURFACEDESC));
 
             s.dwSize = sizeof(DDSURFACEDESC);
