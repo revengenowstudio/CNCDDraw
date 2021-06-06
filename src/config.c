@@ -743,6 +743,7 @@ static void cfg_create_ini()
             "\n"
             "; Uprising 2\n"
             "[Uprising 2]\n"
+            "renderer=opengl\n"
             "handlemouse=false\n"
             "\n"
             "; Warlords 3\n"
