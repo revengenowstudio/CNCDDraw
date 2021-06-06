@@ -364,6 +364,16 @@ int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UI
     return real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
 }
 
+HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
+{
+    if (idHook == WH_KEYBOARD_LL && hmod && GetModuleHandle("AcGenral") == hmod)
+    {
+        return NULL;
+    }
+
+    return real_SetWindowsHookExA(idHook, lpfn, hmod, dwThreadId);
+}
+
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
 {
     if (g_ddraw && 
