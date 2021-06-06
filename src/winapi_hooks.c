@@ -121,7 +121,7 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
-    if (g_ddraw && !g_ddraw->handlemouse)
+    if (g_ddraw && !g_ddraw->handlemouse && (g_ddraw->locked || g_ddraw->devmode))
         return real_SetCursor(hCursor); 
     
     return NULL;
