@@ -80,6 +80,12 @@ DWORD WINAPI gdi_render_main(void)
                 memcpy(&g_ddraw->primary->bmi->bmiColors[0], g_ddraw->primary->palette->data_rgb, 256 * sizeof(int));
             }
 
+            if (g_ddraw->gdilinear)
+            {
+                SetStretchBltMode(g_ddraw->render.hdc, HALFTONE);
+                SetBrushOrgEx(g_ddraw->render.hdc, 0, 0, NULL);
+            }
+
             if (g_ddraw->bnet_active)
             {
                 RECT rc = { 0, 0, g_ddraw->render.width, g_ddraw->render.height };

@@ -112,6 +112,7 @@ typedef struct cnc_ddraw
     BOOL fixchildwindows;
     BOOL fixwndprochook;
     BOOL d3d9linear;
+    BOOL gdilinear;
     BOOL backbuffer;
     BOOL passthrough;
     int maxgameticks;
