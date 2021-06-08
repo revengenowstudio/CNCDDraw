@@ -276,7 +276,7 @@ HRESULT __stdcall IDirectDraw__GetMonitorFrequency(IDirectDrawImpl* This, LPDWOR
 HRESULT __stdcall IDirectDraw__GetScanLine(IDirectDrawImpl* This, LPDWORD a)
 {
     dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
+    HRESULT ret = DDERR_UNSUPPORTED;
     dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
