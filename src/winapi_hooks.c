@@ -251,18 +251,47 @@ int WINAPI fake_GetSystemMetrics(int nIndex)
 
 BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int cx, int cy, UINT uFlags)
 {
-    UINT req_flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER;
+    if (g_ddraw && g_ddraw->hwnd)
+    {
+        if (g_ddraw->hwnd == hWnd)
+        {
+            UINT req_flags = SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER;
 
-    if (g_ddraw && g_ddraw->hwnd == hWnd && (uFlags & req_flags) != req_flags)
-        return TRUE;
+            if ((uFlags & req_flags) != req_flags)
+                return TRUE;
+        }
+        else if (!IsChild(g_ddraw->hwnd, hWnd))
+        {
+            POINT pt = { 0, 0 };
+            if (real_ClientToScreen(g_ddraw->hwnd, &pt))
+            {
+                X += pt.x;
+                Y += pt.y;
+            }
+        }
+    }
 
     return real_SetWindowPos(hWnd, hWndInsertAfter, X, Y, cx, cy, uFlags);
 }
 
 BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint)
 {
-    if (g_ddraw && g_ddraw->hwnd == hWnd)
-        return TRUE;
+    if (g_ddraw && g_ddraw->hwnd)
+    {
+        if (g_ddraw->hwnd == hWnd)
+        {
+            return TRUE;
+        }
+        else if (!IsChild(g_ddraw->hwnd, hWnd))
+        {
+            POINT pt = { 0, 0 };
+            if (real_ClientToScreen(g_ddraw->hwnd, &pt))
+            {
+                X += pt.x;
+                Y += pt.y;
+            }
+        }
+    }
 
     return real_MoveWindow(hWnd, X, Y, nWidth, nHeight, bRepaint);
 }
