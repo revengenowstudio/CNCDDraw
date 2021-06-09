@@ -115,6 +115,7 @@ typedef struct cnc_ddraw
     BOOL gdilinear;
     BOOL backbuffer;
     BOOL passthrough;
+    BOOL armadahack;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL bnet_active;

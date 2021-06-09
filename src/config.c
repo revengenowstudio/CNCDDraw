@@ -56,6 +56,8 @@ void cfg_load()
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);
 
+    g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
+
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
     g_config.window_rect.left = cfg_get_int("posX", -32000);
@@ -706,6 +708,7 @@ static void cfg_create_ini()
             "\n"
             "; Star Trek - Armada\n"
             "[Armada]\n"
+            "armadahack=true\n"
             "renderer=opengl\n"
             "nonexclusive=true\n"
             "handlemouse=false\n"

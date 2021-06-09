@@ -1200,6 +1200,45 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl *This, LPVOID lpRect)
         }
     }
 
+
+    hwnd = g_ddraw->armadahack ? FindWindowEx(HWND_DESKTOP, NULL, "#32770", NULL) : NULL;
+
+    if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
+    {
+        HDC primary_dc;
+        dds_GetDC(g_ddraw->primary, &primary_dc);
+
+        RECT rc;
+        if (fake_GetWindowRect(hwnd, &rc))
+        {
+            HDC hdc = GetDC(hwnd);
+
+            GdiTransparentBlt(
+                hdc,
+                0,
+                0,
+                rc.right - rc.left,
+                rc.bottom - rc.top,
+                primary_dc,
+                rc.left,
+                rc.top,
+                rc.right - rc.left,
+                rc.bottom - rc.top,
+                0
+            );
+
+            ReleaseDC(hwnd, hdc);
+        }
+
+        BOOL x = g_ddraw->ticks_limiter.use_blt_or_flip;
+
+        DDBLTFX fx = { .dwFillColor = 0 };
+        IDirectDrawSurface_Blt(This, NULL, NULL, NULL, DDBLT_COLORFILL, &fx);
+
+        g_ddraw->ticks_limiter.use_blt_or_flip = x;
+    }
+
+
     if ((This->caps & DDSCAPS_PRIMARYSURFACE) && g_ddraw->render.run)
     {
         InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
