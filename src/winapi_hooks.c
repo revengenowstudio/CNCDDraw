@@ -260,7 +260,7 @@ BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int
             if ((uFlags & req_flags) != req_flags)
                 return TRUE;
         }
-        else if (!(GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD))
+        else if (!(real_GetWindowLongA(hWnd, GWL_STYLE) & WS_CHILD))
         {
             POINT pt = { 0, 0 };
             if (real_ClientToScreen(g_ddraw->hwnd, &pt))
@@ -282,7 +282,7 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
         {
             return TRUE;
         }
-        else if (!(GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD))
+        else if (!(real_GetWindowLongA(hWnd, GWL_STYLE) & WS_CHILD))
         {
             POINT pt = { 0, 0 };
             if (real_ClientToScreen(g_ddraw->hwnd, &pt))
