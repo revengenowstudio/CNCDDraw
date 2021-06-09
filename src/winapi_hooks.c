@@ -468,7 +468,7 @@ HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
-    if (lpClassName && _strcmpi(lpClassName, "SDlgDialog") == 0 && g_ddraw)
+    if (HIWORD(lpClassName) && _strcmpi(lpClassName, "SDlgDialog") == 0 && g_ddraw)
     {
         if (!g_ddraw->bnet_active)
         {
