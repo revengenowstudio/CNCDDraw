@@ -102,7 +102,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                        break;
+                        return DD_OK;
                     }
                 }
 
@@ -118,7 +118,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                        break;
+                        return DD_OK;
                     }
                 }
 
@@ -134,7 +134,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                        break;
+                        return DD_OK;
                     }
                 }
 
@@ -202,7 +202,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
                 dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                break;
+                return DD_OK;
             }
 
             s.lPitch = s.dwWidth * 2;
@@ -215,7 +215,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
                 dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                break;
+                return DD_OK;
             }
 
             if (g_ddraw->resolutions == RESLIST_MINI)
@@ -231,7 +231,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
                 dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                break;
+                return DD_OK;
             }
         }
     }
