@@ -8,7 +8,7 @@
 
 HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *This, REFIID riid, void **obj)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
+    dprintf("-> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
     HRESULT ret = S_OK;
 
     if (riid)
@@ -31,7 +31,7 @@ HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *Thi
         {
             IDirectDrawGammaControlImpl* gc = (IDirectDrawGammaControlImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawGammaControlImpl));
 
-            dprintf("     GUID = %08X (IID_IDirectDrawGammaControl), gammacontrol = %p\n", ((GUID*)riid)->Data1, gc);
+            dprintf("NOT_IMPLEMENTED      GUID = %08X (IID_IDirectDrawGammaControl), gammacontrol = %p\n", ((GUID*)riid)->Data1, gc);
 
             gc->lpVtbl = &g_ddgc_vtbl;
             gc->lpVtbl->AddRef(gc);
@@ -48,7 +48,7 @@ HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl *Thi
         }
     }
 
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    dprintf("<- %s\n", __FUNCTION__);
     return ret;
 }
 
