@@ -306,6 +306,11 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
         lParam = MAKELPARAM(x, y);
     }
 
+    if (g_ddraw && g_ddraw->hwnd == hWnd && Msg == WM_SIZE && g_hook_method != 2)
+    {
+        Msg = WM_SIZE_DDRAW;
+    }
+
     LRESULT result = real_SendMessageA(hWnd, Msg, wParam, lParam);
 
     if (result && g_ddraw && Msg == CB_GETDROPPEDCONTROLRECT)
