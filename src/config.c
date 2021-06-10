@@ -55,6 +55,7 @@ void cfg_load()
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);
+    g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
 

@@ -22,6 +22,10 @@ HRESULT dd_GetAvailableVidMem(void* lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFre
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 
+#define RESLIST_NORMAL 0
+#define RESLIST_MINI 1
+#define RESLIST_FULL 2
+
 typedef struct speed_limiter
 {
     DWORD tick_length;
@@ -115,6 +119,7 @@ typedef struct cnc_ddraw
     BOOL gdilinear;
     BOOL backbuffer;
     BOOL passthrough;
+    int resolutions;
     BOOL armadahack;
     int maxgameticks;
     BOOL alt_key_down;

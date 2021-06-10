@@ -21,13 +21,28 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
     DWORD i = 0;
     DDSURFACEDESC s;
 
-    // Some games crash when you feed them with too many resolutions...
+    /* Some games crash when you feed them with too many resolutions... */
 
-    if (g_ddraw->bpp)
+    SIZE resolutions[] =
+    {
+        { 320, 200 },
+        { 320, 240 },
+        { 512, 384 },
+        { 640, 400 },
+        { 640, 480 },
+        { 800, 600 },
+        { 1024, 768 },
+        { 1280, 1024 },
+        { 1600, 1200 },
+        { 1280, 720 },
+        { 1920, 1080 },
+    };
+
+    if (g_ddraw->bpp || g_ddraw->resolutions == RESLIST_FULL)
     {
         dprintf("     g_ddraw->bpp=%u\n", g_ddraw->bpp);
 
-        //set up some filters to keep the list short
+        /* set up some filters to keep the list short */
         DWORD refresh_rate = 0;
         DWORD bpp = 0;
         DWORD flags = 99998;
@@ -81,31 +96,55 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
                 s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
                 s.ddpfPixelFormat.dwRGBBitCount = 8;
-                
-                if (g_ddraw->bpp == 16)
+
+                if (g_ddraw->bpp == 8 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    s.lPitch = s.dwWidth * 2;
-                    s.ddpfPixelFormat.dwFlags = DDPF_RGB;
-                    s.ddpfPixelFormat.dwRGBBitCount = 16;
-                    s.ddpfPixelFormat.dwRBitMask = 0xF800;
-                    s.ddpfPixelFormat.dwGBitMask = 0x07E0;
-                    s.ddpfPixelFormat.dwBBitMask = 0x001F;
+                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    {
+                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        break;
+                    }
                 }
 
-                if (g_ddraw->bpp == 32)
+                s.lPitch = s.dwWidth * 2;
+                s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+                s.ddpfPixelFormat.dwRGBBitCount = 16;
+                s.ddpfPixelFormat.dwRBitMask = 0xF800;
+                s.ddpfPixelFormat.dwGBitMask = 0x07E0;
+                s.ddpfPixelFormat.dwBBitMask = 0x001F;
+
+                if (g_ddraw->bpp == 16 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    s.lPitch = s.dwWidth * 4;
-                    s.ddpfPixelFormat.dwFlags = DDPF_RGB;
-                    s.ddpfPixelFormat.dwRGBBitCount = 32;
-                    s.ddpfPixelFormat.dwRBitMask = 0xFF0000;
-                    s.ddpfPixelFormat.dwGBitMask = 0x00FF00;
-                    s.ddpfPixelFormat.dwBBitMask = 0x0000FF;
+                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    {
+                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        break;
+                    }
                 }
 
-                if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                s.lPitch = s.dwWidth * 4;
+                s.ddpfPixelFormat.dwFlags = DDPF_RGB;
+                s.ddpfPixelFormat.dwRGBBitCount = 32;
+                s.ddpfPixelFormat.dwRBitMask = 0xFF0000;
+                s.ddpfPixelFormat.dwGBitMask = 0x00FF00;
+                s.ddpfPixelFormat.dwBBitMask = 0x0000FF;
+
+                if (g_ddraw->bpp == 32 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    dprintf("     DDENUMRET_CANCEL returned, stopping\n");
-                    break;
+                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    {
+                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        break;
+                    }
+                }
+
+                for (int x = 0; x < sizeof(resolutions) / sizeof(resolutions[0]); x++)
+                {
+                    if (resolutions[x].cx == m.dmPelsWidth && resolutions[x].cy == m.dmPelsHeight)
+                    {
+                        resolutions[x].cx = 0;
+                        resolutions[x].cy = 0;
+                    }
                 }
             }
 
@@ -114,23 +153,9 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
             i++;
         }
     }
-    else
-    {
-        SIZE resolutions[] =
-        {
-            { 320, 200 },
-            { 320, 240 },
-            { 512, 384 },
-            { 640, 400 },
-            { 640, 480 },
-            { 800, 600 },
-            { 1024, 768 },
-            { 1280, 1024 },
-            { 1600, 1200 },
-            { 1280, 720 },
-            { 1920, 1080 },
-        };
 
+    if (!g_ddraw->bpp || g_ddraw->resolutions == RESLIST_FULL)
+    {
         DWORD max_w = 0;
         DWORD max_h = 0;
         DEVMODE m;
@@ -146,6 +171,9 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
         for (i = 0; i < sizeof(resolutions) / sizeof(resolutions[0]); i++)
         {
+            if (!resolutions[i].cx || !resolutions[i].cy)
+                continue;
+
             if ((max_w && resolutions[i].cx > max_w) || (max_h && resolutions[i].cy > max_h))
             {
                 memset(&m, 0, sizeof(DEVMODE));
@@ -189,6 +217,9 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 dprintf("     DDENUMRET_CANCEL returned, stopping\n");
                 break;
             }
+
+            if (g_ddraw->resolutions == RESLIST_MINI)
+                continue;
 
             s.lPitch = s.dwWidth * 4;
             s.ddpfPixelFormat.dwFlags = DDPF_RGB;
