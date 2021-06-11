@@ -45,7 +45,7 @@ LOADLIBRARYWPROC real_LoadLibraryW = LoadLibraryW;
 LOADLIBRARYEXAPROC real_LoadLibraryExA = LoadLibraryExA;
 LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
 
-static hook_list g_hooks[] =
+static HOOKLIST g_hooks[] =
 {
     {
         "user32.dll",
@@ -106,19 +106,19 @@ static hook_list g_hooks[] =
 
 void hook_patch_iat(HMODULE hmod, BOOL unhook, char* module_name, char* function_name, PROC new_function)
 {
-    hook_list hooks[2];
+    HOOKLIST hooks[2];
     memset(&hooks, 0, sizeof(hooks));
 
     hooks[0].enabled = TRUE;
     hooks[0].data[0].new_function = new_function;
 
-    strncpy(hooks[0].module_name, module_name, sizeof(hooks[0].module_name)-1);
+    strncpy(hooks[0].module_name, module_name, sizeof(hooks[0].module_name) - 1);
     strncpy(hooks[0].data[0].function_name, function_name, sizeof(hooks[0].data[0].function_name) - 1);
 
-    hook_patch_iat_list(hmod, unhook, (hook_list*)&hooks);
+    hook_patch_iat_list(hmod, unhook, (HOOKLIST*)&hooks);
 }
 
-void hook_patch_iat_list(HMODULE hmod, BOOL unhook, hook_list* hooks)
+void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
 {
     if (!hmod || hmod == INVALID_HANDLE_VALUE || !hooks)
         return;
@@ -179,9 +179,9 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, hook_list* hooks)
                                     {
                                         if (unhook)
                                         {
-                                            DWORD org = 
+                                            DWORD org =
                                                 (DWORD)GetProcAddress(
-                                                    GetModuleHandle(hooks[i].module_name), 
+                                                    GetModuleHandle(hooks[i].module_name),
                                                     hooks[i].data[x].function_name);
 
                                             if (org)
@@ -213,13 +213,13 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, hook_list* hooks)
         }
 #ifdef _MSC_VER
     }
-    __except (EXCEPTION_EXECUTE_HANDLER) 
+    __except (EXCEPTION_EXECUTE_HANDLER)
     {
     }
 #endif
 }
 
-void hook_create(hook_list* hooks)
+void hook_create(HOOKLIST* hooks)
 {
 #ifdef _MSC_VER
     if (g_hook_method == 2)
@@ -270,13 +270,13 @@ void hook_create(hook_list* hooks)
 
                 if (GetModuleFileNameA(hmod, mod_path, MAX_PATH))
                 {
-                    dprintfex("Module %s = %p\n", mod_path, hmod);
+                    TRACE_EXT("Module %s = %p\n", mod_path, hmod);
 
                     _splitpath(mod_path, NULL, mod_dir, mod_filename, NULL);
 
                     /* Don't hook reshade/swiftshader/mesa3d */
-                    if (_strcmpi(mod_filename, "opengl32") == 0 || 
-                        _strcmpi(mod_filename, "d3d9") == 0 || 
+                    if (_strcmpi(mod_filename, "opengl32") == 0 ||
+                        _strcmpi(mod_filename, "d3d9") == 0 ||
                         _strcmpi(mod_filename, "Shw32") == 0)
                         continue;
 
@@ -298,7 +298,7 @@ void hook_create(hook_list* hooks)
     }
 }
 
-void hook_revert(hook_list* hooks)
+void hook_revert(HOOKLIST* hooks)
 {
 #ifdef _MSC_VER
     if (g_hook_method == 2)
@@ -375,7 +375,8 @@ void hook_init()
 #ifdef _MSC_VER
         if (!g_hook_active && g_hook_method == 3)
         {
-            real_DirectInputCreateA = (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
+            real_DirectInputCreateA =
+                (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
 
             if (real_DirectInputCreateA)
             {
@@ -385,7 +386,8 @@ void hook_init()
                 DetourTransactionCommit();
             }
 
-            real_DirectInputCreateW = (DIRECTINPUTCREATEWPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateW");
+            real_DirectInputCreateW =
+                (DIRECTINPUTCREATEWPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateW");
 
             if (real_DirectInputCreateW)
             {
@@ -395,7 +397,8 @@ void hook_init()
                 DetourTransactionCommit();
             }
 
-            real_DirectInputCreateEx = (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateEx");
+            real_DirectInputCreateEx =
+                (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateEx");
 
             if (real_DirectInputCreateEx)
             {
@@ -405,7 +408,8 @@ void hook_init()
                 DetourTransactionCommit();
             }
 
-            real_DirectInput8Create = (DIRECTINPUT8CREATEPROC)GetProcAddress(LoadLibraryA("dinput8.dll"), "DirectInput8Create");
+            real_DirectInput8Create =
+                (DIRECTINPUT8CREATEPROC)GetProcAddress(LoadLibraryA("dinput8.dll"), "DirectInput8Create");
 
             if (real_DirectInput8Create)
             {
@@ -430,7 +434,7 @@ void hook_init()
             }
         }
 
-        hook_create((hook_list*)&g_hooks);
+        hook_create((HOOKLIST*)&g_hooks);
     }
 }
 
@@ -486,7 +490,7 @@ void hook_exit()
         }
 #endif
 
-        hook_revert((hook_list*)&g_hooks);
+        hook_revert((HOOKLIST*)&g_hooks);
     }
 
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);

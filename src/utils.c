@@ -1,5 +1,5 @@
 #include <windows.h>
-#include "ddraw.h"
+#include <ddraw.h>
 #include "dd.h"
 #include "ddsurface.h"
 #include "hook.h"
@@ -16,7 +16,7 @@ void util_limit_game_ticks()
         FILETIME ft = { 0 };
         GetSystemTimeAsFileTime(&ft);
 
-        if (CompareFileTime((FILETIME *)&g_ddraw->ticks_limiter.due_time, &ft) == -1)
+        if (CompareFileTime((FILETIME*)&g_ddraw->ticks_limiter.due_time, &ft) == -1)
         {
             memcpy(&g_ddraw->ticks_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
         }
@@ -119,7 +119,7 @@ void util_update_bnet_pos(int new_x, int new_y)
 
         hwnd = FindWindowEx(HWND_DESKTOP, hwnd, "SDlgDialog", NULL);
     }
-    
+
     if (adj_x || adj_y)
     {
         HWND hwnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
@@ -148,7 +148,13 @@ void util_update_bnet_pos(int new_x, int new_y)
     old_y = new_y;
 }
 
-BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWORD min_height, DWORD max_width, DWORD max_height)
+BOOL util_get_lowest_resolution(
+    float ratio,
+    SIZE* out_res,
+    DWORD min_width,
+    DWORD min_height,
+    DWORD max_width,
+    DWORD max_height)
 {
     BOOL result = FALSE;
     int org_ratio = (int)((ratio + 0.005f) * 100);
@@ -160,7 +166,7 @@ BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWO
 
     while (EnumDisplaySettings(NULL, i, &m))
     {
-        if  (m.dmPelsWidth >= min_width &&
+        if (m.dmPelsWidth >= min_width &&
             m.dmPelsHeight >= min_height &&
             m.dmPelsWidth <= max_width &&
             m.dmPelsHeight <= max_height &&
@@ -229,7 +235,13 @@ void util_toggle_fullscreen()
         mouse_unlock();
 
         g_config.window_state = g_ddraw->windowed = FALSE;
-        real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+        LONG style = GetWindowLong(g_ddraw->hwnd, GWL_STYLE);
+
+        real_SetWindowLongA(
+            g_ddraw->hwnd,
+            GWL_STYLE,
+            style & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+
         g_ddraw->altenter = TRUE;
         dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
         util_update_bnet_pos(0, 0);
@@ -335,7 +347,8 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
 static unsigned char util_get_pixel(int x, int y)
 {
-    return ((unsigned char*)dds_GetBuffer(g_ddraw->primary))[y * g_ddraw->primary->l_pitch + x * g_ddraw->primary->lx_pitch];
+    return ((unsigned char*)dds_GetBuffer(
+        g_ddraw->primary))[y * g_ddraw->primary->l_pitch + x * g_ddraw->primary->lx_pitch];
 }
 
 BOOL util_detect_low_res_screen()
@@ -360,8 +373,8 @@ BOOL util_detect_low_res_screen()
     }
     else if (g_ddraw->iscnc1)
     {
-        return 
-            util_get_pixel(g_ddraw->upscale_hack_width + 1, 0) == 0 || 
+        return
+            util_get_pixel(g_ddraw->upscale_hack_width + 1, 0) == 0 ||
             util_get_pixel(g_ddraw->upscale_hack_width + 5, 1) == 0;
     }
     else if (g_ddraw->iskkndx)

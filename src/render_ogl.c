@@ -22,7 +22,7 @@ static void ogl_delete_context(HGLRC context);
 static BOOL ogl_texture_upload_test();
 static BOOL ogl_shader_test();
 
-static ogl_renderer g_ogl;
+static OGLRENDERER g_ogl;
 
 DWORD WINAPI ogl_render_main(void)
 {
@@ -70,7 +70,7 @@ static HGLRC ogl_create_core_context(HDC hdc)
     if (!wglCreateContextAttribsARB)
         return g_ogl.context;
 
-    int attribs[] = { 
+    int attribs[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
         WGL_CONTEXT_MINOR_VERSION_ARB, 2,
         WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
@@ -79,7 +79,7 @@ static HGLRC ogl_create_core_context(HDC hdc)
 
     HGLRC context = wglCreateContextAttribsARB(hdc, 0, attribs);
     BOOL made_current = context && xwglMakeCurrent(hdc, context);
-    
+
     if (made_current)
     {
         xwglDeleteContext(g_ogl.context);
@@ -171,7 +171,7 @@ static void ogl_create_textures(int width, int height)
     g_ogl.surface_tex_height =
         height <= 512 ? 512 : height <= 1024 ? 1024 : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    g_ogl.surface_tex = 
+    g_ogl.surface_tex =
         HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, g_ogl.surface_tex_width * g_ogl.surface_tex_height * sizeof(int));
 
     g_ogl.adjust_alignment = (width % 4) != 0;
@@ -300,7 +300,7 @@ static void ogl_init_main_program()
     glUseProgram(g_ogl.main_program);
 
     glUniform1i(glGetUniformLocation(g_ogl.main_program, "SurfaceTex"), 0);
-    
+
     if (g_ddraw->bpp == 8)
         glUniform1i(glGetUniformLocation(g_ogl.main_program, "PaletteTex"), 1);
 
@@ -476,7 +476,16 @@ static void ogl_init_scale_program()
     glBindTexture(GL_TEXTURE_2D, g_ogl.frame_buffer_tex_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, g_ogl.filter_bilinear ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, g_ogl.filter_bilinear ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, g_ogl.surface_tex_width, g_ogl.surface_tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA8,
+        g_ogl.surface_tex_width,
+        g_ogl.surface_tex_height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        0);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_ogl.frame_buffer_tex_id, 0);
 
@@ -592,7 +601,7 @@ static void ogl_render()
                 }
             }
 
-            if (g_ddraw->bpp == 8 && 
+            if (g_ddraw->bpp == 8 &&
                 (InterlockedExchange(&g_ddraw->render.palette_updated, FALSE) || g_ddraw->render.minfps == -2))
             {
                 if (++pal_index >= TEXTURE_COUNT)
@@ -657,7 +666,7 @@ static void ogl_render()
             {
                 g_ddraw->child_window_exists = FALSE;
                 EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-                
+
                 if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
                 {
                     if (g_ddraw->child_window_exists)
@@ -733,7 +742,7 @@ static void ogl_render()
 
         if (g_ogl.scale_program && g_ogl.main_program)
         {
-            // draw surface into framebuffer
+            /* draw surface into framebuffer */
             glUseProgram(g_ogl.main_program);
 
             glViewport(0, 0, g_ddraw->width, g_ddraw->height);
@@ -760,7 +769,7 @@ static void ogl_render()
                     g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
             }
 
-            // apply filter
+            /* apply filter */
 
             glUseProgram(g_ogl.scale_program);
             glActiveTexture(GL_TEXTURE0);
@@ -783,10 +792,10 @@ static void ogl_render()
         else
         {
             glBegin(GL_TRIANGLE_FAN);
-            glTexCoord2f(0,             0);              glVertex2f(-1,  1);
-            glTexCoord2f(g_ogl.scale_w, 0);              glVertex2f( 1,  1);
-            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);  glVertex2f( 1, -1);
-            glTexCoord2f(0,             g_ogl.scale_h);  glVertex2f(-1, -1);
+            glTexCoord2f(0, 0);                          glVertex2f(-1, 1);
+            glTexCoord2f(g_ogl.scale_w, 0);              glVertex2f(1, 1);
+            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);  glVertex2f(1, -1);
+            glTexCoord2f(0, g_ogl.scale_h);              glVertex2f(-1, -1);
             glEnd();
         }
 
@@ -935,7 +944,16 @@ static BOOL ogl_shader_test()
         glBindTexture(GL_TEXTURE_2D, fbo_tex_id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, g_ogl.surface_tex_width, g_ogl.surface_tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, g_ogl.surface_tex);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA8,
+            g_ogl.surface_tex_width,
+            g_ogl.surface_tex_height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            g_ogl.surface_tex);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_tex_id, 0);
 
@@ -998,7 +1016,7 @@ static BOOL ogl_shader_test()
                 {
                     result = FALSE;
                     break;
-                }  
+                }
             }
         }
 

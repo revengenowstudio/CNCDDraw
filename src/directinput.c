@@ -17,7 +17,7 @@ static DICREATEDEVICEEXPROC real_di_CreateDeviceEx;
 static DIDSETCOOPERATIVELEVELPROC real_did_SetCooperativeLevel;
 static DIDGETDEVICEDATAPROC real_did_GetDeviceData;
 
-static PROC hook_func(PROC *org_func, PROC new_func)
+static PROC hook_func(PROC* org_func, PROC new_func)
 {
     PROC org = *org_func;
     DWORD old_protect;
@@ -33,16 +33,21 @@ static PROC hook_func(PROC *org_func, PROC new_func)
     return 0;
 }
 
-static HRESULT WINAPI fake_did_SetCooperativeLevel(IDirectInputDeviceA *This, HWND hwnd, DWORD dwFlags)
+static HRESULT WINAPI fake_did_SetCooperativeLevel(IDirectInputDeviceA* This, HWND hwnd, DWORD dwFlags)
 {
-    dprintf("DirectInput SetCooperativeLevel\n");
+    TRACE("DirectInput SetCooperativeLevel\n");
 
     return real_did_SetCooperativeLevel(This, hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 }
 
-static HRESULT WINAPI fake_did_GetDeviceData(IDirectInputDeviceA *This, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags)
+static HRESULT WINAPI fake_did_GetDeviceData(
+    IDirectInputDeviceA* This,
+    DWORD cbObjectData,
+    LPDIDEVICEOBJECTDATA rgdod,
+    LPDWORD pdwInOut,
+    DWORD dwFlags)
 {
-    //dprintf("DirectInput GetDeviceData\n");
+    //TRACE("DirectInput GetDeviceData\n");
 
     HRESULT result = real_did_GetDeviceData(This, cbObjectData, rgdod, pdwInOut, dwFlags);
 
@@ -54,9 +59,13 @@ static HRESULT WINAPI fake_did_GetDeviceData(IDirectInputDeviceA *This, DWORD cb
     return result;
 }
 
-static HRESULT WINAPI fake_di_CreateDevice(IDirectInputA *This, REFGUID rguid, LPDIRECTINPUTDEVICEA * lplpDIDevice, LPUNKNOWN pUnkOuter)
+static HRESULT WINAPI fake_di_CreateDevice(
+    IDirectInputA* This,
+    REFGUID rguid,
+    LPDIRECTINPUTDEVICEA* lplpDIDevice,
+    LPUNKNOWN pUnkOuter)
 {
-    dprintf("DirectInput CreateDevice\n");
+    TRACE("DirectInput CreateDevice\n");
 
     HRESULT result = real_di_CreateDevice(This, rguid, lplpDIDevice, pUnkOuter);
 
@@ -64,7 +73,7 @@ static HRESULT WINAPI fake_di_CreateDevice(IDirectInputA *This, REFGUID rguid, L
     {
         real_did_SetCooperativeLevel =
             (DIDSETCOOPERATIVELEVELPROC)hook_func(
-                (PROC *)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
+                (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
 
         real_did_GetDeviceData =
             (DIDGETDEVICEDATAPROC)hook_func(
@@ -74,9 +83,14 @@ static HRESULT WINAPI fake_di_CreateDevice(IDirectInputA *This, REFGUID rguid, L
     return result;
 }
 
-static HRESULT WINAPI fake_di_CreateDeviceEx(IDirectInputA* This, REFGUID rguid, REFIID riid, LPDIRECTINPUTDEVICEA* lplpDIDevice, LPUNKNOWN pUnkOuter)
+static HRESULT WINAPI fake_di_CreateDeviceEx(
+    IDirectInputA* This,
+    REFGUID rguid,
+    REFIID riid,
+    LPDIRECTINPUTDEVICEA* lplpDIDevice,
+    LPUNKNOWN pUnkOuter)
 {
-    dprintf("DirectInput CreateDeviceEx\n");
+    TRACE("DirectInput CreateDeviceEx\n");
 
     HRESULT result = real_di_CreateDeviceEx(This, rguid, riid, lplpDIDevice, pUnkOuter);
 
@@ -94,9 +108,13 @@ static HRESULT WINAPI fake_di_CreateDeviceEx(IDirectInputA* This, REFGUID rguid,
     return result;
 }
 
-HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTA* lplpDirectInput, LPUNKNOWN punkOuter)
+HRESULT WINAPI fake_DirectInputCreateA(
+    HINSTANCE hinst,
+    DWORD dwVersion,
+    LPDIRECTINPUTA* lplpDirectInput,
+    LPUNKNOWN punkOuter)
 {
-    dprintf("DirectInputCreateA\n");
+    TRACE("DirectInputCreateA\n");
 
     if (!real_DirectInputCreateA)
     {
@@ -112,15 +130,19 @@ HRESULT WINAPI fake_DirectInputCreateA(HINSTANCE hinst, DWORD dwVersion, LPDIREC
     if (SUCCEEDED(result) && !real_di_CreateDevice)
     {
         real_di_CreateDevice =
-            (DICREATEDEVICEPROC)hook_func((PROC *)&(*lplpDirectInput)->lpVtbl->CreateDevice, (PROC)fake_di_CreateDevice);
+            (DICREATEDEVICEPROC)hook_func((PROC*)&(*lplpDirectInput)->lpVtbl->CreateDevice, (PROC)fake_di_CreateDevice);
     }
 
     return result;
 }
 
-HRESULT WINAPI fake_DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIRECTINPUTW* lplpDirectInput, LPUNKNOWN punkOuter)
+HRESULT WINAPI fake_DirectInputCreateW(
+    HINSTANCE hinst,
+    DWORD dwVersion,
+    LPDIRECTINPUTW* lplpDirectInput,
+    LPUNKNOWN punkOuter)
 {
-    dprintf("DirectInputCreateW\n");
+    TRACE("DirectInputCreateW\n");
 
     if (!real_DirectInputCreateW)
     {
@@ -142,9 +164,14 @@ HRESULT WINAPI fake_DirectInputCreateW(HINSTANCE hinst, DWORD dwVersion, LPDIREC
     return result;
 }
 
-HRESULT WINAPI fake_DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPDIRECTINPUT7A* ppvOut, LPUNKNOWN punkOuter)
+HRESULT WINAPI fake_DirectInputCreateEx(
+    HINSTANCE hinst,
+    DWORD dwVersion,
+    REFIID riidltf,
+    LPDIRECTINPUT7A* ppvOut,
+    LPUNKNOWN punkOuter)
 {
-    dprintf("DirectInputCreateEx\n");
+    TRACE("DirectInputCreateEx\n");
 
     if (!real_DirectInputCreateEx)
     {
@@ -163,9 +190,9 @@ HRESULT WINAPI fake_DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID
             (DICREATEDEVICEPROC)hook_func((PROC*)&(*ppvOut)->lpVtbl->CreateDevice, (PROC)fake_di_CreateDevice);
     }
 
-    if (SUCCEEDED(result) && 
-        !real_di_CreateDeviceEx && 
-        riidltf && 
+    if (SUCCEEDED(result) &&
+        !real_di_CreateDeviceEx &&
+        riidltf &&
         (IsEqualGUID(&IID_IDirectInput7A, riidltf) || IsEqualGUID(&IID_IDirectInput7W, riidltf)))
     {
         real_di_CreateDeviceEx =
@@ -175,9 +202,14 @@ HRESULT WINAPI fake_DirectInputCreateEx(HINSTANCE hinst, DWORD dwVersion, REFIID
     return result;
 }
 
-HRESULT WINAPI fake_DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPDIRECTINPUT8* ppvOut, LPUNKNOWN punkOuter)
+HRESULT WINAPI fake_DirectInput8Create(
+    HINSTANCE hinst,
+    DWORD dwVersion,
+    REFIID riidltf,
+    LPDIRECTINPUT8* ppvOut,
+    LPUNKNOWN punkOuter)
 {
-    dprintf("DirectInput8Create\n");
+    TRACE("DirectInput8Create\n");
 
     if (!real_DirectInput8Create)
     {

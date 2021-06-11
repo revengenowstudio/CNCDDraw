@@ -7,7 +7,12 @@
 #include "debug.h"
 
 
-HRESULT ddp_GetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwBase, DWORD dwNumEntries, LPPALETTEENTRY lpEntries)
+HRESULT ddp_GetEntries(
+    IDirectDrawPaletteImpl* This,
+    DWORD dwFlags,
+    DWORD dwBase,
+    DWORD dwNumEntries,
+    LPPALETTEENTRY lpEntries)
 {
     for (int i = dwBase, x = 0; i < dwBase + dwNumEntries; i++, x++)
     {
@@ -19,7 +24,12 @@ HRESULT ddp_GetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwBase
     return DD_OK;
 }
 
-HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStartingEntry, DWORD dwCount, LPPALETTEENTRY lpEntries)
+HRESULT ddp_SetEntries(
+    IDirectDrawPaletteImpl* This,
+    DWORD dwFlags,
+    DWORD dwStartingEntry,
+    DWORD dwCount,
+    LPPALETTEENTRY lpEntries)
 {
     for (int i = dwStartingEntry, x = 0; i < dwStartingEntry + dwCount; i++, x++)
     {
@@ -56,18 +66,26 @@ HRESULT ddp_SetEntries(IDirectDrawPaletteImpl *This, DWORD dwFlags, DWORD dwStar
     return DD_OK;
 }
 
-HRESULT dd_CreatePalette(DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, LPDIRECTDRAWPALETTE FAR * lpDDPalette, IUnknown FAR * unkOuter)
+HRESULT dd_CreatePalette(
+    DWORD dwFlags,
+    LPPALETTEENTRY lpDDColorArray,
+    IDirectDrawPaletteImpl** lpDDPalette,
+    IUnknown FAR* unkOuter)
 {
-    IDirectDrawPaletteImpl *p = (IDirectDrawPaletteImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawPaletteImpl));
-  
-    dprintf("     Palette = %p\n", p);
+    if (!lpDDPalette || !lpDDColorArray)
+        return DDERR_INVALIDPARAMS;
+
+    IDirectDrawPaletteImpl* p =
+        (IDirectDrawPaletteImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawPaletteImpl));
+
+    TRACE("     palette = %p\n", p);
 
     p->lpVtbl = &g_ddp_vtbl;
     p->flags = dwFlags;
     ddp_SetEntries(p, dwFlags, 0, 256, lpDDColorArray);
     IDirectDrawPalette_AddRef(p);
 
-    *lpDDPalette = (LPDIRECTDRAWPALETTE)p;
+    *lpDDPalette = p;
 
     return DD_OK;
 }

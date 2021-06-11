@@ -14,17 +14,17 @@ void mouse_lock()
     if (g_ddraw->devmode)
     {
         if (g_ddraw->handlemouse)
-            while(real_ShowCursor(FALSE) >= 0);
+            while (real_ShowCursor(FALSE) >= 0);
 
         return;
     }
 
     if (g_hook_active && !g_ddraw->locked)
     {
-        // Get the window client area.
+        /* Get the window client area */
         real_GetClientRect(g_ddraw->hwnd, &rc);
-        
-        if(g_ddraw->adjmouse)
+
+        if (g_ddraw->adjmouse)
         {
             rc.right = g_ddraw->render.viewport.width;
             rc.bottom = g_ddraw->render.viewport.height;
@@ -35,21 +35,21 @@ void mouse_lock()
             rc.bottom = g_ddraw->height;
         }
 
-        // Convert the client area to screen coordinates.
+        /* Convert the client area to screen coordinates  */
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
 
         real_ClientToScreen(g_ddraw->hwnd, &pt);
         real_ClientToScreen(g_ddraw->hwnd, &pt2);
-        
+
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
-        
+
         rc.bottom -= (LONG)((g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h);
 
-        if(g_ddraw->adjmouse)
+        if (g_ddraw->adjmouse)
         {
             real_SetCursorPos(
-                (int)(rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w)), 
+                (int)(rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w)),
                 (int)(rc.top + ((g_ddraw->cursor.y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
         }
         else
@@ -84,7 +84,7 @@ void mouse_unlock()
     if (g_ddraw->devmode)
     {
         if (g_ddraw->handlemouse)
-            while(real_ShowCursor(TRUE) < 0);
+            while (real_ShowCursor(TRUE) < 0);
 
         return;
     }
@@ -98,10 +98,10 @@ void mouse_unlock()
     {
         g_ddraw->locked = FALSE;
 
-        // Get the window client area.
+        /* Get the window client area  */
         real_GetClientRect(g_ddraw->hwnd, &rc);
-        
-        // Convert the client area to screen coordinates.
+
+        /* Convert the client area to screen coordinates */
         POINT pt = { rc.left, rc.top };
         POINT pt2 = { rc.right, rc.bottom };
 
@@ -109,7 +109,7 @@ void mouse_unlock()
         real_ClientToScreen(g_ddraw->hwnd, &pt2);
 
         SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
-       
+
         if (g_ddraw->handlemouse)
         {
             while (real_ShowCursor(TRUE) < 0);
@@ -126,9 +126,9 @@ void mouse_unlock()
         }
 
         real_ClipCursor(NULL);
-        
+
         real_SetCursorPos(
-            (int)(rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w)), 
+            (int)(rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w)),
             (int)(rc.top + g_ddraw->render.viewport.y + ((g_ddraw->cursor.y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
     }
 }

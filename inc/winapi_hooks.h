@@ -6,7 +6,7 @@
 
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint);
-BOOL WINAPI fake_ClipCursor(const RECT *lpRect);
+BOOL WINAPI fake_ClipCursor(const RECT* lpRect);
 int WINAPI fake_ShowCursor(BOOL bShow);
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor);
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect);

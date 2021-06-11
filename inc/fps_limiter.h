@@ -28,7 +28,7 @@ typedef NTSTATUS(WINAPI* D3DKMTWAITFORVERTICALBLANKEVENTPROC)(const D3DKMT_WAITF
 typedef NTSTATUS(WINAPI* D3DKMTOPENADAPTERFROMHDCPROC)(D3DKMT_OPENADAPTERFROMHDC* Arg1);
 typedef NTSTATUS(WINAPI* D3DKMTCLOSEADAPTERPROC)(D3DKMT_CLOSEADAPTER* Arg1);
 
-typedef struct fps_limiter
+typedef struct FPSLIMITER
 {
     DWORD tick_start;
     DWORD tick_end;
@@ -48,9 +48,9 @@ typedef struct fps_limiter
     D3DKMTCLOSEADAPTERPROC D3DKMTCloseAdapter;
     BOOL got_adapter;
     BOOL initialized;
-} fps_limiter;
+} FPSLIMITER;
 
-extern fps_limiter g_fpsl;
+extern FPSLIMITER g_fpsl;
 
 void fpsl_init();
 BOOL fpsl_wait_for_vblank(BOOL open_adapter);

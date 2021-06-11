@@ -5,7 +5,7 @@
 #include <windows.h>
 
 
-typedef struct cnc_ddraw_config
+typedef struct CNCDDRAWCONFIG
 {
     RECT window_rect;
     int window_state;
@@ -13,9 +13,9 @@ typedef struct cnc_ddraw_config
     char process_file_name[96];
     int save_settings;
 
-} cnc_ddraw_config;
+} CNCDDRAWCONFIG;
 
-extern cnc_ddraw_config g_config;
+extern CNCDDRAWCONFIG g_config;
 
 void cfg_load();
 void cfg_save();

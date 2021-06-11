@@ -3,21 +3,18 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <ddraw.h>
 #include "IDirectDrawPalette.h"
 #include "IDirectDrawClipper.h"
 #include "IDirectDraw.h"
-#include "ddraw.h"
 
-
-DEFINE_GUID(IID_IDirectDrawSurface4, 0x0B2B8630, 0xAD35, 0x11D0, 0x8E, 0xA6, 0x00, 0x60, 0x97, 0x97, 0xEA, 0x5B);
-DEFINE_GUID(IID_IDirectDrawSurface7, 0x06675a80, 0x3b9b, 0x11d2, 0xb9, 0x2f, 0x00, 0x60, 0x97, 0x97, 0xea, 0x5b);
 
 struct IDirectDrawSurfaceImpl;
 struct IDirectDrawSurfaceImplVtbl;
 
 typedef struct IDirectDrawSurfaceImpl
 {
-    struct IDirectDrawSurfaceImplVtbl *lpVtbl;
+    struct IDirectDrawSurfaceImplVtbl* lpVtbl;
 
     ULONG ref;
 
@@ -29,7 +26,7 @@ typedef struct IDirectDrawSurfaceImpl
 
     IDirectDrawPaletteImpl* palette;
 
-    void *surface;
+    void* surface;
     DWORD l_pitch;
     DWORD lx_pitch;
 
@@ -48,64 +45,65 @@ typedef struct IDirectDrawSurfaceImpl
 
 typedef struct IDirectDrawSurfaceImplVtbl IDirectDrawSurfaceImplVtbl;
 
+#undef INTERFACE
+#define INTERFACE IDirectDrawSurfaceImpl
 struct IDirectDrawSurfaceImplVtbl
 {
-    /* IUnknown */
-    HRESULT (__stdcall *QueryInterface)(IDirectDrawSurfaceImpl*, REFIID, void**);
-    ULONG (__stdcall *AddRef)(IDirectDrawSurfaceImpl*);
-    ULONG (__stdcall *Release)(IDirectDrawSurfaceImpl*);
-
-    /* IDirectDrawSurface */
-    HRESULT (__stdcall *AddAttachedSurface)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWSURFACE);
-    HRESULT (__stdcall *AddOverlayDirtyRect)(IDirectDrawSurfaceImpl*, LPRECT);
-    HRESULT (__stdcall *Blt)(IDirectDrawSurfaceImpl*, LPRECT,LPDIRECTDRAWSURFACE, LPRECT,DWORD, LPDDBLTFX);
-    HRESULT (__stdcall *BltBatch)(IDirectDrawSurfaceImpl*, LPDDBLTBATCH, DWORD, DWORD );
-    HRESULT (__stdcall *BltFast)(IDirectDrawSurfaceImpl*, DWORD,DWORD,LPDIRECTDRAWSURFACE, LPRECT,DWORD);
-    HRESULT (__stdcall *DeleteAttachedSurface)(IDirectDrawSurfaceImpl*, DWORD,LPDIRECTDRAWSURFACE);
-    HRESULT (__stdcall *EnumAttachedSurfaces)(IDirectDrawSurfaceImpl*, LPVOID,LPDDENUMSURFACESCALLBACK);
-    HRESULT (__stdcall *EnumOverlayZOrders)(IDirectDrawSurfaceImpl*, DWORD,LPVOID,LPDDENUMSURFACESCALLBACK);
-    HRESULT (__stdcall *Flip)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWSURFACE, DWORD);
-    HRESULT (__stdcall *GetAttachedSurface)(IDirectDrawSurfaceImpl*, LPDDSCAPS, LPDIRECTDRAWSURFACE FAR *);
-    HRESULT (__stdcall *GetBltStatus)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *GetCaps)(IDirectDrawSurfaceImpl*, LPDDSCAPS);
-    HRESULT (__stdcall *GetClipper)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWCLIPPER FAR*);
-    HRESULT (__stdcall *GetColorKey)(IDirectDrawSurfaceImpl*, DWORD, LPDDCOLORKEY);
-    HRESULT (__stdcall *GetDC)(IDirectDrawSurfaceImpl*, HDC FAR *);
-    HRESULT (__stdcall *GetFlipStatus)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *GetOverlayPosition)(IDirectDrawSurfaceImpl*, LPLONG, LPLONG );
-    HRESULT (__stdcall *GetPalette)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWPALETTE FAR*);
-    HRESULT (__stdcall *GetPixelFormat)(IDirectDrawSurfaceImpl*, LPDDPIXELFORMAT);
-    HRESULT (__stdcall *GetSurfaceDesc)(IDirectDrawSurfaceImpl*, LPDDSURFACEDESC);
-    HRESULT (__stdcall *Initialize)(IDirectDrawSurfaceImpl*, LPDIRECTDRAW, LPDDSURFACEDESC);
-    HRESULT (__stdcall *IsLost)(IDirectDrawSurfaceImpl*);
-    HRESULT (__stdcall *Lock)(IDirectDrawSurfaceImpl*, LPRECT,LPDDSURFACEDESC,DWORD,HANDLE);
-    HRESULT (__stdcall *ReleaseDC)(IDirectDrawSurfaceImpl*, HDC);
-    HRESULT (__stdcall *Restore)(IDirectDrawSurfaceImpl*);
-    HRESULT (__stdcall *SetClipper)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWCLIPPER);
-    HRESULT (__stdcall *SetColorKey)(IDirectDrawSurfaceImpl*, DWORD, LPDDCOLORKEY);
-    HRESULT (__stdcall *SetOverlayPosition)(IDirectDrawSurfaceImpl*, LONG, LONG );
-    HRESULT (__stdcall *SetPalette)(IDirectDrawSurfaceImpl*, LPDIRECTDRAWPALETTE);
-    HRESULT (__stdcall *Unlock)(IDirectDrawSurfaceImpl*, LPVOID);
-    HRESULT (__stdcall *UpdateOverlay)(IDirectDrawSurfaceImpl*, LPRECT, LPDIRECTDRAWSURFACE,LPRECT,DWORD, LPDDOVERLAYFX);
-    HRESULT (__stdcall *UpdateOverlayDisplay)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *UpdateOverlayZOrder)(IDirectDrawSurfaceImpl*, DWORD, LPDIRECTDRAWSURFACE);
-    // v2
-    HRESULT (__stdcall *GetDDInterface)(IDirectDrawSurfaceImpl*, LPVOID*);
-    HRESULT (__stdcall *PageLock)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *PageUnlock)(IDirectDrawSurfaceImpl*, DWORD);
-    // v3
-    HRESULT (__stdcall *SetSurfaceDesc)(IDirectDrawSurfaceImpl*, LPDDSURFACEDESC, DWORD);
-    // v4
-    HRESULT (__stdcall *SetPrivateData)(IDirectDrawSurfaceImpl*, REFGUID, LPVOID, DWORD, DWORD);
-    HRESULT (__stdcall *GetPrivateData)(IDirectDrawSurfaceImpl*, REFGUID, LPVOID, LPDWORD);
-    HRESULT (__stdcall *FreePrivateData)(IDirectDrawSurfaceImpl*, REFGUID);
-    HRESULT (__stdcall *GetUniquenessValue)(IDirectDrawSurfaceImpl*, LPDWORD);
-    HRESULT (__stdcall *ChangeUniquenessValue)(IDirectDrawSurfaceImpl*);
-    // v7
-    HRESULT (__stdcall *SetPriority)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *GetPriority)(IDirectDrawSurfaceImpl*, LPDWORD);
-    HRESULT (__stdcall *SetLOD)(IDirectDrawSurfaceImpl*, DWORD);
-    HRESULT (__stdcall *GetLOD)(IDirectDrawSurfaceImpl*, LPDWORD);
+    /*** IUnknown methods ***/
+    STDMETHOD(QueryInterface) (THIS_ REFIID riid, LPVOID FAR* ppvObj) PURE;
+    STDMETHOD_(ULONG, AddRef) (THIS)  PURE;
+    STDMETHOD_(ULONG, Release) (THIS) PURE;
+    /*** IDirectDrawSurface methods ***/
+    STDMETHOD(AddAttachedSurface)(THIS_ LPDIRECTDRAWSURFACE7) PURE;
+    STDMETHOD(AddOverlayDirtyRect)(THIS_ LPRECT) PURE;
+    STDMETHOD(Blt)(THIS_ LPRECT, LPDIRECTDRAWSURFACE7, LPRECT, DWORD, LPDDBLTFX) PURE;
+    STDMETHOD(BltBatch)(THIS_ LPDDBLTBATCH, DWORD, DWORD) PURE;
+    STDMETHOD(BltFast)(THIS_ DWORD, DWORD, LPDIRECTDRAWSURFACE7, LPRECT, DWORD) PURE;
+    STDMETHOD(DeleteAttachedSurface)(THIS_ DWORD, LPDIRECTDRAWSURFACE7) PURE;
+    STDMETHOD(EnumAttachedSurfaces)(THIS_ LPVOID, LPDDENUMSURFACESCALLBACK7) PURE;
+    STDMETHOD(EnumOverlayZOrders)(THIS_ DWORD, LPVOID, LPDDENUMSURFACESCALLBACK7) PURE;
+    STDMETHOD(Flip)(THIS_ LPDIRECTDRAWSURFACE7, DWORD) PURE;
+    STDMETHOD(GetAttachedSurface)(THIS_ LPDDSCAPS2, LPDIRECTDRAWSURFACE7 FAR*) PURE;
+    STDMETHOD(GetBltStatus)(THIS_ DWORD) PURE;
+    STDMETHOD(GetCaps)(THIS_ LPDDSCAPS2) PURE;
+    STDMETHOD(GetClipper)(THIS_ LPDIRECTDRAWCLIPPER FAR*) PURE;
+    STDMETHOD(GetColorKey)(THIS_ DWORD, LPDDCOLORKEY) PURE;
+    STDMETHOD(GetDC)(THIS_ HDC FAR*) PURE;
+    STDMETHOD(GetFlipStatus)(THIS_ DWORD) PURE;
+    STDMETHOD(GetOverlayPosition)(THIS_ LPLONG, LPLONG) PURE;
+    STDMETHOD(GetPalette)(THIS_ LPDIRECTDRAWPALETTE FAR*) PURE;
+    STDMETHOD(GetPixelFormat)(THIS_ LPDDPIXELFORMAT) PURE;
+    STDMETHOD(GetSurfaceDesc)(THIS_ LPDDSURFACEDESC2) PURE;
+    STDMETHOD(Initialize)(THIS_ LPDIRECTDRAW, LPDDSURFACEDESC2) PURE;
+    STDMETHOD(IsLost)(THIS) PURE;
+    STDMETHOD(Lock)(THIS_ LPRECT, LPDDSURFACEDESC2, DWORD, HANDLE) PURE;
+    STDMETHOD(ReleaseDC)(THIS_ HDC) PURE;
+    STDMETHOD(Restore)(THIS) PURE;
+    STDMETHOD(SetClipper)(THIS_ LPDIRECTDRAWCLIPPER) PURE;
+    STDMETHOD(SetColorKey)(THIS_ DWORD, LPDDCOLORKEY) PURE;
+    STDMETHOD(SetOverlayPosition)(THIS_ LONG, LONG) PURE;
+    STDMETHOD(SetPalette)(THIS_ LPDIRECTDRAWPALETTE) PURE;
+    STDMETHOD(Unlock)(THIS_ LPRECT) PURE;
+    STDMETHOD(UpdateOverlay)(THIS_ LPRECT, LPDIRECTDRAWSURFACE7, LPRECT, DWORD, LPDDOVERLAYFX) PURE;
+    STDMETHOD(UpdateOverlayDisplay)(THIS_ DWORD) PURE;
+    STDMETHOD(UpdateOverlayZOrder)(THIS_ DWORD, LPDIRECTDRAWSURFACE7) PURE;
+    /*** Added in the v2 interface ***/
+    STDMETHOD(GetDDInterface)(THIS_ LPVOID FAR*) PURE;
+    STDMETHOD(PageLock)(THIS_ DWORD) PURE;
+    STDMETHOD(PageUnlock)(THIS_ DWORD) PURE;
+    /*** Added in the v3 interface ***/
+    STDMETHOD(SetSurfaceDesc)(THIS_ LPDDSURFACEDESC2, DWORD) PURE;
+    /*** Added in the v4 interface ***/
+    STDMETHOD(SetPrivateData)(THIS_ REFGUID, LPVOID, DWORD, DWORD) PURE;
+    STDMETHOD(GetPrivateData)(THIS_ REFGUID, LPVOID, LPDWORD) PURE;
+    STDMETHOD(FreePrivateData)(THIS_ REFGUID) PURE;
+    STDMETHOD(GetUniquenessValue)(THIS_ LPDWORD) PURE;
+    STDMETHOD(ChangeUniquenessValue)(THIS) PURE;
+    /*** Added in the v7 interface ***/
+    STDMETHOD(SetPriority)(THIS_ DWORD) PURE;
+    STDMETHOD(GetPriority)(THIS_ LPDWORD) PURE;
+    STDMETHOD(SetLOD)(THIS_ DWORD) PURE;
+    STDMETHOD(GetLOD)(THIS_ LPDWORD) PURE;
 };
 
 extern struct IDirectDrawSurfaceImplVtbl g_dds_vtbl;

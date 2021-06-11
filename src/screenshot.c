@@ -45,37 +45,37 @@ static BOOL ss_screenshot_8bit(char* filename, IDirectDrawSurfaceImpl* src)
 static BOOL ss_screenshot_16bit(char* filename, IDirectDrawSurfaceImpl* src)
 {
     unsigned int error = TRUE;
-    unsigned int* src_buf = malloc(src->width * src->height * 4);
+    unsigned int* dst_buf = malloc(src->width * src->height * 4);
 
-    if (src_buf)
+    if (dst_buf)
     {
-        unsigned short* surface = (unsigned short*)dds_GetBuffer(src);
+        unsigned short* src_buf = (unsigned short*)dds_GetBuffer(src);
 
         for (int y = 0; y < src->height; y++)
         {
-            int src_y = y * src->width;
+            int dst_row = y * src->width;
 
             for (int x = 0; x < src->width; x++)
             {
-                unsigned short pixel = surface[src_y + x];
+                unsigned short pixel = src_buf[dst_row + x];
 
                 BYTE red = ((pixel & 0xF800) >> 11) << 3;
                 BYTE green = ((pixel & 0x07E0) >> 5) << 2;
                 BYTE blue = ((pixel & 0x001F)) << 3;
 
-                src_buf[src_y + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+                dst_buf[dst_row + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
             }
         }
 
-        error = lodepng_encode32_file(filename, (unsigned char*)src_buf, src->width, src->height);
+        error = lodepng_encode32_file(filename, (unsigned char*)dst_buf, src->width, src->height);
 
-        free(src_buf);
+        free(dst_buf);
     }
 
     return !error;
 }
 
-BOOL ss_take_screenshot(IDirectDrawSurfaceImpl *src)
+BOOL ss_take_screenshot(IDirectDrawSurfaceImpl* src)
 {
     if (!src || !dds_GetBuffer(src))
         return FALSE;
@@ -87,7 +87,7 @@ BOOL ss_take_screenshot(IDirectDrawSurfaceImpl *src)
 
     strncpy(title, g_ddraw->title, sizeof(g_ddraw->title));
 
-    for (int i = 0; i<strlen(title); i++) 
+    for (int i = 0; i < strlen(title); i++)
     {
         if (title[i] == ' ')
         {
@@ -111,5 +111,5 @@ BOOL ss_take_screenshot(IDirectDrawSurfaceImpl *src)
         return ss_screenshot_16bit(filename, src);
     }
 
-    return FALSE;;
+    return FALSE;
 }

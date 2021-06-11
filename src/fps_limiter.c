@@ -3,7 +3,7 @@
 #include "dd.h"
 #include "debug.h"
 
-fps_limiter g_fpsl;
+FPSLIMITER g_fpsl;
 
 void fpsl_init()
 {

@@ -3,22 +3,22 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "ddraw.h"
+#include <ddraw.h>
 
 
 typedef HRESULT(WINAPI* DIRECTDRAWCREATEPROC)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
 
 ULONG dd_AddRef();
 ULONG dd_Release();
-HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback);
-HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h);
-HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game);
+HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK2 lpEnumModesCallback);
+HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE hEvent);
+HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setByGame);
 HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags);
 HRESULT dd_RestoreDisplayMode();
 HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps);
-HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc);
+HRESULT dd_GetDisplayMode(LPDDSURFACEDESC2 lpDDSurfaceDesc);
 HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq);
-HRESULT dd_GetAvailableVidMem(void* lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);
+HRESULT dd_GetAvailableVidMem(LPDDSCAPS2 lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 
@@ -26,20 +26,20 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 #define RESLIST_MINI 1
 #define RESLIST_FULL 2
 
-typedef struct speed_limiter
+typedef struct SPEEDLIMITER
 {
     DWORD tick_length;
     LONGLONG tick_length_ns;
     HANDLE htimer;
     LARGE_INTEGER due_time;
     BOOL use_blt_or_flip;
-} speed_limiter;
+} SPEEDLIMITER;
 
 struct IDirectDrawSurfaceImpl;
 
-extern struct cnc_ddraw *g_ddraw;
+extern struct CNCDDRAW* g_ddraw;
 
-typedef struct cnc_ddraw
+typedef struct CNCDDRAW
 {
     ULONG ref;
 
@@ -50,7 +50,7 @@ typedef struct cnc_ddraw
     BOOL border;
     BOOL boxing;
     DEVMODE mode;
-    struct IDirectDrawSurfaceImpl *primary;
+    struct IDirectDrawSurfaceImpl* primary;
     char title[128];
     CRITICAL_SECTION cs;
 
@@ -69,7 +69,7 @@ typedef struct cnc_ddraw
         int bpp;
 
         HDC hdc;
-        int *tex;
+        int* tex;
 
         HANDLE thread;
         BOOL run;
@@ -100,7 +100,7 @@ typedef struct cnc_ddraw
     BOOL iscnc1;
     BOOL iskkndx;
     LONG upscale_hack_active;
-    DWORD (WINAPI *renderer)(void);
+    DWORD(WINAPI* renderer)(void);
     BOOL fullscreen;
     BOOL maintas;
     BOOL noactivateapp;
@@ -117,7 +117,6 @@ typedef struct cnc_ddraw
     BOOL fixwndprochook;
     BOOL d3d9linear;
     BOOL gdilinear;
-    BOOL backbuffer;
     BOOL passthrough;
     int resolutions;
     BOOL armadahack;
@@ -129,13 +128,13 @@ typedef struct cnc_ddraw
     RECT bnet_win_rect;
     POINT bnet_pos;
     int mouse_y_adjust;
-    void* last_freed_palette; // Dungeon Keeper hack
+    void* last_freed_palette; /* Dungeon Keeper hack */
     BOOL child_window_exists;
-    DWORD last_set_window_pos_tick; // WINE hack
+    DWORD last_set_window_pos_tick; /* WINE hack */
     BOOL show_driver_warning;
-    speed_limiter ticks_limiter;
-    speed_limiter flip_limiter;
-    
-} cnc_ddraw;
+    SPEEDLIMITER ticks_limiter;
+    SPEEDLIMITER flip_limiter;
+
+} CNCDDRAW;
 
 #endif

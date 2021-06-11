@@ -1,7 +1,7 @@
 #ifndef OPENGLSHADER_H
 #define OPENGLSHADER_H
 
-// OpenGL 2.0
+/* OpenGL 2.0 */
 
 const char PASSTHROUGH_VERT_SHADER_110[] =
     "#version 110\n"
@@ -37,7 +37,7 @@ const char PASSTHROUGH_FRAG_SHADER_110[] =
     "   gl_FragColor = texel; \n"
     "}\n";
 
-// OpenGL 3.0
+/* OpenGL 3.0 */
 
 const char PASSTHROUGH_VERT_SHADER[] =
     "#version 130\n"
@@ -82,7 +82,7 @@ const char PASSTHROUGH_FRAG_SHADER[] =
     "    FragColor = texel;\n"
     "}\n";
 
-// OpenGL 3.2 (Core Profile)
+/* OpenGL 3.2 (Core Profile) */
 
 const char PASSTHROUGH_VERT_SHADER_CORE[] =
     "#version 150\n"

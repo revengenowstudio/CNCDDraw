@@ -1,62 +1,62 @@
 #include "IDirectDrawGammaControl.h"
 #include "debug.h"
 
-HRESULT __stdcall IDirectDrawGammaControl__QueryInterface(IDirectDrawGammaControlImpl *This, REFIID riid, void **obj)
+HRESULT __stdcall IDirectDrawGammaControl__QueryInterface(IDirectDrawGammaControlImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
-    HRESULT ret = S_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    HRESULT ret = E_NOINTERFACE;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-ULONG __stdcall IDirectDrawGammaControl__AddRef(IDirectDrawGammaControlImpl *This)
+ULONG __stdcall IDirectDrawGammaControl__AddRef(IDirectDrawGammaControlImpl* This)
 {
-    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("-> %s(This=%p)\n", __FUNCTION__, This);
     ULONG ret = ++This->ref;
-    dprintf("<- %s(This ref=%u)\n", __FUNCTION__, ret);
+    TRACE("<- %s(This ref=%u)\n", __FUNCTION__, ret);
     return ret;
 }
 
-ULONG __stdcall IDirectDrawGammaControl__Release(IDirectDrawGammaControlImpl *This)
+ULONG __stdcall IDirectDrawGammaControl__Release(IDirectDrawGammaControlImpl* This)
 {
-    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("-> %s(This=%p)\n", __FUNCTION__, This);
 
     ULONG ret = --This->ref;
 
     if (This->ref == 0)
     {
-        dprintf("     Released (%p)\n", This);
+        TRACE("     Released (%p)\n", This);
 
         HeapFree(GetProcessHeap(), 0, This);
     }
 
-    dprintf("<- %s(This ref=%u)\n", __FUNCTION__, ret);
+    TRACE("<- %s(This ref=%u)\n", __FUNCTION__, ret);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawGammaControl__GetGammaRamp(IDirectDrawGammaControlImpl *This, DWORD dwFlags, void *lpRampData)
+HRESULT __stdcall IDirectDrawGammaControl__GetGammaRamp(IDirectDrawGammaControlImpl* This, DWORD dwFlags, LPDDGAMMARAMP lpRampData)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DDERR_EXCEPTION;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawGammaControl__SetGammaRamp(IDirectDrawGammaControlImpl *This, DWORD dwFlags, void *lpRampData)
+HRESULT __stdcall IDirectDrawGammaControl__SetGammaRamp(IDirectDrawGammaControlImpl* This, DWORD dwFlags, LPDDGAMMARAMP lpRampData)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DDERR_EXCEPTION;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
 struct IDirectDrawGammaControlImplVtbl g_ddgc_vtbl =
 {
-    /* IUnknown */
+    /*** IUnknown methods ***/
     IDirectDrawGammaControl__QueryInterface,
     IDirectDrawGammaControl__AddRef,
     IDirectDrawGammaControl__Release,
-    /* IDirectDrawGammaControl */
+    /*** IDirectDrawGammaControl methods ***/
     IDirectDrawGammaControl__GetGammaRamp,
     IDirectDrawGammaControl__SetGammaRamp,
 };

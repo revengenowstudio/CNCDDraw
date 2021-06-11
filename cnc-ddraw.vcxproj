@@ -80,7 +80,6 @@
     <ClInclude Include="inc\lodepng.h" />
     <ClInclude Include="inc\mouse.h" />
     <ClInclude Include="inc\render_d3d9.h" />
-    <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\debug.h" />
     <ClInclude Include="inc\dd.h" />
     <ClInclude Include="inc\opengl_utils.h" />

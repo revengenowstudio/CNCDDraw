@@ -3,11 +3,11 @@
 #include "glcorearb.h"
 #include "wglext.h"
 
-// wgl
-typedef HGLRC (APIENTRYP PFNWGLCREATECONTEXTPROC)(HDC);
-typedef BOOL (APIENTRYP PFNWGLDELETECONTEXTPROC)(HGLRC);
-typedef PROC (APIENTRYP PFNWGLGETPROCADDRESSPROC)(LPCSTR);
-typedef BOOL (APIENTRYP PFNWGLMAKECURRENTPROC)(HDC, HGLRC);
+/* wgl */
+typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTPROC)(HDC);
+typedef BOOL(APIENTRYP PFNWGLDELETECONTEXTPROC)(HGLRC);
+typedef PROC(APIENTRYP PFNWGLGETPROCADDRESSPROC)(LPCSTR);
+typedef BOOL(APIENTRYP PFNWGLMAKECURRENTPROC)(HDC, HGLRC);
 
 extern PFNWGLCREATECONTEXTPROC xwglCreateContext;
 extern PFNWGLDELETECONTEXTPROC xwglDeleteContext;
@@ -18,7 +18,7 @@ extern PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB;
 extern PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
 
 
-//compat profile only --->
+/* compat profile only ---> */
 #define GL_LUMINANCE                      0x1909
 #define GL_LUMINANCE8                     0x8040
 typedef void (APIENTRYP PFNGLBEGINPROC)(GLenum mode);
@@ -30,14 +30,14 @@ extern PFNGLBEGINPROC glBegin;
 extern PFNGLENDPROC glEnd;
 extern PFNGLTEXCOORD2FPROC glTexCoord2f;
 extern PFNGLVERTEX2FPROC glVertex2f;
-// <--- compat profile only
+/* <--- compat profile only */
 
 
 BOOL oglu_load_dll();
 void oglu_init();
-BOOL oglu_ext_exists(char *ext, HDC hdc);
-GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source);
-GLuint oglu_build_program_from_file(const char *file_path, BOOL core_profile);
+BOOL oglu_ext_exists(char* ext, HDC hdc);
+GLuint oglu_build_program(const GLchar* vert_source, const GLchar* frag_source);
+GLuint oglu_build_program_from_file(const char* file_path, BOOL core_profile);
 
 extern PFNGLVIEWPORTPROC glViewport;
 extern PFNGLBINDTEXTUREPROC glBindTexture;

@@ -15,7 +15,7 @@ static BOOL d3d9_create_resouces();
 static BOOL d3d9_set_states();
 static BOOL d3d9_update_vertices(BOOL upscale_hack, BOOL stretch);
 
-static d3d9_renderer g_d3d9;
+static D3D9RENDERER g_d3d9;
 
 BOOL d3d9_is_available()
 {
@@ -45,15 +45,15 @@ BOOL d3d9_create()
     {
         if (g_ddraw->nonexclusive)
         {
-            int (WINAPI* d3d9_enable_shim)(BOOL) =
+            int (WINAPI * d3d9_enable_shim)(BOOL) =
                 (int (WINAPI*)(BOOL))GetProcAddress(g_d3d9.hmodule, "Direct3D9EnableMaximizedWindowedModeShim");
 
             if (d3d9_enable_shim)
                 d3d9_enable_shim(TRUE);
         }
 
-        IDirect3D9 *(WINAPI *d3d_create9)(UINT) =
-            (IDirect3D9 *(WINAPI *)(UINT))GetProcAddress(g_d3d9.hmodule, "Direct3DCreate9");
+        IDirect3D9* (WINAPI * d3d_create9)(UINT) =
+            (IDirect3D9 * (WINAPI*)(UINT))GetProcAddress(g_d3d9.hmodule, "Direct3DCreate9");
 
         if (d3d_create9 && (g_d3d9.instance = d3d_create9(D3D_SDK_VERSION)))
         {
@@ -78,8 +78,7 @@ BOOL d3d9_create()
                 D3DCREATE_SOFTWARE_VERTEXPROCESSING,
             };
 
-            int i;
-            for (i = 0; i < sizeof(behavior_flags) / sizeof(behavior_flags[0]); i++)
+            for (int i = 0; i < sizeof(behavior_flags) / sizeof(behavior_flags[0]); i++)
             {
                 if (SUCCEEDED(
                     IDirect3D9_CreateDevice(
@@ -188,11 +187,11 @@ static BOOL d3d9_create_resouces()
 
     err = err || FAILED(
         IDirect3DDevice9_CreateVertexBuffer(
-            g_d3d9.device, 
-            sizeof(CUSTOMVERTEX) * 4, 0, 
-            D3DFVF_XYZRHW | D3DFVF_TEX1, 
-            D3DPOOL_MANAGED, 
-            &g_d3d9.vertex_buf, 
+            g_d3d9.device,
+            sizeof(CUSTOMVERTEX) * 4, 0,
+            D3DFVF_XYZRHW | D3DFVF_TEX1,
+            D3DPOOL_MANAGED,
+            &g_d3d9.vertex_buf,
             NULL));
 
     err = err || !d3d9_update_vertices(InterlockedExchangeAdd(&g_ddraw->upscale_hack_active, 0), TRUE);
@@ -234,7 +233,7 @@ static BOOL d3d9_create_resouces()
     if (g_ddraw->bpp == 8)
     {
         err = err || FAILED(
-            IDirect3DDevice9_CreatePixelShader(g_d3d9.device, (DWORD *)D3D9_PALETTE_SHADER, &g_d3d9.pixel_shader));
+            IDirect3DDevice9_CreatePixelShader(g_d3d9.device, (DWORD*)D3D9_PALETTE_SHADER, &g_d3d9.pixel_shader));
     }
 
     return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !err;
@@ -246,11 +245,11 @@ static BOOL d3d9_set_states()
 
     err = err || FAILED(IDirect3DDevice9_SetFVF(g_d3d9.device, D3DFVF_XYZRHW | D3DFVF_TEX1));
     err = err || FAILED(IDirect3DDevice9_SetStreamSource(g_d3d9.device, 0, g_d3d9.vertex_buf, 0, sizeof(CUSTOMVERTEX)));
-    err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9 *)g_d3d9.surface_tex[0]));
+    err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9*)g_d3d9.surface_tex[0]));
 
     if (g_ddraw->bpp == 8)
     {
-        err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[0]));
+        err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9*)g_d3d9.palette_tex[0]));
         err = err || FAILED(IDirect3DDevice9_SetPixelShader(g_d3d9.device, g_d3d9.pixel_shader));
     }
     else
@@ -294,7 +293,7 @@ static BOOL d3d9_update_vertices(BOOL upscale_hack, BOOL stretch)
         { vp_w - 0.5f, vp_y - 0.5f, 0.0f, 1.0f, s_w,  0.0f }
     };
 
-    void *data;
+    void* data;
     if (g_d3d9.vertex_buf && SUCCEEDED(IDirect3DVertexBuffer9_Lock(g_d3d9.vertex_buf, 0, 0, (void**)&data, 0)))
     {
         memcpy(data, vertices, sizeof(vertices));
@@ -316,7 +315,7 @@ DWORD WINAPI d3d9_render_main(void)
 
     DWORD timeout = g_ddraw->render.minfps > 0 ? g_ddraw->render.minfps_tick_len : 200;
 
-    while (g_ddraw->render.run && 
+    while (g_ddraw->render.run &&
         (g_ddraw->render.minfps < 0 || WaitForSingleObject(g_ddraw->render.sem, timeout) != WAIT_FAILED))
     {
 #if _DEBUG
@@ -354,11 +353,11 @@ DWORD WINAPI d3d9_render_main(void)
 
                 RECT rc = { 0, 0, g_ddraw->width, g_ddraw->height };
 
-                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9 *)g_d3d9.surface_tex[tex_index])) &&
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 0, (IDirect3DBaseTexture9*)g_d3d9.surface_tex[tex_index])) &&
                     SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.surface_tex[tex_index], 0, &lock_rc, &rc, 0)))
                 {
-                    unsigned char *src = (unsigned char *)g_ddraw->primary->surface;
-                    unsigned char *dst = (unsigned char *)lock_rc.pBits;
+                    unsigned char* src = (unsigned char*)g_ddraw->primary->surface;
+                    unsigned char* dst = (unsigned char*)lock_rc.pBits;
 
                     int i;
                     for (i = 0; i < g_ddraw->height; i++)
@@ -373,7 +372,7 @@ DWORD WINAPI d3d9_render_main(void)
                 }
             }
 
-            if (g_ddraw->bpp == 8 && 
+            if (g_ddraw->bpp == 8 &&
                 (InterlockedExchange(&g_ddraw->render.palette_updated, FALSE) || g_ddraw->render.minfps == -2))
             {
                 if (++pal_index >= D3D9_TEXTURE_COUNT)
@@ -381,7 +380,7 @@ DWORD WINAPI d3d9_render_main(void)
 
                 RECT rc = { 0,0,256,1 };
 
-                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9 *)g_d3d9.palette_tex[pal_index])) &&
+                if (SUCCEEDED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9*)g_d3d9.palette_tex[pal_index])) &&
                     SUCCEEDED(IDirect3DTexture9_LockRect(g_d3d9.palette_tex[pal_index], 0, &lock_rc, &rc, 0)))
                 {
                     memcpy(lock_rc.pBits, g_ddraw->primary->palette->data_rgb, 256 * sizeof(int));
@@ -433,7 +432,7 @@ DWORD WINAPI d3d9_render_main(void)
 #if _DEBUG
         dbg_draw_frame_info_end();
 #endif
-        
+
         fpsl_frame_end();
     }
 

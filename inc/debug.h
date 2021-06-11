@@ -7,12 +7,13 @@
 int dbg_exception_handler(EXCEPTION_POINTERS* exception);
 void dbg_counter_start();
 double dbg_counter_stop();
-void dbg_debug_string(const char *format, ...);
+void dbg_debug_string(const char* format, ...);
 void dbg_draw_frame_info_start();
 void dbg_draw_frame_info_end();
-int dbg_printf(const char *fmt, ...);
+int dbg_printf(const char* fmt, ...);
 void dbg_init();
 void dbg_dump_dds_blt_flags(DWORD flags);
+void dbg_dump_dds_blt_fx_flags(DWORD flags);
 void dbg_dump_dds_caps(DWORD caps);
 void dbg_dump_dds_flags(DWORD flags);
 void dbg_dump_dds_blt_fast_flags(DWORD flags);
@@ -24,10 +25,10 @@ extern DWORD g_dbg_frame_count;
 
 //#define _DEBUG 1
 
-//use OutputDebugStringA rather than printf
+/* use OutputDebugStringA rather than printf */
 //#define _DEBUG_S 1
 
-//log everything (slow)
+/* log everything (slow) */
 //#define _DEBUG_X 1
 
 
@@ -36,29 +37,29 @@ extern DWORD g_dbg_frame_count;
 
 #ifdef _DEBUG_S
 
-#define dprintf(format, ...) dbg_debug_string("xDBG " format, ##__VA_ARGS__)
+#define TRACE(format, ...) dbg_debug_string("xDBG " format, ##__VA_ARGS__)
 
 #ifdef _DEBUG_X
-#define dprintfex(format, ...) dbg_debug_string("xDBG " format, ##__VA_ARGS__)
+#define TRACE_EXT(format, ...) dbg_debug_string("xDBG " format, ##__VA_ARGS__)
 #else
-#define dprintfex(format, ...)
+#define TRACE_EXT(format, ...)
 #endif
 
 #else
 
-#define dprintf(format, ...) dbg_printf(format, ##__VA_ARGS__) 
+#define TRACE(format, ...) dbg_printf(format, ##__VA_ARGS__) 
 
 #ifdef _DEBUG_X
-#define dprintfex(format, ...) dbg_printf(format, ##__VA_ARGS__) 
+#define TRACE_EXT(format, ...) dbg_printf(format, ##__VA_ARGS__) 
 #else
-#define dprintfex(format, ...)
+#define TRACE_EXT(format, ...)
 #endif
 
 #endif 
 
 #else 
-#define dprintf(format, ...)
-#define dprintfex(format, ...)
+#define TRACE(format, ...)
+#define TRACE_EXT(format, ...)
 #endif
- 
+
 #endif

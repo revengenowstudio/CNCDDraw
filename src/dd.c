@@ -1,6 +1,6 @@
 #include <windows.h>
+#include <ddraw.h>
 #include "IDirectDraw.h"
-#include "ddraw.h"
 #include "dd.h"
 #include "hook.h"
 #include "config.h"
@@ -14,14 +14,18 @@
 #include "utils.h"
 
 
-cnc_ddraw *g_ddraw = NULL;
+CNCDDRAW* g_ddraw = NULL;
 
-HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback)
+HRESULT dd_EnumDisplayModes(
+    DWORD dwFlags,
+    LPDDSURFACEDESC2 lpDDSurfaceDesc,
+    LPVOID lpContext,
+    LPDDENUMMODESCALLBACK2 lpEnumModesCallback)
 {
     DWORD i = 0;
-    DDSURFACEDESC s;
+    DDSURFACEDESC2 s;
 
-    /* Some games crash when you feed them with too many resolutions... */
+    /* Some games crash when you feed them with too many resolutions so we have to keep the list short */
 
     SIZE resolutions[] =
     {
@@ -40,7 +44,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
     if (g_ddraw->bpp || g_ddraw->resolutions == RESLIST_FULL)
     {
-        dprintf("     g_ddraw->bpp=%u\n", g_ddraw->bpp);
+        TRACE("     g_ddraw->bpp=%u\n", g_ddraw->bpp);
 
         /* set up some filters to keep the list short */
         DWORD refresh_rate = 0;
@@ -82,9 +86,15 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 flags == m.dmDisplayFlags &&
                 fixed_output == m.dmDisplayFixedOutput)
             {
-                dprintfex("     %d: %dx%d@%d %d bpp\n", (int)i, (int)m.dmPelsWidth, (int)m.dmPelsHeight, (int)m.dmDisplayFrequency, (int)m.dmBitsPerPel);
+                TRACE_EXT(
+                    "     %u: %ux%u@%u %u bpp\n",
+                    i,
+                    m.dmPelsWidth,
+                    m.dmPelsHeight,
+                    m.dmDisplayFrequency,
+                    m.dmBitsPerPel);
 
-                memset(&s, 0, sizeof(DDSURFACEDESC));
+                memset(&s, 0, sizeof(s));
 
                 s.dwSize = sizeof(DDSURFACEDESC);
                 s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
@@ -101,7 +111,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 {
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
-                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
                     }
                 }
@@ -117,7 +127,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 {
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
-                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
                     }
                 }
@@ -133,7 +143,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                 {
                     if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
                     {
-                        dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                        TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
                     }
                 }
@@ -187,7 +197,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
                     continue;
             }
 
-            memset(&s, 0, sizeof(DDSURFACEDESC));
+            memset(&s, 0, sizeof(s));
 
             s.dwSize = sizeof(DDSURFACEDESC);
             s.dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
@@ -201,7 +211,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
-                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
             }
 
@@ -214,7 +224,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
-                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
             }
 
@@ -230,7 +240,7 @@ HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVO
 
             if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
             {
-                dprintf("     DDENUMRET_CANCEL returned, stopping\n");
+                TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
             }
         }
@@ -243,8 +253,15 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
 {
     if (lpDDDriverCaps)
     {
-        lpDDDriverCaps->dwSize = sizeof(DDCAPS);
-        lpDDDriverCaps->dwCaps = DDCAPS_BLT | DDCAPS_PALETTE | DDCAPS_BLTCOLORFILL | DDCAPS_BLTSTRETCH | DDCAPS_CANCLIP | DDCAPS_CANBLTSYSMEM;
+        lpDDDriverCaps->dwSize = sizeof(DDCAPS_DX5);
+        lpDDDriverCaps->dwCaps =
+            DDCAPS_BLT | 
+            DDCAPS_PALETTE | 
+            DDCAPS_BLTCOLORFILL | 
+            DDCAPS_BLTSTRETCH | 
+            DDCAPS_CANCLIP | 
+            DDCAPS_CANBLTSYSMEM;
+
         lpDDDriverCaps->dwCKeyCaps = 0;
         lpDDDriverCaps->dwPalCaps = DDPCAPS_8BIT | DDPCAPS_PRIMARYSURFACE;
         lpDDDriverCaps->dwVidMemTotal = 16777216;
@@ -267,13 +284,15 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
     return DD_OK;
 }
 
-HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc)
+HRESULT dd_GetDisplayMode(LPDDSURFACEDESC2 lpDDSurfaceDesc)
 {
     if (lpDDSurfaceDesc)
     {
-        memset(lpDDSurfaceDesc, 0, sizeof(DDSURFACEDESC));
+        int size = lpDDSurfaceDesc->dwSize == sizeof(DDSURFACEDESC2) ? sizeof(DDSURFACEDESC2) : sizeof(DDSURFACEDESC);
 
-        lpDDSurfaceDesc->dwSize = sizeof(DDSURFACEDESC);
+        memset(lpDDSurfaceDesc, 0, size);
+
+        lpDDSurfaceDesc->dwSize = size;
         lpDDSurfaceDesc->dwFlags = DDSD_HEIGHT | DDSD_REFRESHRATE | DDSD_WIDTH | DDSD_PITCH | DDSD_PIXELFORMAT;
         lpDDSurfaceDesc->dwHeight = g_ddraw->height ? g_ddraw->height : 768;
         lpDDSurfaceDesc->dwWidth = g_ddraw->width ? g_ddraw->width : 1024;
@@ -339,7 +358,7 @@ HRESULT dd_RestoreDisplayMode()
             d3d9_release();
         }
     }
-    
+
     if (!g_ddraw->windowed)
     {
         if (g_ddraw->renderer != d3d9_render_main)
@@ -351,9 +370,9 @@ HRESULT dd_RestoreDisplayMode()
     return DD_OK;
 }
 
-HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game)
+HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setByGame)
 {
-    if (bpp != 8 && bpp != 16 && bpp != 32)
+    if (dwBPP != 8 && dwBPP != 16 && dwBPP != 32)
         return DDERR_INVALIDMODE;
 
     if (g_ddraw->render.thread)
@@ -419,21 +438,21 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         g_ddraw->render.height = g_config.window_rect.bottom;
     }
 
-    //temporary fix: center window for games that keep changing their resolution
-    if (g_ddraw->width && 
-        (g_ddraw->width != width || g_ddraw->height != height) && 
-        (width > g_config.window_rect.right || height > g_config.window_rect.bottom))
+    /* temporary fix: center window for games that keep changing their resolution */
+    if (g_ddraw->width &&
+        (g_ddraw->width != dwWidth || g_ddraw->height != dwHeight) &&
+        (dwWidth > g_config.window_rect.right || dwHeight > g_config.window_rect.bottom))
     {
         g_config.window_rect.left = -32000;
         g_config.window_rect.top = -32000;
     }
 
-    g_ddraw->width = width;
-    g_ddraw->height = height;
-    g_ddraw->bpp = bpp;
+    g_ddraw->width = dwWidth;
+    g_ddraw->height = dwHeight;
+    g_ddraw->bpp = dwBPP;
 
-    g_ddraw->cursor.x = width / 2;
-    g_ddraw->cursor.y = height / 2;
+    g_ddraw->cursor.x = dwWidth / 2;
+    g_ddraw->cursor.y = dwHeight / 2;
 
     BOOL border = g_ddraw->border;
 
@@ -442,14 +461,14 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         g_ddraw->render.width = g_ddraw->mode.dmPelsWidth;
         g_ddraw->render.height = g_ddraw->mode.dmPelsHeight;
 
-        if (g_ddraw->windowed) //windowed-fullscreen aka borderless
+        if (g_ddraw->windowed) /* windowed-fullscreen aka borderless */
         {
             border = FALSE;
 
             g_config.window_rect.left = -32000;
             g_config.window_rect.top = -32000;
 
-            // prevent OpenGL from going automatically into fullscreen exclusive mode
+            /* prevent OpenGL from going automatically into fullscreen exclusive mode */
             if (g_ddraw->renderer == ogl_render_main)
                 g_ddraw->render.height++;
 
@@ -467,14 +486,14 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
     }
 
     g_ddraw->render.run = TRUE;
-    
+
     BOOL lock_mouse = g_ddraw->locked || g_ddraw->fullscreen;
     mouse_unlock();
-	
+
     memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
 
     g_ddraw->render.mode.dmSize = sizeof(DEVMODE);
-    g_ddraw->render.mode.dmFields = DM_PELSWIDTH|DM_PELSHEIGHT;
+    g_ddraw->render.mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
     g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
     g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
@@ -483,49 +502,51 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         g_ddraw->render.mode.dmFields |= DM_BITSPERPEL;
         g_ddraw->render.mode.dmBitsPerPel = g_ddraw->render.bpp;
     }
-    
+
     BOOL maintas = g_ddraw->maintas;
 
     if (!g_ddraw->windowed)
     {
-        // Making sure the chosen resolution is valid
+        /* Making sure the chosen resolution is valid */
         int old_width = g_ddraw->render.width;
         int old_height = g_ddraw->render.height;
 
         if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
         {
-            // fail... compare resolutions
-            if (g_ddraw->render.width > g_ddraw->mode.dmPelsWidth || g_ddraw->render.height > g_ddraw->mode.dmPelsHeight)
+            /* fail... compare resolutions */
+            if (g_ddraw->render.width > g_ddraw->mode.dmPelsWidth ||
+                g_ddraw->render.height > g_ddraw->mode.dmPelsHeight)
             {
-                // chosen game resolution higher than current resolution, use windowed mode for this case
+                /* chosen game resolution higher than current resolution, use windowed mode for this case */
                 g_ddraw->windowed = TRUE;
             }
             else
             {
-                // Try 2x scaling
+                /* Try 2x scaling */
                 g_ddraw->render.width *= 2;
                 g_ddraw->render.height *= 2;
 
                 g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                 g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-                if ((g_ddraw->render.width > g_ddraw->mode.dmPelsWidth || g_ddraw->render.height > g_ddraw->mode.dmPelsHeight) ||
+                if ((g_ddraw->render.width > g_ddraw->mode.dmPelsWidth ||
+                    g_ddraw->render.height > g_ddraw->mode.dmPelsHeight) ||
                     ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                 {
-                    SIZE res = {0};
+                    SIZE res = { 0 };
 
-                    //try to get a resolution with the same aspect ratio as the requested resolution
+                    /* try to get a resolution with the same aspect ratio as the requested resolution */
                     BOOL found_res = util_get_lowest_resolution(
                         (float)old_width / old_height,
                         &res,
-                        old_width + 1, //don't return the original resolution since we tested that one already
+                        old_width + 1, /* don't return the original resolution since we tested that one already */
                         old_height + 1,
                         g_ddraw->mode.dmPelsWidth,
                         g_ddraw->mode.dmPelsHeight);
 
                     if (!found_res)
                     {
-                        //try to get a resolution with the same aspect ratio as the current display mode
+                        /* try to get a resolution with the same aspect ratio as the current display mode */
                         found_res = util_get_lowest_resolution(
                             (float)g_ddraw->mode.dmPelsWidth / g_ddraw->mode.dmPelsHeight,
                             &res,
@@ -543,10 +564,10 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
 
                     g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                     g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
-                    
+
                     if (!found_res || ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                     {
-                        // try current display settings
+                        /* try current display settings */
                         g_ddraw->render.width = g_ddraw->mode.dmPelsWidth;
                         g_ddraw->render.height = g_ddraw->mode.dmPelsHeight;
 
@@ -555,7 +576,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
 
                         if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                         {
-                            // everything failed, use windowed mode instead
+                            /* everything failed, use windowed mode instead */
                             g_ddraw->render.width = old_width;
                             g_ddraw->render.height = old_height;
 
@@ -586,14 +607,13 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
     g_ddraw->render.viewport.height = g_ddraw->render.height;
     g_ddraw->render.viewport.x = 0;
     g_ddraw->render.viewport.y = 0;
-    
+
     if (g_ddraw->boxing)
     {
         g_ddraw->render.viewport.width = g_ddraw->width;
         g_ddraw->render.viewport.height = g_ddraw->height;
 
-        int i;
-        for (i = 20; i-- > 1;)
+        for (int i = 20; i-- > 1;)
         {
             if (g_ddraw->width * i <= g_ddraw->render.width && g_ddraw->height * i <= g_ddraw->render.height)
             {
@@ -609,20 +629,21 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
     else if (maintas)
     {
         g_ddraw->render.viewport.width = g_ddraw->render.width;
-        g_ddraw->render.viewport.height = (int)(((float)g_ddraw->height / g_ddraw->width) * g_ddraw->render.viewport.width);
-        
+        g_ddraw->render.viewport.height =
+            (int)(((float)g_ddraw->height / g_ddraw->width) * g_ddraw->render.viewport.width);
+
         if (g_ddraw->render.viewport.height > g_ddraw->render.height)
         {
-            g_ddraw->render.viewport.width = 
+            g_ddraw->render.viewport.width =
                 (int)(((float)g_ddraw->render.viewport.width / g_ddraw->render.viewport.height) * g_ddraw->render.height);
-                
+
             g_ddraw->render.viewport.height = g_ddraw->render.height;
         }
-         
+
         g_ddraw->render.viewport.y = g_ddraw->render.height / 2 - g_ddraw->render.viewport.height / 2;
         g_ddraw->render.viewport.x = g_ddraw->render.width / 2 - g_ddraw->render.viewport.width / 2;
     }
-    
+
     g_ddraw->render.scale_w = ((float)g_ddraw->render.viewport.width / g_ddraw->width);
     g_ddraw->render.scale_h = ((float)g_ddraw->render.viewport.height / g_ddraw->height);
     g_ddraw->render.unscale_w = ((float)g_ddraw->width / g_ddraw->render.viewport.width);
@@ -630,29 +651,41 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
 
     if (g_ddraw->windowed)
     {
-        MSG msg; // workaround for "Not Responding" window problem in cnc games
+        MSG msg; /* workaround for "Not Responding" window problem in cnc games */
         PeekMessage(&msg, g_ddraw->hwnd, 0, 0, PM_NOREMOVE);
 
         if (!border)
         {
-            real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+            real_SetWindowLongA(
+                g_ddraw->hwnd,
+                GWL_STYLE,
+                GetWindowLong(
+                    g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         }
         else
         {
-            real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW));// &~WS_MAXIMIZEBOX);
+            real_SetWindowLongA(
+                g_ddraw->hwnd,
+                GWL_STYLE,
+                (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW));// &~WS_MAXIMIZEBOX);
         }
 
         if (g_ddraw->wine)
-            real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
+        {
+            real_SetWindowLongA(
+                g_ddraw->hwnd,
+                GWL_STYLE,
+                (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_MINIMIZEBOX) & ~(WS_MAXIMIZEBOX | WS_THICKFRAME));
+        }
 
         /* center the window with correct dimensions */
         int cy = g_ddraw->mode.dmPelsWidth ? g_ddraw->mode.dmPelsWidth : g_ddraw->render.width;
         int cx = g_ddraw->mode.dmPelsHeight ? g_ddraw->mode.dmPelsHeight : g_ddraw->render.height;
         int x = (g_config.window_rect.left != -32000) ? g_config.window_rect.left : (cy / 2) - (g_ddraw->render.width / 2);
         int y = (g_config.window_rect.top != -32000) ? g_config.window_rect.top : (cx / 2) - (g_ddraw->render.height / 2);
-        
+
         RECT dst = { x, y, g_ddraw->render.width + x, g_ddraw->render.height + y };
-        
+
         AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), FALSE);
         real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
         real_MoveWindow(g_ddraw->hwnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
@@ -680,7 +713,10 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
 
         if ((style & WS_CAPTION))
         {
-            real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, style & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+            real_SetWindowLongA(
+                g_ddraw->hwnd,
+                GWL_STYLE,
+                style & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
         }
 
         BOOL d3d9_active = FALSE;
@@ -701,7 +737,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         {
             g_ddraw->render.run = FALSE;
             g_ddraw->windowed = TRUE;
-            return dd_SetDisplayMode(width, height, bpp, set_by_game);
+            return dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, setByGame);
         }
 
         if (g_ddraw->wine)
@@ -709,12 +745,20 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
             real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_MINIMIZEBOX);
         }
 
-        real_SetWindowPos(g_ddraw->hwnd, HWND_TOPMOST, 0, 0, g_ddraw->render.width, g_ddraw->render.height, SWP_SHOWWINDOW);
+        real_SetWindowPos(
+            g_ddraw->hwnd,
+            HWND_TOPMOST,
+            0,
+            0,
+            g_ddraw->render.width,
+            g_ddraw->render.height,
+            SWP_SHOWWINDOW);
+
         g_ddraw->last_set_window_pos_tick = timeGetTime();
 
         mouse_lock();
     }
-    
+
     if (g_ddraw->render.viewport.x != 0 || g_ddraw->render.viewport.y != 0)
     {
         RedrawWindow(g_ddraw->hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
@@ -729,7 +773,7 @@ HRESULT dd_SetDisplayMode(DWORD width, DWORD height, DWORD bpp, BOOL set_by_game
         g_ddraw->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)g_ddraw->renderer, NULL, 0, NULL);
     }
 
-    if (set_by_game)
+    if (setByGame)
     {
         real_SendMessageA(g_ddraw->hwnd, WM_SIZE_DDRAW, 0, MAKELPARAM(g_ddraw->width, g_ddraw->height));
         real_SendMessageA(g_ddraw->hwnd, WM_MOVE_DDRAW, 0, MAKELPARAM(0, 0));
@@ -743,7 +787,6 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 {
     PIXELFORMATDESCRIPTOR pfd;
 
-    /* Red Alert for some weird reason does this on Windows XP */
     if (hwnd == NULL)
     {
         return DD_OK;
@@ -768,7 +811,9 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 
             pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
             pfd.nVersion = 1;
-            pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | (g_ddraw->renderer == ogl_render_main ? PFD_SUPPORT_OPENGL : 0);
+            pfd.dwFlags =
+                PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER | (g_ddraw->renderer == ogl_render_main ? PFD_SUPPORT_OPENGL : 0);
+
             pfd.iPixelType = PFD_TYPE_RGBA;
             pfd.cColorBits = g_ddraw->render.bpp ? g_ddraw->render.bpp : g_ddraw->mode.dmBitsPerPel;
             pfd.iLayerType = PFD_MAIN_PLANE;
@@ -778,7 +823,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
 
         if (g_ddraw->handlemouse && g_ddraw->windowed)
         {
-            while (real_ShowCursor(FALSE) > 0); //workaround for direct input games
+            while (real_ShowCursor(FALSE) > 0); /* workaround for direct input games */
             while (real_ShowCursor(TRUE) < 0);
         }
 
@@ -810,7 +855,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
     return DD_OK;
 }
 
-HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE h)
+HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE hEvent)
 {
     if (g_ddraw->maxgameticks == -2)
     {
@@ -952,7 +997,7 @@ ULONG dd_Release()
     return g_ddraw->ref;
 }
 
-HRESULT dd_GetAvailableVidMem(void* lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
+HRESULT dd_GetAvailableVidMem(LPDDSCAPS2 lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
 {
     *lpdwTotal = 16777216;
     *lpdwFree = 16777216;
@@ -977,7 +1022,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
                     g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
 
                 if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate = (DIRECTDRAWCREATEPROC)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
+                    g_ddraw->DirectDrawCreate = (void*)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
 
                 if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
                     g_ddraw->DirectDrawCreate = NULL;
@@ -991,7 +1036,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     }
     else
     {
-        g_ddraw = (cnc_ddraw*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(cnc_ddraw));
+        g_ddraw = (CNCDDRAW*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(CNCDDRAW));
         g_ddraw->ref++;
 
         InitializeCriticalSection(&g_ddraw->cs);
@@ -1004,16 +1049,16 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     }
 
     IDirectDrawImpl* dd = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
-    
+
     if (iid && IsEqualGUID(&IID_IDirectDraw, iid))
     {
-        dprintf("     GUID = %08X (IID_IDirectDraw), ddraw = %p\n", ((GUID*)iid)->Data1, dd);
+        TRACE("     GUID = %08X (IID_IDirectDraw), ddraw = %p\n", ((GUID*)iid)->Data1, dd);
 
         dd->lpVtbl = &g_dd_vtbl1;
     }
     else
     {
-        dprintf("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : 0, dd);
+        TRACE("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : 0, dd);
 
         dd->lpVtbl = &g_dd_vtblx;
     }

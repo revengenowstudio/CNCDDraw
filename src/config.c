@@ -16,12 +16,12 @@ static int cfg_get_int(LPCSTR key, int default_value);
 static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size);
 static void cfg_create_ini();
 
-cnc_ddraw_config g_config = 
-    { .window_rect = { .left = -32000, .top = -32000, .right = 0, .bottom = 0 }, .window_state = -1 };
+CNCDDRAWCONFIG g_config =
+    { .window_rect = {.left = -32000, .top = -32000, .right = 0, .bottom = 0 }, .window_state = -1 };
 
 void cfg_load()
 {
-    //set up settings ini
+    /* set up settings ini */
     char cwd[MAX_PATH];
     char tmp[256];
     GetCurrentDirectoryA(sizeof(cwd), cwd);
@@ -30,12 +30,12 @@ void cfg_load()
     if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
         cfg_create_ini();
 
-    //get process filename
+    /* get process filename */
     char process_file_path[MAX_PATH] = { 0 };
     GetModuleFileNameA(NULL, process_file_path, MAX_PATH);
     _splitpath(process_file_path, NULL, NULL, g_config.process_file_name, NULL);
 
-    //load settings from ini
+    /* load settings from ini */
     g_ddraw->windowed = cfg_get_bool("windowed", FALSE);
     g_ddraw->border = cfg_get_bool("border", TRUE);
     g_ddraw->boxing = cfg_get_bool("boxing", FALSE);
@@ -53,7 +53,6 @@ void cfg_load()
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
-    g_ddraw->backbuffer = cfg_get_bool("backbuffer", TRUE);
     g_ddraw->passthrough = cfg_get_bool("passthrough", TRUE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
 
@@ -67,7 +66,7 @@ void cfg_load()
     g_config.save_settings = cfg_get_int("savesettings", 1);
 
     g_hook_method = cfg_get_int("hook", 4);
-    
+
     g_ddraw->render.maxfps = cfg_get_int("maxfps", -1);
     g_ddraw->render.minfps = cfg_get_int("minfps", 0);
 
@@ -81,9 +80,9 @@ void cfg_load()
         g_ddraw->render.minfps_tick_len = (DWORD)(1000.0f / g_ddraw->render.minfps);
     }
 
+    /* can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency  */
     if (g_ddraw->accurate_timers || g_ddraw->vsync)
         g_fpsl.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
-    //can't fully set it up here due to missing g_ddraw->mode.dmDisplayFrequency
 
     g_ddraw->maxgameticks = cfg_get_int("maxgameticks", 0);
 
@@ -99,7 +98,7 @@ void cfg_load()
 
     if (g_ddraw->maxgameticks >= 0 || g_ddraw->maxgameticks == -2)
     {
-        //always using 60 fps for flip...
+        /* always using 60 fps for flip...  */
         if (g_ddraw->accurate_timers)
             g_ddraw->flip_limiter.htimer = CreateWaitableTimer(NULL, TRUE, NULL);
 
@@ -139,21 +138,21 @@ void cfg_load()
         g_ddraw->render.bpp = 0;
     }
 
-    // to do: read .glslp config file instead of the shader and apply the correct settings
+    /* to do: read .glslp config file instead of the shader and apply the correct settings  */
     cfg_get_string("shader", "", g_ddraw->shader, sizeof(g_ddraw->shader));
 
     cfg_get_string("renderer", "auto", tmp, sizeof(tmp));
-    dprintf("     Using %s renderer\n", tmp);
+    TRACE("     Using %s renderer\n", tmp);
 
-    if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') //gdi
+    if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') /* gdi */
     {
         g_ddraw->renderer = gdi_render_main;
     }
-    else if (tolower(tmp[0]) == 'd') //direct3d9
+    else if (tolower(tmp[0]) == 'd') /* direct3d9 */
     {
         g_ddraw->renderer = d3d9_render_main;
     }
-    else if (tolower(tmp[0]) == 'o') //opengl
+    else if (tolower(tmp[0]) == 'o') /* opengl */
     {
         if (oglu_load_dll())
         {
@@ -165,7 +164,7 @@ void cfg_load()
             g_ddraw->renderer = gdi_render_main;
         }
     }
-    else //auto
+    else /* auto */
     {
         if (!g_ddraw->wine && d3d9_is_available())
         {
@@ -189,14 +188,14 @@ void cfg_save()
         return;
 
     char buf[16];
-    char *section = g_config.save_settings == 1 ? "ddraw" : g_config.process_file_name;
+    char* section = g_config.save_settings == 1 ? "ddraw" : g_config.process_file_name;
 
     if (g_config.window_rect.right)
     {
         sprintf(buf, "%ld", g_config.window_rect.right);
         WritePrivateProfileString(section, "width", buf, g_config.ini_path);
     }
-    
+
     if (g_config.window_rect.bottom)
     {
         sprintf(buf, "%ld", g_config.window_rect.bottom);
@@ -223,7 +222,7 @@ void cfg_save()
 
 static void cfg_create_ini()
 {
-    FILE *fh = fopen(g_config.ini_path, "w");
+    FILE* fh = fopen(g_config.ini_path, "w");
     if (fh)
     {
         fputs(

@@ -152,9 +152,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="inc\ddraw.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>

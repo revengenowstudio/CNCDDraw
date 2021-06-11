@@ -13,16 +13,16 @@
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 {
     POINT pt, realpt;
-    
+
     if (!real_GetCursorPos(&pt) || !g_ddraw)
         return FALSE;
-    
+
     realpt.x = pt.x;
     realpt.y = pt.y;
-    
-    if(g_ddraw->locked && (!g_ddraw->windowed || real_ScreenToClient(g_ddraw->hwnd, &pt)))
+
+    if (g_ddraw->locked && (!g_ddraw->windowed || real_ScreenToClient(g_ddraw->hwnd, &pt)))
     {
-        //fallback solution for possible ClipCursor failure
+        /* fallback solution for possible ClipCursor failure */
         int diffx = 0, diffy = 0;
 
         int max_width = g_ddraw->adjmouse ? g_ddraw->render.viewport.width : g_ddraw->width;
@@ -56,7 +56,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             real_SetCursorPos(realpt.x - diffx, realpt.y - diffy);
 
 
-        if(g_ddraw->adjmouse)
+        if (g_ddraw->adjmouse)
         {
             g_ddraw->cursor.x = (DWORD)(pt.x * g_ddraw->render.unscale_w);
             g_ddraw->cursor.y = (DWORD)(pt.y * g_ddraw->render.unscale_h);
@@ -77,7 +77,7 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
                 diffx = g_ddraw->cursor.x - g_ddraw->upscale_hack_width;
                 g_ddraw->cursor.x = g_ddraw->upscale_hack_width;
             }
-                
+
             if (g_ddraw->cursor.y > g_ddraw->upscale_hack_height)
             {
                 diffy = g_ddraw->cursor.y - g_ddraw->upscale_hack_height;
@@ -94,13 +94,13 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         lpPoint->x = g_ddraw->cursor.x;
         lpPoint->y = g_ddraw->cursor.y;
     }
-    
+
     return TRUE;
 }
 
-BOOL WINAPI fake_ClipCursor(const RECT *lpRect)
+BOOL WINAPI fake_ClipCursor(const RECT* lpRect)
 {
-    if(lpRect)
+    if (lpRect)
     {
         /* hack for 640x480 mode */
         if (lpRect->bottom == 400 && g_ddraw && g_ddraw->height == 480)
@@ -122,16 +122,16 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
     if (g_ddraw && !g_ddraw->handlemouse && (g_ddraw->locked || g_ddraw->devmode))
-        return real_SetCursor(hCursor); 
-    
+        return real_SetCursor(hCursor);
+
     return NULL;
 }
 
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
 {
-    if (lpRect && 
-        g_ddraw && 
-        g_ddraw->hwnd && 
+    if (lpRect &&
+        g_ddraw &&
+        g_ddraw->hwnd &&
         (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         if (g_ddraw->hwnd == hWnd)
@@ -161,9 +161,9 @@ BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
 
 BOOL WINAPI fake_GetClientRect(HWND hWnd, LPRECT lpRect)
 {
-    if (lpRect && 
-        g_ddraw && 
-        g_ddraw->hwnd == hWnd && 
+    if (lpRect &&
+        g_ddraw &&
+        g_ddraw->hwnd == hWnd &&
         (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         lpRect->bottom = g_ddraw->height;
@@ -315,7 +315,7 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 
     if (result && g_ddraw && Msg == CB_GETDROPPEDCONTROLRECT)
     {
-        RECT *rc = (RECT *)lParam;
+        RECT* rc = (RECT*)lParam;
         if (rc)
             real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)rc, 2);
     }
@@ -410,9 +410,9 @@ HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, D
 
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index)
 {
-    if (g_ddraw && 
-        g_ddraw->bpp && 
-        index == BITSPIXEL && 
+    if (g_ddraw &&
+        g_ddraw->bpp &&
+        index == BITSPIXEL &&
         (g_hook_method != 2 || g_ddraw->renderer == gdi_render_main))
     {
         return g_ddraw->bpp;

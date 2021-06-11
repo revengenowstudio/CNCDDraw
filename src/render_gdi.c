@@ -24,8 +24,9 @@ DWORD WINAPI gdi_render_main(void)
             PostMessage(g_ddraw->hwnd, WM_AUTORENDERER, 0, 0);
 
         _snprintf(
-            warning_text, sizeof(warning_text), 
-            "-WARNING- Using slow software rendering, please update your graphics card driver (%s)", 
+            warning_text, 
+            sizeof(warning_text),
+            "-WARNING- Using slow software rendering, please update your graphics card driver (%s)",
             strlen(g_oglu_version) > 10 ? "" : g_oglu_version);
     }
 
@@ -94,54 +95,54 @@ DWORD WINAPI gdi_render_main(void)
             else if (upscale_hack)
             {
                 StretchDIBits(
-                    g_ddraw->render.hdc, 
-                    g_ddraw->render.viewport.x, 
+                    g_ddraw->render.hdc,
+                    g_ddraw->render.viewport.x,
                     g_ddraw->render.viewport.y,
-                    g_ddraw->render.viewport.width, 
+                    g_ddraw->render.viewport.width,
                     g_ddraw->render.viewport.height,
-                    0, 
+                    0,
                     g_ddraw->height - g_ddraw->upscale_hack_height,
                     g_ddraw->upscale_hack_width,
                     g_ddraw->upscale_hack_height,
                     g_ddraw->primary->surface,
-                    g_ddraw->primary->bmi, 
-                    DIB_RGB_COLORS, 
+                    g_ddraw->primary->bmi,
+                    DIB_RGB_COLORS,
                     SRCCOPY);
             }
-            else if (!g_ddraw->child_window_exists && 
-                     (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height))
+            else if (!g_ddraw->child_window_exists &&
+                (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height))
             {
                 StretchDIBits(
-                    g_ddraw->render.hdc, 
-                    g_ddraw->render.viewport.x, 
-                    g_ddraw->render.viewport.y, 
-                    g_ddraw->render.viewport.width, 
-                    g_ddraw->render.viewport.height, 
-                    0, 
-                    0, 
-                    g_ddraw->width, 
-                    g_ddraw->height, 
-                    g_ddraw->primary->surface, 
-                    g_ddraw->primary->bmi, 
-                    DIB_RGB_COLORS, 
+                    g_ddraw->render.hdc,
+                    g_ddraw->render.viewport.x,
+                    g_ddraw->render.viewport.y,
+                    g_ddraw->render.viewport.width,
+                    g_ddraw->render.viewport.height,
+                    0,
+                    0,
+                    g_ddraw->width,
+                    g_ddraw->height,
+                    g_ddraw->primary->surface,
+                    g_ddraw->primary->bmi,
+                    DIB_RGB_COLORS,
                     SRCCOPY);
             }
             else
             {
                 SetDIBitsToDevice(
-                    g_ddraw->render.hdc, 
-                    0, 
-                    0, 
-                    g_ddraw->width, 
-                    g_ddraw->height, 
-                    0, 
-                    0, 
-                    0, 
-                    g_ddraw->height, 
-                    g_ddraw->primary->surface, 
-                    g_ddraw->primary->bmi, 
+                    g_ddraw->render.hdc,
+                    0,
+                    0,
+                    g_ddraw->width,
+                    g_ddraw->height,
+                    0,
+                    0,
+                    0,
+                    g_ddraw->height,
+                    g_ddraw->primary->surface,
+                    g_ddraw->primary->bmi,
                     DIB_RGB_COLORS);
-            } 
+            }
         }
 
         LeaveCriticalSection(&g_ddraw->cs);

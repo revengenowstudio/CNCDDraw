@@ -18,25 +18,25 @@ DEFINE_GUID(IID_IDirect3D7, 0xf5049e77, 0x4861, 0x11d2, 0xa4, 0x7, 0x0, 0xa0, 0x
                                     struct iface##Vtbl
 
 
-// IID_IDirect3D
+/* IID_IDirect3D */
 
 DECLARE_D3D_INTERFACE(IDirect3DImpl)
 {
-    HRESULT(__stdcall* QueryInterface) (IDirect3DImpl*, const IID* const riid, LPVOID* ppvObj);
-    ULONG(__stdcall* AddRef) (IDirect3DImpl*);
-    ULONG(__stdcall* Release) (IDirect3DImpl*);
+    HRESULT(__stdcall * QueryInterface) (IDirect3DImpl*, const IID* const riid, LPVOID * ppvObj);
+    ULONG(__stdcall * AddRef) (IDirect3DImpl*);
+    ULONG(__stdcall * Release) (IDirect3DImpl*);
 
-    HRESULT(__stdcall* Initialize)(IDirect3DImpl*, int);
-    HRESULT(__stdcall* EnumDevices)(IDirect3DImpl*, int, int);
-    HRESULT(__stdcall* CreateLight)(IDirect3DImpl*, int, int);
-    HRESULT(__stdcall* CreateMaterial)(IDirect3DImpl*, int, int);
-    HRESULT(__stdcall* CreateViewport)(IDirect3DImpl*, int, int);
-    HRESULT(__stdcall* FindDevice)(IDirect3DImpl*, int, int);
+    HRESULT(__stdcall * Initialize)(IDirect3DImpl*, int);
+    HRESULT(__stdcall * EnumDevices)(IDirect3DImpl*, int, int);
+    HRESULT(__stdcall * CreateLight)(IDirect3DImpl*, int, int);
+    HRESULT(__stdcall * CreateMaterial)(IDirect3DImpl*, int, int);
+    HRESULT(__stdcall * CreateViewport)(IDirect3DImpl*, int, int);
+    HRESULT(__stdcall * FindDevice)(IDirect3DImpl*, int, int);
 };
 
 extern struct IDirect3DImplVtbl g_d3d_vtbl;
 
-// IID_IDirect3D2
+/* IID_IDirect3D2 */
 
 DECLARE_D3D_INTERFACE(IDirect3D2Impl)
 {
@@ -54,7 +54,7 @@ DECLARE_D3D_INTERFACE(IDirect3D2Impl)
 
 extern struct IDirect3D2ImplVtbl g_d3d2_vtbl;
 
-// IID_IDirect3D3
+/* IID_IDirect3D3 */
 
 DECLARE_D3D_INTERFACE(IDirect3D3Impl)
 {
@@ -75,7 +75,7 @@ DECLARE_D3D_INTERFACE(IDirect3D3Impl)
 
 extern struct IDirect3D3ImplVtbl g_d3d3_vtbl;
 
-// IID_IDirect3D7
+/* IID_IDirect3D7 */
 
 DECLARE_D3D_INTERFACE(IDirect3D7Impl)
 {

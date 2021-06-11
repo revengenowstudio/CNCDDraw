@@ -6,7 +6,7 @@
 
 #define TEXTURE_COUNT 4
 
-typedef struct ogl_renderer
+typedef struct OGLRENDERER
 {
     HGLRC context;
     GLuint main_program;
@@ -34,7 +34,7 @@ typedef struct ogl_renderer
     BOOL use_opengl;
     BOOL adjust_alignment;
     BOOL filter_bilinear;
-} ogl_renderer;
+} OGLRENDERER;
 
 DWORD WINAPI ogl_render_main(void);
 
