@@ -11,7 +11,7 @@
 
 HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    TRACE("-> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    TRACE("-> %s(This=%p, riid=%08X, ppvObj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
 
     HRESULT ret = DDERR_UNSUPPORTED;
 
@@ -191,7 +191,7 @@ HRESULT __stdcall IDirectDraw__CreateClipper(
     IUnknown FAR* pUnkOuter)
 {
     TRACE(
-        "-> %s(This=%p, dwFlags=%08X, DDClipper=%p, unkOuter=%p)\n",
+        "-> %s(This=%p, dwFlags=%08X, lplpDDClipper=%p, unkOuter=%p)\n",
         __FUNCTION__,
         This,
         dwFlags,
@@ -212,7 +212,7 @@ HRESULT __stdcall IDirectDraw__CreatePalette(
     IUnknown FAR* unkOuter)
 {
     TRACE(
-        "-> %s(This=%p, dwFlags=%08X, DDColorArray=%p, DDPalette=%p, unkOuter=%p)\n",
+        "-> %s(This=%p, dwFlags=%08X, lpDDColorArray=%p, lpDDPalette=%p, unkOuter=%p)\n",
         __FUNCTION__,
         This,
         dwFlags,
@@ -382,7 +382,7 @@ HRESULT __stdcall IDirectDraw__SetCooperativeLevel(IDirectDrawImpl* This, HWND h
 
 HRESULT __stdcall IDirectDraw__SetDisplayMode(IDirectDrawImpl* This, DWORD dwWidth, DWORD dwHeight, DWORD dwBPP)
 {
-    TRACE("-> %s(This=%p, width=%d, height=%d, bpp=%d)\n", __FUNCTION__, This, dwWidth, dwHeight, dwBPP);
+    TRACE("-> %s(This=%p, dwWidth=%d, dwHeight=%d, dwBPP=%d)\n", __FUNCTION__, This, dwWidth, dwHeight, dwBPP);
     HRESULT ret = dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, TRUE);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
@@ -397,7 +397,7 @@ HRESULT __stdcall IDirectDraw__SetDisplayModeX(
     DWORD dwFlags)
 {
     TRACE(
-        "-> %s(This=%p, width=%d, height=%d, bpp=%d, refreshRate=%d, flags=%d)\n",
+        "-> %s(This=%p, dwWidth=%d, dwHeight=%d, dwBPP=%d, refreshRate=%d, dwFlags=%d)\n",
         __FUNCTION__,
         This,
         dwWidth,
@@ -414,7 +414,7 @@ HRESULT __stdcall IDirectDraw__SetDisplayModeX(
 
 HRESULT __stdcall IDirectDraw__WaitForVerticalBlank(IDirectDrawImpl* This, DWORD dwFlags, HANDLE hEvent)
 {
-    TRACE_EXT("-> %s(This=%p, flags=%08X, handle=%p)\n", __FUNCTION__, This, dwFlags, hEvent);
+    TRACE_EXT("-> %s(This=%p, dwFlags=%08X, hEvent=%p)\n", __FUNCTION__, This, dwFlags, hEvent);
     HRESULT ret = dd_WaitForVerticalBlank(dwFlags, hEvent);
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;

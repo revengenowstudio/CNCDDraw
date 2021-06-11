@@ -8,7 +8,7 @@
 
 HRESULT __stdcall IDirectDrawSurface__QueryInterface(IDirectDrawSurfaceImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    TRACE("-> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    TRACE("-> %s(This=%p, riid=%08X, ppvObj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
     HRESULT ret = S_OK;
 
     if (riid)
@@ -175,7 +175,7 @@ HRESULT __stdcall IDirectDrawSurface__BltFast(
     DWORD dwFlags)
 {
     TRACE_EXT(
-        "-> %s(This=%p, x=%d, y=%d, lpDDSrcSurface=%p, lpSrcRect=%p, flags=%08X)\n",
+        "-> %s(This=%p, dwX=%d, dwY=%d, lpDDSrcSurface=%p, lpSrcRect=%p, dwFlags=%08X)\n",
         __FUNCTION__,
         This,
         dwX,
@@ -236,8 +236,15 @@ HRESULT __stdcall IDirectDrawSurface__Flip(
     LPDIRECTDRAWSURFACE7 lpDDSurfaceTargetOverride,
     DWORD dwFlags)
 {
-    TRACE_EXT("-> %s(This=%p, surface=%p, flags=%08X)\n", __FUNCTION__, This, lpDDSurfaceTargetOverride, dwFlags);
+    TRACE_EXT(
+        "-> %s(This=%p, lpDDSurfaceTargetOverride=%p, dwFlags=%08X)\n",
+        __FUNCTION__, 
+        This, 
+        lpDDSurfaceTargetOverride, 
+        dwFlags);
+
     HRESULT ret = dds_Flip(This, (IDirectDrawSurfaceImpl*)lpDDSurfaceTargetOverride, dwFlags);
+
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -247,7 +254,7 @@ HRESULT __stdcall IDirectDrawSurface__GetAttachedSurface(
     LPDDSCAPS2 lpDdsCaps,
     LPDIRECTDRAWSURFACE7 FAR* lpDDsurface)
 {
-    TRACE("-> %s(This=%p, dwCaps=%08X, surface=%p)\n", __FUNCTION__, This, lpDdsCaps->dwCaps, lpDDsurface);
+    TRACE("-> %s(This=%p, dwCaps=%08X, lpDDsurface=%p)\n", __FUNCTION__, This, lpDdsCaps->dwCaps, lpDDsurface);
     HRESULT ret = dds_GetAttachedSurface(This, lpDdsCaps, (IDirectDrawSurfaceImpl**)lpDDsurface);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
@@ -279,7 +286,7 @@ HRESULT __stdcall IDirectDrawSurface__GetClipper(IDirectDrawSurfaceImpl* This, L
 
 HRESULT __stdcall IDirectDrawSurface__GetColorKey(IDirectDrawSurfaceImpl* This, DWORD dwFlags, LPDDCOLORKEY lpColorKey)
 {
-    TRACE_EXT("-> %s(This=%p, flags=0x%08X, color_key=%p)\n", __FUNCTION__, This, dwFlags, lpColorKey);
+    TRACE_EXT("-> %s(This=%p, dwFlags=0x%08X, lpColorKey=%p)\n", __FUNCTION__, This, dwFlags, lpColorKey);
     HRESULT ret = dds_GetColorKey(This, dwFlags, lpColorKey);
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;
@@ -287,7 +294,7 @@ HRESULT __stdcall IDirectDrawSurface__GetColorKey(IDirectDrawSurfaceImpl* This, 
 
 HRESULT __stdcall IDirectDrawSurface__GetDC(IDirectDrawSurfaceImpl* This, HDC FAR* lpHDC)
 {
-    TRACE_EXT("-> %s(This=%p, lpHDC=%p)\n", __FUNCTION__, This);
+    TRACE_EXT("-> %s(This=%p, lpHDC=%p)\n", __FUNCTION__, This, lpHDC);
     HRESULT ret = dds_GetDC(This, lpHDC);
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;
@@ -400,7 +407,7 @@ HRESULT __stdcall IDirectDrawSurface__SetClipper(IDirectDrawSurfaceImpl* This, L
 
 HRESULT __stdcall IDirectDrawSurface__SetColorKey(IDirectDrawSurfaceImpl* This, DWORD dwFlags, LPDDCOLORKEY lpColorKey)
 {
-    TRACE_EXT("-> %s(This=%p, flags=0x%08X, color_key=%p)\n", __FUNCTION__, This, dwFlags, lpColorKey);
+    TRACE_EXT("-> %s(This=%p, dwFlags=0x%08X, lpColorKey=%p)\n", __FUNCTION__, This, dwFlags, lpColorKey);
     HRESULT ret = dds_SetColorKey(This, dwFlags, lpColorKey);
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;

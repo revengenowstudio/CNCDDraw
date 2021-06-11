@@ -4,7 +4,7 @@
 
 HRESULT __stdcall IDirectDrawClipper__QueryInterface(IDirectDrawClipperImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, ppvObj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
     HRESULT ret = E_NOINTERFACE;
     TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;

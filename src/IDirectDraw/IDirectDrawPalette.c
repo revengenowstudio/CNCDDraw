@@ -6,7 +6,7 @@
 
 HRESULT __stdcall IDirectDrawPalette__QueryInterface(IDirectDrawPaletteImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, ppvObj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
     HRESULT ret = E_NOINTERFACE;
     TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
@@ -42,7 +42,7 @@ ULONG __stdcall IDirectDrawPalette__Release(IDirectDrawPaletteImpl* This)
 
 HRESULT __stdcall IDirectDrawPalette__GetCaps(IDirectDrawPaletteImpl* This, LPDWORD lpdwCaps)
 {
-    TRACE("NOT_IMPLEMENTED -> %s(This=%p, caps=%p)\n", __FUNCTION__, This, lpdwCaps);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, lpdwCaps=%p)\n", __FUNCTION__, This, lpdwCaps);
     HRESULT ret = DDERR_INVALIDOBJECT;
     TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
