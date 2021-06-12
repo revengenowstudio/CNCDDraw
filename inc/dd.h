@@ -109,6 +109,7 @@ typedef struct CNCDDRAW
     BOOL wine;
     BOOL altenter;
     BOOL hidecursor;
+    HCURSOR old_cursor;
     BOOL accurate_timers;
     BOOL resizable;
     BOOL nonexclusive;

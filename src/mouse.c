@@ -64,6 +64,8 @@ void mouse_lock()
         }
         else
         {
+            real_SetCursor(g_ddraw->old_cursor);
+
             if (g_ddraw->hidecursor)
             {
                 g_ddraw->hidecursor = FALSE;
@@ -124,6 +126,8 @@ void mouse_unlock()
                 while (real_ShowCursor(TRUE) < 0);
             }
         }
+
+        real_SetCursor(LoadCursor(NULL, IDC_ARROW));
 
         real_ClipCursor(NULL);
 

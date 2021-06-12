@@ -102,7 +102,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     return DefWindowProc(hWnd, uMsg, wParam, lParam);
                 case HTCLIENT:
                     if (!g_ddraw->locked)
+                    {
+                        real_SetCursor(LoadCursor(NULL, IDC_ARROW));
                         return DefWindowProc(hWnd, uMsg, wParam, lParam);
+                    }
                 default:
                     break;
                 }
