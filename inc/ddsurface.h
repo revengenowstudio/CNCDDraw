@@ -29,7 +29,7 @@ HRESULT dds_ReleaseDC(IDirectDrawSurfaceImpl* This, HDC hDC);
 HRESULT dds_SetClipper(IDirectDrawSurfaceImpl* This, IDirectDrawClipperImpl* lpClipper);
 HRESULT dds_SetColorKey(IDirectDrawSurfaceImpl* This, DWORD dwFlags, LPDDCOLORKEY lpColorKey);
 HRESULT dds_SetPalette(IDirectDrawSurfaceImpl* This, IDirectDrawPaletteImpl* lpDDPalette);
-HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPVOID lpRect);
+HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPRECT lpRect);
 HRESULT dds_GetDDInterface(IDirectDrawSurfaceImpl* This, LPVOID* lplpDD);
 void* dds_GetBuffer(IDirectDrawSurfaceImpl* This);
 HRESULT dd_CreateSurface(IDirectDrawImpl* This, LPDDSURFACEDESC2 lpDDSurfaceDesc, IDirectDrawSurfaceImpl** lpDDSurface, IUnknown FAR* unkOuter);

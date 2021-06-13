@@ -1162,7 +1162,7 @@ HRESULT dds_SetPalette(IDirectDrawSurfaceImpl* This, IDirectDrawPaletteImpl* lpD
     return DD_OK;
 }
 
-HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPVOID lpRect)
+HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPRECT lpRect)
 {
     /* Hack for Warcraft II BNE and Diablo */
     HWND hwnd = g_ddraw->bnet_active ? FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL) : NULL;
