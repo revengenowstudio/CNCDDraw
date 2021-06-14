@@ -273,7 +273,7 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
         lpDDDriverCaps->dwAlignSizeSrc = 0;
         lpDDDriverCaps->dwAlignBoundaryDest = 0;
         lpDDDriverCaps->dwAlignSizeDest = 0;
-        lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
+        lpDDDriverCaps->ddsOldCaps.dwCaps = DDSCAPS_FLIP;
     }
 
     if (lpDDEmulCaps)
