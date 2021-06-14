@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <ddraw.h>
+#include "ddraw.h"
 #include "IDirectDraw.h"
 #include "dd.h"
 #include "hook.h"
@@ -18,9 +18,9 @@ CNCDDRAW* g_ddraw = NULL;
 
 HRESULT dd_EnumDisplayModes(
     DWORD dwFlags,
-    LPDDSURFACEDESC2 lpDDSurfaceDesc,
+    LPDDSURFACEDESC lpDDSurfaceDesc,
     LPVOID lpContext,
-    LPDDENUMMODESCALLBACK2 lpEnumModesCallback)
+    LPDDENUMMODESCALLBACK lpEnumModesCallback)
 {
     DWORD i = 0;
     DDSURFACEDESC2 s;
@@ -109,7 +109,7 @@ HRESULT dd_EnumDisplayModes(
 
                 if (g_ddraw->bpp == 8 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
@@ -125,7 +125,7 @@ HRESULT dd_EnumDisplayModes(
 
                 if (g_ddraw->bpp == 16 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
@@ -141,7 +141,7 @@ HRESULT dd_EnumDisplayModes(
 
                 if (g_ddraw->bpp == 32 || g_ddraw->resolutions == RESLIST_FULL)
                 {
-                    if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+                    if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
                     {
                         TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                         return DD_OK;
@@ -209,7 +209,7 @@ HRESULT dd_EnumDisplayModes(
             s.ddpfPixelFormat.dwFlags = DDPF_PALETTEINDEXED8 | DDPF_RGB;
             s.ddpfPixelFormat.dwRGBBitCount = 8;
 
-            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
             {
                 TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
@@ -222,7 +222,7 @@ HRESULT dd_EnumDisplayModes(
             s.ddpfPixelFormat.dwGBitMask = 0x07E0;
             s.ddpfPixelFormat.dwBBitMask = 0x001F;
 
-            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
             {
                 TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
@@ -238,7 +238,7 @@ HRESULT dd_EnumDisplayModes(
             s.ddpfPixelFormat.dwGBitMask = 0x00FF00;
             s.ddpfPixelFormat.dwBBitMask = 0x0000FF;
 
-            if (lpEnumModesCallback(&s, lpContext) == DDENUMRET_CANCEL)
+            if (lpEnumModesCallback((LPDDSURFACEDESC)&s, lpContext) == DDENUMRET_CANCEL)
             {
                 TRACE("     DDENUMRET_CANCEL returned, stopping\n");
                 return DD_OK;
@@ -302,7 +302,7 @@ HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps)
     return DD_OK;
 }
 
-HRESULT dd_GetDisplayMode(LPDDSURFACEDESC2 lpDDSurfaceDesc)
+HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc)
 {
     if (lpDDSurfaceDesc)
     {
@@ -1015,7 +1015,7 @@ ULONG dd_Release()
     return g_ddraw->ref;
 }
 
-HRESULT dd_GetAvailableVidMem(LPDDSCAPS2 lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
+HRESULT dd_GetAvailableVidMem(LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
 {
     *lpdwTotal = 16777216;
     *lpdwFree = 16777216;

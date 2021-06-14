@@ -213,7 +213,7 @@ HRESULT __stdcall IDirectDrawSurface__EnumAttachedSurfaces(
         lpContext,
         lpEnumSurfacesCallback);
 
-    HRESULT ret = dds_EnumAttachedSurfaces(This, lpContext, lpEnumSurfacesCallback);
+    HRESULT ret = dds_EnumAttachedSurfaces(This, lpContext, (LPDDENUMSURFACESCALLBACK)lpEnumSurfacesCallback);
 
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
@@ -255,7 +255,7 @@ HRESULT __stdcall IDirectDrawSurface__GetAttachedSurface(
     LPDIRECTDRAWSURFACE7 FAR* lpDDsurface)
 {
     TRACE("-> %s(This=%p, dwCaps=%08X, lpDDsurface=%p)\n", __FUNCTION__, This, lpDdsCaps->dwCaps, lpDDsurface);
-    HRESULT ret = dds_GetAttachedSurface(This, lpDdsCaps, (IDirectDrawSurfaceImpl**)lpDDsurface);
+    HRESULT ret = dds_GetAttachedSurface(This, (LPDDSCAPS)lpDdsCaps, (IDirectDrawSurfaceImpl**)lpDDsurface);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -271,7 +271,7 @@ HRESULT __stdcall IDirectDrawSurface__GetBltStatus(IDirectDrawSurfaceImpl* This,
 HRESULT __stdcall IDirectDrawSurface__GetCaps(IDirectDrawSurfaceImpl* This, LPDDSCAPS2 lpDDSCaps)
 {
     TRACE("-> %s(This=%p, lpDDSCaps=%p)\n", __FUNCTION__, This, lpDDSCaps);
-    HRESULT ret = dds_GetCaps(This, lpDDSCaps);
+    HRESULT ret = dds_GetCaps(This, (LPDDSCAPS)lpDDSCaps);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -335,7 +335,7 @@ HRESULT __stdcall IDirectDrawSurface__GetPixelFormat(IDirectDrawSurfaceImpl* Thi
 HRESULT __stdcall IDirectDrawSurface__GetSurfaceDesc(IDirectDrawSurfaceImpl* This, LPDDSURFACEDESC2 lpDDSurfaceDesc)
 {
     TRACE_EXT("-> %s(This=%p, lpDDSurfaceDesc=%p)\n", __FUNCTION__, This, lpDDSurfaceDesc);
-    HRESULT ret = dds_GetSurfaceDesc(This, lpDDSurfaceDesc);
+    HRESULT ret = dds_GetSurfaceDesc(This, (LPDDSURFACEDESC)lpDDSurfaceDesc);
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -375,7 +375,7 @@ HRESULT __stdcall IDirectDrawSurface__Lock(
         dwFlags,
         hEvent);
 
-    HRESULT ret = dds_Lock(This, lpDestRect, lpDDSurfaceDesc, dwFlags, hEvent);
+    HRESULT ret = dds_Lock(This, lpDestRect, (LPDDSURFACEDESC)lpDDSurfaceDesc, dwFlags, hEvent);
 
     TRACE_EXT("<- %s\n", __FUNCTION__);
     return ret;

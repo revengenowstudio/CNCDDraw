@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <stdio.h>
-#include <ddraw.h>
+#include "ddraw.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "debug.h"

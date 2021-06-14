@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <ddraw.h>
+#include "ddraw.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "hook.h"

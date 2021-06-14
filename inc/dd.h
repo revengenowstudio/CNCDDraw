@@ -3,23 +3,22 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <ddraw.h>
+#include "ddraw.h"
 
 
 typedef HRESULT(WINAPI* DIRECTDRAWCREATEPROC)(GUID FAR*, LPDIRECTDRAW FAR*, IUnknown FAR*);
 
 ULONG dd_AddRef();
 ULONG dd_Release();
-HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC2 lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK2 lpEnumModesCallback);
+HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback);
 HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE hEvent);
 HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setByGame);
 HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags);
 HRESULT dd_RestoreDisplayMode();
-HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps);
 HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps);
-HRESULT dd_GetDisplayMode(LPDDSURFACEDESC2 lpDDSurfaceDesc);
+HRESULT dd_GetDisplayMode(LPDDSURFACEDESC lpDDSurfaceDesc);
 HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq);
-HRESULT dd_GetAvailableVidMem(LPDDSCAPS2 lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);
+HRESULT dd_GetAvailableVidMem(LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 

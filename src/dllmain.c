@@ -1,5 +1,5 @@
 #include <windows.h>
-#include <ddraw.h>
+#include "ddraw.h"
 #include <stdio.h>
 #include "dllmain.h"
 #include "IDirectDraw.h"

@@ -811,7 +811,7 @@ HRESULT dds_DeleteAttachedSurface(IDirectDrawSurfaceImpl* This, DWORD dwFlags, I
     return DD_OK;
 }
 
-HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl* This, LPDDSURFACEDESC2 lpDDSurfaceDesc)
+HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl* This, LPDDSURFACEDESC lpDDSurfaceDesc)
 {
     if (lpDDSurfaceDesc)
     {
@@ -859,7 +859,7 @@ HRESULT dds_GetSurfaceDesc(IDirectDrawSurfaceImpl* This, LPDDSURFACEDESC2 lpDDSu
 HRESULT dds_EnumAttachedSurfaces(
     IDirectDrawSurfaceImpl* This, 
     LPVOID lpContext, 
-    LPDDENUMSURFACESCALLBACK7 lpEnumSurfacesCallback)
+    LPDDENUMSURFACESCALLBACK lpEnumSurfacesCallback)
 {
     static DDSURFACEDESC2 desc;
 
@@ -867,9 +867,9 @@ HRESULT dds_EnumAttachedSurfaces(
 
     if (This->backbuffer)
     {
-        dds_GetSurfaceDesc(This->backbuffer, &desc);
+        dds_GetSurfaceDesc(This->backbuffer, (LPDDSURFACEDESC)&desc);
         IDirectDrawSurface_AddRef(This->backbuffer);
-        lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE7)This->backbuffer, &desc, lpContext);
+        lpEnumSurfacesCallback((LPDIRECTDRAWSURFACE)This->backbuffer, (LPDDSURFACEDESC)&desc, lpContext);
     }
 
     return DD_OK;
@@ -920,7 +920,7 @@ HRESULT dds_Flip(IDirectDrawSurfaceImpl* This, IDirectDrawSurfaceImpl* lpDDSurfa
     return DD_OK;
 }
 
-HRESULT dds_GetAttachedSurface(IDirectDrawSurfaceImpl* This, LPDDSCAPS2 lpDdsCaps, IDirectDrawSurfaceImpl** lpDDsurface)
+HRESULT dds_GetAttachedSurface(IDirectDrawSurfaceImpl* This, LPDDSCAPS lpDdsCaps, IDirectDrawSurfaceImpl** lpDDsurface)
 {
     if ((This->caps & DDSCAPS_PRIMARYSURFACE) && (This->caps & DDSCAPS_FLIP) && (lpDdsCaps->dwCaps & DDSCAPS_BACKBUFFER))
     {
@@ -939,7 +939,7 @@ HRESULT dds_GetAttachedSurface(IDirectDrawSurfaceImpl* This, LPDDSCAPS2 lpDdsCap
     return DD_OK;
 }
 
-HRESULT dds_GetCaps(IDirectDrawSurfaceImpl* This, LPDDSCAPS2 lpDDSCaps)
+HRESULT dds_GetCaps(IDirectDrawSurfaceImpl* This, LPDDSCAPS lpDDSCaps)
 {
     lpDDSCaps->dwCaps = This->caps;
     return DD_OK;
@@ -1062,7 +1062,7 @@ HRESULT dds_GetPixelFormat(IDirectDrawSurfaceImpl* This, LPDDPIXELFORMAT ddpfPix
 HRESULT dds_Lock(
     IDirectDrawSurfaceImpl* This, 
     LPRECT lpDestRect, 
-    LPDDSURFACEDESC2 lpDDSurfaceDesc, 
+    LPDDSURFACEDESC lpDDSurfaceDesc, 
     DWORD dwFlags, 
     HANDLE hEvent)
 {
@@ -1301,7 +1301,7 @@ void* dds_GetBuffer(IDirectDrawSurfaceImpl* This)
 
 HRESULT dd_CreateSurface(
     IDirectDrawImpl* This, 
-    LPDDSURFACEDESC2 lpDDSurfaceDesc, 
+    LPDDSURFACEDESC lpDDSurfaceDesc, 
     IDirectDrawSurfaceImpl** lpDDSurface, 
     IUnknown FAR* unkOuter)
 {
@@ -1453,7 +1453,7 @@ HRESULT dd_CreateSurface(
     {
         TRACE("     dwBackBufferCount=%d\n", lpDDSurfaceDesc->dwBackBufferCount);
 
-        DDSURFACEDESC2 desc;
+        DDSURFACEDESC desc;
         memset(&desc, 0, sizeof(desc));
 
         if (lpDDSurfaceDesc->dwBackBufferCount > 1)

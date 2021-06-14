@@ -3,7 +3,7 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <ddraw.h>
+#include "ddraw.h"
 #include "IDirectDrawPalette.h"
 #include "IDirectDrawClipper.h"
 #include "IDirectDraw.h"

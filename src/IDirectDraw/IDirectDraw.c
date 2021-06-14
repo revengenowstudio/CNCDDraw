@@ -240,7 +240,12 @@ HRESULT __stdcall IDirectDraw__CreateSurface(
         lpDDSurface,
         unkOuter);
 
-    HRESULT ret = dd_CreateSurface(This, lpDDSurfaceDesc, (IDirectDrawSurfaceImpl**)lpDDSurface, unkOuter);
+    HRESULT ret = 
+        dd_CreateSurface(
+            This, 
+            (LPDDSURFACEDESC)lpDDSurfaceDesc, 
+            (IDirectDrawSurfaceImpl**)lpDDSurface, 
+            unkOuter);
 
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
@@ -273,7 +278,12 @@ HRESULT __stdcall IDirectDraw__EnumDisplayModes(
         lpContext,
         lpEnumModesCallback);
 
-    HRESULT ret = dd_EnumDisplayModes(dwFlags, lpDDSurfaceDesc, lpContext, lpEnumModesCallback);
+    HRESULT ret = 
+        dd_EnumDisplayModes(
+            dwFlags, 
+            (LPDDSURFACEDESC)lpDDSurfaceDesc, 
+            lpContext, 
+            (LPDDENUMMODESCALLBACK)lpEnumModesCallback);
 
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
@@ -311,7 +321,7 @@ HRESULT __stdcall IDirectDraw__GetCaps(IDirectDrawImpl* This, LPDDCAPS lpDDDrive
 HRESULT __stdcall IDirectDraw__GetDisplayMode(IDirectDrawImpl* This, LPDDSURFACEDESC2 lpDDSurfaceDesc)
 {
     TRACE("-> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = dd_GetDisplayMode(lpDDSurfaceDesc);
+    HRESULT ret = dd_GetDisplayMode((LPDDSURFACEDESC)lpDDSurfaceDesc);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -434,7 +444,7 @@ HRESULT __stdcall IDirectDraw__GetAvailableVidMem(
         lpdwTotal,
         lpdwFree);
 
-    HRESULT ret = dd_GetAvailableVidMem(lpDDCaps, lpdwTotal, lpdwFree);
+    HRESULT ret = dd_GetAvailableVidMem((LPDDSCAPS)lpDDCaps, lpdwTotal, lpdwFree);
 
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
