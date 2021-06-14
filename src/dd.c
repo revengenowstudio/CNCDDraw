@@ -271,17 +271,9 @@ HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps)
             DDCAPS_CANCLIP | 
             DDCAPS_CANBLTSYSMEM;
 
-        lpDDDriverCaps->dwCKeyCaps = 0;
         lpDDDriverCaps->dwPalCaps = DDPCAPS_8BIT | DDPCAPS_PRIMARYSURFACE;
         lpDDDriverCaps->dwVidMemTotal = 16777216;
         lpDDDriverCaps->dwVidMemFree = 16777216;
-        lpDDDriverCaps->dwMaxVisibleOverlays = 0;
-        lpDDDriverCaps->dwCurrVisibleOverlays = 0;
-        lpDDDriverCaps->dwNumFourCCCodes = 0;
-        lpDDDriverCaps->dwAlignBoundarySrc = 0;
-        lpDDDriverCaps->dwAlignSizeSrc = 0;
-        lpDDDriverCaps->dwAlignBoundaryDest = 0;
-        lpDDDriverCaps->dwAlignSizeDest = 0;
         lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
     }
 
