@@ -254,6 +254,9 @@
     <ClInclude Include="inc\patch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ddraw.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ddraw.rc">

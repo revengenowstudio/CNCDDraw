@@ -62,6 +62,7 @@
   <ItemGroup>
     <ClInclude Include="inc\d3d9shader.h" />
     <ClInclude Include="inc\ddclipper.h" />
+    <ClInclude Include="inc\ddraw.h" />
     <ClInclude Include="inc\directinput.h" />
     <ClInclude Include="inc\dllmain.h" />
     <ClInclude Include="inc\fps_limiter.h" />
