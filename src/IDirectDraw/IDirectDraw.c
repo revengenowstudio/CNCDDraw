@@ -303,7 +303,7 @@ HRESULT __stdcall IDirectDraw__FlipToGDISurface(IDirectDrawImpl* This)
 HRESULT __stdcall IDirectDraw__GetCaps(IDirectDrawImpl* This, LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
 {
     TRACE("-> %s(This=%p, lpDDDriverCaps=%p, lpDDEmulCaps=%p)\n", __FUNCTION__, This, lpDDDriverCaps, lpDDEmulCaps);
-    HRESULT ret = dd_GetCaps(lpDDDriverCaps, lpDDEmulCaps);
+    HRESULT ret = dd_GetCaps((LPDDCAPS_DX1)lpDDDriverCaps, (LPDDCAPS_DX1)lpDDEmulCaps);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
 }

@@ -16,6 +16,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
 HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags);
 HRESULT dd_RestoreDisplayMode();
 HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps);
+HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps);
 HRESULT dd_GetDisplayMode(LPDDSURFACEDESC2 lpDDSurfaceDesc);
 HRESULT dd_GetMonitorFrequency(LPDWORD lpdwFreq);
 HRESULT dd_GetAvailableVidMem(LPDDSCAPS2 lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree);

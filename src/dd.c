@@ -249,11 +249,20 @@ HRESULT dd_EnumDisplayModes(
     return DD_OK;
 }
 
-HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
+HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps)
 {
     if (lpDDDriverCaps)
     {
-        lpDDDriverCaps->dwSize = sizeof(DDCAPS_DX5);
+        int size =
+            lpDDDriverCaps->dwSize == sizeof(DDCAPS_DX3) ? sizeof(DDCAPS_DX3) : 
+            lpDDDriverCaps->dwSize == sizeof(DDCAPS_DX5) ? sizeof(DDCAPS_DX5) : 
+            lpDDDriverCaps->dwSize == sizeof(DDCAPS_DX6) ? sizeof(DDCAPS_DX6) : 
+            lpDDDriverCaps->dwSize == sizeof(DDCAPS_DX7) ? sizeof(DDCAPS_DX7) : 
+            sizeof(DDCAPS_DX1);
+
+        memset(lpDDDriverCaps, 0, size);
+
+        lpDDDriverCaps->dwSize = size;
         lpDDDriverCaps->dwCaps =
             DDCAPS_BLT | 
             DDCAPS_PALETTE | 
@@ -273,12 +282,21 @@ HRESULT dd_GetCaps(LPDDCAPS lpDDDriverCaps, LPDDCAPS lpDDEmulCaps)
         lpDDDriverCaps->dwAlignSizeSrc = 0;
         lpDDDriverCaps->dwAlignBoundaryDest = 0;
         lpDDDriverCaps->dwAlignSizeDest = 0;
-        lpDDDriverCaps->ddsOldCaps.dwCaps = DDSCAPS_FLIP;
+        lpDDDriverCaps->ddsCaps.dwCaps = DDSCAPS_FLIP;
     }
 
     if (lpDDEmulCaps)
     {
-        lpDDEmulCaps->dwSize = 0;
+        int size =
+            lpDDEmulCaps->dwSize == sizeof(DDCAPS_DX3) ? sizeof(DDCAPS_DX3) :
+            lpDDEmulCaps->dwSize == sizeof(DDCAPS_DX5) ? sizeof(DDCAPS_DX5) :
+            lpDDEmulCaps->dwSize == sizeof(DDCAPS_DX6) ? sizeof(DDCAPS_DX6) :
+            lpDDEmulCaps->dwSize == sizeof(DDCAPS_DX7) ? sizeof(DDCAPS_DX7) :
+            sizeof(DDCAPS_DX1);
+
+        memset(lpDDEmulCaps, 0, size);
+
+        lpDDEmulCaps->dwSize = size;
     }
 
     return DD_OK;
