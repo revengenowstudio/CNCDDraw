@@ -999,7 +999,7 @@ HRESULT dds_GetDC(IDirectDrawSurfaceImpl* This, HDC FAR* lpHDC)
     if (This->backbuffer || (This->caps & DDSCAPS_BACKBUFFER))
         dc = (HDC)InterlockedExchangeAdd((LONG*)&This->hdc, 0);
 
-    if (data)
+    if (This->bpp == 8 && data)
         SetDIBColorTable(dc, 0, 256, data);
 
     if (lpHDC)
@@ -1170,7 +1170,7 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPRECT lpRect)
     if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
         HDC primary_dc;
-        dds_GetDC(g_ddraw->primary, &primary_dc);
+        dds_GetDC(This, &primary_dc);
 
         /* GdiTransparentBlt idea taken from Aqrit's war2 ddraw */
 
@@ -1225,7 +1225,7 @@ HRESULT dds_Unlock(IDirectDrawSurfaceImpl* This, LPRECT lpRect)
     if (hwnd && (This->caps & DDSCAPS_PRIMARYSURFACE))
     {
         HDC primary_dc;
-        dds_GetDC(g_ddraw->primary, &primary_dc);
+        dds_GetDC(This, &primary_dc);
 
         RECT rc;
         if (fake_GetWindowRect(hwnd, &rc))

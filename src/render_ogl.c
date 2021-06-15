@@ -582,7 +582,9 @@ static void ogl_render()
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->bpp == 32 || g_ddraw->primary->palette))
+        if (g_ddraw->primary && 
+            g_ddraw->primary->bpp == g_ddraw->bpp &&
+            (g_ddraw->bpp == 16 || g_ddraw->bpp == 32 || g_ddraw->primary->palette))
         {
             if (g_ddraw->vhack)
             {
