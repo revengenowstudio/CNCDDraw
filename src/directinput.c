@@ -16,6 +16,7 @@ static DICREATEDEVICEPROC real_di_CreateDevice;
 static DICREATEDEVICEEXPROC real_di_CreateDeviceEx;
 static DIDSETCOOPERATIVELEVELPROC real_did_SetCooperativeLevel;
 static DIDGETDEVICEDATAPROC real_did_GetDeviceData;
+static DIDGETDEVICESTATEPROC real_did_GetDeviceState;
 
 static PROC hook_func(PROC* org_func, PROC new_func)
 {
@@ -53,7 +54,32 @@ static HRESULT WINAPI fake_did_GetDeviceData(
 
     if (SUCCEEDED(result) && g_ddraw && !g_ddraw->locked)
     {
-        *pdwInOut = 0;
+        if (pdwInOut)
+        {
+            if (rgdod && *pdwInOut > 0 && cbObjectData > 0)
+            {
+                memset(rgdod, 0, *pdwInOut * cbObjectData);
+            }
+
+            *pdwInOut = 0;
+        }
+    }
+
+    return result;
+}
+
+static HRESULT WINAPI fake_did_GetDeviceState(IDirectInputDeviceA* This, DWORD cbData, LPVOID lpvData)
+{
+    //TRACE("DirectInput GetDeviceState\n");
+
+    HRESULT result = real_did_GetDeviceState(This, cbData, lpvData);
+
+    if (SUCCEEDED(result) && g_ddraw && !g_ddraw->locked)
+    {
+        if (cbData > 0 && lpvData)
+        {
+            memset(lpvData, 0, cbData);
+        }
     }
 
     return result;
@@ -78,6 +104,10 @@ static HRESULT WINAPI fake_di_CreateDevice(
         real_did_GetDeviceData =
             (DIDGETDEVICEDATAPROC)hook_func(
                 (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
+
+        real_did_GetDeviceState =
+            (DIDGETDEVICESTATEPROC)hook_func(
+                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
     }
 
     return result;
@@ -103,6 +133,10 @@ static HRESULT WINAPI fake_di_CreateDeviceEx(
         real_did_GetDeviceData =
             (DIDGETDEVICEDATAPROC)hook_func(
                 (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
+
+        real_did_GetDeviceState =
+            (DIDGETDEVICESTATEPROC)hook_func(
+                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
     }
 
     return result;
