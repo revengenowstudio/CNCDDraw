@@ -97,6 +97,11 @@ static HRESULT WINAPI fake_di_CreateDevice(
 
     if (SUCCEEDED(result) && !real_did_SetCooperativeLevel)
     {
+        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid))
+        {
+            while (real_ShowCursor(FALSE) >= 0);
+        }
+
         real_did_SetCooperativeLevel =
             (DIDSETCOOPERATIVELEVELPROC)hook_func(
                 (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
