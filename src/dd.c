@@ -513,8 +513,6 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
         g_ddraw->render.mode.dmBitsPerPel = g_ddraw->render.bpp;
     }
 
-    BOOL maintas = g_ddraw->maintas;
-
     if (!g_ddraw->windowed)
     {
         /* Making sure the chosen resolution is valid */
@@ -564,9 +562,6 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
                             old_height,
                             g_ddraw->mode.dmPelsWidth,
                             g_ddraw->mode.dmPelsHeight);
-
-                        if (found_res)
-                            maintas = TRUE;
                     }
 
                     g_ddraw->render.width = res.cx;
@@ -595,8 +590,6 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
 
                             g_ddraw->windowed = TRUE;
                         }
-                        else
-                            maintas = TRUE;
                     }
                 }
             }
@@ -606,11 +599,6 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
     if (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main)
     {
         g_ddraw->render.height++;
-    }
-
-    if (!g_ddraw->handlemouse)
-    {
-        g_ddraw->boxing = maintas = FALSE;
     }
 
     g_ddraw->render.viewport.width = g_ddraw->render.width;
@@ -636,7 +624,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
         g_ddraw->render.viewport.y = g_ddraw->render.height / 2 - g_ddraw->render.viewport.height / 2;
         g_ddraw->render.viewport.x = g_ddraw->render.width / 2 - g_ddraw->render.viewport.width / 2;
     }
-    else if (maintas)
+    else if (g_ddraw->maintas)
     {
         g_ddraw->render.viewport.width = g_ddraw->render.width;
         g_ddraw->render.viewport.height =
@@ -831,13 +819,18 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
             SetPixelFormat(g_ddraw->render.hdc, ChoosePixelFormat(g_ddraw->render.hdc, &pfd), &pfd);
         }
 
-        if (g_ddraw->handlemouse && g_ddraw->windowed)
+        /* Make sure the cursor is visible in windowed mode initially */
+        if (g_ddraw->windowed)
         {
-            while (real_ShowCursor(FALSE) > 0); /* workaround for direct input games */
-            while (real_ShowCursor(TRUE) < 0);
-        }
+            CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
+            if (real_GetCursorInfo(&ci) && ci.flags == 0)
+            {
+                g_ddraw->hidecursor = TRUE;
+                while (real_ShowCursor(TRUE) < 0);
+            }
 
-        real_SetCursor(LoadCursor(NULL, IDC_ARROW));
+            real_SetCursor(LoadCursor(NULL, IDC_ARROW));
+        }
 
         GetWindowText(g_ddraw->hwnd, (LPTSTR)&g_ddraw->title, sizeof(g_ddraw->title));
 

@@ -104,7 +104,6 @@ typedef struct CNCDDRAW
     BOOL fullscreen;
     BOOL maintas;
     BOOL noactivateapp;
-    BOOL handlemouse;
     char shader[MAX_PATH];
     BOOL wine;
     BOOL altenter;
@@ -131,6 +130,7 @@ typedef struct CNCDDRAW
     int mouse_y_adjust;
     void* last_freed_palette; /* Dungeon Keeper hack */
     BOOL child_window_exists;
+    BOOL got_child_windows;
     DWORD last_set_window_pos_tick; /* WINE hack */
     BOOL show_driver_warning;
     SPEEDLIMITER ticks_limiter;

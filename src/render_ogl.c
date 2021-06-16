@@ -664,31 +664,28 @@ static void ogl_render()
                 glClear(GL_COLOR_BUFFER_BIT);
             }
 
-            if (!g_ddraw->handlemouse)
+            g_ddraw->child_window_exists = FALSE;
+            EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
+
+            if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
             {
-                g_ddraw->child_window_exists = FALSE;
-                EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-
-                if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
+                if (g_ddraw->child_window_exists)
                 {
-                    if (g_ddraw->child_window_exists)
-                    {
-                        glClear(GL_COLOR_BUFFER_BIT);
+                    glClear(GL_COLOR_BUFFER_BIT);
 
-                        if (!needs_update)
-                        {
-                            glViewport(0, g_ddraw->render.height - g_ddraw->height, g_ddraw->width, g_ddraw->height);
-                            needs_update = TRUE;
-                        }
-                    }
-                    else if (needs_update)
+                    if (!needs_update)
                     {
-                        glViewport(
-                            g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
-                            g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
-
-                        needs_update = FALSE;
+                        glViewport(0, g_ddraw->render.height - g_ddraw->height, g_ddraw->width, g_ddraw->height);
+                        needs_update = TRUE;
                     }
+                }
+                else if (needs_update)
+                {
+                    glViewport(
+                        g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
+                        g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+
+                    needs_update = FALSE;
                 }
             }
         }
