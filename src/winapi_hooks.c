@@ -116,7 +116,7 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 {
     static int count;
 
-    //if (g_ddraw)
+    if (g_ddraw)
         return real_ShowCursor(bShow);
 
     return bShow ? ++count : --count;
