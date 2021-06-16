@@ -72,11 +72,8 @@ DWORD WINAPI gdi_render_main(void)
             if (g_ddraw->vhack)
                 InterlockedExchange(&g_ddraw->upscale_hack_active, upscale_hack);
 
-            if (!g_ddraw->handlemouse)
-            {
-                g_ddraw->child_window_exists = FALSE;
-                EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-            }
+            g_ddraw->child_window_exists = FALSE;
+            EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
 
             if (g_ddraw->primary->palette)
             {

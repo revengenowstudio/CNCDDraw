@@ -325,7 +325,7 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
     if (real_GetClientRect(hwnd, &size) && real_GetWindowRect(hwnd, &pos) && size.right > 1 && size.bottom > 1)
     {
-        g_ddraw->child_window_exists = TRUE;
+        g_ddraw->got_child_windows = g_ddraw->child_window_exists = TRUE;
 
         if (g_ddraw->fixchildwindows)
         {

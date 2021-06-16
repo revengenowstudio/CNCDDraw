@@ -391,25 +391,22 @@ DWORD WINAPI d3d9_render_main(void)
                 }
             }
 
-            if (!g_ddraw->handlemouse)
+            g_ddraw->child_window_exists = FALSE;
+            EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
+
+            if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
             {
-                g_ddraw->child_window_exists = FALSE;
-                EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-
-                if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
+                if (g_ddraw->child_window_exists)
                 {
-                    if (g_ddraw->child_window_exists)
-                    {
-                        IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+                    IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
 
-                        if (!needs_update && d3d9_update_vertices(FALSE, FALSE))
-                            needs_update = TRUE;
-                    }
-                    else if (needs_update)
-                    {
-                        if (d3d9_update_vertices(FALSE, TRUE))
-                            needs_update = FALSE;
-                    }
+                    if (!needs_update && d3d9_update_vertices(FALSE, FALSE))
+                        needs_update = TRUE;
+                }
+                else if (needs_update)
+                {
+                    if (d3d9_update_vertices(FALSE, TRUE))
+                        needs_update = FALSE;
                 }
             }
         }
