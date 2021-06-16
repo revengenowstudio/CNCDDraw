@@ -374,7 +374,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
         }
 
-        if (g_ddraw->got_child_windows)
+        if (!g_ddraw->handlemouse)
         {
             redraw_count = 2;
             RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
@@ -404,7 +404,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             }
         }
 
-        if (g_ddraw->got_child_windows)
+        if (!g_ddraw->handlemouse)
             RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
 
         return DefWindowProc(hWnd, uMsg, wParam, lParam); /* Carmageddon fix */
@@ -483,7 +483,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
         if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
         {
-            if (g_ddraw->got_child_windows)
+            if (!g_ddraw->handlemouse)
                 RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
         }
 
@@ -530,7 +530,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             /* let it pass through once (tiberian sun) */
             static BOOL one_time;
 
-            if (wParam && !one_time && g_ddraw->noactivateapp)
+            if (wParam && !one_time && !g_ddraw->handlemouse && g_ddraw->noactivateapp)
             {
                 one_time = TRUE;
                 break;
@@ -664,17 +664,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_MBUTTONDOWN:
     case WM_MOUSEMOVE:
     {
-        int x = GET_X_LPARAM(lParam) - g_ddraw->render.viewport.x;
-        int y = GET_Y_LPARAM(lParam) - g_ddraw->render.viewport.y;
-
-        if (x < 0)
-            x = 0;
-
-        if (y < 0)
-            y = 0;
-
-        lParam = MAKELPARAM(x, y);
-
         if (!g_ddraw->devmode)
         {
             if (!g_ddraw->locked)
@@ -748,7 +737,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     case WM_PAINT:
     {
-        if (redraw_count > 0)
+        if (!g_ddraw->handlemouse && redraw_count > 0)
         {
             redraw_count--;
             RedrawWindow(hWnd, NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);

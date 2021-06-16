@@ -28,9 +28,6 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         int max_width = g_ddraw->adjmouse ? g_ddraw->render.viewport.width : g_ddraw->width;
         int max_height = g_ddraw->adjmouse ? g_ddraw->render.viewport.height : g_ddraw->height;
 
-        pt.x -= g_ddraw->render.viewport.x;
-        pt.y -= g_ddraw->render.viewport.y;
-
         if (pt.x < 0)
         {
             diffx = pt.x;
@@ -116,7 +113,7 @@ int WINAPI fake_ShowCursor(BOOL bShow)
 {
     static int count;
 
-    if (g_ddraw)
+    if (g_ddraw && !g_ddraw->handlemouse)
         return real_ShowCursor(bShow);
 
     return bShow ? ++count : --count;
@@ -127,7 +124,7 @@ HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
     if (g_ddraw)
         g_ddraw->old_cursor = hCursor;
 
-    if (g_ddraw && (g_ddraw->locked || g_ddraw->devmode))
+    if (g_ddraw && !g_ddraw->handlemouse && (g_ddraw->locked || g_ddraw->devmode))
         return real_SetCursor(hCursor);
 
     return NULL;
@@ -304,18 +301,12 @@ BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BO
 
 LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
 {
-    if (g_ddraw && g_ddraw->hwnd == hWnd && Msg == WM_MOUSEMOVE)
+    if (g_ddraw && g_ddraw->hwnd == hWnd && g_ddraw->adjmouse && Msg == WM_MOUSEMOVE)
     {
-        int x = GET_X_LPARAM(lParam);
-        int y = GET_Y_LPARAM(lParam);
+        int x = (int)(GET_X_LPARAM(lParam) * g_ddraw->render.scale_w);
+        int y = (int)(GET_Y_LPARAM(lParam) * g_ddraw->render.scale_h);
 
-        if (g_ddraw->adjmouse)
-        {
-            x = (int)(x * g_ddraw->render.scale_w);
-            y = (int)(y * g_ddraw->render.scale_h);
-        }
-
-        lParam = MAKELPARAM(x + g_ddraw->render.viewport.x, y + g_ddraw->render.viewport.y);
+        lParam = MAKELPARAM(x, y);
     }
 
     if (g_ddraw && g_ddraw->hwnd == hWnd && Msg == WM_SIZE && g_hook_method != 2)
