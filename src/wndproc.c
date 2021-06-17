@@ -707,8 +707,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         if (GET_X_LPARAM(lParam) > g_ddraw->width || GET_Y_LPARAM(lParam) > g_ddraw->height)
         {
-            x = g_ddraw->cursor.x = min(GET_X_LPARAM(lParam), g_ddraw->width);
-            y = g_ddraw->cursor.y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
+            x = min(GET_X_LPARAM(lParam), g_ddraw->width);
+            y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
+
+            g_ddraw->cursor.x = x;
+            g_ddraw->cursor.y = y;
 
             lParam = MAKELPARAM(x, y);
         }
