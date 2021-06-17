@@ -101,7 +101,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 case HTTOPRIGHT:
                     return DefWindowProc(hWnd, uMsg, wParam, lParam);
                 case HTCLIENT:
-                    if (!g_ddraw->locked)
+                    if (!g_ddraw->locked && !g_ddraw->devmode)
                     {
                         real_SetCursor(LoadCursor(NULL, IDC_ARROW));
                         return DefWindowProc(hWnd, uMsg, wParam, lParam);
@@ -691,12 +691,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         if (g_ddraw->devmode)
         {
-            mouse_lock();
-
             if (g_ddraw->adjmouse)
             {
-                g_ddraw->cursor.x = (DWORD)(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w);
-                g_ddraw->cursor.y = (DWORD)(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h);
+                g_ddraw->cursor.x = (DWORD)(roundf(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w));
+                g_ddraw->cursor.y = (DWORD)(roundf(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h));
 
                 lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
             }
@@ -709,8 +707,8 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         if (GET_X_LPARAM(lParam) > g_ddraw->width || GET_Y_LPARAM(lParam) > g_ddraw->height)
         {
-            g_ddraw->cursor.x = GET_X_LPARAM(lParam) > g_ddraw->width ? g_ddraw->width : GET_X_LPARAM(lParam);
-            g_ddraw->cursor.y = GET_Y_LPARAM(lParam) > g_ddraw->height ? g_ddraw->height : GET_Y_LPARAM(lParam);
+            g_ddraw->cursor.x = min(GET_X_LPARAM(lParam), g_ddraw->width);
+            g_ddraw->cursor.y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
 
             lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
         }

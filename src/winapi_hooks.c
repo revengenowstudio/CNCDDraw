@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include <math.h>
 #include "debug.h"
 #include "dd.h"
 #include "hook.h"
@@ -61,8 +62,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
         if (g_ddraw->adjmouse)
         {
-            g_ddraw->cursor.x = (DWORD)(pt.x * g_ddraw->render.unscale_w);
-            g_ddraw->cursor.y = (DWORD)(pt.y * g_ddraw->render.unscale_h);
+            g_ddraw->cursor.x = min((DWORD)(roundf(pt.x * g_ddraw->render.unscale_w)), g_ddraw->width);
+            g_ddraw->cursor.y = min((DWORD)(roundf(pt.y * g_ddraw->render.unscale_h)), g_ddraw->height);
         }
         else
         {
@@ -223,8 +224,8 @@ BOOL WINAPI fake_SetCursorPos(int X, int Y)
     {
         if (g_ddraw->adjmouse)
         {
-            pt.x = (LONG)(pt.x * g_ddraw->render.scale_w);
-            pt.y = (LONG)(pt.y * g_ddraw->render.scale_h);
+            pt.x = (LONG)(roundf(pt.x * g_ddraw->render.scale_w));
+            pt.y = (LONG)(roundf(pt.y * g_ddraw->render.scale_h));
         }
 
         pt.x += g_ddraw->render.viewport.x;
@@ -330,8 +331,8 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
 
         if (g_ddraw->adjmouse)
         {
-            x = (int)(x * g_ddraw->render.scale_w);
-            y = (int)(y * g_ddraw->render.scale_h);
+            x = (int)(roundf(x * g_ddraw->render.scale_w));
+            y = (int)(roundf(y * g_ddraw->render.scale_h));
         }
 
         lParam = MAKELPARAM(x + g_ddraw->render.viewport.x, y + g_ddraw->render.viewport.y);
