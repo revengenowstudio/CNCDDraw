@@ -737,8 +737,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
                 g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
 
-                g_ddraw->hidecursor = FALSE;
-
                 mouse_lock();
             }
             break;

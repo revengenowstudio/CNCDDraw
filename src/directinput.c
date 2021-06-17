@@ -97,9 +97,14 @@ static HRESULT WINAPI fake_di_CreateDevice(
 
     if (SUCCEEDED(result) && !real_did_SetCooperativeLevel)
     {
-        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid))
+        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid) && g_ddraw)
         {
-            while (real_ShowCursor(FALSE) >= 0);
+            if (g_ddraw->locked || g_ddraw->devmode)
+            {
+                while (real_ShowCursor(FALSE) >= 0);
+            }
+
+            InterlockedExchange(&g_ddraw->show_cursor_count, -1);
         }
 
         real_did_SetCooperativeLevel =

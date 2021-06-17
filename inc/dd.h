@@ -107,8 +107,8 @@ typedef struct CNCDDRAW
     char shader[MAX_PATH];
     BOOL wine;
     BOOL altenter;
-    BOOL hidecursor;
     HCURSOR old_cursor;
+    int show_cursor_count;
     BOOL accurate_timers;
     BOOL resizable;
     BOOL nonexclusive;

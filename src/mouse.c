@@ -55,10 +55,19 @@ void mouse_lock()
 
         real_SetCursor(g_ddraw->old_cursor);
 
-        if (g_ddraw->hidecursor)
+        int cur_count = real_ShowCursor(TRUE) - 1;
+        real_ShowCursor(FALSE);
+
+        int game_count = InterlockedExchangeAdd(&g_ddraw->show_cursor_count, 0);
+
+        if (cur_count > game_count)
         {
-            g_ddraw->hidecursor = FALSE;
-            real_ShowCursor(FALSE);
+            while (real_ShowCursor(FALSE) > game_count);
+        }
+
+        if (cur_count < game_count)
+        {
+            while (real_ShowCursor(TRUE) < game_count);
         }
 
         real_ClipCursor(&rc);
@@ -96,7 +105,6 @@ void mouse_unlock()
         CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
         if (real_GetCursorInfo(&ci) && ci.flags == 0)
         {
-            g_ddraw->hidecursor = TRUE;
             while (real_ShowCursor(TRUE) < 0);
         }
 

@@ -114,21 +114,34 @@ BOOL WINAPI fake_ClipCursor(const RECT* lpRect)
 
 int WINAPI fake_ShowCursor(BOOL bShow)
 {
-    static int count;
+    if (g_ddraw)
+    {
+        if (g_ddraw->locked || g_ddraw->devmode)
+        {
+            int count = real_ShowCursor(bShow);
+            InterlockedExchange(&g_ddraw->show_cursor_count, count);
+            return count;
+        }
+        else
+        {
+            return bShow ?
+                InterlockedIncrement(&g_ddraw->show_cursor_count) :
+                InterlockedDecrement(&g_ddraw->show_cursor_count);
+        }
+    }
 
-    //if (g_ddraw)
-        return real_ShowCursor(bShow);
-
-    return bShow ? ++count : --count;
+    return real_ShowCursor(bShow);
 }
 
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
     if (g_ddraw)
+    {
         g_ddraw->old_cursor = hCursor;
 
-    if (g_ddraw && (g_ddraw->locked || g_ddraw->devmode))
-        return real_SetCursor(hCursor);
+        if (g_ddraw->locked || g_ddraw->devmode)
+            return real_SetCursor(hCursor);
+    }
 
     return NULL;
 }
@@ -206,10 +219,16 @@ BOOL WINAPI fake_SetCursorPos(int X, int Y)
 
     POINT pt = { X, Y };
 
-    if (g_ddraw && g_ddraw->adjmouse)
+    if (g_ddraw)
     {
-        pt.x = (LONG)(pt.x * g_ddraw->render.scale_w);
-        pt.y = (LONG)(pt.y * g_ddraw->render.scale_h);
+        if (g_ddraw->adjmouse)
+        {
+            pt.x = (LONG)(pt.x * g_ddraw->render.scale_w);
+            pt.y = (LONG)(pt.y * g_ddraw->render.scale_h);
+        }
+
+        pt.x += g_ddraw->render.viewport.x;
+        pt.y += g_ddraw->render.viewport.y;
     }
 
     return g_ddraw && real_ClientToScreen(g_ddraw->hwnd, &pt) && real_SetCursorPos(pt.x, pt.y);

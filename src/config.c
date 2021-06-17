@@ -40,7 +40,7 @@ void cfg_load()
     g_ddraw->border = cfg_get_bool("border", TRUE);
     g_ddraw->boxing = cfg_get_bool("boxing", FALSE);
     g_ddraw->maintas = cfg_get_bool("maintas", FALSE);
-    g_ddraw->adjmouse = cfg_get_bool("adjmouse", TRUE);
+    g_ddraw->adjmouse = cfg_get_bool("adjmouse", TRUE) || !cfg_get_bool("handlemouse", TRUE);
     g_ddraw->devmode = cfg_get_bool("devmode", FALSE);
     g_ddraw->vsync = cfg_get_bool("vsync", FALSE);
     g_ddraw->noactivateapp = cfg_get_bool("noactivateapp", FALSE);
