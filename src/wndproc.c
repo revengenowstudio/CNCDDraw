@@ -701,15 +701,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 x = (DWORD)(roundf(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w));
                 y = (DWORD)(roundf(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h));
 
-                InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
-                InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
-
                 lParam = MAKELPARAM(x, y);
-            }
-            else
-            {
-                InterlockedExchange((LONG*)&g_ddraw->cursor.x, GET_X_LPARAM(lParam));
-                InterlockedExchange((LONG*)&g_ddraw->cursor.y, GET_Y_LPARAM(lParam));
             }
         }
 
@@ -718,14 +710,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             x = min(GET_X_LPARAM(lParam), g_ddraw->width);
             y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
 
-            if (g_ddraw->devmode)
-            {
-                InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
-                InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
-            }
-
             lParam = MAKELPARAM(x, y);
         }
+
+        InterlockedExchange((LONG*)&g_ddraw->cursor.x, GET_X_LPARAM(lParam));
+        InterlockedExchange((LONG*)&g_ddraw->cursor.y, GET_Y_LPARAM(lParam));
 
         break;
     }
