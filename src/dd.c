@@ -461,8 +461,8 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
     g_ddraw->height = dwHeight;
     g_ddraw->bpp = dwBPP;
 
-    g_ddraw->cursor.x = dwWidth / 2;
-    g_ddraw->cursor.y = dwHeight / 2;
+    InterlockedExchange((LONG*)&g_ddraw->cursor.x, dwWidth / 2);
+    InterlockedExchange((LONG*)&g_ddraw->cursor.y, dwHeight / 2);
 
     BOOL border = g_ddraw->border;
 
@@ -820,7 +820,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
         }
 
         int cursor_count = real_ShowCursor(TRUE) - 1;
-        InterlockedExchange(&g_ddraw->show_cursor_count, cursor_count);
+        InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, cursor_count);
         real_ShowCursor(FALSE);
 
         /* Make sure the cursor is visible in windowed mode initially */

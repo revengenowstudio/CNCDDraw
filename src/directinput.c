@@ -104,7 +104,7 @@ static HRESULT WINAPI fake_di_CreateDevice(
                 while (real_ShowCursor(FALSE) >= 0);
             }
 
-            InterlockedExchange(&g_ddraw->show_cursor_count, -1);
+            InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
         }
 
         real_did_SetCooperativeLevel =

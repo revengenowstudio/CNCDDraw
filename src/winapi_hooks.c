@@ -59,16 +59,18 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         if (diffx || diffy)
             real_SetCursorPos(realpt.x - diffx, realpt.y - diffy);
 
+        int x = 0;
+        int y = 0;
 
         if (g_ddraw->adjmouse)
         {
-            g_ddraw->cursor.x = min((DWORD)(roundf(pt.x * g_ddraw->render.unscale_w)), g_ddraw->width);
-            g_ddraw->cursor.y = min((DWORD)(roundf(pt.y * g_ddraw->render.unscale_h)), g_ddraw->height);
+            x = min((DWORD)(roundf(pt.x * g_ddraw->render.unscale_w)), g_ddraw->width);
+            y = min((DWORD)(roundf(pt.y * g_ddraw->render.unscale_h)), g_ddraw->height);
         }
         else
         {
-            g_ddraw->cursor.x = pt.x;
-            g_ddraw->cursor.y = pt.y;
+            x = pt.x;
+            y = pt.y;
         }
 
         if (g_ddraw->vhack && InterlockedExchangeAdd(&g_ddraw->upscale_hack_active, 0))
@@ -76,27 +78,38 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
             diffx = 0;
             diffy = 0;
 
-            if (g_ddraw->cursor.x > g_ddraw->upscale_hack_width)
+            if (x > g_ddraw->upscale_hack_width)
             {
-                diffx = g_ddraw->cursor.x - g_ddraw->upscale_hack_width;
-                g_ddraw->cursor.x = g_ddraw->upscale_hack_width;
+                diffx = x - g_ddraw->upscale_hack_width;
+                x = g_ddraw->upscale_hack_width;
             }
 
-            if (g_ddraw->cursor.y > g_ddraw->upscale_hack_height)
+            if (y > g_ddraw->upscale_hack_height)
             {
-                diffy = g_ddraw->cursor.y - g_ddraw->upscale_hack_height;
-                g_ddraw->cursor.y = g_ddraw->upscale_hack_height;
+                diffy = y - g_ddraw->upscale_hack_height;
+                y = g_ddraw->upscale_hack_height;
             }
 
             if (diffx || diffy)
                 real_SetCursorPos(realpt.x - diffx, realpt.y - diffy);
         }
+
+        InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+        InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
+
+        if (lpPoint)
+        {
+            lpPoint->x = x;
+            lpPoint->y = y;
+        }
+
+        return TRUE;
     }
 
     if (lpPoint)
     {
-        lpPoint->x = g_ddraw->cursor.x;
-        lpPoint->y = g_ddraw->cursor.y;
+        lpPoint->x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
+        lpPoint->y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
     }
 
     return TRUE;
@@ -120,14 +133,14 @@ int WINAPI fake_ShowCursor(BOOL bShow)
         if (g_ddraw->locked || g_ddraw->devmode)
         {
             int count = real_ShowCursor(bShow);
-            InterlockedExchange(&g_ddraw->show_cursor_count, count);
+            InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, count);
             return count;
         }
         else
         {
             return bShow ?
-                InterlockedIncrement(&g_ddraw->show_cursor_count) :
-                InterlockedDecrement(&g_ddraw->show_cursor_count);
+                InterlockedIncrement((LONG*)&g_ddraw->show_cursor_count) :
+                InterlockedDecrement((LONG*)&g_ddraw->show_cursor_count);
         }
     }
 

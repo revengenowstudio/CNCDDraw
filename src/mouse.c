@@ -42,15 +42,18 @@ void mouse_lock()
 
         rc.bottom -= (LONG)((g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h);
 
+        int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
+        int cur_y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
+
         if (g_ddraw->adjmouse)
         {
             real_SetCursorPos(
-                (int)(rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w)),
-                (int)(rc.top + ((g_ddraw->cursor.y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
+                (int)(rc.left + (cur_x * g_ddraw->render.scale_w)),
+                (int)(rc.top + ((cur_y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
         }
         else
         {
-            real_SetCursorPos(rc.left + g_ddraw->cursor.x, rc.top + g_ddraw->cursor.y - g_ddraw->mouse_y_adjust);
+            real_SetCursorPos(rc.left + cur_x, rc.top + cur_y - g_ddraw->mouse_y_adjust);
         }
 
         real_SetCursor(g_ddraw->old_cursor);
@@ -58,7 +61,7 @@ void mouse_lock()
         int cur_count = real_ShowCursor(TRUE) - 1;
         real_ShowCursor(FALSE);
 
-        int game_count = InterlockedExchangeAdd(&g_ddraw->show_cursor_count, 0);
+        int game_count = (int)InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
 
         if (cur_count > game_count)
         {
@@ -112,8 +115,11 @@ void mouse_unlock()
 
         real_ClipCursor(NULL);
 
+        int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
+        int cur_y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
+
         real_SetCursorPos(
-            (int)(rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w)),
-            (int)(rc.top + g_ddraw->render.viewport.y + ((g_ddraw->cursor.y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
+            (int)(rc.left + g_ddraw->render.viewport.x + (cur_x * g_ddraw->render.scale_w)),
+            (int)(rc.top + g_ddraw->render.viewport.y + ((cur_y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
     }
 }

@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include <math.h>
 #include "dllmain.h"
 #include "dd.h"
 #include "hook.h"
@@ -636,14 +637,17 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 y > g_ddraw->render.viewport.y + g_ddraw->render.viewport.height ||
                 y < g_ddraw->render.viewport.y)
             {
-                g_ddraw->cursor.x = g_ddraw->width / 2;
-                g_ddraw->cursor.y = g_ddraw->height / 2;
+                x = g_ddraw->width / 2;
+                y = g_ddraw->height / 2;
             }
             else
             {
-                g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
-                g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
+                x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
+                y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
             }
+
+            InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+            InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
 
             mouse_lock();
             return 0;
@@ -684,8 +688,9 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
             if (g_ddraw->adjmouse)
             {
-                fake_GetCursorPos(NULL); /* update our own cursor */
-                lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
+                POINT pt;
+                fake_GetCursorPos(&pt);
+                lParam = MAKELPARAM(pt.x, pt.y);
             }
         }
 
@@ -693,15 +698,18 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (g_ddraw->adjmouse)
             {
-                g_ddraw->cursor.x = (DWORD)(roundf(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w));
-                g_ddraw->cursor.y = (DWORD)(roundf(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h));
+                x = (DWORD)(roundf(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w));
+                y = (DWORD)(roundf(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h));
 
-                lParam = MAKELPARAM(g_ddraw->cursor.x, g_ddraw->cursor.y);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
+
+                lParam = MAKELPARAM(x, y);
             }
             else
             {
-                g_ddraw->cursor.x = GET_X_LPARAM(lParam);
-                g_ddraw->cursor.y = GET_Y_LPARAM(lParam);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.x, GET_X_LPARAM(lParam));
+                InterlockedExchange((LONG*)&g_ddraw->cursor.y, GET_Y_LPARAM(lParam));
             }
         }
 
@@ -710,8 +718,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             x = min(GET_X_LPARAM(lParam), g_ddraw->width);
             y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
 
-            g_ddraw->cursor.x = x;
-            g_ddraw->cursor.y = y;
+            if (g_ddraw->devmode)
+            {
+                InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
+            }
 
             lParam = MAKELPARAM(x, y);
         }
@@ -732,11 +743,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         {
             if (!g_ddraw->devmode && !g_ddraw->locked)
             {
-                int x = GET_X_LPARAM(lParam);
-                int y = GET_Y_LPARAM(lParam);
+                int x = (DWORD)((GET_X_LPARAM(lParam) - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
+                int y = (DWORD)((GET_Y_LPARAM(lParam) - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
 
-                g_ddraw->cursor.x = (DWORD)((x - g_ddraw->render.viewport.x) * g_ddraw->render.unscale_w);
-                g_ddraw->cursor.y = (DWORD)((y - g_ddraw->render.viewport.y) * g_ddraw->render.unscale_h);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+                InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
 
                 mouse_lock();
             }
