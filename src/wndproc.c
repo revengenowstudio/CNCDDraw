@@ -678,7 +678,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
         if (g_ddraw->adjmouse)
         {
-            if (g_ddraw->vhack)
+            if (g_ddraw->vhack && !g_ddraw->devmode)
             {
                 POINT pt = { 0, 0 };
                 fake_GetCursorPos(&pt);
