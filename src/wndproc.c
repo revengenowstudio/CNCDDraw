@@ -697,7 +697,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         y = min(y, g_ddraw->height);
 
         InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
-        InterlockedExchange((LONG*)&g_ddraw->cursor.y, x);
+        InterlockedExchange((LONG*)&g_ddraw->cursor.y, y);
 
         lParam = MAKELPARAM(x, y);
 
