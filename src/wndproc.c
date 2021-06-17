@@ -668,53 +668,38 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     case WM_MBUTTONDOWN:
     case WM_MOUSEMOVE:
     {
-        int x = GET_X_LPARAM(lParam) - g_ddraw->render.viewport.x;
-        int y = GET_Y_LPARAM(lParam) - g_ddraw->render.viewport.y;
+        if (!g_ddraw->devmode && !g_ddraw->locked)
+        {
+            return 0;
+        }
 
-        if (x < 0)
-            x = 0;
+        int x = max(GET_X_LPARAM(lParam) - g_ddraw->render.viewport.x, 0);
+        int y = max(GET_Y_LPARAM(lParam) - g_ddraw->render.viewport.y, 0);
 
-        if (y < 0)
-            y = 0;
+        if (g_ddraw->adjmouse)
+        {
+            if (g_ddraw->vhack)
+            {
+                POINT pt = { 0, 0 };
+                fake_GetCursorPos(&pt);
+
+                x = pt.x;
+                y = pt.y;
+            }
+            else
+            {
+                x = (DWORD)(roundf(x * g_ddraw->render.unscale_w));
+                y = (DWORD)(roundf(y * g_ddraw->render.unscale_h));
+            }
+        }
+
+        x = min(x, g_ddraw->width);
+        y = min(y, g_ddraw->height);
+
+        InterlockedExchange((LONG*)&g_ddraw->cursor.x, x);
+        InterlockedExchange((LONG*)&g_ddraw->cursor.y, x);
 
         lParam = MAKELPARAM(x, y);
-
-        if (!g_ddraw->devmode)
-        {
-            if (!g_ddraw->locked)
-            {
-                return 0;
-            }
-
-            if (g_ddraw->adjmouse)
-            {
-                POINT pt;
-                fake_GetCursorPos(&pt);
-                lParam = MAKELPARAM(pt.x, pt.y);
-            }
-        }
-
-        if (g_ddraw->devmode)
-        {
-            if (g_ddraw->adjmouse)
-            {
-                x = (DWORD)(roundf(GET_X_LPARAM(lParam) * g_ddraw->render.unscale_w));
-                y = (DWORD)(roundf(GET_Y_LPARAM(lParam) * g_ddraw->render.unscale_h));
-
-                lParam = MAKELPARAM(x, y);
-            }
-        }
-
-        if (GET_X_LPARAM(lParam) > g_ddraw->width || GET_Y_LPARAM(lParam) > g_ddraw->height)
-        {
-            x = min(GET_X_LPARAM(lParam), g_ddraw->width);
-            y = min(GET_Y_LPARAM(lParam), g_ddraw->height);
-
-            lParam = MAKELPARAM(x, y);
-        }
-
-        InterlockedExchange((LONG*)&g_ddraw->cursor.x, GET_X_LPARAM(lParam));
-        InterlockedExchange((LONG*)&g_ddraw->cursor.y, GET_Y_LPARAM(lParam));
 
         break;
     }
