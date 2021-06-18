@@ -120,6 +120,7 @@ typedef struct CNCDDRAW
     BOOL passthrough;
     int resolutions;
     BOOL armadahack;
+    BOOL tshack;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL bnet_active;

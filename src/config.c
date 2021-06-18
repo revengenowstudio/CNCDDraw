@@ -57,6 +57,7 @@ void cfg_load()
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
+    g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
 
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
@@ -457,6 +458,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Tiberian Sun / Command & Conquer: Red Alert 2\n"
             "[game]\n"
             "checkfile=.\\blowfish.dll\n"
+            "tshack=true\n"
             "noactivateapp=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
@@ -467,6 +469,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Tiberian Sun Demo\n"
             "[SUN]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -476,6 +479,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Tiberian Sun - CnCNet\n"
             "[ts-spawn]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -485,6 +489,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2 - XWIS\n"
             "[ra2]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -494,6 +499,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2 - XWIS\n"
             "[Red Alert 2]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -503,6 +509,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2: Yuri's Revenge\n"
             "[gamemd]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -512,6 +519,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2: Yuri's Revenge - ?ModExe?\n"
             "[ra2md]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -521,6 +529,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2: Yuri's Revenge - CnCNet\n"
             "[gamemd-spawn]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
@@ -530,6 +539,7 @@ static void cfg_create_ini()
             "; Command & Conquer: Red Alert 2: Yuri's Revenge - XWIS\n"
             "[Yuri's Revenge]\n"
             "noactivateapp=true\n"
+            "tshack=true\n"
             "adjmouse=true\n"
             "maxfps=60\n"
             "minfps=-1\n"
