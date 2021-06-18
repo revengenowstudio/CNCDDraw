@@ -277,6 +277,7 @@ void hook_create(HOOKLIST* hooks)
                     /* Don't hook reshade/swiftshader/mesa3d */
                     if (_strcmpi(mod_filename, "opengl32") == 0 ||
                         _strcmpi(mod_filename, "d3d9") == 0 ||
+                        _strcmpi(mod_filename, "HardwareCursor") == 0 ||
                         _strcmpi(mod_filename, "Shw32") == 0)
                         continue;
 
