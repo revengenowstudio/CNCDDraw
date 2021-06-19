@@ -35,7 +35,7 @@ If you want to play in windowed mode then start the game once in fullscreen and 
 
 &nbsp;
 
-`Compatibility setting examples:`
+**Compatibility setting examples:**
 
 - If there are **problems on Alt+Tab** then try to set `noactivateapp=true` - If it still doesn't work also try `renderer=opengl` or `renderer=gdi`.
 
