@@ -830,7 +830,7 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
         real_ShowCursor(FALSE);
 
         /* Make sure the cursor is visible in windowed mode initially */
-        if (g_ddraw->windowed && !g_ddraw->fullscreen && cursor_count < 0)
+        if (g_ddraw->windowed && !g_ddraw->fullscreen && !g_ddraw->devmode && cursor_count < 0)
         {
             while (real_ShowCursor(TRUE) < 0);
         }
