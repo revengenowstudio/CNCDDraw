@@ -25,7 +25,8 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 2. Start the game
 
 
-Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first. If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or modify ddraw.ini without using Alt+Enter).
+Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first. 
+If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or modify ddraw.ini without using Alt+Enter).
 
 &nbsp;
 
