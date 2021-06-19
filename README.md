@@ -34,7 +34,7 @@ Note: If you use cnc-ddraw with a game that got its own windowed mode built in t
 
 - If **videos or other GUI elements are invisible** then try to set "nonexclusive=true".
 
-- If some parts of the screen are being displayed **diagonally** then try to set "fixpitch=true".
+- If some parts of the **screen are being displayed diagonally** then try to set "fixpitch=true".
 
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
