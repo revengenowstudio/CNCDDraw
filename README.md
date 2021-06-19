@@ -35,6 +35,8 @@ If you want to play in windowed mode then start the game once in fullscreen and 
 
 &nbsp;
 
+`Compatibility setting examples:`
+
 - If there are **problems on Alt+Tab** then try to set "noactivateapp=true" - If it still doesn't work also try "renderer=opengl" or "renderer=gdi".
 
 - If the **game is running too fast** then try to set "maxgameticks=60" - If it's still too fast, try a lower value - If too slow, try a higher value.
@@ -43,7 +45,7 @@ If you want to play in windowed mode then start the game once in fullscreen and 
 
 - If **videos or other GUI elements are invisible** then try to set "nonexclusive=true".
 
-- If some parts of the **screen are being displayed diagonally** then try to set "fixpitch=true".
+- If some parts of the screen are **being displayed diagonally** then try to set "fixpitch=true".
 
 &nbsp;
 
