@@ -18,18 +18,24 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 ### Instructions
 
 1. Download [cnc-ddraw.zip](https://github.com/CnCNet/cnc-ddraw/releases/latest/download/cnc-ddraw.zip) and extract it into your game folder
-2. Disable all compatibility modes for all of the game executables
-3. Start the game
+2. Start the game
+
 
 Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first. If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or modify ddraw.ini without using Alt+Enter).
 
 **If the game starts but it doesn't work perfectly** then open ddraw.ini and search for **Compatibility settings**, one of the settings will usually fix the problem.
 
-Most common compatibility settings are the following 3:
 
-- noactivateapp - Set this to true if there are issues on Alt+Tab.
-- handlemouse - Set this to false if your cursor is invisible at some places in the game.
-- maxgameticks - Set this to 60 if the game is running too fast or if it's flickering. If it still doesn't work, try a lower value.
+- If there are **problems on Alt+Tab** then try to set "noactivateapp=true" - If it still doesn't work also try "renderer=opengl" or "renderer=gdi".
+
+- If the **game is running too fast** then try to set "maxgameticks=60" - If it's still too fast, try a lower value - If too slow, try a higher value.
+
+- If **windowed mode or upscaling are not working properly** then try to set "hook=2" and "renderer=gdi" - opengl/direct3d could work as well in some games. 
+
+- If **videos or other GUI elements are invisible** then try to set "nonexclusive=true".
+
+- If some parts of the screen are being displayed **diagonally** then try to set "fixpitch=true".
+
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
 
