@@ -1,6 +1,8 @@
 # cnc-ddraw
 cnc-ddraw can fix compatibility issues in older games, such as black screen, bad performance, crashes or defective Alt+Tab.
 
+&nbsp;
+
 ### Features
 
  - Supports Windows XP, Vista, 7, 8, 10 and Wine
@@ -15,6 +17,8 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
  - Preliminary libretro shader support - https://github.com/libretro/glsl-shaders
  - ...
  
+&nbsp;
+
 ### Instructions
 
 1. Download [cnc-ddraw.zip](https://github.com/CnCNet/cnc-ddraw/releases/latest/download/cnc-ddraw.zip) and extract it into your game folder
@@ -23,8 +27,11 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 
 Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first. If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or modify ddraw.ini without using Alt+Enter).
 
+&nbsp;
+
 **If the game starts but it doesn't work perfectly** then open ddraw.ini and search for **Compatibility settings**, one of the settings will usually fix the problem.
 
+&nbsp;
 
 - If there are **problems on Alt+Tab** then try to set "noactivateapp=true" - If it still doesn't work also try "renderer=opengl" or "renderer=gdi".
 
@@ -36,13 +43,18 @@ Note: If you use cnc-ddraw with a game that got its own windowed mode built in t
 
 - If some parts of the **screen are being displayed diagonally** then try to set "fixpitch=true".
 
+&nbsp;
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
+
+&nbsp;
 
 ### Hotkeys
 * [Alt] + [Enter]                  = Switch between windowed and fullscreen mode
 * [Ctrl] + [Tab]                    = Unlock cursor
 * [Right Alt] + [Right Ctrl]  = Unlock cursor
+
+&nbsp;
 
 ### Supported Games
 
