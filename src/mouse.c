@@ -43,9 +43,7 @@ void mouse_lock()
             real_SetCursorPos(rc.left + cur_x, rc.top + cur_y - g_ddraw->mouse_y_adjust);
         }
 
-        real_SetCursor(g_ddraw->old_cursor);
-
-        int game_count = (int)InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
+        int game_count = InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
         int cur_count = real_ShowCursor(TRUE) - 1;
         real_ShowCursor(FALSE);
 
@@ -57,6 +55,8 @@ void mouse_lock()
         {
             while (real_ShowCursor(TRUE) < game_count);
         }
+
+        real_SetCursor((HCURSOR)InterlockedExchangeAdd((LONG*)&g_ddraw->old_cursor, 0));
 
         real_ClipCursor(&rc);
 
@@ -83,7 +83,6 @@ void mouse_unlock()
             while (real_ShowCursor(TRUE) < 0);
         }
 
-        real_SetCursor(LoadCursor(NULL, IDC_ARROW));
         real_ClipCursor(NULL);
 
         int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);

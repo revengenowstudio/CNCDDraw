@@ -819,19 +819,20 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
             SetPixelFormat(g_ddraw->render.hdc, ChoosePixelFormat(g_ddraw->render.hdc, &pfd), &pfd);
         }
 
+        if (!g_ddraw->devmode)
+        {
+            HCURSOR cursor = real_SetCursor(LoadCursor(NULL, IDC_ARROW));
+            InterlockedExchange((LONG*)&g_ddraw->old_cursor, (LONG)cursor);
+        }
+
         int cursor_count = real_ShowCursor(TRUE) - 1;
         InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, cursor_count);
         real_ShowCursor(FALSE);
 
         /* Make sure the cursor is visible in windowed mode initially */
-        if (g_ddraw->windowed && !g_ddraw->fullscreen)
+        if (g_ddraw->windowed && !g_ddraw->fullscreen && cursor_count < 0)
         {
-            if (cursor_count < 0)
-            {
-                while (real_ShowCursor(TRUE) < 0);
-            }
-
-            real_SetCursor(LoadCursor(NULL, IDC_ARROW));
+            while (real_ShowCursor(TRUE) < 0);
         }
 
         GetWindowText(g_ddraw->hwnd, (LPTSTR)&g_ddraw->title, sizeof(g_ddraw->title));

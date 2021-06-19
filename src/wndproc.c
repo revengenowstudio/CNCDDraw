@@ -105,7 +105,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     if (!g_ddraw->locked && !g_ddraw->devmode)
                     {
                         real_SetCursor(LoadCursor(NULL, IDC_ARROW));
-                        return DefWindowProc(hWnd, uMsg, wParam, lParam);
+                        return TRUE;
                     }
                 default:
                     break;

@@ -151,13 +151,13 @@ HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor)
 {
     if (g_ddraw)
     {
-        g_ddraw->old_cursor = hCursor;
+        HCURSOR cursor = (HCURSOR)InterlockedExchange((LONG*)&g_ddraw->old_cursor, (LONG)hCursor);
 
-        if (g_ddraw->locked || g_ddraw->devmode)
-            return real_SetCursor(hCursor);
+        if (!g_ddraw->locked && !g_ddraw->devmode)
+            return cursor;
     }
 
-    return NULL;
+    return real_SetCursor(hCursor);
 }
 
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect)
