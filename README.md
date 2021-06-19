@@ -47,6 +47,8 @@ If you want to play in windowed mode then start the game once in fullscreen and 
 
 - If some parts of the screen are **being displayed diagonally** then try to set "fixpitch=true".
 
+- If the game is **stuttering on a Freesync/G-Sync monitor** then try to set "minfps=-1"
+
 &nbsp;
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
