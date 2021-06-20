@@ -120,8 +120,16 @@ BOOL WINAPI fake_ClipCursor(const RECT* lpRect)
     if (lpRect)
     {
         /* hack for 640x480 mode */
-        if (lpRect->bottom == 400 && g_ddraw && g_ddraw->height == 480)
+        if (lpRect->bottom == 400 && g_ddraw && g_ddraw->height == 480 && g_ddraw->cnchack)
+        {
             g_ddraw->mouse_y_adjust = 40;
+
+            if (g_ddraw->locked)
+            {
+                mouse_unlock();
+                mouse_lock();
+            }
+        }
     }
     return TRUE;
 }
