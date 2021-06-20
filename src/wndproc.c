@@ -505,6 +505,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                     mouse_lock();
                 }
             }
+            else if (g_ddraw->fullscreen)
+            {
+                mouse_lock();
+            }
         }
         else
         {
