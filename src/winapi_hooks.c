@@ -438,14 +438,33 @@ BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable)
 
 int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UINT cPoints)
 {
-    if (g_ddraw && hWndFrom == g_ddraw->hwnd && hWndTo == HWND_DESKTOP)
+    if (g_ddraw)
     {
-        return 0;
-    }
+        if (hWndTo == HWND_DESKTOP)
+        {
+            if (hWndFrom == g_ddraw->hwnd)
+            {
+                return 0;
+            }
+            else
+            {
+                //real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
+                //return real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, lpPoints, cPoints);
+            }
+        }
 
-    if (g_ddraw && hWndFrom == HWND_DESKTOP && hWndTo == g_ddraw->hwnd)
-    {
-        return 0;
+        if (hWndFrom == HWND_DESKTOP)
+        {
+            if (hWndTo == g_ddraw->hwnd)
+            {
+                return 0;
+            }
+            else
+            {
+                //real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, lpPoints, cPoints);
+                //return real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
+            }
+        }
     }
 
     return real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
