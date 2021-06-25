@@ -231,8 +231,8 @@ HRESULT dds_Blt(
 
             if (This->bpp == 8)
             {
-                unsigned char key_low = color_key.dwColorSpaceLowValue & 0xFF;
-                unsigned char key_high = color_key.dwColorSpaceHighValue & 0xFF;
+                unsigned char key_low = (unsigned char)color_key.dwColorSpaceLowValue;
+                unsigned char key_high = (unsigned char)color_key.dwColorSpaceHighValue;
 
                 for (int y = 0; y < dst_h; y++)
                 {
@@ -262,8 +262,8 @@ HRESULT dds_Blt(
             }
             else if (This->bpp == 16)
             {
-                unsigned short key_low = color_key.dwColorSpaceLowValue & 0xFFFF;
-                unsigned short key_high = color_key.dwColorSpaceHighValue & 0xFFFF;
+                unsigned short key_low = (unsigned short)color_key.dwColorSpaceLowValue;
+                unsigned short key_high = (unsigned short)color_key.dwColorSpaceHighValue;
 
                 for (int y = 0; y < dst_h; y++)
                 {
@@ -686,8 +686,8 @@ HRESULT dds_BltFast(
         {
             if (This->bpp == 8)
             {
-                unsigned char key_low = src_surface->color_key.dwColorSpaceLowValue & 0xFF;
-                unsigned char key_high = src_surface->color_key.dwColorSpaceHighValue & 0xFF;
+                unsigned char key_low = (unsigned char)src_surface->color_key.dwColorSpaceLowValue;
+                unsigned char key_high = (unsigned char)src_surface->color_key.dwColorSpaceHighValue;
 
                 for (int y = 0; y < dst_h; y++)
                 {
@@ -707,8 +707,8 @@ HRESULT dds_BltFast(
             }
             else if (This->bpp == 16)
             {
-                unsigned short key_low = src_surface->color_key.dwColorSpaceLowValue & 0xFFFF;
-                unsigned short key_high = src_surface->color_key.dwColorSpaceHighValue & 0xFFFF;
+                unsigned short key_low = (unsigned short)src_surface->color_key.dwColorSpaceLowValue;
+                unsigned short key_high = (unsigned short)src_surface->color_key.dwColorSpaceHighValue;
 
                 for (int y = 0; y < dst_h; y++)
                 {
