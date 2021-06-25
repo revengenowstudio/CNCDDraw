@@ -231,6 +231,9 @@ HRESULT dds_Blt(
 
             if (This->bpp == 8)
             {
+                unsigned char key_low = color_key.dwColorSpaceLowValue & 0xFF;
+                unsigned char key_high = color_key.dwColorSpaceHighValue & 0xFF;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int scaled_y = (int)(y * scale_h);
@@ -250,7 +253,7 @@ HRESULT dds_Blt(
 
                         unsigned char c = ((unsigned char*)src_buf)[scaled_x + src_x + src_row];
 
-                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned char*)dst_buf)[x + dst_x + dst_row] = c;
                         }
@@ -259,6 +262,9 @@ HRESULT dds_Blt(
             }
             else if (This->bpp == 16)
             {
+                unsigned short key_low = color_key.dwColorSpaceLowValue & 0xFFFF;
+                unsigned short key_high = color_key.dwColorSpaceHighValue & 0xFFFF;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int scaled_y = (int)(y * scale_h);
@@ -278,7 +284,7 @@ HRESULT dds_Blt(
 
                         unsigned short c = ((unsigned short*)src_buf)[scaled_x + src_x + src_row];
 
-                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned short*)dst_buf)[x + dst_x + dst_row] = c;
                         }
@@ -287,6 +293,9 @@ HRESULT dds_Blt(
             }
             else if (This->bpp == 32)
             {
+                unsigned int key_low = color_key.dwColorSpaceLowValue;
+                unsigned int key_high = color_key.dwColorSpaceHighValue;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int scaled_y = (int)(y * scale_h);
@@ -306,7 +315,7 @@ HRESULT dds_Blt(
 
                         unsigned int c = ((unsigned int*)src_buf)[scaled_x + src_x + src_row];
 
-                        if (c < color_key.dwColorSpaceLowValue || c > color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned int*)dst_buf)[x + dst_x + dst_row] = c;
                         }
@@ -677,6 +686,9 @@ HRESULT dds_BltFast(
         {
             if (This->bpp == 8)
             {
+                unsigned char key_low = src_surface->color_key.dwColorSpaceLowValue & 0xFF;
+                unsigned char key_high = src_surface->color_key.dwColorSpaceHighValue & 0xFF;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int dst_row = This->width * (y + dst_y);
@@ -686,8 +698,7 @@ HRESULT dds_BltFast(
                     {
                         unsigned char c = ((unsigned char*)src_buf)[x + src_x + src_row];
 
-                        if (c < src_surface->color_key.dwColorSpaceLowValue || 
-                            c > src_surface->color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned char*)dst_buf)[x + dst_x + dst_row] = c;
                         }
@@ -696,6 +707,9 @@ HRESULT dds_BltFast(
             }
             else if (This->bpp == 16)
             {
+                unsigned short key_low = src_surface->color_key.dwColorSpaceLowValue & 0xFFFF;
+                unsigned short key_high = src_surface->color_key.dwColorSpaceHighValue & 0xFFFF;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int dst_row = This->width * (y + dst_y);
@@ -705,8 +719,7 @@ HRESULT dds_BltFast(
                     {
                         unsigned short c = ((unsigned short*)src_buf)[x + src_x + src_row];
 
-                        if (c < src_surface->color_key.dwColorSpaceLowValue || 
-                            c > src_surface->color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned short*)dst_buf)[x + dst_x + dst_row] = c;
                         }
@@ -715,6 +728,9 @@ HRESULT dds_BltFast(
             }
             else if (This->bpp == 32)
             {
+                unsigned int key_low = src_surface->color_key.dwColorSpaceLowValue;
+                unsigned int key_high = src_surface->color_key.dwColorSpaceHighValue;
+
                 for (int y = 0; y < dst_h; y++)
                 {
                     int dst_row = This->width * (y + dst_y);
@@ -724,8 +740,7 @@ HRESULT dds_BltFast(
                     {
                         unsigned int c = ((unsigned int*)src_buf)[x + src_x + src_row];
 
-                        if (c < src_surface->color_key.dwColorSpaceLowValue || 
-                            c > src_surface->color_key.dwColorSpaceHighValue)
+                        if (c < key_low || c > key_high)
                         {
                             ((unsigned int*)dst_buf)[x + dst_x + dst_row] = c;
                         }
