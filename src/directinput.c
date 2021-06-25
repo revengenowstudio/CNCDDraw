@@ -95,7 +95,7 @@ static HRESULT WINAPI fake_di_CreateDevice(
 
     HRESULT result = real_di_CreateDevice(This, rguid, lplpDIDevice, pUnkOuter);
 
-    if (SUCCEEDED(result) && !real_did_SetCooperativeLevel)
+    if (SUCCEEDED(result))
     {
         if (rguid && IsEqualGUID(&GUID_SysMouse, rguid) && g_ddraw)
         {
@@ -107,17 +107,20 @@ static HRESULT WINAPI fake_di_CreateDevice(
             InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
         }
 
-        real_did_SetCooperativeLevel =
-            (DIDSETCOOPERATIVELEVELPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
+        if (!real_did_SetCooperativeLevel)
+        {
+            real_did_SetCooperativeLevel =
+                (DIDSETCOOPERATIVELEVELPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
 
-        real_did_GetDeviceData =
-            (DIDGETDEVICEDATAPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
+            real_did_GetDeviceData =
+                (DIDGETDEVICEDATAPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
 
-        real_did_GetDeviceState =
-            (DIDGETDEVICESTATEPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
+            real_did_GetDeviceState =
+                (DIDGETDEVICESTATEPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
+        }
     }
 
     return result;
@@ -134,19 +137,32 @@ static HRESULT WINAPI fake_di_CreateDeviceEx(
 
     HRESULT result = real_di_CreateDeviceEx(This, rguid, riid, lplpDIDevice, pUnkOuter);
 
-    if (SUCCEEDED(result) && !real_did_SetCooperativeLevel)
+    if (SUCCEEDED(result))
     {
-        real_did_SetCooperativeLevel =
-            (DIDSETCOOPERATIVELEVELPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
+        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid) && g_ddraw)
+        {
+            if (g_ddraw->locked || g_ddraw->devmode)
+            {
+                while (real_ShowCursor(FALSE) >= 0);
+            }
 
-        real_did_GetDeviceData =
-            (DIDGETDEVICEDATAPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
+            InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
+        }
 
-        real_did_GetDeviceState =
-            (DIDGETDEVICESTATEPROC)hook_func(
-                (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
+        if (!real_did_SetCooperativeLevel)
+        {
+            real_did_SetCooperativeLevel =
+                (DIDSETCOOPERATIVELEVELPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->SetCooperativeLevel, (PROC)fake_did_SetCooperativeLevel);
+
+            real_did_GetDeviceData =
+                (DIDGETDEVICEDATAPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceData, (PROC)fake_did_GetDeviceData);
+
+            real_did_GetDeviceState =
+                (DIDGETDEVICESTATEPROC)hook_func(
+                    (PROC*)&(*lplpDIDevice)->lpVtbl->GetDeviceState, (PROC)fake_did_GetDeviceState);
+        }
     }
 
     return result;
