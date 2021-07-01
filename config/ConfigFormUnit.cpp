@@ -21,13 +21,17 @@ void __fastcall TConfigForm::DisplayBtnClick(TObject *Sender)
 	CompatibilityPnl->Visible = false;
 }
 
-void __fastcall TConfigForm::AdvSettingsBtnClick(TObject *Sender)
+void __fastcall TConfigForm::AdvDisplayBtnClick(TObject *Sender)
 {
 	AdvDisplayPnl->Visible = true;
 	DisplayPnl->Visible = false;
 	CompatibilityPnl->Visible = false;
 }
 
-
-
+void __fastcall TConfigForm::CompatibilityBtnClick(TObject *Sender)
+{
+	CompatibilityPnl->Visible = true;
+	AdvDisplayPnl->Visible = false;
+	DisplayPnl->Visible = false;
+}
 

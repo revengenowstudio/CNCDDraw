@@ -18,7 +18,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPanel *MenuPnl;
 	TPanel *DisplayPnl;
 	TSpeedButton *DisplayBtn;
-	TSpeedButton *AdvSettingsBtn;
+	TSpeedButton *AdvDisplayBtn;
 	TSpeedButton *CompatibilityBtn;
 	TPanel *AdvDisplayPnl;
 	TPanel *CompatibilityPnl;
@@ -45,7 +45,8 @@ __published:	// Von der IDE verwaltete Komponenten
 	TLabel *BoxingLbl;
 	TToggleSwitch *BoxingChk;
 	void __fastcall DisplayBtnClick(TObject *Sender);
-	void __fastcall AdvSettingsBtnClick(TObject *Sender);
+	void __fastcall AdvDisplayBtnClick(TObject *Sender);
+	void __fastcall CompatibilityBtnClick(TObject *Sender);
 private:	// Benutzer-Deklarationen
 public:		// Benutzer-Deklarationen
 	__fastcall TConfigForm(TComponent* Owner);

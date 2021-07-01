@@ -2709,7 +2709,7 @@ object ConfigForm: TConfigForm
       StyleElements = [seFont, seBorder]
       OnClick = DisplayBtnClick
     end
-    object AdvSettingsBtn: TSpeedButton
+    object AdvDisplayBtn: TSpeedButton
       Left = 8
       Top = 55
       Width = 171
@@ -2723,7 +2723,7 @@ object ConfigForm: TConfigForm
       Font.Name = 'Segoe UI'
       Font.Style = [fsBold]
       ParentFont = False
-      OnClick = AdvSettingsBtnClick
+      OnClick = AdvDisplayBtnClick
     end
     object CompatibilityBtn: TSpeedButton
       Left = 8
@@ -2740,6 +2740,7 @@ object ConfigForm: TConfigForm
       Font.Style = [fsBold]
       ParentFont = False
       Visible = False
+      OnClick = CompatibilityBtnClick
     end
   end
   object CompatibilityPnl: TPanel
