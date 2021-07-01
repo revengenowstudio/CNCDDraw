@@ -24,8 +24,8 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPanel *CompatibilityPnl;
 	TComboBox *PresentationCbx;
 	TLabel *PresentationLbl;
-	TLabel *AspectRatioLbl;
-	TToggleSwitch *AspectRatioChk;
+	TLabel *MaintasLbl;
+	TToggleSwitch *MaintasChk;
 	TLabel *VsyncLbl;
 	TToggleSwitch *VsyncChk;
 	TLabel *AdjmouseLbl;
@@ -47,7 +47,20 @@ __published:	// Von der IDE verwaltete Komponenten
 	void __fastcall DisplayBtnClick(TObject *Sender);
 	void __fastcall AdvDisplayBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
+	void __fastcall FormCreate(TObject *Sender);
+	void __fastcall PresentationCbxChange(TObject *Sender);
+	void __fastcall MaintasChkClick(TObject *Sender);
+	void __fastcall VsyncChkClick(TObject *Sender);
+	void __fastcall AdjmouseChkClick(TObject *Sender);
+	void __fastcall DevmodeChkClick(TObject *Sender);
+	void __fastcall RendererCbxChange(TObject *Sender);
+	void __fastcall ShaderCbxChange(TObject *Sender);
+	void __fastcall MaxfpsChkClick(TObject *Sender);
+	void __fastcall BoxingChkClick(TObject *Sender);
+	void __fastcall BorderChkClick(TObject *Sender);
+	void __fastcall SavesettingsChkClick(TObject *Sender);
 private:	// Benutzer-Deklarationen
+	void SaveSettings();
 public:		// Benutzer-Deklarationen
 	__fastcall TConfigForm(TComponent* Owner);
 };
