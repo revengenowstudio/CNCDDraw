@@ -166,17 +166,14 @@ void TConfigForm::SaveSettings()
 	case 0:
 		ini->WriteString("ddraw", "windowed", "false");
 		ini->WriteString("ddraw", "fullscreen", "false");
-		ini->WriteString("ddraw", "nonexclusive", "false");
 		break;
 	case 1:
 		ini->WriteString("ddraw", "windowed", "true");
 		ini->WriteString("ddraw", "fullscreen", "true");
-		ini->WriteString("ddraw", "nonexclusive", "false");
 		break;
 	case 2:
 		ini->WriteString("ddraw", "windowed", "true");
 		ini->WriteString("ddraw", "fullscreen", "false");
-		ini->WriteString("ddraw", "nonexclusive", "false");
 		break;
 	default:
 		break;
