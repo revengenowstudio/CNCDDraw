@@ -12,6 +12,13 @@
 #pragma resource "*.dfm"
 TConfigForm *ConfigForm;
 bool Initialized;
+
+/* Save previous settings so we don't override custom settings */
+int Maxfps;
+int Savesettings;
+int Hook;
+int Minfps;
+
 //---------------------------------------------------------------------------
 __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 	: TForm(Owner)
@@ -97,14 +104,14 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	{
 	}
 
-	int maxfps = ini->ReadInteger("ddraw", "maxfps", -1);
-	MaxfpsChk->State = maxfps != 0 ? tssOn : tssOff;
+	Maxfps = ini->ReadInteger("ddraw", "maxfps", -1);
+	MaxfpsChk->State = Maxfps != 0 ? tssOn : tssOff;
 
 	BoxingChk->State = GetBool(ini, "boxing", false) ? tssOn : tssOff;
 	BorderChk->State = GetBool(ini, "border", false) ? tssOn : tssOff;
 
-	int savesettings = ini->ReadInteger("ddraw", "savesettings", 1);
-	SavesettingsChk->State = savesettings != 0 ? tssOn : tssOff;
+	Savesettings = ini->ReadInteger("ddraw", "savesettings", 1);
+	SavesettingsChk->State = Savesettings != 0 ? tssOn : tssOff;
 
 	/* Compatibility Settings */
 
@@ -116,6 +123,9 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 		break;
 	case -2:
 		MaxgameticksCbx->ItemIndex = 1;
+		break;
+	case 0:
+		MaxgameticksCbx->ItemIndex = 2;
 		break;
 	case 1000:
 		MaxgameticksCbx->ItemIndex = 3;
@@ -135,16 +145,21 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	case 15:
 		MaxgameticksCbx->ItemIndex = 8;
 		break;
-	case 0:
 	default:
-		MaxgameticksCbx->ItemIndex = 2;
+		MaxgameticksCbx->AddItem(IntToStr(maxgameticks), NULL);
+		MaxgameticksCbx->ItemIndex = 9;
 		break;
 	}
 
 
 	NoactivateappChk->State = GetBool(ini, "noactivateapp", false) ? tssOn : tssOff;
-	HookChk->State = ini->ReadInteger("ddraw", "hook", 4) == 2 ? tssOn : tssOff;
-	MinfpsChk->State = ini->ReadInteger("ddraw", "minfps", 0) != 0 ? tssOn : tssOff;
+
+	Hook = ini->ReadInteger("ddraw", "hook", 4);
+	HookChk->State = Hook == 2 ? tssOn : tssOff;
+
+	Minfps = ini->ReadInteger("ddraw", "minfps", 0);
+	MinfpsChk->State = Minfps != 0 ? tssOn : tssOff;
+
 	FixpitchChk->State = GetBool(ini, "fixpitch", false) ? tssOn : tssOff;
 	NonexclusiveChk->State = GetBool(ini, "nonexclusive", false) ? tssOn : tssOff;
 
@@ -204,10 +219,12 @@ void TConfigForm::SaveSettings()
 	ini->WriteString("ddraw", "renderer", LowerCase(RendererCbx->Text));
 	ini->WriteString("ddraw", "shader", ShaderCbx->Text);
 
+	int maxfps = Maxfps == 0 ? -1 : Maxfps;
+
 	ini->WriteInteger(
 		"ddraw",
 		"maxfps",
-		MaxfpsChk->State == tssOn ? -1 : 0);
+		MaxfpsChk->State == tssOn ? maxfps : 0);
 
 	ini->WriteString(
 		"ddraw",
@@ -219,10 +236,19 @@ void TConfigForm::SaveSettings()
 		"border",
 		BorderChk->State == tssOn ? "true" : "false");
 
+	int savesettings = Savesettings == 0 ? 1 : Savesettings;
+
 	ini->WriteInteger(
 		"ddraw",
 		"savesettings",
-		SavesettingsChk->State == tssOn ? 1 : 0);
+		SavesettingsChk->State == tssOn ? savesettings : 0);
+
+	if (Savesettings != 0 && SavesettingsChk->State == tssOff) {
+		ini->WriteInteger("ddraw", "width", 0);
+		ini->WriteInteger("ddraw", "height", 0);
+		ini->WriteInteger("ddraw", "posX", -32000);
+		ini->WriteInteger("ddraw", "posY", -32000);
+	}
 
 	/* Compatibility Settings */
 
@@ -254,6 +280,9 @@ void TConfigForm::SaveSettings()
 	case 8:
 		ini->WriteInteger("ddraw", "maxgameticks", 15);
 		break;
+	case 9:
+		ini->WriteString("ddraw", "maxgameticks", MaxgameticksCbx->Text);
+		break;
 	default:
 		break;
 	}
@@ -263,18 +292,22 @@ void TConfigForm::SaveSettings()
 		"noactivateapp",
 		NoactivateappChk->State == tssOn ? "true" : "false");
 
+	int hook = Hook != 2 ? Hook : 4;
+
 	ini->WriteInteger(
 		"ddraw",
 		"hook",
-		HookChk->State == tssOn ? 2 : 4);
+		HookChk->State == tssOn ? 2 : hook);
 
 	if (HookChk->State == tssOn)
 		ini->WriteString("ddraw", "renderer", "gdi");
 
+	int minfps = Minfps == 0 ? -1 : Minfps;
+
 	ini->WriteInteger(
 		"ddraw",
 		"minfps",
-		MinfpsChk->State == tssOn ? -1 : 0);
+		MinfpsChk->State == tssOn ? minfps : 0);
 
 	ini->WriteString(
 		"ddraw",
