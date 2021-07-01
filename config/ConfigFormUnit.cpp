@@ -79,7 +79,7 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	AdjmouseChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
 
 	s = LowerCase(ini->ReadString("ddraw", "devmode", "false"));
-	DevmodeChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
+	DevmodeChk->State = s == "true" || s == "yes" || s == "1" ? tssOff : tssOn;
 
 	/* Advanced Display Settings */
 
@@ -192,7 +192,7 @@ void TConfigForm::SaveSettings()
 	ini->WriteString(
 		"ddraw",
 		"devmode",
-		DevmodeChk->State == tssOn ? "true" : "false");
+		DevmodeChk->State == tssOn ? "false" : "true");
 
 	/* Advanced Display Settings */
 
