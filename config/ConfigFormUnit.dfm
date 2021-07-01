@@ -2682,149 +2682,6 @@ object ConfigForm: TConfigForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object DisplayPnl: TPanel
-    Left = 191
-    Top = 8
-    Width = 499
-    Height = 465
-    Color = clWhite
-    ParentBackground = False
-    ShowCaption = False
-    TabOrder = 1
-    StyleElements = [seFont, seBorder]
-    object PresentationLbl: TLabel
-      Left = 40
-      Top = 28
-      Width = 87
-      Height = 21
-      Caption = 'Presentation'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object MaintasLbl: TLabel
-      Left = 40
-      Top = 102
-      Width = 145
-      Height = 21
-      Caption = 'Maintain aspect ratio'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object VsyncLbl: TLabel
-      Left = 40
-      Top = 162
-      Width = 40
-      Height = 21
-      Margins.Top = 10
-      Caption = 'Vsync'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object AdjmouseLbl: TLabel
-      Left = 40
-      Top = 222
-      Width = 168
-      Height = 21
-      Margins.Top = 10
-      Caption = 'Adjust mouse sensitivity'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object DevmodeLbl: TLabel
-      Left = 40
-      Top = 282
-      Width = 186
-      Height = 21
-      Margins.Top = 10
-      Caption = 'Lock cursor within window'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object PresentationCbx: TComboBox
-      Left = 40
-      Top = 55
-      Width = 185
-      Height = 29
-      BevelEdges = []
-      BevelInner = bvNone
-      BevelOuter = bvSpace
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnChange = PresentationCbxChange
-      Items.Strings = (
-        'Fullscreen Exclusive'
-        'Fullscreen'
-        'Borderless'
-        'Windowed')
-    end
-    object MaintasChk: TToggleSwitch
-      Left = 40
-      Top = 129
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 1
-      OnClick = MaintasChkClick
-    end
-    object VsyncChk: TToggleSwitch
-      Left = 40
-      Top = 189
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 2
-      OnClick = VsyncChkClick
-    end
-    object AdjmouseChk: TToggleSwitch
-      Left = 40
-      Top = 249
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 3
-      OnClick = AdjmouseChkClick
-    end
-    object DevmodeChk: TToggleSwitch
-      Left = 40
-      Top = 309
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 4
-      OnClick = DevmodeChkClick
-    end
-  end
   object CompatibilityPnl: TPanel
     Left = 191
     Top = 8
@@ -2836,6 +2693,169 @@ object ConfigForm: TConfigForm
     TabOrder = 3
     Visible = False
     StyleElements = [seFont, seBorder]
+    object MaxgameticksLbl: TLabel
+      Left = 40
+      Top = 28
+      Width = 123
+      Height = 21
+      Caption = 'Limit game speed'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object NoactivateappLbl: TLabel
+      Left = 40
+      Top = 105
+      Width = 129
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix broken Alt+Tab'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object HookLbl: TLabel
+      Left = 40
+      Top = 173
+      Width = 281
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix broken windowed mode or upscaling'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MinfpsLbl: TLabel
+      Left = 40
+      Top = 241
+      Width = 350
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Force high FPS / Fix stuttering on Freesync/G-Sync'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object FixpitchLbl: TLabel
+      Left = 40
+      Top = 309
+      Width = 366
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix parts of the screen are being displayed diagonally'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object NonexclusiveLbl: TLabel
+      Left = 40
+      Top = 377
+      Width = 301
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix videos or other UI elements are invisible'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MaxgameticksCbx: TComboBox
+      Left = 48
+      Top = 55
+      Width = 289
+      Height = 29
+      BevelEdges = []
+      BevelInner = bvNone
+      BevelOuter = bvSpace
+      Style = csDropDownList
+      DropDownCount = 9
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnChange = MaxgameticksCbxChange
+      Items.Strings = (
+        'No limit'
+        'Sync with monitor refresh rate'
+        'Emulate 60hz refresh rate monitor'
+        '1000 ticks per second'
+        '500 ticks per second'
+        '60 ticks per second'
+        '30 ticks per second'
+        '25 ticks per second'
+        '15 ticks per second')
+    end
+    object NoactivateappChk: TToggleSwitch
+      Left = 40
+      Top = 132
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 1
+      OnClick = NoactivateappChkClick
+    end
+    object HookChk: TToggleSwitch
+      Left = 40
+      Top = 200
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 2
+      OnClick = HookChkClick
+    end
+    object MinfpsChk: TToggleSwitch
+      Left = 40
+      Top = 268
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 3
+      OnClick = MinfpsChkClick
+    end
+    object FixpitchChk: TToggleSwitch
+      Left = 40
+      Top = 336
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 4
+      OnClick = FixpitchChkClick
+    end
+    object NonexclusiveChk: TToggleSwitch
+      Left = 40
+      Top = 404
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 5
+      OnClick = NonexclusiveChkClick
+    end
   end
   object AdvDisplayPnl: TPanel
     Left = 191
@@ -2864,10 +2884,10 @@ object ConfigForm: TConfigForm
     end
     object SavesettingsLbl: TLabel
       Left = 40
-      Top = 346
+      Top = 386
       Width = 152
       Height = 21
-      Margins.Top = 10
+      Margins.Top = 18
       Caption = 'Save window position'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2879,10 +2899,10 @@ object ConfigForm: TConfigForm
     end
     object ShaderLbl: TLabel
       Left = 40
-      Top = 97
+      Top = 105
       Width = 110
       Height = 21
-      Margins.Top = 10
+      Margins.Top = 18
       Caption = 'OpenGL Shader'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2894,10 +2914,10 @@ object ConfigForm: TConfigForm
     end
     object MaxfpsLbl: TLabel
       Left = 40
-      Top = 166
+      Top = 182
       Width = 111
       Height = 21
-      Margins.Top = 10
+      Margins.Top = 18
       Caption = 'Limit frame rate'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2909,10 +2929,10 @@ object ConfigForm: TConfigForm
     end
     object BorderLbl: TLabel
       Left = 40
-      Top = 286
+      Top = 318
       Width = 149
       Height = 21
-      Margins.Top = 10
+      Margins.Top = 18
       Caption = 'Show window border'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2924,10 +2944,10 @@ object ConfigForm: TConfigForm
     end
     object BoxingLbl: TLabel
       Left = 40
-      Top = 226
+      Top = 250
       Width = 220
       Height = 21
-      Margins.Top = 10
+      Margins.Top = 18
       Caption = 'Windowboxing / Integer scaling'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2938,7 +2958,7 @@ object ConfigForm: TConfigForm
       StyleElements = [seClient, seBorder]
     end
     object RendererCbx: TComboBox
-      Left = 40
+      Left = 48
       Top = 55
       Width = 185
       Height = 29
@@ -2962,7 +2982,7 @@ object ConfigForm: TConfigForm
     end
     object BorderChk: TToggleSwitch
       Left = 40
-      Top = 313
+      Top = 345
       Width = 50
       Height = 20
       ShowStateCaption = False
@@ -2971,7 +2991,7 @@ object ConfigForm: TConfigForm
     end
     object SavesettingsChk: TToggleSwitch
       Left = 40
-      Top = 373
+      Top = 413
       Width = 50
       Height = 20
       ShowStateCaption = False
@@ -2979,8 +2999,8 @@ object ConfigForm: TConfigForm
       OnClick = SavesettingsChkClick
     end
     object ShaderCbx: TComboBox
-      Left = 40
-      Top = 124
+      Left = 48
+      Top = 132
       Width = 425
       Height = 29
       BevelEdges = []
@@ -2998,7 +3018,7 @@ object ConfigForm: TConfigForm
     end
     object MaxfpsChk: TToggleSwitch
       Left = 40
-      Top = 193
+      Top = 209
       Width = 50
       Height = 20
       ShowStateCaption = False
@@ -3007,12 +3027,155 @@ object ConfigForm: TConfigForm
     end
     object BoxingChk: TToggleSwitch
       Left = 40
-      Top = 253
+      Top = 277
       Width = 50
       Height = 20
       ShowStateCaption = False
       TabOrder = 5
       OnClick = BoxingChkClick
+    end
+  end
+  object DisplayPnl: TPanel
+    Left = 191
+    Top = 8
+    Width = 499
+    Height = 465
+    Color = clWhite
+    ParentBackground = False
+    ShowCaption = False
+    TabOrder = 1
+    StyleElements = [seFont, seBorder]
+    object PresentationLbl: TLabel
+      Left = 40
+      Top = 28
+      Width = 87
+      Height = 21
+      Caption = 'Presentation'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MaintasLbl: TLabel
+      Left = 40
+      Top = 105
+      Width = 145
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Maintain aspect ratio'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object VsyncLbl: TLabel
+      Left = 40
+      Top = 173
+      Width = 40
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Vsync'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object AdjmouseLbl: TLabel
+      Left = 40
+      Top = 241
+      Width = 168
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Adjust mouse sensitivity'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object DevmodeLbl: TLabel
+      Left = 40
+      Top = 309
+      Width = 186
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Lock cursor within window'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object PresentationCbx: TComboBox
+      Left = 48
+      Top = 55
+      Width = 185
+      Height = 29
+      BevelEdges = []
+      BevelInner = bvNone
+      BevelOuter = bvSpace
+      Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnChange = PresentationCbxChange
+      Items.Strings = (
+        'Fullscreen'
+        'Borderless'
+        'Windowed')
+    end
+    object MaintasChk: TToggleSwitch
+      Left = 40
+      Top = 132
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 1
+      OnClick = MaintasChkClick
+    end
+    object VsyncChk: TToggleSwitch
+      Left = 40
+      Top = 200
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 2
+      OnClick = VsyncChkClick
+    end
+    object AdjmouseChk: TToggleSwitch
+      Left = 40
+      Top = 268
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 3
+      OnClick = AdjmouseChkClick
+    end
+    object DevmodeChk: TToggleSwitch
+      Left = 40
+      Top = 336
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 4
+      OnClick = DevmodeChkClick
     end
   end
   object MenuPnl: TPanel
@@ -3073,7 +3236,6 @@ object ConfigForm: TConfigForm
       Font.Name = 'Segoe UI'
       Font.Style = [fsBold]
       ParentFont = False
-      Visible = False
       OnClick = CompatibilityBtnClick
     end
   end

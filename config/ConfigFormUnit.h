@@ -44,6 +44,18 @@ __published:	// Von der IDE verwaltete Komponenten
 	TToggleSwitch *MaxfpsChk;
 	TLabel *BoxingLbl;
 	TToggleSwitch *BoxingChk;
+	TComboBox *MaxgameticksCbx;
+	TLabel *MaxgameticksLbl;
+	TLabel *NoactivateappLbl;
+	TToggleSwitch *NoactivateappChk;
+	TLabel *HookLbl;
+	TToggleSwitch *HookChk;
+	TLabel *MinfpsLbl;
+	TToggleSwitch *MinfpsChk;
+	TToggleSwitch *FixpitchChk;
+	TLabel *FixpitchLbl;
+	TLabel *NonexclusiveLbl;
+	TToggleSwitch *NonexclusiveChk;
 	void __fastcall DisplayBtnClick(TObject *Sender);
 	void __fastcall AdvDisplayBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
@@ -59,8 +71,15 @@ __published:	// Von der IDE verwaltete Komponenten
 	void __fastcall BoxingChkClick(TObject *Sender);
 	void __fastcall BorderChkClick(TObject *Sender);
 	void __fastcall SavesettingsChkClick(TObject *Sender);
+	void __fastcall MaxgameticksCbxChange(TObject *Sender);
+	void __fastcall NoactivateappChkClick(TObject *Sender);
+	void __fastcall HookChkClick(TObject *Sender);
+	void __fastcall MinfpsChkClick(TObject *Sender);
+	void __fastcall FixpitchChkClick(TObject *Sender);
+	void __fastcall NonexclusiveChkClick(TObject *Sender);
 private:	// Benutzer-Deklarationen
 	void SaveSettings();
+	bool GetBool(TIniFile *ini, System::UnicodeString key, bool defValue);
 public:		// Benutzer-Deklarationen
 	__fastcall TConfigForm(TComponent* Owner);
 };

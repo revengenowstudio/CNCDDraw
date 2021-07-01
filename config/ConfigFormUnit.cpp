@@ -45,41 +45,23 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 
 	/* Display Settings */
 
-	auto s = LowerCase(ini->ReadString("ddraw", "windowed", "false"));
-	bool windowed = s == "true" || s == "yes" || s == "1";
-
-	s = LowerCase(ini->ReadString("ddraw", "fullscreen", "false"));
-	bool fullscreen = s == "true" || s == "yes" || s == "1";
-
-	s = LowerCase(ini->ReadString("ddraw", "nonexclusive", "false"));
-	bool nonexclusive = s == "true" || s == "yes" || s == "1";
-
+	bool windowed = GetBool(ini, "windowed", false);
+	bool fullscreen = GetBool(ini, "fullscreen", false);
 
 	if (windowed && fullscreen) {
-		PresentationCbx->ItemIndex = 2;
+		PresentationCbx->ItemIndex = 1;
 	}
 	else if (windowed) {
-		PresentationCbx->ItemIndex = 3;
-	}
-	else if (nonexclusive) {
-		PresentationCbx->ItemIndex = 1;
+		PresentationCbx->ItemIndex = 2;
 	}
 	else {
 		PresentationCbx->ItemIndex = 0;
 	}
 
-
-	s = LowerCase(ini->ReadString("ddraw", "maintas", "false"));
-	MaintasChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
-
-	s = LowerCase(ini->ReadString("ddraw", "vsync", "false"));
-	VsyncChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
-
-	s = LowerCase(ini->ReadString("ddraw", "adjmouse", "false"));
-	AdjmouseChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
-
-	s = LowerCase(ini->ReadString("ddraw", "devmode", "false"));
-	DevmodeChk->State = s == "true" || s == "yes" || s == "1" ? tssOff : tssOn;
+	MaintasChk->State = GetBool(ini, "maintas", false) ? tssOn : tssOff;
+	VsyncChk->State = GetBool(ini, "vsync", false) ? tssOn : tssOff;
+	AdjmouseChk->State = GetBool(ini, "adjmouse", false) ? tssOn : tssOff;
+	DevmodeChk->State = GetBool(ini, "devmode", false) ? tssOff : tssOn;
 
 	/* Advanced Display Settings */
 
@@ -98,7 +80,6 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 		RendererCbx->ItemIndex = 0;
 	}
 
-
 	try
 	{
 		TStringDynArray list = TDirectory::GetFiles(
@@ -116,18 +97,56 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	{
 	}
 
-
 	int maxfps = ini->ReadInteger("ddraw", "maxfps", -1);
 	MaxfpsChk->State = maxfps != 0 ? tssOn : tssOff;
 
-	s = LowerCase(ini->ReadString("ddraw", "boxing", "false"));
-	BoxingChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
-
-	s = LowerCase(ini->ReadString("ddraw", "border", "false"));
-	BorderChk->State = s == "true" || s == "yes" || s == "1" ? tssOn : tssOff;
+	BoxingChk->State = GetBool(ini, "boxing", false) ? tssOn : tssOff;
+	BorderChk->State = GetBool(ini, "border", false) ? tssOn : tssOff;
 
 	int savesettings = ini->ReadInteger("ddraw", "savesettings", 1);
 	SavesettingsChk->State = savesettings != 0 ? tssOn : tssOff;
+
+	/* Compatibility Settings */
+
+	int maxgameticks = ini->ReadInteger("ddraw", "maxgameticks", 0);
+
+	switch (maxgameticks) {
+	case -1:
+		MaxgameticksCbx->ItemIndex = 0;
+		break;
+	case -2:
+		MaxgameticksCbx->ItemIndex = 1;
+		break;
+	case 1000:
+		MaxgameticksCbx->ItemIndex = 3;
+		break;
+	case 500:
+		MaxgameticksCbx->ItemIndex = 4;
+		break;
+	case 60:
+		MaxgameticksCbx->ItemIndex = 5;
+		break;
+	case 30:
+		MaxgameticksCbx->ItemIndex = 6;
+		break;
+	case 25:
+		MaxgameticksCbx->ItemIndex = 7;
+		break;
+	case 15:
+		MaxgameticksCbx->ItemIndex = 8;
+		break;
+	case 0:
+	default:
+		MaxgameticksCbx->ItemIndex = 2;
+		break;
+	}
+
+
+	NoactivateappChk->State = GetBool(ini, "noactivateapp", false) ? tssOn : tssOff;
+	HookChk->State = ini->ReadInteger("ddraw", "hook", 4) == 2 ? tssOn : tssOff;
+	MinfpsChk->State = ini->ReadInteger("ddraw", "minfps", 0) != 0 ? tssOn : tssOff;
+	FixpitchChk->State = GetBool(ini, "fixpitch", false) ? tssOn : tssOff;
+	NonexclusiveChk->State = GetBool(ini, "nonexclusive", false) ? tssOn : tssOff;
 
 	delete ini;
 
@@ -143,24 +162,18 @@ void TConfigForm::SaveSettings()
 
 	/* Display Settings */
 
-	switch(PresentationCbx->ItemIndex)
-	{
+	switch(PresentationCbx->ItemIndex) {
 	case 0:
 		ini->WriteString("ddraw", "windowed", "false");
 		ini->WriteString("ddraw", "fullscreen", "false");
 		ini->WriteString("ddraw", "nonexclusive", "false");
 		break;
 	case 1:
-		ini->WriteString("ddraw", "windowed", "false");
-		ini->WriteString("ddraw", "fullscreen", "false");
-		ini->WriteString("ddraw", "nonexclusive", "true");
-		break;
-	case 2:
 		ini->WriteString("ddraw", "windowed", "true");
 		ini->WriteString("ddraw", "fullscreen", "true");
 		ini->WriteString("ddraw", "nonexclusive", "false");
 		break;
-	case 3:
+	case 2:
 		ini->WriteString("ddraw", "windowed", "true");
 		ini->WriteString("ddraw", "fullscreen", "false");
 		ini->WriteString("ddraw", "nonexclusive", "false");
@@ -168,11 +181,6 @@ void TConfigForm::SaveSettings()
 	default:
 		break;
 	}
-
-	ini->WriteString(
-		"ddraw",
-		"renderer",
-		LowerCase(RendererCbx->Text));
 
 	ini->WriteString(
 		"ddraw",
@@ -219,7 +227,75 @@ void TConfigForm::SaveSettings()
 		"savesettings",
 		SavesettingsChk->State == tssOn ? 1 : 0);
 
+	/* Compatibility Settings */
+
+	switch(MaxgameticksCbx->ItemIndex) {
+	case 0:
+		ini->WriteInteger("ddraw", "maxgameticks", -1);
+		break;
+	case 1:
+		ini->WriteInteger("ddraw", "maxgameticks", -2);
+		break;
+	case 2:
+		ini->WriteInteger("ddraw", "maxgameticks", 0);
+		break;
+	case 3:
+		ini->WriteInteger("ddraw", "maxgameticks", 1000);
+		break;
+	case 4:
+		ini->WriteInteger("ddraw", "maxgameticks", 500);
+		break;
+	case 5:
+		ini->WriteInteger("ddraw", "maxgameticks", 60);
+		break;
+	case 6:
+		ini->WriteInteger("ddraw", "maxgameticks", 30);
+		break;
+	case 7:
+		ini->WriteInteger("ddraw", "maxgameticks", 25);
+		break;
+	case 8:
+		ini->WriteInteger("ddraw", "maxgameticks", 15);
+		break;
+	default:
+		break;
+	}
+
+	ini->WriteString(
+		"ddraw",
+		"noactivateapp",
+		NoactivateappChk->State == tssOn ? "true" : "false");
+
+	ini->WriteInteger(
+		"ddraw",
+		"hook",
+		HookChk->State == tssOn ? 2 : 4);
+
+	if (HookChk->State == tssOn)
+		ini->WriteString("ddraw", "renderer", "gdi");
+
+	ini->WriteInteger(
+		"ddraw",
+		"minfps",
+		MinfpsChk->State == tssOn ? -1 : 0);
+
+	ini->WriteString(
+		"ddraw",
+		"fixpitch",
+		FixpitchChk->State == tssOn ? "true" : "false");
+
+	ini->WriteString(
+		"ddraw",
+		"nonexclusive",
+		NonexclusiveChk->State == tssOn ? "true" : "false");
+
 	delete ini;
+}
+
+bool TConfigForm::GetBool(TIniFile *ini, System::UnicodeString key, bool defValue)
+{
+	auto s = LowerCase(ini->ReadString("ddraw", key, defValue ? "true" : "false"));
+	return s == "true" || s == "yes" || s == "1";
 }
 
 void __fastcall TConfigForm::PresentationCbxChange(TObject *Sender)
@@ -273,6 +349,36 @@ void __fastcall TConfigForm::BorderChkClick(TObject *Sender)
 }
 
 void __fastcall TConfigForm::SavesettingsChkClick(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::MaxgameticksCbxChange(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::NoactivateappChkClick(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::HookChkClick(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::MinfpsChkClick(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::FixpitchChkClick(TObject *Sender)
+{
+	SaveSettings();
+}
+
+void __fastcall TConfigForm::NonexclusiveChkClick(TObject *Sender)
 {
 	SaveSettings();
 }
