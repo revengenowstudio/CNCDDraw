@@ -56,6 +56,10 @@ __published:	// Von der IDE verwaltete Komponenten
 	TLabel *FixpitchLbl;
 	TLabel *NonexclusiveLbl;
 	TToggleSwitch *NonexclusiveChk;
+	TPaintBox *PresentationPbox;
+	TPaintBox *RendererPbox;
+	TPaintBox *ShaderPbox;
+	TPaintBox *MaxfpsPbox;
 	void __fastcall DisplayBtnClick(TObject *Sender);
 	void __fastcall AdvDisplayBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
@@ -77,6 +81,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	void __fastcall MinfpsChkClick(TObject *Sender);
 	void __fastcall FixpitchChkClick(TObject *Sender);
 	void __fastcall NonexclusiveChkClick(TObject *Sender);
+	void __fastcall PboxPaint(TObject *Sender);
 private:	// Benutzer-Deklarationen
 	void SaveSettings();
 	bool GetBool(TIniFile *ini, System::UnicodeString key, bool defValue);

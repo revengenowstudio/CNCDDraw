@@ -413,3 +413,9 @@ void __fastcall TConfigForm::NonexclusiveChkClick(TObject *Sender)
 	SaveSettings();
 }
 
+void __fastcall TConfigForm::PboxPaint(TObject *Sender)
+{
+	TPaintBox *pbox = static_cast<TPaintBox*>(Sender);
+	pbox->Canvas->Rectangle(pbox->ClientRect);
+}
+
