@@ -4,9 +4,9 @@ object ConfigForm: TConfigForm
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'cnc-ddraw config'
-  ClientHeight = 473
+  ClientHeight = 475
   ClientWidth = 698
-  Color = clBtnFace
+  Color = clBlack
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
   Font.Height = -11
@@ -2687,6 +2687,7 @@ object ConfigForm: TConfigForm
     Top = 8
     Width = 499
     Height = 465
+    BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     ShowCaption = False
@@ -2830,6 +2831,7 @@ object ConfigForm: TConfigForm
     Top = 8
     Width = 499
     Height = 465
+    BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     ShowCaption = False
@@ -3005,6 +3007,7 @@ object ConfigForm: TConfigForm
     Top = 8
     Width = 499
     Height = 465
+    BevelOuter = bvNone
     Color = clWhite
     ParentBackground = False
     ShowCaption = False
@@ -3183,6 +3186,7 @@ object ConfigForm: TConfigForm
     Top = 8
     Width = 185
     Height = 465
+    BevelOuter = bvNone
     Color = clBlack
     ParentBackground = False
     TabOrder = 0
