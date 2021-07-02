@@ -67,7 +67,7 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 
 	MaintasChk->State = GetBool(ini, "maintas", false) ? tssOn : tssOff;
 	VsyncChk->State = GetBool(ini, "vsync", false) ? tssOn : tssOff;
-	AdjmouseChk->State = GetBool(ini, "adjmouse", false) ? tssOn : tssOff;
+	AdjmouseChk->State = GetBool(ini, "adjmouse", true) ? tssOn : tssOff;
 	DevmodeChk->State = GetBool(ini, "devmode", false) ? tssOff : tssOn;
 
 	/* Advanced Display Settings */
@@ -108,7 +108,7 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	MaxfpsChk->State = Maxfps != 0 ? tssOn : tssOff;
 
 	BoxingChk->State = GetBool(ini, "boxing", false) ? tssOn : tssOff;
-	BorderChk->State = GetBool(ini, "border", false) ? tssOn : tssOff;
+	BorderChk->State = GetBool(ini, "border", true) ? tssOn : tssOff;
 
 	Savesettings = ini->ReadInteger("ddraw", "savesettings", 1);
 	SavesettingsChk->State = Savesettings != 0 ? tssOn : tssOff;
