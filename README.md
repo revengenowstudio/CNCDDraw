@@ -31,11 +31,11 @@ If you want to play in windowed mode then start the game once in fullscreen and 
 
 &nbsp;
 
-**If the game starts but it doesn't work perfectly** then open ddraw.ini and search for **Compatibility settings**, one of the settings will usually fix the problem.
+**If the game starts but it doesn't work perfectly** then open the config program and check the **Compatibility settings**. Alternatively you can also open ddraw.ini with notepad and modify the **Compatibility settings** in there.
 
 &nbsp;
 
-**Compatibility setting examples:**
+**Compatibility settings in ddraw.ini**
 
 - If there are **problems on Alt+Tab** then try to set `noactivateapp=true` - If it still doesn't work also try `renderer=opengl` or `renderer=gdi`.
 
