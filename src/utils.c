@@ -193,35 +193,83 @@ BOOL util_get_lowest_resolution(
 
 void util_toggle_maximize()
 {
-    RECT work_rc;
     RECT client_rc;
+    RECT dst_rc;
 
-    if (real_GetClientRect(g_ddraw->hwnd, &client_rc) &&
-        SystemParametersInfo(SPI_GETWORKAREA, 0, &work_rc, 0))
+    LONG style = GetWindowLong(g_ddraw->hwnd, GWL_STYLE);
+    LONG exstyle = GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE);
+
+    if (real_GetClientRect(g_ddraw->hwnd, &client_rc) && SystemParametersInfo(SPI_GETWORKAREA, 0, &dst_rc, 0))
     {
+        int width = (dst_rc.right - dst_rc.left);
+        int height = (dst_rc.bottom - dst_rc.top);
+        int x = dst_rc.left;
+        int y = dst_rc.top;
+
         if (client_rc.right != g_ddraw->width || client_rc.bottom != g_ddraw->height)
         {
-            util_set_window_rect(
-                (work_rc.right / 2) - (g_ddraw->width / 2),
-                (work_rc.bottom / 2) - (g_ddraw->height / 2),
-                g_ddraw->width,
-                g_ddraw->height,
-                0);
+            dst_rc.left = 0;
+            dst_rc.top = 0;
+            dst_rc.right = g_ddraw->width;
+            dst_rc.bottom = g_ddraw->height;
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
         }
-        else if (
-            util_unadjust_window_rect(
-                &work_rc,
-                GetWindowLong(g_ddraw->hwnd, GWL_STYLE),
-                FALSE,
-                GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE)))
+        else if (g_ddraw->boxing)
         {
-            util_set_window_rect(
-                work_rc.left,
-                work_rc.top,
-                work_rc.right - work_rc.left,
-                work_rc.bottom - work_rc.top,
-                0);
+            dst_rc.left = 0;
+            dst_rc.top = 0;
+            dst_rc.right = g_ddraw->width;
+            dst_rc.bottom = g_ddraw->height;
+
+            for (int i = 20; i-- > 1;)
+            {
+                if (width >= g_ddraw->width * i && height - 20 >= g_ddraw->height * i)
+                {
+                    dst_rc.right = g_ddraw->width * i;
+                    dst_rc.bottom = g_ddraw->height * i;
+                    break;
+                }
+            }
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
         }
+        else if (g_ddraw->maintas)
+        {
+            util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+
+            int w = dst_rc.right - dst_rc.left;
+            int h = dst_rc.bottom - dst_rc.top;
+
+            dst_rc.top = 0;
+            dst_rc.left = 0;
+            dst_rc.right = w;
+            dst_rc.bottom = (LONG)(((float)g_ddraw->height / g_ddraw->width) * w);
+
+            if (dst_rc.bottom > h)
+            {
+                dst_rc.right = (LONG)(((float)dst_rc.right / dst_rc.bottom) * h);
+                dst_rc.bottom = h;
+            }
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
+        }
+
+        RECT pos_rc;
+        pos_rc.left = (width / 2) - ((dst_rc.right - dst_rc.left) / 2) + x;
+        pos_rc.top = (height / 2) - ((dst_rc.bottom - dst_rc.top) / 2) + y;
+        pos_rc.right = (dst_rc.right - dst_rc.left);
+        pos_rc.bottom = (dst_rc.bottom - dst_rc.top);
+
+        util_unadjust_window_rect(&pos_rc, style, FALSE, exstyle);
+        util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+
+        util_set_window_rect(
+            pos_rc.left,
+            pos_rc.top,
+            dst_rc.right - dst_rc.left,
+            dst_rc.bottom - dst_rc.top,
+            0);
     }
 }
 
