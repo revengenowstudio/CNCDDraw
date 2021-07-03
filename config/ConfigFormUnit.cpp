@@ -56,10 +56,13 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	bool fullscreen = GetBool(ini, "fullscreen", false);
 
 	if (windowed && fullscreen) {
-		PresentationCbx->ItemIndex = 1;
+		PresentationCbx->ItemIndex = 2;
 	}
 	else if (windowed) {
-		PresentationCbx->ItemIndex = 2;
+		PresentationCbx->ItemIndex = 3;
+	}
+	else if (fullscreen) {
+		PresentationCbx->ItemIndex = 1;
 	}
 	else {
 		PresentationCbx->ItemIndex = 0;
@@ -183,10 +186,14 @@ void TConfigForm::SaveSettings()
 		ini->WriteString("ddraw", "fullscreen", "false");
 		break;
 	case 1:
-		ini->WriteString("ddraw", "windowed", "true");
+		ini->WriteString("ddraw", "windowed", "false");
 		ini->WriteString("ddraw", "fullscreen", "true");
 		break;
 	case 2:
+		ini->WriteString("ddraw", "windowed", "true");
+		ini->WriteString("ddraw", "fullscreen", "true");
+		break;
+	case 3:
 		ini->WriteString("ddraw", "windowed", "true");
 		ini->WriteString("ddraw", "fullscreen", "false");
 		break;

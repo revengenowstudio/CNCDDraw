@@ -2682,189 +2682,6 @@ object ConfigForm: TConfigForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object CompatibilityPnl: TPanel
-    Left = 191
-    Top = 8
-    Width = 499
-    Height = 465
-    BevelOuter = bvNone
-    Color = clWhite
-    ParentBackground = False
-    ShowCaption = False
-    TabOrder = 3
-    Visible = False
-    StyleElements = [seFont, seBorder]
-    object MaxgameticksLbl: TLabel
-      Left = 40
-      Top = 28
-      Width = 123
-      Height = 21
-      Caption = 'Limit game speed'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object NoactivateappLbl: TLabel
-      Left = 40
-      Top = 105
-      Width = 129
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Fix broken Alt+Tab'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object HookLbl: TLabel
-      Left = 40
-      Top = 173
-      Width = 281
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Fix broken windowed mode or upscaling'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object MinfpsLbl: TLabel
-      Left = 40
-      Top = 241
-      Width = 350
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Force high FPS / Fix stuttering on Freesync/G-Sync'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object FixpitchLbl: TLabel
-      Left = 40
-      Top = 309
-      Width = 272
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Fix diagonally displayed drawing issues'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object NonexclusiveLbl: TLabel
-      Left = 40
-      Top = 377
-      Width = 225
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Fix invisible videos / UI elements'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object MaxfpsPbox: TPaintBox
-      Left = 40
-      Top = 54
-      Width = 291
-      Height = 31
-      OnPaint = PboxPaint
-    end
-    object MaxgameticksCbx: TComboBox
-      Left = 41
-      Top = 55
-      Width = 289
-      Height = 29
-      BevelEdges = []
-      BevelInner = bvNone
-      BevelOuter = bvSpace
-      Style = csDropDownList
-      DropDownCount = 9
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnChange = MaxgameticksCbxChange
-      Items.Strings = (
-        'No limit'
-        'Sync with monitor refresh rate'
-        'Emulate 60hz refresh rate monitor'
-        '1000 ticks per second'
-        '500 ticks per second'
-        '60 ticks per second'
-        '30 ticks per second'
-        '25 ticks per second'
-        '15 ticks per second')
-    end
-    object NoactivateappChk: TToggleSwitch
-      Left = 40
-      Top = 132
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 1
-      OnClick = NoactivateappChkClick
-    end
-    object HookChk: TToggleSwitch
-      Left = 40
-      Top = 200
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 2
-      OnClick = HookChkClick
-    end
-    object MinfpsChk: TToggleSwitch
-      Left = 40
-      Top = 268
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 3
-      OnClick = MinfpsChkClick
-    end
-    object FixpitchChk: TToggleSwitch
-      Left = 40
-      Top = 336
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 4
-      OnClick = FixpitchChkClick
-    end
-    object NonexclusiveChk: TToggleSwitch
-      Left = 40
-      Top = 404
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 5
-      OnClick = NonexclusiveChkClick
-    end
-  end
   object AdvDisplayPnl: TPanel
     Left = 191
     Top = 8
@@ -3169,6 +2986,7 @@ object ConfigForm: TConfigForm
       OnChange = PresentationCbxChange
       Items.Strings = (
         'Fullscreen'
+        'Fullscreen Upscaled'
         'Borderless'
         'Windowed')
     end
@@ -3207,6 +3025,189 @@ object ConfigForm: TConfigForm
       ShowStateCaption = False
       TabOrder = 4
       OnClick = DevmodeChkClick
+    end
+  end
+  object CompatibilityPnl: TPanel
+    Left = 191
+    Top = 8
+    Width = 499
+    Height = 465
+    BevelOuter = bvNone
+    Color = clWhite
+    ParentBackground = False
+    ShowCaption = False
+    TabOrder = 3
+    Visible = False
+    StyleElements = [seFont, seBorder]
+    object MaxgameticksLbl: TLabel
+      Left = 40
+      Top = 28
+      Width = 123
+      Height = 21
+      Caption = 'Limit game speed'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object NoactivateappLbl: TLabel
+      Left = 40
+      Top = 105
+      Width = 129
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix broken Alt+Tab'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object HookLbl: TLabel
+      Left = 40
+      Top = 173
+      Width = 281
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix broken windowed mode or upscaling'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MinfpsLbl: TLabel
+      Left = 40
+      Top = 241
+      Width = 350
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Force high FPS / Fix stuttering on Freesync/G-Sync'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object FixpitchLbl: TLabel
+      Left = 40
+      Top = 309
+      Width = 272
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix diagonally displayed drawing issues'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object NonexclusiveLbl: TLabel
+      Left = 40
+      Top = 377
+      Width = 225
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Fix invisible videos / UI elements'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MaxfpsPbox: TPaintBox
+      Left = 40
+      Top = 54
+      Width = 291
+      Height = 31
+      OnPaint = PboxPaint
+    end
+    object MaxgameticksCbx: TComboBox
+      Left = 41
+      Top = 55
+      Width = 289
+      Height = 29
+      BevelEdges = []
+      BevelInner = bvNone
+      BevelOuter = bvSpace
+      Style = csDropDownList
+      DropDownCount = 10
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnChange = MaxgameticksCbxChange
+      Items.Strings = (
+        'No limit'
+        'Sync with monitor refresh rate'
+        'Emulate 60hz refresh rate monitor'
+        '1000 ticks per second'
+        '500 ticks per second'
+        '60 ticks per second'
+        '30 ticks per second'
+        '25 ticks per second'
+        '15 ticks per second')
+    end
+    object NoactivateappChk: TToggleSwitch
+      Left = 40
+      Top = 132
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 1
+      OnClick = NoactivateappChkClick
+    end
+    object HookChk: TToggleSwitch
+      Left = 40
+      Top = 200
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 2
+      OnClick = HookChkClick
+    end
+    object MinfpsChk: TToggleSwitch
+      Left = 40
+      Top = 268
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 3
+      OnClick = MinfpsChkClick
+    end
+    object FixpitchChk: TToggleSwitch
+      Left = 40
+      Top = 336
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 4
+      OnClick = FixpitchChkClick
+    end
+    object NonexclusiveChk: TToggleSwitch
+      Left = 40
+      Top = 404
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 5
+      OnClick = NonexclusiveChkClick
     end
   end
   object MenuPnl: TPanel
