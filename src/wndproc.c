@@ -226,7 +226,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             in_size_move = FALSE;
 
             if (!g_ddraw->render.thread)
-                dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, FALSE);
+                dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, 0);
         }
         break;
     }

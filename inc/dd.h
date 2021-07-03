@@ -12,7 +12,7 @@ ULONG dd_AddRef();
 ULONG dd_Release();
 HRESULT dd_EnumDisplayModes(DWORD dwFlags, LPDDSURFACEDESC lpDDSurfaceDesc, LPVOID lpContext, LPDDENUMMODESCALLBACK lpEnumModesCallback);
 HRESULT dd_WaitForVerticalBlank(DWORD dwFlags, HANDLE hEvent);
-HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setByGame);
+HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFlags);
 HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags);
 HRESULT dd_RestoreDisplayMode();
 HRESULT dd_GetCaps(LPDDCAPS_DX1 lpDDDriverCaps, LPDDCAPS_DX1 lpDDEmulCaps);
@@ -25,6 +25,10 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 #define RESLIST_NORMAL 0
 #define RESLIST_MINI 1
 #define RESLIST_FULL 2
+
+#define SDM_MODE_SET_BY_GAME 0x00000001l
+#define SDM_LEAVE_WINDOWED   0x00000002l
+#define SDM_LEAVE_FULLSCREEN 0x00000004l
 
 typedef struct SPEEDLIMITER
 {
@@ -106,7 +110,6 @@ typedef struct CNCDDRAW
     BOOL noactivateapp;
     char shader[MAX_PATH];
     BOOL wine;
-    BOOL altenter;
     HCURSOR old_cursor;
     int show_cursor_count;
     BOOL accurate_timers;

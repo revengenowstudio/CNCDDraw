@@ -393,7 +393,7 @@ HRESULT __stdcall IDirectDraw__SetCooperativeLevel(IDirectDrawImpl* This, HWND h
 HRESULT __stdcall IDirectDraw__SetDisplayMode(IDirectDrawImpl* This, DWORD dwWidth, DWORD dwHeight, DWORD dwBPP)
 {
     TRACE("-> %s(This=%p, dwWidth=%d, dwHeight=%d, dwBPP=%d)\n", __FUNCTION__, This, dwWidth, dwHeight, dwBPP);
-    HRESULT ret = dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, TRUE);
+    HRESULT ret = dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, SDM_MODE_SET_BY_GAME);
     TRACE("<- %s\n", __FUNCTION__);
     return ret;
 }
@@ -416,7 +416,7 @@ HRESULT __stdcall IDirectDraw__SetDisplayModeX(
         dwRefreshRate,
         dwFlags);
 
-    HRESULT ret = dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, TRUE);
+    HRESULT ret = dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, SDM_MODE_SET_BY_GAME);
 
     TRACE("<- %s\n", __FUNCTION__);
     return ret;

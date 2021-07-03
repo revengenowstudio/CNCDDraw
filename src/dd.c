@@ -380,7 +380,7 @@ HRESULT dd_RestoreDisplayMode()
     return DD_OK;
 }
 
-HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setByGame)
+HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFlags)
 {
     if (dwBPP != 8 && dwBPP != 16 && dwBPP != 32)
         return DDERR_INVALIDMODE;
@@ -419,10 +419,8 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
         }
     }
 
-    if (g_ddraw->altenter)
+    if (dwFlags & SDM_LEAVE_WINDOWED)
     {
-        g_ddraw->altenter = FALSE;
-
         memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
 
         g_ddraw->render.mode.dmSize = sizeof(DEVMODE);
@@ -735,7 +733,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
         {
             g_ddraw->render.run = FALSE;
             g_ddraw->windowed = TRUE;
-            return dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, setByGame);
+            return dd_SetDisplayMode(dwWidth, dwHeight, dwBPP, dwFlags);
         }
 
         if (g_ddraw->wine)
@@ -771,7 +769,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, BOOL setBy
         g_ddraw->render.thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)g_ddraw->renderer, NULL, 0, NULL);
     }
 
-    if (setByGame)
+    if (dwFlags & SDM_MODE_SET_BY_GAME)
     {
         real_SendMessageA(g_ddraw->hwnd, WM_SIZE_DDRAW, 0, MAKELPARAM(g_ddraw->width, g_ddraw->height));
         real_SendMessageA(g_ddraw->hwnd, WM_MOVE_DDRAW, 0, MAKELPARAM(0, 0));
