@@ -310,7 +310,7 @@ void util_toggle_fullscreen()
         }
 
         dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, SDM_LEAVE_FULLSCREEN);
-        mouse_lock();
+        //mouse_lock();
     }
 }
 

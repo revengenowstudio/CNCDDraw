@@ -495,7 +495,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
 
     g_ddraw->render.run = TRUE;
 
-    BOOL lock_mouse = g_ddraw->locked || g_ddraw->fullscreen;
+    BOOL lock_mouse = (g_ddraw->locked || g_ddraw->fullscreen) && !(dwFlags & SDM_LEAVE_FULLSCREEN);
     mouse_unlock();
 
     memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
