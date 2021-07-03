@@ -28,13 +28,13 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 void __fastcall TConfigForm::DisplayBtnClick(TObject *Sender)
 {
 	DisplayPnl->Visible = true;
-	AdvDisplayPnl->Visible = false;
+	AdvancedPnl->Visible = false;
 	CompatibilityPnl->Visible = false;
 }
 
-void __fastcall TConfigForm::AdvDisplayBtnClick(TObject *Sender)
+void __fastcall TConfigForm::AdvancedBtnClick(TObject *Sender)
 {
-	AdvDisplayPnl->Visible = true;
+	AdvancedPnl->Visible = true;
 	DisplayPnl->Visible = false;
 	CompatibilityPnl->Visible = false;
 }
@@ -42,7 +42,7 @@ void __fastcall TConfigForm::AdvDisplayBtnClick(TObject *Sender)
 void __fastcall TConfigForm::CompatibilityBtnClick(TObject *Sender)
 {
 	CompatibilityPnl->Visible = true;
-	AdvDisplayPnl->Visible = false;
+	AdvancedPnl->Visible = false;
 	DisplayPnl->Visible = false;
 }
 

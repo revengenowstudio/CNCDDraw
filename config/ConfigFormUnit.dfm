@@ -2682,7 +2682,7 @@ object ConfigForm: TConfigForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object AdvDisplayPnl: TPanel
+  object AdvancedPnl: TPanel
     Left = 191
     Top = 8
     Width = 499
@@ -3239,13 +3239,13 @@ object ConfigForm: TConfigForm
       StyleElements = [seFont, seBorder]
       OnClick = DisplayBtnClick
     end
-    object AdvDisplayBtn: TSpeedButton
+    object AdvancedBtn: TSpeedButton
       Left = 8
       Top = 55
       Width = 171
       Height = 41
       Anchors = [akLeft, akTop, akRight]
-      Caption = 'Adv. Display Settings'
+      Caption = 'Advanced Settings'
       Flat = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
@@ -3253,7 +3253,7 @@ object ConfigForm: TConfigForm
       Font.Name = 'Segoe UI'
       Font.Style = [fsBold]
       ParentFont = False
-      OnClick = AdvDisplayBtnClick
+      OnClick = AdvancedBtnClick
     end
     object CompatibilityBtn: TSpeedButton
       Left = 8

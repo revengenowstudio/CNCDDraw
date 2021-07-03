@@ -18,9 +18,9 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPanel *MenuPnl;
 	TPanel *DisplayPnl;
 	TSpeedButton *DisplayBtn;
-	TSpeedButton *AdvDisplayBtn;
+	TSpeedButton *AdvancedBtn;
 	TSpeedButton *CompatibilityBtn;
-	TPanel *AdvDisplayPnl;
+	TPanel *AdvancedPnl;
 	TPanel *CompatibilityPnl;
 	TComboBox *PresentationCbx;
 	TLabel *PresentationLbl;
@@ -61,7 +61,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPaintBox *ShaderPbox;
 	TPaintBox *MaxfpsPbox;
 	void __fastcall DisplayBtnClick(TObject *Sender);
-	void __fastcall AdvDisplayBtnClick(TObject *Sender);
+	void __fastcall AdvancedBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
 	void __fastcall FormCreate(TObject *Sender);
 	void __fastcall PresentationCbxChange(TObject *Sender);
