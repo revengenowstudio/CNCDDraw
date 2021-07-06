@@ -1,4 +1,4 @@
-//---------------------------------------------------------------------------
+﻿//---------------------------------------------------------------------------
 
 #include <vcl.h>
 #pragma hdrstop
@@ -24,52 +24,102 @@ int Minfps;
 __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 	: TForm(Owner)
 {
-	if (SysLocale.PriLangID == LANG_ENGLISH) {
-		ConfigForm->Caption = "cnc-ddraw config";
-		DisplayBtn->Caption = "Display Settings";
-		AdvancedBtn->Caption = "Advanced Settings";
-		CompatibilityBtn->Caption = "Compatibility Settings";
-		PresentationLbl->Caption = "Presentation";
-		MaintasLbl->Caption = "Maintain aspect ratio";
-		VsyncLbl->Caption = "Enable VSync";
-		AdjmouseLbl->Caption = "Adjust mouse sensitivity";
-		DevmodeLbl->Caption = "Lock cursor to window / screen";
-		RendererLbl->Caption = "Renderer";
-		BorderLbl->Caption = "Show window borders in windowed mode";
-		SavesettingsLbl->Caption = "Remember window position and size";
-		ShaderLbl->Caption = "OpenGL shader";
-		MaxfpsLbl->Caption = "Limit frame rate";
-		BoxingLbl->Caption = "Enable windowboxing / integer scaling";
-		MaxgameticksLbl->Caption = "Limit game speed";
-		NoactivateappLbl->Caption = "Fix broken Alt+Tab";
-		HookLbl->Caption = "Fix broken windowed mode or upscaling";
-		MinfpsLbl->Caption = "Force high FPS / Fix stuttering on Freesync/G-Sync";
-		FixpitchLbl->Caption = "Fix diagonally displayed drawing issues";
-		NonexclusiveLbl->Caption = "Fix invisible videos / UI elements";
+	if (SysLocale.PriLangID == LANG_CHINESE) {
+		/* Chinese Simplified made by universal963 @ github */
+
+		ConfigForm->Caption = L"cnc-ddraw 配置";
+		DisplayBtn->Caption = L"显示设置";
+		AdvancedBtn->Caption = L"高级设置";
+		CompatibilityBtn->Caption = L"兼容性设置";
+		PresentationLbl->Caption = L"显示方式";
+		MaintasLbl->Caption = L"保持纵横比";
+		VsyncLbl->Caption = L"打开垂直同步";
+		AdjmouseLbl->Caption = L"调整鼠标灵敏度";
+		DevmodeLbl->Caption = L"锁定光标到窗口/屏幕";
+		RendererLbl->Caption = L"渲染器";
+		BorderLbl->Caption = L"在窗口模式下显示窗口边框";
+		SavesettingsLbl->Caption = L"记住窗口位置和大小";
+		ShaderLbl->Caption = L"OpenGL着色器";
+		MaxfpsLbl->Caption = L"限制帧率";
+		BoxingLbl->Caption = L"打开窗盒显示/整数缩放";
+		MaxgameticksLbl->Caption = L"限制游戏速率";
+		NoactivateappLbl->Caption = L"修复损坏的Alt+Tab功能";
+		HookLbl->Caption = L"修复损坏的窗口模式或拉伸";
+		MinfpsLbl->Caption = L"强制高FPS / 修复使用Freesync/G-Sync的卡顿问题";
+		FixpitchLbl->Caption = L"修复倾斜撕裂显示的问题";
+		NonexclusiveLbl->Caption = L"修复不显示的视频/UI元素";
 
 		RendererCbx->Items->Clear();
-		RendererCbx->AddItem("Automatic", NULL);
-		RendererCbx->AddItem("Direct3D9", NULL);
-		RendererCbx->AddItem("OpenGL", NULL);
-		RendererCbx->AddItem("GDI", NULL);
+		RendererCbx->AddItem(L"自动", NULL);
+		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
 
 		PresentationCbx->Items->Clear();
-		PresentationCbx->AddItem("Fullscreen", NULL);
-		PresentationCbx->AddItem("Fullscreen Upscaled", NULL);
-		PresentationCbx->AddItem("Borderless", NULL);
-		PresentationCbx->AddItem("Windowed", NULL);
+		PresentationCbx->AddItem(L"全屏", NULL);
+		PresentationCbx->AddItem(L"拉伸至全屏", NULL);
+		PresentationCbx->AddItem(L"无边框", NULL);
+		PresentationCbx->AddItem(L"窗口化", NULL);
 
 		MaxgameticksCbx->Items->Clear();
-		MaxgameticksCbx->AddItem("No limit", NULL);
-		MaxgameticksCbx->AddItem("Sync with monitor refresh rate", NULL);
-		MaxgameticksCbx->AddItem("Emulate 60hz refresh rate monitor", NULL);
-		MaxgameticksCbx->AddItem("1000 ticks per second", NULL);
-		MaxgameticksCbx->AddItem("500 ticks per second", NULL);
-		MaxgameticksCbx->AddItem("60 ticks per second", NULL);
-		MaxgameticksCbx->AddItem("30 ticks per second", NULL);
-		MaxgameticksCbx->AddItem("25 ticks per second", NULL);
-		MaxgameticksCbx->AddItem("15 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"无限制", NULL);
+		MaxgameticksCbx->AddItem(L"与显示器刷新率同步", NULL);
+		MaxgameticksCbx->AddItem(L"模拟60hz刷新率显示器", NULL);
+		MaxgameticksCbx->AddItem(L"1000tick每秒", NULL);
+		MaxgameticksCbx->AddItem(L"500tick每秒", NULL);
+		MaxgameticksCbx->AddItem(L"60tick每秒", NULL);
+		MaxgameticksCbx->AddItem(L"30tick每秒", NULL);
+		MaxgameticksCbx->AddItem(L"25tick每秒", NULL);
+		MaxgameticksCbx->AddItem(L"15tick每秒", NULL);
 	}
+	else {
+		/*
+		ConfigForm->Caption = L"cnc-ddraw config";
+		DisplayBtn->Caption = L"Display Settings";
+		AdvancedBtn->Caption = L"Advanced Settings";
+		CompatibilityBtn->Caption = L"Compatibility Settings";
+		PresentationLbl->Caption = L"Presentation";
+		MaintasLbl->Caption = L"Maintain aspect ratio";
+		VsyncLbl->Caption = L"Enable VSync";
+		AdjmouseLbl->Caption = L"Adjust mouse sensitivity";
+		DevmodeLbl->Caption = L"Lock cursor to window / screen";
+		RendererLbl->Caption = L"Renderer";
+		BorderLbl->Caption = L"Show window borders in windowed mode";
+		SavesettingsLbl->Caption = L"Remember window position and size";
+		ShaderLbl->Caption = L"OpenGL shader";
+		MaxfpsLbl->Caption = L"Limit frame rate";
+		BoxingLbl->Caption = L"Enable windowboxing / integer scaling";
+		MaxgameticksLbl->Caption = L"Limit game speed";
+		NoactivateappLbl->Caption = L"Fix broken Alt+Tab";
+		HookLbl->Caption = L"Fix broken windowed mode or upscaling";
+		MinfpsLbl->Caption = L"Force high FPS / Fix stuttering on Freesync/G-Sync";
+		FixpitchLbl->Caption = L"Fix diagonally displayed drawing issues";
+		NonexclusiveLbl->Caption = L"Fix invisible videos / UI elements";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem(L"Automatic", NULL);
+		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem(L"Fullscreen", NULL);
+		PresentationCbx->AddItem(L"Fullscreen Upscaled", NULL);
+		PresentationCbx->AddItem(L"Borderless", NULL);
+		PresentationCbx->AddItem(L"Windowed", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem(L"No limit", NULL);
+		MaxgameticksCbx->AddItem(L"Sync with monitor refresh rate", NULL);
+		MaxgameticksCbx->AddItem(L"Emulate 60hz refresh rate monitor", NULL);
+		MaxgameticksCbx->AddItem(L"1000 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"500 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"60 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"30 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"25 ticks per second", NULL);
+		MaxgameticksCbx->AddItem(L"15 ticks per second", NULL);
+		*/
+    }
 }
 
 void __fastcall TConfigForm::DisplayBtnClick(TObject *Sender)
