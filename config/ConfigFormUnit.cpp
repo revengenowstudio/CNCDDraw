@@ -25,7 +25,7 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 	: TForm(Owner)
 {
 	if (SysLocale.PriLangID == LANG_CHINESE) {
-		/* Chinese Simplified made by universal963 @ github */
+		/* -Chinese Simplified- made by universal963 @ github */
 
 		ConfigForm->Caption = L"cnc-ddraw 配置";
 		DisplayBtn->Caption = L"显示设置";
@@ -72,6 +72,54 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 		MaxgameticksCbx->AddItem(L"25tick每秒", NULL);
 		MaxgameticksCbx->AddItem(L"15tick每秒", NULL);
 	}
+	else if (SysLocale.PriLangID == LANG_SPANISH) {
+		/* -Spanish- made by c-sanchez @ github */
+
+		ConfigForm->Caption = L"Ajustes de cnc-ddraw";
+		DisplayBtn->Caption = L"Ajustes de pantalla";
+		AdvancedBtn->Caption = L"Ajustes avanzados";
+		CompatibilityBtn->Caption = L"Ajustes de compatibilidad";
+		PresentationLbl->Caption = L"Presentación";
+		MaintasLbl->Caption = L"Mantener la relación de aspecto";
+		VsyncLbl->Caption = L"Activar VSync";
+		AdjmouseLbl->Caption = L"Ajustar sensibilidad de ratón";
+		DevmodeLbl->Caption = L"Bloquear cursor a la ventana / pantalla";
+		RendererLbl->Caption = L"Renderizador";
+		BorderLbl->Caption = L"Mostrar bordes en modo ventana";
+		SavesettingsLbl->Caption = L"Recordar posición y tamaño de ventana";
+		ShaderLbl->Caption = L"Sombreador OpenGL";
+		MaxfpsLbl->Caption = L"Limitar velocidad de fotogramas";
+		BoxingLbl->Caption = L"Activar encajado de ventanas / escalado de enteros";
+		MaxgameticksLbl->Caption = L"Limitar velocidad de juego";
+		NoactivateappLbl->Caption = L"Corregir Alt+Tab roto";
+		HookLbl->Caption = L"Corregir modo ventana o ampliación de escala";
+		MinfpsLbl->Caption = L"Forzar un alto FPS / Corregir retrasos en Freesync/G-Sync";
+		FixpitchLbl->Caption = L"Corregir problemas de visualización de dibujos en diagonal";
+		NonexclusiveLbl->Caption = L"Corregir vídeos / elementos de interfaz invisibles";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem(L"Automático", NULL);
+		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem(L"Pantalla completa", NULL);
+		PresentationCbx->AddItem(L"Pantalla completa ampliada", NULL);
+		PresentationCbx->AddItem(L"Sin bordes", NULL);
+		PresentationCbx->AddItem(L"Ventana", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem(L"Sin límite", NULL);
+		MaxgameticksCbx->AddItem(L"Sincronizar con tasa de refresco de monitor", NULL);
+		MaxgameticksCbx->AddItem(L"Emular monitor con tasa de refresco de 60hz", NULL);
+		MaxgameticksCbx->AddItem(L"1000 tics por segundo", NULL);
+		MaxgameticksCbx->AddItem(L"500 tics por segundo", NULL);
+		MaxgameticksCbx->AddItem(L"60 tics por segundo", NULL);
+		MaxgameticksCbx->AddItem(L"30 tics por segundo", NULL);
+		MaxgameticksCbx->AddItem(L"25 tics por segundo", NULL);
+		MaxgameticksCbx->AddItem(L"15 tics por segundo", NULL);
+    }
 	else {
 		/*
 		ConfigForm->Caption = L"cnc-ddraw config";

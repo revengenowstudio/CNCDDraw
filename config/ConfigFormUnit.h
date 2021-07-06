@@ -59,7 +59,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPaintBox *PresentationPbox;
 	TPaintBox *RendererPbox;
 	TPaintBox *ShaderPbox;
-	TPaintBox *MaxfpsPbox;
+	TPaintBox *MaxgameticksPbox;
 	void __fastcall DisplayBtnClick(TObject *Sender);
 	void __fastcall AdvancedBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
