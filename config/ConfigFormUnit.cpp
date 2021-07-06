@@ -6,6 +6,7 @@
 #include <IniFiles.hpp>
 #include <StrUtils.hpp>
 #include <IOUtils.hpp>
+#include <SysUtils.hpp>
 #include "ConfigFormUnit.h"
 //---------------------------------------------------------------------------
 #pragma package(smart_init)
@@ -23,6 +24,52 @@ int Minfps;
 __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 	: TForm(Owner)
 {
+	if (SysLocale.PriLangID == LANG_ENGLISH) {
+		ConfigForm->Caption = "cnc-ddraw config";
+		DisplayBtn->Caption = "Display Settings";
+		AdvancedBtn->Caption = "Advanced Settings";
+		CompatibilityBtn->Caption = "Compatibility Settings";
+		PresentationLbl->Caption = "Presentation";
+		MaintasLbl->Caption = "Maintain aspect ratio";
+		VsyncLbl->Caption = "Enable VSync";
+		AdjmouseLbl->Caption = "Adjust mouse sensitivity";
+		DevmodeLbl->Caption = "Lock cursor to window / screen";
+		RendererLbl->Caption = "Renderer";
+		BorderLbl->Caption = "Show window borders in windowed mode";
+		SavesettingsLbl->Caption = "Remember window position and size";
+		ShaderLbl->Caption = "OpenGL shader";
+		MaxfpsLbl->Caption = "Limit frame rate";
+		BoxingLbl->Caption = "Enable windowboxing / integer scaling";
+		MaxgameticksLbl->Caption = "Limit game speed";
+		NoactivateappLbl->Caption = "Fix broken Alt+Tab";
+		HookLbl->Caption = "Fix broken windowed mode or upscaling";
+		MinfpsLbl->Caption = "Force high FPS / Fix stuttering on Freesync/G-Sync";
+		FixpitchLbl->Caption = "Fix diagonally displayed drawing issues";
+		NonexclusiveLbl->Caption = "Fix invisible videos / UI elements";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem("Automatic", NULL);
+		RendererCbx->AddItem("Direct3D9", NULL);
+		RendererCbx->AddItem("OpenGL", NULL);
+		RendererCbx->AddItem("GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem("Fullscreen", NULL);
+		PresentationCbx->AddItem("Fullscreen Upscaled", NULL);
+		PresentationCbx->AddItem("Borderless", NULL);
+		PresentationCbx->AddItem("Windowed", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem("No limit", NULL);
+		MaxgameticksCbx->AddItem("Sync with monitor refresh rate", NULL);
+		MaxgameticksCbx->AddItem("Emulate 60hz refresh rate monitor", NULL);
+		MaxgameticksCbx->AddItem("1000 ticks per second", NULL);
+		MaxgameticksCbx->AddItem("500 ticks per second", NULL);
+		MaxgameticksCbx->AddItem("60 ticks per second", NULL);
+		MaxgameticksCbx->AddItem("30 ticks per second", NULL);
+		MaxgameticksCbx->AddItem("25 ticks per second", NULL);
+		MaxgameticksCbx->AddItem("15 ticks per second", NULL);
+	}
 }
 
 void __fastcall TConfigForm::DisplayBtnClick(TObject *Sender)
@@ -73,7 +120,7 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 	AdjmouseChk->State = GetBool(ini, "adjmouse", true) ? tssOn : tssOff;
 	DevmodeChk->State = GetBool(ini, "devmode", false) ? tssOff : tssOn;
 
-	/* Advanced Display Settings */
+	/* Advanced Settings */
 
 	auto renderer = LowerCase(ini->ReadString("ddraw", "renderer", "auto"));
 
@@ -154,7 +201,6 @@ void __fastcall TConfigForm::FormCreate(TObject *Sender)
 		break;
 	}
 
-
 	NoactivateappChk->State = GetBool(ini, "noactivateapp", false) ? tssOn : tssOff;
 
 	Hook = ini->ReadInteger("ddraw", "hook", 4);
@@ -221,9 +267,25 @@ void TConfigForm::SaveSettings()
 		"devmode",
 		DevmodeChk->State == tssOn ? "false" : "true");
 
-	/* Advanced Display Settings */
+	/* Advanced Settings */
 
-	ini->WriteString("ddraw", "renderer", LowerCase(RendererCbx->Text));
+	switch(RendererCbx->ItemIndex) {
+	case 0:
+		ini->WriteString("ddraw", "renderer", "auto");
+		break;
+	case 1:
+		ini->WriteString("ddraw", "renderer", "direct3d9");
+		break;
+	case 2:
+		ini->WriteString("ddraw", "renderer", "opengl");
+		break;
+	case 3:
+		ini->WriteString("ddraw", "renderer", "gdi");
+		break;
+	default:
+		break;
+	}
+
 	ini->WriteString("ddraw", "shader", ShaderCbx->Text);
 
 	int maxfps = Maxfps == 0 ? -1 : Maxfps;
