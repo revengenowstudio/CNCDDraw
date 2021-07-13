@@ -2682,199 +2682,6 @@ object ConfigForm: TConfigForm
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
-  object AdvancedPnl: TPanel
-    Left = 191
-    Top = 8
-    Width = 499
-    Height = 465
-    BevelOuter = bvNone
-    Color = clWhite
-    ParentBackground = False
-    ShowCaption = False
-    TabOrder = 2
-    Visible = False
-    StyleElements = [seFont, seBorder]
-    object RendererLbl: TLabel
-      Left = 40
-      Top = 28
-      Width = 64
-      Height = 21
-      Caption = 'Renderer'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object SavesettingsLbl: TLabel
-      Left = 40
-      Top = 386
-      Width = 256
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Remember window position and size'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object ShaderLbl: TLabel
-      Left = 40
-      Top = 105
-      Width = 108
-      Height = 21
-      Margins.Top = 18
-      Caption = 'OpenGL shader'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object MaxfpsLbl: TLabel
-      Left = 40
-      Top = 182
-      Width = 111
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Limit frame rate'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object BorderLbl: TLabel
-      Left = 40
-      Top = 318
-      Width = 293
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Show window borders in windowed mode'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object BoxingLbl: TLabel
-      Left = 40
-      Top = 250
-      Width = 267
-      Height = 21
-      Margins.Top = 18
-      Caption = 'Enable windowboxing / integer scaling'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      StyleElements = [seClient, seBorder]
-    end
-    object RendererPbox: TPaintBox
-      Left = 40
-      Top = 54
-      Width = 207
-      Height = 31
-      OnPaint = PboxPaint
-    end
-    object ShaderPbox: TPaintBox
-      Left = 40
-      Top = 131
-      Width = 427
-      Height = 31
-      OnPaint = PboxPaint
-    end
-    object RendererCbx: TComboBox
-      Left = 41
-      Top = 55
-      Width = 205
-      Height = 29
-      BevelEdges = []
-      BevelInner = bvNone
-      BevelOuter = bvSpace
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 0
-      OnChange = RendererCbxChange
-      Items.Strings = (
-        'Automatic'
-        'Direct3D9'
-        'OpenGL'
-        'GDI')
-    end
-    object BorderChk: TToggleSwitch
-      Left = 40
-      Top = 345
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 1
-      OnClick = BorderChkClick
-    end
-    object SavesettingsChk: TToggleSwitch
-      Left = 40
-      Top = 413
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 2
-      OnClick = SavesettingsChkClick
-    end
-    object ShaderCbx: TComboBox
-      Left = 41
-      Top = 132
-      Width = 425
-      Height = 29
-      BevelEdges = []
-      BevelInner = bvNone
-      BevelOuter = bvSpace
-      Style = csDropDownList
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 3
-      OnChange = ShaderCbxChange
-    end
-    object MaxfpsChk: TToggleSwitch
-      Left = 40
-      Top = 209
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 4
-      OnClick = MaxfpsChkClick
-    end
-    object BoxingChk: TToggleSwitch
-      Left = 40
-      Top = 277
-      Width = 50
-      Height = 20
-      ShowStateCaption = False
-      TabOrder = 5
-      OnClick = BoxingChkClick
-    end
-  end
   object DisplayPnl: TPanel
     Left = 191
     Top = 8
@@ -3208,6 +3015,200 @@ object ConfigForm: TConfigForm
       ShowStateCaption = False
       TabOrder = 5
       OnClick = NonexclusiveChkClick
+    end
+  end
+  object AdvancedPnl: TPanel
+    Left = 191
+    Top = 8
+    Width = 499
+    Height = 465
+    BevelOuter = bvNone
+    Color = clWhite
+    ParentBackground = False
+    ShowCaption = False
+    TabOrder = 2
+    Visible = False
+    StyleElements = [seFont, seBorder]
+    object RendererLbl: TLabel
+      Left = 40
+      Top = 28
+      Width = 64
+      Height = 21
+      Caption = 'Renderer'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object SavesettingsLbl: TLabel
+      Left = 40
+      Top = 386
+      Width = 256
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Remember window position and size'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object ShaderLbl: TLabel
+      Left = 40
+      Top = 105
+      Width = 108
+      Height = 21
+      Margins.Top = 18
+      Caption = 'OpenGL shader'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object MaxfpsLbl: TLabel
+      Left = 40
+      Top = 182
+      Width = 111
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Limit frame rate'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object BorderLbl: TLabel
+      Left = 40
+      Top = 318
+      Width = 293
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Show window borders in windowed mode'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object BoxingLbl: TLabel
+      Left = 40
+      Top = 250
+      Width = 267
+      Height = 21
+      Margins.Top = 18
+      Caption = 'Enable windowboxing / integer scaling'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      StyleElements = [seClient, seBorder]
+    end
+    object RendererPbox: TPaintBox
+      Left = 40
+      Top = 54
+      Width = 207
+      Height = 31
+      OnPaint = PboxPaint
+    end
+    object ShaderPbox: TPaintBox
+      Left = 40
+      Top = 131
+      Width = 427
+      Height = 31
+      OnPaint = PboxPaint
+    end
+    object RendererCbx: TComboBox
+      Left = 41
+      Top = 55
+      Width = 205
+      Height = 29
+      BevelEdges = []
+      BevelInner = bvNone
+      BevelOuter = bvSpace
+      Style = csDropDownList
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 0
+      OnChange = RendererCbxChange
+      Items.Strings = (
+        'Automatic'
+        'Direct3D9'
+        'OpenGL'
+        'GDI')
+    end
+    object BorderChk: TToggleSwitch
+      Left = 40
+      Top = 345
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 1
+      OnClick = BorderChkClick
+    end
+    object SavesettingsChk: TToggleSwitch
+      Left = 40
+      Top = 413
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 2
+      OnClick = SavesettingsChkClick
+    end
+    object ShaderCbx: TComboBox
+      Left = 41
+      Top = 132
+      Width = 425
+      Height = 29
+      BevelEdges = []
+      BevelInner = bvNone
+      BevelOuter = bvSpace
+      Style = csDropDownList
+      DropDownCount = 10
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 3
+      OnChange = ShaderCbxChange
+    end
+    object MaxfpsChk: TToggleSwitch
+      Left = 40
+      Top = 209
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 4
+      OnClick = MaxfpsChkClick
+    end
+    object BoxingChk: TToggleSwitch
+      Left = 40
+      Top = 277
+      Width = 50
+      Height = 20
+      ShowStateCaption = False
+      TabOrder = 5
+      OnClick = BoxingChkClick
     end
   end
   object MenuPnl: TPanel
