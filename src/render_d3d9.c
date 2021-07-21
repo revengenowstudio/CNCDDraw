@@ -130,8 +130,13 @@ BOOL d3d9_release()
         g_d3d9.pixel_shader = NULL;
     }
 
-    int i;
-    for (i = 0; i < D3D9_TEXTURE_COUNT; i++)
+    if (g_d3d9.pixel_shader_bilinear)
+    {
+        IDirect3DPixelShader9_Release(g_d3d9.pixel_shader_bilinear);
+        g_d3d9.pixel_shader_bilinear = NULL;
+    }
+
+    for (int i = 0; i < D3D9_TEXTURE_COUNT; i++)
     {
         if (g_d3d9.surface_tex[i])
         {
@@ -174,16 +179,16 @@ static BOOL d3d9_create_resouces()
     int width = g_ddraw->width;
     int height = g_ddraw->height;
 
-    int tex_width =
+    g_d3d9.tex_width =
         width <= 1024 ? 1024 : width <= 2048 ? 2048 : width <= 4096 ? 4096 : width;
 
-    int tex_height =
-        height <= tex_width ? tex_width : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
+    g_d3d9.tex_height =
+        height <= g_d3d9.tex_width ? g_d3d9.tex_width : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    tex_width = tex_width > tex_height ? tex_width : tex_height;
+    g_d3d9.tex_width = g_d3d9.tex_width > g_d3d9.tex_height ? g_d3d9.tex_width : g_d3d9.tex_height;
 
-    g_d3d9.scale_w = (float)width / tex_width;;
-    g_d3d9.scale_h = (float)height / tex_height;
+    g_d3d9.scale_w = (float)width / g_d3d9.tex_width;;
+    g_d3d9.scale_h = (float)height / g_d3d9.tex_height;
 
     err = err || FAILED(
         IDirect3DDevice9_CreateVertexBuffer(
@@ -201,8 +206,8 @@ static BOOL d3d9_create_resouces()
         err = err || FAILED(
             IDirect3DDevice9_CreateTexture(
                 g_d3d9.device,
-                tex_width,
-                tex_height,
+                g_d3d9.tex_width,
+                g_d3d9.tex_height,
                 1,
                 0,
                 g_ddraw->bpp == 16 ? D3DFMT_R5G6B5 : g_ddraw->bpp == 32 ? D3DFMT_X8R8G8B8 : D3DFMT_L8,
@@ -234,6 +239,11 @@ static BOOL d3d9_create_resouces()
     {
         err = err || FAILED(
             IDirect3DDevice9_CreatePixelShader(g_d3d9.device, (DWORD*)D3D9_PALETTE_SHADER, &g_d3d9.pixel_shader));
+
+        IDirect3DDevice9_CreatePixelShader(
+            g_d3d9.device, 
+            (DWORD*)D3D9_PALETTE_SHADER_BILINEAR, 
+            &g_d3d9.pixel_shader_bilinear);
     }
 
     return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !err;
@@ -250,7 +260,22 @@ static BOOL d3d9_set_states()
     if (g_ddraw->bpp == 8)
     {
         err = err || FAILED(IDirect3DDevice9_SetTexture(g_d3d9.device, 1, (IDirect3DBaseTexture9*)g_d3d9.palette_tex[0]));
-        err = err || FAILED(IDirect3DDevice9_SetPixelShader(g_d3d9.device, g_d3d9.pixel_shader));
+        
+        BOOL bilinear =
+            g_ddraw->d3d9linear &&
+            g_d3d9.pixel_shader_bilinear &&
+            (g_ddraw->render.viewport.width != g_ddraw->width || g_ddraw->render.viewport.height != g_ddraw->height);
+
+        err = err || FAILED(
+            IDirect3DDevice9_SetPixelShader(
+                g_d3d9.device, 
+                bilinear ? g_d3d9.pixel_shader_bilinear : g_d3d9.pixel_shader));
+
+        if (bilinear)
+        {
+            float texture_size[4] = { (float)g_d3d9.tex_width, (float)g_d3d9.tex_height, 0, 0 };
+            err = err || FAILED(IDirect3DDevice9_SetPixelShaderConstantF(g_d3d9.device, 0, texture_size, 1));
+        }
     }
     else
     {
