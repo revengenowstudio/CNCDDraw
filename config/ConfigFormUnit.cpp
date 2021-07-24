@@ -30,14 +30,7 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 void __fastcall TConfigForm::LanguageLblClick(TObject *Sender)
 {
 	auto *ini = new TIniFile(".\\ddraw.ini");
-
-	if (IsEnglish) {
-		ini->WriteString("ddraw", "configlang", "auto");
-	}
-	else {
-		ini->WriteString("ddraw", "configlang", "english");
-    }
-
+	ini->WriteString("ddraw", "configlang", IsEnglish ? "auto" : "english");
 	delete ini;
 
 	ShellExecute(
