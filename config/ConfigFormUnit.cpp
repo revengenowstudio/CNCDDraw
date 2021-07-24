@@ -13,6 +13,7 @@
 #pragma resource "*.dfm"
 TConfigForm *ConfigForm;
 bool Initialized;
+bool IsEnglish;
 
 /* Save previous settings so we don't override custom settings */
 int Maxfps;
@@ -24,7 +25,40 @@ int Minfps;
 __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 	: TForm(Owner)
 {
-	if (SysLocale.PriLangID == LANG_CHINESE) {
+}
+
+void __fastcall TConfigForm::LanguageLblClick(TObject *Sender)
+{
+	auto *ini = new TIniFile(".\\ddraw.ini");
+
+	if (IsEnglish) {
+		ini->WriteString("ddraw", "configlang", "auto");
+	}
+	else {
+		ini->WriteString("ddraw", "configlang", "english");
+    }
+
+	delete ini;
+
+	ShellExecute(
+		NULL,
+		L"open",
+		Application->ExeName.w_str(),
+		NULL,
+		NULL,
+		SW_SHOWNORMAL);
+
+	Application->Terminate();
+}
+
+void TConfigForm::ApplyTranslation(TIniFile *ini)
+{
+	auto lang = LowerCase(ini->ReadString("ddraw", "configlang", "auto"));
+	int priID = SysLocale.PriLangID;
+
+	if (lang == "chinese" || (lang == "auto" && priID == LANG_CHINESE)) {
+		LanguageLbl->Visible = true;
+
 		/* -Chinese Simplified- made by universal963 @ github */
 
 		ConfigForm->Caption = L"cnc-ddraw 配置";
@@ -72,7 +106,9 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 		MaxgameticksCbx->AddItem(L"25tick每秒", NULL);
 		MaxgameticksCbx->AddItem(L"15tick每秒", NULL);
 	}
-	else if (SysLocale.PriLangID == LANG_SPANISH) {
+	else if (lang == "spanish" || (lang == "auto" && priID == LANG_SPANISH)) {
+		LanguageLbl->Visible = true;
+
 		/* -Spanish- made by c-sanchez @ github */
 
 		ConfigForm->Caption = L"Ajustes de cnc-ddraw";
@@ -120,7 +156,9 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 		MaxgameticksCbx->AddItem(L"25 tics por segundo", NULL);
 		MaxgameticksCbx->AddItem(L"15 tics por segundo", NULL);
 	}
-	else if (SysLocale.PriLangID == LANG_GERMAN) {
+	else if (lang == "german" || (lang == "auto" && priID == LANG_GERMAN)) {
+		LanguageLbl->Visible = true;
+
 		/* -German- made by helgo1506 @ github */
 
 		ConfigForm->Caption = L"cnc-ddraw Konfiguration";
@@ -169,6 +207,28 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 		MaxgameticksCbx->AddItem(L"15 Ticks pro Sekunde", NULL);
 	}
 	else {
+		IsEnglish = true;
+		UnicodeString name = "";
+
+		try {
+			int lcid = Languages()->IndexOf(SysLocale.DefaultLCID);
+			name = SplitString(Languages()->Name[lcid].w_str(), L" (")[0];
+		} catch (...) {
+		}
+
+		if (priID == LANG_CHINESE) {
+			LanguageLbl->Visible = true;
+			LanguageLbl->Caption = name == "" ? "Chinese" : name;
+		}
+		else if (priID == LANG_SPANISH) {
+			LanguageLbl->Visible = true;
+			LanguageLbl->Caption = name == "" ? "Spanish" : name;
+		}
+		else if (priID == LANG_GERMAN) {
+			LanguageLbl->Visible = true;
+			LanguageLbl->Caption = name == "" ? "German" : name;
+		}
+
 		/*
 		ConfigForm->Caption = L"cnc-ddraw config";
 		DisplayBtn->Caption = L"Display Settings";
@@ -242,6 +302,8 @@ void __fastcall TConfigForm::CompatibilityBtnClick(TObject *Sender)
 void __fastcall TConfigForm::FormCreate(TObject *Sender)
 {
 	auto *ini = new TIniFile(".\\ddraw.ini");
+
+	ApplyTranslation(ini);
 
 	/* Display Settings */
 
