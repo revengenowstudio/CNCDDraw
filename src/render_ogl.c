@@ -764,8 +764,10 @@ static void ogl_render()
             else
             {
                 glViewport(
-                    g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
-                    g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+                    g_ddraw->render.viewport.x, 
+                    g_ddraw->render.viewport.y,
+                    g_ddraw->render.viewport.width, 
+                    g_ddraw->render.viewport.height);
             }
 
             /* apply filter */
