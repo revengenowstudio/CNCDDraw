@@ -338,6 +338,7 @@ HRESULT __stdcall IDirectDraw__GetGDISurface(IDirectDrawImpl* This, LPDIRECTDRAW
 {
     TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DDERR_NOTFOUND;
+    *lplpGDIDDSurface = (LPDIRECTDRAWSURFACE7)g_ddraw->primary;
     TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
