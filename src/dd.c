@@ -463,6 +463,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
     InterlockedExchange((LONG*)&g_ddraw->cursor.y, dwHeight / 2);
 
     BOOL border = g_ddraw->border;
+    BOOL nonexclusive = FALSE;
 
     if (g_ddraw->fullscreen)
     {
@@ -478,7 +479,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
 
             /* prevent OpenGL from going automatically into fullscreen exclusive mode */
             if (g_ddraw->renderer == ogl_render_main)
-                g_ddraw->render.height++;
+                nonexclusive = TRUE;
 
         }
     }
@@ -594,11 +595,6 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
         }
     }
 
-    if (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main)
-    {
-        g_ddraw->render.height++;
-    }
-
     g_ddraw->render.viewport.width = g_ddraw->render.width;
     g_ddraw->render.viewport.height = g_ddraw->render.height;
     g_ddraw->render.viewport.x = 0;
@@ -644,6 +640,11 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
     g_ddraw->render.scale_h = ((float)g_ddraw->render.viewport.height / g_ddraw->height);
     g_ddraw->render.unscale_w = ((float)g_ddraw->width / g_ddraw->render.viewport.width);
     g_ddraw->render.unscale_h = ((float)g_ddraw->height / g_ddraw->render.viewport.height);
+
+    if (nonexclusive || (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main))
+    {
+        g_ddraw->render.height++;
+    }
 
     if (g_ddraw->windowed)
     {
