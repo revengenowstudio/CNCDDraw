@@ -417,6 +417,7 @@ static void cfg_create_ini()
             "\n"
             "; Casino Empire\n"
             "[CasinoEmpire]\n"
+            "hook=2\n"
             "passthrough=false\n"
             "\n"
             "; Carmageddon\n"
