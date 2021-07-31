@@ -569,7 +569,7 @@ void TConfigForm::SaveSettings()
 		"hook",
 		HookChk->State == tssOn ? 2 : hook);
 
-	if (HookChk->State == tssOn)
+	if (HookChk->State == tssOn && Hook != 2)
 		ini->WriteString("ddraw", "renderer", "gdi");
 
 	int minfps = Minfps == 0 ? -1 : Minfps;
