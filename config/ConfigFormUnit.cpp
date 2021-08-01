@@ -27,7 +27,7 @@ __fastcall TConfigForm::TConfigForm(TComponent* Owner)
 {
 }
 
-void __fastcall TConfigForm::LanguageLblClick(TObject *Sender)
+void __fastcall TConfigForm::LanguageImgClick(TObject *Sender)
 {
 	auto *ini = new TIniFile(".\\ddraw.ini");
 	ini->WriteString("ddraw", "configlang", IsEnglish ? "auto" : "english");
@@ -50,7 +50,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 	int priID = SysLocale.PriLangID;
 
 	if (lang == "chinese" || (lang == "auto" && priID == LANG_CHINESE)) {
-		LanguageLbl->Visible = true;
+		LanguageImg->Visible = true;
 
 		/* -Chinese Simplified- made by universal963 @ github */
 
@@ -100,7 +100,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 		MaxgameticksCbx->AddItem(L"15tick每秒", NULL);
 	}
 	else if (lang == "spanish" || (lang == "auto" && priID == LANG_SPANISH)) {
-		LanguageLbl->Visible = true;
+		LanguageImg->Visible = true;
 
 		/* -Spanish- made by c-sanchez @ github */
 
@@ -150,7 +150,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 		MaxgameticksCbx->AddItem(L"15 tics por segundo", NULL);
 	}
 	else if (lang == "german" || (lang == "auto" && priID == LANG_GERMAN)) {
-		LanguageLbl->Visible = true;
+		LanguageImg->Visible = true;
 
 		/* -German- made by helgo1506 @ github */
 
@@ -201,25 +201,27 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 	}
 	else {
 		IsEnglish = true;
-		UnicodeString name = "";
 
 		try {
-			int lcid = Languages()->IndexOf(SysLocale.DefaultLCID);
-			name = SplitString(Languages()->Name[lcid].w_str(), L" (")[0];
+			if (priID == LANG_CHINESE) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_CN");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
+			else if (priID == LANG_SPANISH) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_ES");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
+			else if (priID == LANG_GERMAN) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_DE");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
 		} catch (...) {
-		}
-
-		if (priID == LANG_CHINESE) {
-			LanguageLbl->Visible = true;
-			LanguageLbl->Caption = name == "" ? "Chinese" : name;
-		}
-		else if (priID == LANG_SPANISH) {
-			LanguageLbl->Visible = true;
-			LanguageLbl->Caption = name == "" ? "Spanish" : name;
-		}
-		else if (priID == LANG_GERMAN) {
-			LanguageLbl->Visible = true;
-			LanguageLbl->Caption = name == "" ? "German" : name;
 		}
 
 		/*

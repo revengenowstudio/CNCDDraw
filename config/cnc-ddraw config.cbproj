@@ -131,6 +131,22 @@
             <DependentOn>ConfigFormUnit.h</DependentOn>
             <BuildOrder>2</BuildOrder>
         </CppCompile>
+        <RcItem Include="Resources\CN.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_CN</ResourceId>
+        </RcItem>
+        <RcItem Include="Resources\DE.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_DE</ResourceId>
+        </RcItem>
+        <RcItem Include="Resources\ES.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_ES</ResourceId>
+        </RcItem>
+        <RcItem Include="Resources\US.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_US</ResourceId>
+        </RcItem>
         <FormResources Include="ConfigFormUnit.dfm"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
@@ -215,9 +231,33 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Resources\DE.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Resources\ES.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Resources\US.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName=".\Win32\Release\cnc-ddraw config.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>cnc-ddraw_config.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Resources\CN.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

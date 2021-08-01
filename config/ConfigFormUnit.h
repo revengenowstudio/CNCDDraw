@@ -11,6 +11,7 @@
 #include <Vcl.ExtCtrls.hpp>
 #include <Vcl.WinXCtrls.hpp>
 #include <Vcl.Buttons.hpp>
+#include <Vcl.Imaging.pngimage.hpp>
 //---------------------------------------------------------------------------
 class TConfigForm : public TForm
 {
@@ -60,7 +61,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	TPaintBox *RendererPbox;
 	TPaintBox *ShaderPbox;
 	TPaintBox *MaxgameticksPbox;
-	TLabel *LanguageLbl;
+	TImage *LanguageImg;
 	void __fastcall DisplayBtnClick(TObject *Sender);
 	void __fastcall AdvancedBtnClick(TObject *Sender);
 	void __fastcall CompatibilityBtnClick(TObject *Sender);
@@ -83,7 +84,7 @@ __published:	// Von der IDE verwaltete Komponenten
 	void __fastcall FixpitchChkClick(TObject *Sender);
 	void __fastcall NonexclusiveChkClick(TObject *Sender);
 	void __fastcall PboxPaint(TObject *Sender);
-	void __fastcall LanguageLblClick(TObject *Sender);
+	void __fastcall LanguageImgClick(TObject *Sender);
 private:	// Benutzer-Deklarationen
 	void SaveSettings();
 	bool GetBool(TIniFile *ini, System::UnicodeString key, bool defValue);
