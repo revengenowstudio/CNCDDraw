@@ -449,7 +449,6 @@ void hook_early_init()
     */
 
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "ole32.dll", "CoCreateInstance", (PROC)fake_CoCreateInstance);
-
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateEx", (PROC)fake_DirectInputCreateEx);
@@ -504,7 +503,6 @@ void hook_exit()
     }
 
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "ole32.dll", "CoCreateInstance", (PROC)fake_CoCreateInstance);
-
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateEx", (PROC)fake_DirectInputCreateEx);
