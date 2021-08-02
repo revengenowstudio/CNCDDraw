@@ -180,6 +180,12 @@ HRESULT WINAPI fake_DirectInputCreateA(
     {
         real_DirectInputCreateA =
             (DIRECTINPUTCREATEAPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateA");
+
+        if (real_DirectInputCreateA == fake_DirectInputCreateW)
+        {
+            real_DirectInputCreateA =
+                (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("system32\\dinput.dll"), "DirectInputCreateA");
+        }
     }
 
     if (!real_DirectInputCreateA)
@@ -208,6 +214,12 @@ HRESULT WINAPI fake_DirectInputCreateW(
     {
         real_DirectInputCreateW =
             (DIRECTINPUTCREATEWPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateW");
+
+        if (real_DirectInputCreateW == fake_DirectInputCreateW)
+        {
+            real_DirectInputCreateW =
+                (DIRECTINPUTCREATEWPROC)GetProcAddress(LoadLibraryA("system32\\dinput.dll"), "DirectInputCreateW");
+        }
     }
 
     if (!real_DirectInputCreateW)
@@ -236,7 +248,13 @@ HRESULT WINAPI fake_DirectInputCreateEx(
     if (!real_DirectInputCreateEx)
     {
         real_DirectInputCreateEx =
-            (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("system32\\dinput.dll"), "DirectInputCreateEx");
+            (DIRECTINPUTCREATEEXPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateEx");
+
+        if (real_DirectInputCreateEx == fake_DirectInputCreateEx)
+        {
+            real_DirectInputCreateEx =
+                (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("system32\\dinput.dll"), "DirectInputCreateEx");
+        }
     }
 
     if (!real_DirectInputCreateEx)
@@ -275,6 +293,12 @@ HRESULT WINAPI fake_DirectInput8Create(
     {
         real_DirectInput8Create =
             (DIRECTINPUT8CREATEPROC)GetProcAddress(GetModuleHandle("dinput8.dll"), "DirectInput8Create");
+
+        if (real_DirectInput8Create == fake_DirectInput8Create)
+        {
+            real_DirectInput8Create =
+                (DIRECTINPUT8CREATEPROC)GetProcAddress(LoadLibraryA("system32\\dinput8.dll"), "DirectInput8Create");
+        }
     }
 
     if (!real_DirectInput8Create)

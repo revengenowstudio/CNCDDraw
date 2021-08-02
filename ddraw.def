@@ -13,6 +13,9 @@ EXPORTS
     DirectDrawEnumerateExW                    @13
     DirectDrawEnumerateW                      @14
     ReleaseDDThreadLock                       @21
-    DirectInputCreateEx = fake_DirectInputCreateEx @22
+    DirectInputCreateA = fake_DirectInputCreateA
+    DirectInputCreateW = fake_DirectInputCreateW
+    DirectInputCreateEx = fake_DirectInputCreateEx
+    DirectInput8Create = fake_DirectInput8Create
     GameHandlesClose                          DATA
     pvBmpBits = FakePrimarySurface            DATA
