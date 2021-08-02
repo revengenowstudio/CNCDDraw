@@ -1004,8 +1004,12 @@ ULONG dd_Release()
 
 HRESULT dd_GetAvailableVidMem(LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpdwFree)
 {
-    *lpdwTotal = 16777216;
-    *lpdwFree = 16777216;
+    if (lpdwTotal)
+        *lpdwTotal = 16777216;
+
+    if (lpdwFree)
+        *lpdwFree = 16777216;
+
     return DD_OK;
 }
 
