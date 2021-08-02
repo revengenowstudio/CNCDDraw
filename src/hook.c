@@ -44,6 +44,7 @@ LOADLIBRARYAPROC real_LoadLibraryA = LoadLibraryA;
 LOADLIBRARYWPROC real_LoadLibraryW = LoadLibraryW;
 LOADLIBRARYEXAPROC real_LoadLibraryExA = LoadLibraryExA;
 LOADLIBRARYEXWPROC real_LoadLibraryExW = LoadLibraryExW;
+COCREATEINSTANCEPROC real_CoCreateInstance = CoCreateInstance;
 
 static HOOKLIST g_hooks[] =
 {
@@ -440,6 +441,15 @@ void hook_init()
 
 void hook_early_init()
 {
+    /*
+    DetourTransactionBegin();
+    DetourUpdateThread(GetCurrentThread());
+    DetourAttach((PVOID*)&real_CoCreateInstance, (PVOID)fake_CoCreateInstance);
+    DetourTransactionCommit();
+    */
+
+    hook_patch_iat(GetModuleHandle(NULL), FALSE, "ole32.dll", "CoCreateInstance", (PROC)fake_CoCreateInstance);
+
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);
     hook_patch_iat(GetModuleHandle(NULL), FALSE, "dinput.dll", "DirectInputCreateEx", (PROC)fake_DirectInputCreateEx);
@@ -492,6 +502,8 @@ void hook_exit()
 
         hook_revert((HOOKLIST*)&g_hooks);
     }
+
+    hook_patch_iat(GetModuleHandle(NULL), TRUE, "ole32.dll", "CoCreateInstance", (PROC)fake_CoCreateInstance);
 
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateA", (PROC)fake_DirectInputCreateA);
     hook_patch_iat(GetModuleHandle(NULL), TRUE, "dinput.dll", "DirectInputCreateW", (PROC)fake_DirectInputCreateW);

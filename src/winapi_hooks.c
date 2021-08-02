@@ -3,6 +3,7 @@
 #include <math.h>
 #include "debug.h"
 #include "dd.h"
+#include "ddraw.h"
 #include "hook.h"
 #include "config.h"
 #include "utils.h"
@@ -629,4 +630,23 @@ HWND WINAPI fake_CreateWindowExA(
         hMenu,
         hInstance,
         lpParam);
+}
+
+HRESULT WINAPI fake_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID* ppv)
+{
+    if (rclsid && riid && (IsEqualGUID(&CLSID_DirectDraw, rclsid) || IsEqualGUID(&CLSID_DirectDraw7, rclsid)))
+    {
+        if (IsEqualGUID(&IID_IDirectDraw2, riid) ||
+            IsEqualGUID(&IID_IDirectDraw4, riid) || 
+            IsEqualGUID(&IID_IDirectDraw7, riid))
+        {
+            return dd_CreateEx(NULL, ppv, NULL, NULL);
+        }
+        else
+        {
+            return dd_CreateEx(NULL, ppv, &IID_IDirectDraw, NULL);
+        }
+    }
+
+    return real_CoCreateInstance(rclsid, pUnkOuter, dwClsContext, riid, ppv);
 }

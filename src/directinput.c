@@ -236,7 +236,7 @@ HRESULT WINAPI fake_DirectInputCreateEx(
     if (!real_DirectInputCreateEx)
     {
         real_DirectInputCreateEx =
-            (DIRECTINPUTCREATEEXPROC)GetProcAddress(GetModuleHandle("dinput.dll"), "DirectInputCreateEx");
+            (DIRECTINPUTCREATEEXPROC)GetProcAddress(LoadLibraryA("system32\\dinput.dll"), "DirectInputCreateEx");
     }
 
     if (!real_DirectInputCreateEx)
