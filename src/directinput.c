@@ -17,6 +17,7 @@ static DICREATEDEVICEEXPROC real_di_CreateDeviceEx;
 static DIDSETCOOPERATIVELEVELPROC real_did_SetCooperativeLevel;
 static DIDGETDEVICEDATAPROC real_did_GetDeviceData;
 static DIDGETDEVICESTATEPROC real_did_GetDeviceState;
+static LPDIRECTINPUTDEVICEA g_mouse_device;
 
 static PROC hook_func(PROC* org_func, PROC new_func)
 {
@@ -37,6 +38,16 @@ static PROC hook_func(PROC* org_func, PROC new_func)
 static HRESULT WINAPI fake_did_SetCooperativeLevel(IDirectInputDeviceA* This, HWND hwnd, DWORD dwFlags)
 {
     TRACE("DirectInput SetCooperativeLevel\n");
+
+    if (This == g_mouse_device && g_ddraw && (dwFlags & DISCL_EXCLUSIVE))
+    {
+        if (g_ddraw->locked || g_ddraw->devmode)
+        {
+            while (real_ShowCursor(FALSE) >= 0);
+        }
+
+        InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
+    }
 
     return real_did_SetCooperativeLevel(This, hwnd, DISCL_BACKGROUND | DISCL_NONEXCLUSIVE);
 }
@@ -97,14 +108,9 @@ static HRESULT WINAPI fake_di_CreateDevice(
 
     if (SUCCEEDED(result))
     {
-        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid) && g_ddraw)
+        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid))
         {
-            if (g_ddraw->locked || g_ddraw->devmode)
-            {
-                while (real_ShowCursor(FALSE) >= 0);
-            }
-
-            InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
+            g_mouse_device = *lplpDIDevice;
         }
 
         if (!real_did_SetCooperativeLevel)
@@ -139,14 +145,9 @@ static HRESULT WINAPI fake_di_CreateDeviceEx(
 
     if (SUCCEEDED(result))
     {
-        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid) && g_ddraw)
+        if (rguid && IsEqualGUID(&GUID_SysMouse, rguid))
         {
-            if (g_ddraw->locked || g_ddraw->devmode)
-            {
-                while (real_ShowCursor(FALSE) >= 0);
-            }
-
-            InterlockedExchange((LONG*)&g_ddraw->show_cursor_count, -1);
+            g_mouse_device = *lplpDIDevice;
         }
 
         if (!real_did_SetCooperativeLevel)
