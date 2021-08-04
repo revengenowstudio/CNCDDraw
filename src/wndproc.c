@@ -750,6 +750,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         if (g_ddraw->render.viewport.x != 0 || g_ddraw->render.viewport.y != 0)
         {
             InterlockedExchange(&g_ddraw->render.clear_screen, TRUE);
+            ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
         }
         break;
     }
