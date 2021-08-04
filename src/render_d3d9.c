@@ -416,6 +416,11 @@ DWORD WINAPI d3d9_render_main(void)
                 }
             }
 
+            if (InterlockedExchange(&g_ddraw->render.clear_screen, FALSE))
+            {
+                IDirect3DDevice9_Clear(g_d3d9.device, 0, NULL, D3DCLEAR_TARGET, D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0);
+            }
+
             g_ddraw->child_window_exists = FALSE;
             EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
 

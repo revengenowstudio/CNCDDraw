@@ -659,7 +659,7 @@ static void ogl_render()
                 if (glGetError() != GL_NO_ERROR)
                     g_ogl.use_opengl = FALSE;
             }
-            else if (g_ddraw->wine)
+            else if (g_ddraw->wine || InterlockedExchange(&g_ddraw->render.clear_screen, FALSE))
             {
                 glClear(GL_COLOR_BUFFER_BIT);
             }

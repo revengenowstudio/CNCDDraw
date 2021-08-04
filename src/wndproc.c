@@ -27,8 +27,6 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         lParam);
     */
 
-    RECT rc = { 0, 0, g_ddraw->render.width, g_ddraw->render.height };
-
     static BOOL in_size_move = FALSE;
     static int redraw_count = 0;
 
@@ -749,10 +747,10 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     case WM_ERASEBKGND:
     {
-        EnterCriticalSection(&g_ddraw->cs);
-        FillRect(g_ddraw->render.hdc, &rc, (HBRUSH)GetStockObject(BLACK_BRUSH));
-        ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
-        LeaveCriticalSection(&g_ddraw->cs);
+        if (g_ddraw->maintas || g_ddraw->boxing)
+        {
+            InterlockedExchange(&g_ddraw->render.clear_screen, TRUE);
+        }
         break;
     }
     }

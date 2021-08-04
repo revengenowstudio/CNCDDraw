@@ -83,6 +83,7 @@ typedef struct CNCDDRAW
 
         LONG palette_updated;
         LONG surface_updated;
+        LONG clear_screen;
 
         float scale_w;
         float scale_h;
