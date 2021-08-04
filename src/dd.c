@@ -664,7 +664,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
             real_SetWindowLongA(
                 g_ddraw->hwnd,
                 GWL_STYLE,
-                (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW));// &~WS_MAXIMIZEBOX);
+                (GetWindowLong(g_ddraw->hwnd, GWL_STYLE) | WS_OVERLAPPEDWINDOW) & ~WS_MAXIMIZE);
         }
 
         if (g_ddraw->wine)
