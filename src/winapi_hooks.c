@@ -471,6 +471,20 @@ int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UI
     return real_MapWindowPoints(hWndFrom, hWndTo, lpPoints, cPoints);
 }
 
+BOOL WINAPI fake_ShowWindow(HWND hWnd, int nCmdShow)
+{
+    if (g_ddraw && g_ddraw->hwnd == hWnd)
+    {
+        if (nCmdShow == SW_SHOWMAXIMIZED)
+            nCmdShow = SW_SHOWNORMAL;
+
+        if (nCmdShow == SW_MAXIMIZE)
+            nCmdShow = SW_NORMAL;
+    }
+
+    return real_ShowWindow(hWnd, nCmdShow);
+}
+
 HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId)
 {
     if (idHook == WH_KEYBOARD_LL && hmod && GetModuleHandle("AcGenral") == hmod)

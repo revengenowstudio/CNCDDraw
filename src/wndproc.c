@@ -524,7 +524,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             {
                 if (g_ddraw->renderer != d3d9_render_main)
                 {
-                    ShowWindow(g_ddraw->hwnd, SW_MINIMIZE);
+                    real_ShowWindow(g_ddraw->hwnd, SW_MINIMIZE);
                     ChangeDisplaySettings(NULL, g_ddraw->bnet_active ? CDS_FULLSCREEN : 0);
                 }
             }
