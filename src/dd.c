@@ -759,15 +759,11 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
     if (g_ddraw->render.viewport.x != 0 || g_ddraw->render.viewport.y != 0)
     {
         RedrawWindow(g_ddraw->hwnd, NULL, NULL, RDW_ERASE | RDW_INVALIDATE);
+        InterlockedExchange(&g_ddraw->render.clear_screen, TRUE);
     }
 
     if (g_ddraw->render.thread == NULL)
     {
-        if (g_ddraw->maintas || g_ddraw->boxing)
-        {
-            InterlockedExchange(&g_ddraw->render.clear_screen, TRUE);
-        }
-
         InterlockedExchange(&g_ddraw->render.palette_updated, TRUE);
         InterlockedExchange(&g_ddraw->render.surface_updated, TRUE);
         ReleaseSemaphore(g_ddraw->render.sem, 1, NULL);
