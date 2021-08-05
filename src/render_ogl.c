@@ -654,11 +654,13 @@ static void ogl_render()
 
             static int error_check_count = 0;
 
-            if (error_check_count < 20)
+            if (error_check_count < 10)
             {
                 error_check_count++;
 
-                if (glGetError() != GL_NO_ERROR)
+                GLenum err = glGetError();
+
+                if (err != GL_NO_ERROR && err != GL_INVALID_FRAMEBUFFER_OPERATION)
                     g_ogl.use_opengl = FALSE;
             }
 
