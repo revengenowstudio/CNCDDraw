@@ -548,6 +548,7 @@ static void ogl_init_scale_program()
 static void ogl_render()
 {
     BOOL needs_update = FALSE;
+    LONG clear_count = 0;
 
     glViewport(
         g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
@@ -577,6 +578,9 @@ static void ogl_render()
         static int tex_index = 0, pal_index = 0;
 
         BOOL scale_changed = FALSE;
+
+        if (InterlockedExchange(&g_ddraw->render.clear_screen, FALSE))
+            clear_count = 10;
 
         fpsl_frame_start();
 
@@ -652,16 +656,10 @@ static void ogl_render()
 
             if (error_check_count < 20)
             {
-                glClear(GL_COLOR_BUFFER_BIT);
-
                 error_check_count++;
 
                 if (glGetError() != GL_NO_ERROR)
                     g_ogl.use_opengl = FALSE;
-            }
-            else if (g_ddraw->wine || InterlockedExchange(&g_ddraw->render.clear_screen, FALSE))
-            {
-                glClear(GL_COLOR_BUFFER_BIT);
             }
 
             g_ddraw->child_window_exists = FALSE;
@@ -691,6 +689,16 @@ static void ogl_render()
         }
 
         LeaveCriticalSection(&g_ddraw->cs);
+
+        if (g_ddraw->wine)
+        {
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else if (clear_count > 0)
+        {
+            clear_count--;
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
 
         if (scale_changed)
         {
