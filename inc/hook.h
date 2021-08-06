@@ -5,8 +5,11 @@
 #include <windows.h>
 
 
-typedef struct HOOKLISTDATA { char function_name[32]; PROC new_function; PROC* function; } HOOKLISTDATA;
-typedef struct HOOKLIST { char module_name[32]; BOOL enabled; HOOKLISTDATA data[24]; } HOOKLIST;
+#define SKIP_HOOK2 0x00000001l
+#define SKIP_HOOK3 0x00000002l
+
+typedef struct HOOKLISTDATA { char function_name[32]; PROC new_function; PROC* function; DWORD flags; } HOOKLISTDATA;
+typedef struct HOOKLIST { char module_name[32]; HOOKLISTDATA data[24]; } HOOKLIST;
 
 typedef BOOL(WINAPI* GETCURSORPOSPROC)(LPPOINT);
 typedef BOOL(WINAPI* CLIPCURSORPROC)(const RECT*);
@@ -78,7 +81,7 @@ void hook_early_init();
 void hook_exit();
 void hook_patch_iat(HMODULE hmod, BOOL unhook, char* module_name, char* function_name, PROC new_function);
 void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks);
-void hook_create(HOOKLIST* hooks);
+void hook_create(HOOKLIST* hooks, BOOL initial_hook);
 void hook_revert(HOOKLIST* hooks);
 
 #endif

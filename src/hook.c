@@ -51,58 +51,54 @@ static HOOKLIST g_hooks[] =
 {
     {
         "user32.dll",
-        TRUE,
         {
-            { "GetCursorPos", (PROC)fake_GetCursorPos, (PROC*)&real_GetCursorPos },
-            { "ClipCursor", (PROC)fake_ClipCursor, (PROC*)&real_ClipCursor },
-            { "ShowCursor", (PROC)fake_ShowCursor, (PROC*)&real_ShowCursor },
-            { "SetCursor", (PROC)fake_SetCursor, (PROC*)&real_SetCursor },
-            { "GetWindowRect", (PROC)fake_GetWindowRect, (PROC*)&real_GetWindowRect },
-            { "GetClientRect", (PROC)fake_GetClientRect, (PROC*)&real_GetClientRect },
-            { "ClientToScreen", (PROC)fake_ClientToScreen, (PROC*)&real_ClientToScreen },
-            { "ScreenToClient", (PROC)fake_ScreenToClient, (PROC*)&real_ScreenToClient },
-            { "SetCursorPos", (PROC)fake_SetCursorPos, (PROC*)&real_SetCursorPos },
-            { "GetClipCursor", (PROC)fake_GetClipCursor, (PROC*)&real_GetClipCursor },
-            { "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC*)&real_WindowFromPoint },
-            { "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC*)&real_GetCursorInfo },
-            { "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC*)&real_GetSystemMetrics },
-            { "SetWindowPos", (PROC)fake_SetWindowPos, (PROC*)&real_SetWindowPos },
-            { "MoveWindow", (PROC)fake_MoveWindow, (PROC*)&real_MoveWindow },
-            { "SendMessageA", (PROC)fake_SendMessageA, (PROC*)&real_SendMessageA },
-            { "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC*)&real_SetWindowLongA },
-            { "GetWindowLongA", (PROC)fake_GetWindowLongA, (PROC*)&real_GetWindowLongA },
-            { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow },
-            { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA },
-            { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow },
-            { "MapWindowPoints", (PROC)fake_MapWindowPoints, (PROC*)&real_MapWindowPoints },
-            { "ShowWindow", (PROC)fake_ShowWindow, (PROC*)&real_ShowWindow },
-            { "", NULL, NULL }
+            { "GetCursorPos", (PROC)fake_GetCursorPos, (PROC*)&real_GetCursorPos, 0 },
+            { "ClipCursor", (PROC)fake_ClipCursor, (PROC*)&real_ClipCursor, 0 },
+            { "ShowCursor", (PROC)fake_ShowCursor, (PROC*)&real_ShowCursor, 0 },
+            { "SetCursor", (PROC)fake_SetCursor, (PROC*)&real_SetCursor, 0 },
+            { "GetWindowRect", (PROC)fake_GetWindowRect, (PROC*)&real_GetWindowRect, SKIP_HOOK3 },
+            { "GetClientRect", (PROC)fake_GetClientRect, (PROC*)&real_GetClientRect, SKIP_HOOK3 },
+            { "ClientToScreen", (PROC)fake_ClientToScreen, (PROC*)&real_ClientToScreen, 0 },
+            { "ScreenToClient", (PROC)fake_ScreenToClient, (PROC*)&real_ScreenToClient, 0 },
+            { "SetCursorPos", (PROC)fake_SetCursorPos, (PROC*)&real_SetCursorPos, 0 },
+            { "GetClipCursor", (PROC)fake_GetClipCursor, (PROC*)&real_GetClipCursor, 0 },
+            { "WindowFromPoint", (PROC)fake_WindowFromPoint, (PROC*)&real_WindowFromPoint, 0 },
+            { "GetCursorInfo", (PROC)fake_GetCursorInfo, (PROC*)&real_GetCursorInfo, 0 },
+            { "GetSystemMetrics", (PROC)fake_GetSystemMetrics, (PROC*)&real_GetSystemMetrics, 0 },
+            { "SetWindowPos", (PROC)fake_SetWindowPos, (PROC*)&real_SetWindowPos, 0 },
+            { "MoveWindow", (PROC)fake_MoveWindow, (PROC*)&real_MoveWindow, 0 },
+            { "SendMessageA", (PROC)fake_SendMessageA, (PROC*)&real_SendMessageA, 0 },
+            { "SetWindowLongA", (PROC)fake_SetWindowLongA, (PROC*)&real_SetWindowLongA, 0 },
+            { "GetWindowLongA", (PROC)fake_GetWindowLongA, (PROC*)&real_GetWindowLongA, 0 },
+            { "EnableWindow", (PROC)fake_EnableWindow, (PROC*)&real_EnableWindow, 0 },
+            { "CreateWindowExA", (PROC)fake_CreateWindowExA, (PROC*)&real_CreateWindowExA, 0 },
+            { "DestroyWindow", (PROC)fake_DestroyWindow, (PROC*)&real_DestroyWindow, 0 },
+            { "MapWindowPoints", (PROC)fake_MapWindowPoints, (PROC*)&real_MapWindowPoints, 0 },
+            { "ShowWindow", (PROC)fake_ShowWindow, (PROC*)&real_ShowWindow, 0 },
+            { "", NULL, NULL, 0 }
         }
     },
     {
         "gdi32.dll",
-        TRUE,
         {
-            { "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps },
-            { "", NULL, NULL }
+            { "GetDeviceCaps", (PROC)fake_GetDeviceCaps, (PROC*)&real_GetDeviceCaps, SKIP_HOOK3 },
+            { "", NULL, NULL, 0 }
         }
     },
     {
         "kernel32.dll",
-        FALSE,
         {
-            { "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA },
-            { "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW },
-            { "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA },
-            { "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW },
-            { "", NULL, NULL }
+            { "LoadLibraryA", (PROC)fake_LoadLibraryA, (PROC*)&real_LoadLibraryA, SKIP_HOOK2 | SKIP_HOOK3 },
+            { "LoadLibraryW", (PROC)fake_LoadLibraryW, (PROC*)&real_LoadLibraryW, SKIP_HOOK2 | SKIP_HOOK3 },
+            { "LoadLibraryExA", (PROC)fake_LoadLibraryExA, (PROC*)&real_LoadLibraryExA, SKIP_HOOK2 | SKIP_HOOK3 },
+            { "LoadLibraryExW", (PROC)fake_LoadLibraryExW, (PROC*)&real_LoadLibraryExW, SKIP_HOOK2 | SKIP_HOOK3 },
+            { "", NULL, NULL, 0 }
         }
     },
     {
         "",
-        FALSE,
         {
-            { "", NULL, NULL }
+            { "", NULL, NULL, 0 }
         }
     }
 };
@@ -112,7 +108,6 @@ void hook_patch_iat(HMODULE hmod, BOOL unhook, char* module_name, char* function
     HOOKLIST hooks[2];
     memset(&hooks, 0, sizeof(hooks));
 
-    hooks[0].enabled = TRUE;
     hooks[0].data[0].new_function = new_function;
 
     strncpy(hooks[0].module_name, module_name, sizeof(hooks[0].module_name) - 1);
@@ -148,9 +143,6 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
         {
             for (int i = 0; hooks[i].module_name[0]; i++)
             {
-                if (!hooks[i].enabled)
-                    continue;
-
                 char* imp_module_name = (char*)((DWORD)dos_header + (DWORD)(import_desc->Name));
 
                 if (_stricmp(imp_module_name, hooks[i].module_name) == 0)
@@ -222,18 +214,21 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
 #endif
 }
 
-void hook_create(HOOKLIST* hooks)
+void hook_create(HOOKLIST* hooks, BOOL initial_hook)
 {
 #ifdef _MSC_VER
-    if (g_hook_method == 2)
+    if ((g_hook_method == 2 || g_hook_method == 3) && initial_hook)
     {
         for (int i = 0; hooks[i].module_name[0]; i++)
         {
-            if (!hooks[i].enabled)
-                continue;
-
             for (int x = 0; hooks[i].data[x].function_name[0]; x++)
             {
+                if (g_hook_method == 2 && (hooks[i].data[x].flags & SKIP_HOOK2))
+                    continue;
+
+                if (g_hook_method == 3 && (hooks[i].data[x].flags & SKIP_HOOK3))
+                    continue;
+
                 DetourTransactionBegin();
                 DetourUpdateThread(GetCurrentThread());
                 DetourAttach((PVOID*)hooks[i].data[x].function, (PVOID)hooks[i].data[x].new_function);
@@ -304,15 +299,18 @@ void hook_create(HOOKLIST* hooks)
 void hook_revert(HOOKLIST* hooks)
 {
 #ifdef _MSC_VER
-    if (g_hook_method == 2)
+    if (g_hook_method == 2 || g_hook_method == 3)
     {
         for (int i = 0; hooks[i].module_name[0]; i++)
         {
-            if (!hooks[i].enabled)
-                continue;
-
             for (int x = 0; hooks[i].data[x].function_name[0]; x++)
             {
+                if (g_hook_method == 2 && (hooks[i].data[x].flags & SKIP_HOOK2))
+                    continue;
+
+                if (g_hook_method == 3 && (hooks[i].data[x].flags & SKIP_HOOK3))
+                    continue;
+
                 DetourTransactionBegin();
                 DetourUpdateThread(GetCurrentThread());
                 DetourDetach((PVOID*)hooks[i].data[x].function, (PVOID)hooks[i].data[x].new_function);
@@ -375,8 +373,10 @@ void hook_init()
 {
     if (!g_hook_active || g_hook_method == 3 || g_hook_method == 4)
     {
+        BOOL initial_hook = !g_hook_active;
+
 #ifdef _MSC_VER
-        if (!g_hook_active && g_hook_method == 3)
+        if (initial_hook && g_hook_method == 3)
         {
             real_DirectInputCreateA =
                 (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
@@ -426,18 +426,7 @@ void hook_init()
 
         g_hook_active = TRUE;
 
-        if (g_hook_method == 3 || g_hook_method == 4)
-        {
-            for (int i = 0; g_hooks[i].module_name[0]; i++)
-            {
-                if (_stricmp(g_hooks[i].module_name, "kernel32.dll") == 0)
-                {
-                    g_hooks[i].enabled = TRUE;
-                }
-            }
-        }
-
-        hook_create((HOOKLIST*)&g_hooks);
+        hook_create((HOOKLIST*)&g_hooks, initial_hook);
     }
 }
 
