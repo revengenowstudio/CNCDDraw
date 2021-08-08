@@ -408,6 +408,7 @@ static void cfg_create_ini()
             "\n"
             "; Atlantis\n"
             "[ATLANTIS]\n"
+            "renderer=opengl\n"
             "maxgameticks=60\n"
             "\n"
             "; Blade & Sword\n"
