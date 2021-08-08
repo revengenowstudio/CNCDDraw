@@ -632,6 +632,7 @@ void __fastcall TConfigForm::RendererCbxChange(TObject *Sender)
 
 void __fastcall TConfigForm::ShaderCbxChange(TObject *Sender)
 {
+    RendererCbx->ItemIndex = 2;
 	SaveSettings();
 }
 
