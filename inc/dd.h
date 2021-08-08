@@ -121,7 +121,6 @@ typedef struct CNCDDRAW
     BOOL fixwndprochook;
     BOOL d3d9linear;
     BOOL gdilinear;
-    BOOL passthrough;
     int resolutions;
     BOOL armadahack;
     BOOL tshack;

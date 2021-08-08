@@ -1022,29 +1022,7 @@ HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB)
 
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter)
 {
-    if (g_ddraw)
-    {
-        if (g_ddraw->passthrough)
-        {
-            if (iid && IsEqualGUID(&IID_IDirectDraw, iid))
-            {
-                if (!g_ddraw->real_dll)
-                    g_ddraw->real_dll = LoadLibrary("system32\\ddraw.dll");
-
-                if (g_ddraw->real_dll && !g_ddraw->DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate = (void*)GetProcAddress(g_ddraw->real_dll, "DirectDrawCreate");
-
-                if (g_ddraw->DirectDrawCreate == DirectDrawCreate)
-                    g_ddraw->DirectDrawCreate = NULL;
-
-                if (g_ddraw->DirectDrawCreate)
-                    return g_ddraw->DirectDrawCreate(lpGuid, (LPDIRECTDRAW*)lplpDD, pUnkOuter);
-            }
-
-            return DDERR_DIRECTDRAWALREADYCREATED;
-        }
-    }
-    else
+    if (!g_ddraw)
     {
         g_ddraw = (CNCDDRAW*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(CNCDDRAW));
         g_ddraw->ref++;
