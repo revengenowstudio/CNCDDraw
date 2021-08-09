@@ -78,7 +78,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 
 		RendererCbx->Items->Clear();
 		RendererCbx->AddItem(L"自动", NULL);
-		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
 		RendererCbx->AddItem(L"OpenGL", NULL);
 		RendererCbx->AddItem(L"GDI", NULL);
 
@@ -128,7 +128,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 
 		RendererCbx->Items->Clear();
 		RendererCbx->AddItem(L"Automático", NULL);
-		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
 		RendererCbx->AddItem(L"OpenGL", NULL);
 		RendererCbx->AddItem(L"GDI", NULL);
 
@@ -178,7 +178,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 
 		RendererCbx->Items->Clear();
 		RendererCbx->AddItem(L"Automatisch", NULL);
-		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
 		RendererCbx->AddItem(L"OpenGL", NULL);
 		RendererCbx->AddItem(L"GDI", NULL);
 
@@ -199,6 +199,60 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 		MaxgameticksCbx->AddItem(L"25 Ticks pro Sekunde", NULL);
 		MaxgameticksCbx->AddItem(L"15 Ticks pro Sekunde", NULL);
 	}
+	else if (lang == "russian" || (lang == "auto" && priID == LANG_RUSSIAN)) {
+		LanguageImg->Visible = true;
+		ClientWidth *= 1.13;
+		DisplayPnl->Width *= 1.184;
+		AdvancedPnl->Width *= 1.184;
+		CompatibilityPnl->Width *= 1.184;
+
+		/* -Russian- made by shikulja @ github */
+
+		ConfigForm->Caption = L"Настройки cnc-ddraw";
+		DisplayBtn->Caption = L"Настройки отображения";
+		AdvancedBtn->Caption = L"Расширенные настройки";
+		CompatibilityBtn->Caption = L"Настройки совместимости";
+		PresentationLbl->Caption = L"Отображение";
+		MaintasLbl->Caption = L"Сохранять соотношение сторон";
+		VsyncLbl->Caption = L"Включить VSync";
+		AdjmouseLbl->Caption = L"Регулировка чувствительности мыши";
+		DevmodeLbl->Caption = L"Зафиксировать курсор на окне / экране";
+		RendererLbl->Caption = L"Рендер";
+		BorderLbl->Caption = L"Отображение границ окна в оконном режиме";
+		SavesettingsLbl->Caption = L"Запомнить положение и размер окна";
+		ShaderLbl->Caption = L"Шейдер OpenGL";
+		MaxfpsLbl->Caption = L"Ограничить частоту кадров";
+		BoxingLbl->Caption = L"Включить windowboxing / целочисленное масштабирование";
+		MaxgameticksLbl->Caption = L"Ограничить скорость игры";
+		NoactivateappLbl->Caption = L"Исправить сломанный Alt+Tab";
+		HookLbl->Caption = L"Исправить сломанный оконный режим или масштабированние";
+		MinfpsLbl->Caption = L"Принудительно высокий FPS / Исправить заикание при Freesync/G-Sync";
+		FixpitchLbl->Caption = L"Исправить проблемы с отображением отрисовки по диагонали";
+		NonexclusiveLbl->Caption = L"Исправить невидимые видео / элементы пользовательского интерфейса";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem(L"Автоматический", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem(L"Полноэкранный", NULL);
+		PresentationCbx->AddItem(L"Полноэкранный масштабированный", NULL);
+		PresentationCbx->AddItem(L"Без границ", NULL);
+		PresentationCbx->AddItem(L"Оконный", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem(L"Без ограничений", NULL);
+		MaxgameticksCbx->AddItem(L"Синхронизация с частотой обновления монитора", NULL);
+		MaxgameticksCbx->AddItem(L"Эмуляция частоты обновления монитора 60 Гц", NULL);
+		MaxgameticksCbx->AddItem(L"1000 тиков в секунду", NULL);
+		MaxgameticksCbx->AddItem(L"500 тиков в секунду", NULL);
+		MaxgameticksCbx->AddItem(L"60 тиков в секунду", NULL);
+		MaxgameticksCbx->AddItem(L"30 тиков в секунду", NULL);
+		MaxgameticksCbx->AddItem(L"25 тиков в секунду", NULL);
+		MaxgameticksCbx->AddItem(L"15 тиков в секунду", NULL);
+	}
 	else {
 		IsEnglish = true;
 
@@ -218,6 +272,12 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 			else if (priID == LANG_GERMAN) {
 				TPngImage *png = new TPngImage();
 				png->LoadFromResourceName((int)HInstance, "PngImage_DE");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
+			else if (priID == LANG_RUSSIAN) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_RU");
 				LanguageImg->Picture->Graphic = png;
 				LanguageImg->Visible = true;
 			}
@@ -249,7 +309,7 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 
 		RendererCbx->Items->Clear();
 		RendererCbx->AddItem(L"Automatic", NULL);
-		RendererCbx->AddItem(L"Direct3D9", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
 		RendererCbx->AddItem(L"OpenGL", NULL);
 		RendererCbx->AddItem(L"GDI", NULL);
 

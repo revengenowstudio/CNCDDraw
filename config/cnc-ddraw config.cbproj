@@ -143,6 +143,10 @@
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>PngImage_ES</ResourceId>
         </RcItem>
+        <RcItem Include="Resources\RU.png">
+            <ResourceType>RCDATA</ResourceType>
+            <ResourceId>PngImage_RU</ResourceId>
+        </RcItem>
         <RcItem Include="Resources\US.png">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>PngImage_US</ResourceId>
@@ -244,6 +248,12 @@
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Resources\US.png" Configuration="Release" Class="ProjectFile">
+                    <Platform Name="Win32">
+                        <RemoteDir>.\</RemoteDir>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Resources\RU.png" Configuration="Release" Class="ProjectFile">
                     <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>

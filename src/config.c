@@ -288,7 +288,7 @@ static void cfg_create_ini()
             "; Enable upscale hack for high resolution patches (Supports C&C1, Red Alert 1 and KKND Xtreme)\n"
             "vhack=false\n"
             "\n"
-            "; cnc-ddraw config program language, possible values: auto, english, chinese, german, spanish\n"
+            "; cnc-ddraw config program language, possible values: auto, english, chinese, german, spanish, russian\n"
             "configlang=auto\n"
             "\n"
             "\n"
