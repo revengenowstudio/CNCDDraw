@@ -278,7 +278,9 @@ void hook_create(HOOKLIST* hooks, BOOL initial_hook)
                         _strcmpi(mod_filename, "Shw32") == 0)
                         continue;
 
-                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
+                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0 ||
+                        _strcmpi(mod_filename, "quartz") == 0 ||
+                        _strcmpi(mod_filename, "winmm") == 0)
                     {
                         hook_patch_iat_list(hmod, FALSE, hooks);
                     }
@@ -331,6 +333,7 @@ void hook_revert(HOOKLIST* hooks)
 
             char mod_path[MAX_PATH] = { 0 };
             char mod_dir[MAX_PATH] = { 0 };
+            char mod_filename[MAX_PATH] = { 0 };
             HMODULE hmod = NULL;
             HANDLE process = NULL;
 
@@ -349,9 +352,11 @@ void hook_revert(HOOKLIST* hooks)
 
                 if (GetModuleFileNameA(hmod, mod_path, MAX_PATH))
                 {
-                    _splitpath(mod_path, NULL, mod_dir, NULL, NULL);
+                    _splitpath(mod_path, NULL, mod_dir, mod_filename, NULL);
 
-                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0)
+                    if (_strnicmp(game_dir, mod_dir, strlen(game_dir)) == 0 ||
+                        _strcmpi(mod_filename, "quartz") == 0 ||
+                        _strcmpi(mod_filename, "winmm") == 0)
                     {
                         hook_patch_iat_list(hmod, TRUE, hooks);
                     }
