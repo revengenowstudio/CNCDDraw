@@ -49,7 +49,7 @@ void cfg_load()
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
     g_ddraw->nonexclusive = cfg_get_bool("nonexclusive", FALSE);
     g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
-    g_ddraw->fixchildwindows = cfg_get_bool("fixchildwindows", TRUE);
+    g_ddraw->fixchilds = cfg_get_int("fixchilds", FIX_CHILDS_DETECT_PAINT);
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
@@ -282,7 +282,7 @@ static void cfg_create_ini()
             "; Should the window be resizable by the user in windowed mode?\n"
             "resizable=true\n"
             "\n"
-            "; Enable linear (D3DTEXF_LINEAR) upscaling filter for the direct3d9 renderer (16 bit color depth games only)\n"
+            "; Enable linear (D3DTEXF_LINEAR) upscaling filter for the direct3d9 renderer\n"
             "d3d9linear=true\n"
             "\n"
             "; Enable upscale hack for high resolution patches (Supports C&C1, Red Alert 1 and KKND Xtreme)\n"
@@ -328,6 +328,10 @@ static void cfg_create_ini()
             "; Available resolutions, possible values: 0 = Small list, 1 = Very small list, 2 = Full list\n"
             "; Note: Set this to 2 if your chosen resolution is not working, set to 1 if the game is crashing\n"
             "resolutions=0\n"
+            "\n"
+            "; Child window handling, possible values: 0 = Disabled, 1 = Display top left, 2 = Display top left + repaint\n"
+            "; Note: Disables upscaling if a child window was detected\n"
+            "fixchilds=2\n"
             "\n"
             "\n"
             "\n"
@@ -641,7 +645,7 @@ static void cfg_create_ini()
             "\n"
             "; Deadlock 2\n"
             "[DEADLOCK]\n"
-            "fixchildwindows=false\n"
+            "fixchilds=0\n"
             "adjmouse=false\n"
             "maintas=false\n"
             "boxing=false\n"
@@ -869,7 +873,7 @@ static void cfg_create_ini()
             "nonexclusive=true\n"
             "maxgameticks=60\n"
             "adjmouse=true\n"
-            "fixchildwindows=false\n"
+            "fixchilds=1\n"
             "maintas=false\n"
             "boxing=false\n"
             "\n"

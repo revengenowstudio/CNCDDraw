@@ -374,7 +374,7 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
     {
         g_ddraw->got_child_windows = g_ddraw->child_window_exists = TRUE;
 
-        if (g_ddraw->fixchildwindows)
+        if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_PAINT)
         {
             HDC dst_dc = GetDC(hwnd);
             HDC src_dc;

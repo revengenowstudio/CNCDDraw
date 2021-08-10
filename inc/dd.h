@@ -22,6 +22,10 @@ HRESULT dd_GetAvailableVidMem(LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpd
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 
+#define FIX_CHILDS_DISABLED 0
+#define FIX_CHILDS_DETECT 1
+#define FIX_CHILDS_DETECT_PAINT 2
+
 #define RESLIST_NORMAL 0
 #define RESLIST_MINI 1
 #define RESLIST_FULL 2
@@ -117,7 +121,7 @@ typedef struct CNCDDRAW
     BOOL resizable;
     BOOL nonexclusive;
     BOOL fixpitch;
-    BOOL fixchildwindows;
+    int fixchilds;
     BOOL fixwndprochook;
     BOOL d3d9linear;
     BOOL gdilinear;

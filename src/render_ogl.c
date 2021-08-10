@@ -664,28 +664,31 @@ static void ogl_render()
                     g_ogl.use_opengl = FALSE;
             }
 
-            g_ddraw->child_window_exists = FALSE;
-            EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-
-            if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
+            if (g_ddraw->fixchilds)
             {
-                if (g_ddraw->child_window_exists)
-                {
-                    glClear(GL_COLOR_BUFFER_BIT);
+                g_ddraw->child_window_exists = FALSE;
+                EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
 
-                    if (!needs_update)
+                if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
+                {
+                    if (g_ddraw->child_window_exists)
                     {
-                        glViewport(0, g_ddraw->render.height - g_ddraw->height, g_ddraw->width, g_ddraw->height);
-                        needs_update = TRUE;
-                    }
-                }
-                else if (needs_update)
-                {
-                    glViewport(
-                        g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
-                        g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+                        glClear(GL_COLOR_BUFFER_BIT);
 
-                    needs_update = FALSE;
+                        if (!needs_update)
+                        {
+                            glViewport(0, g_ddraw->render.height - g_ddraw->height, g_ddraw->width, g_ddraw->height);
+                            needs_update = TRUE;
+                        }
+                    }
+                    else if (needs_update)
+                    {
+                        glViewport(
+                            g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
+                            g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+
+                        needs_update = FALSE;
+                    }
                 }
             }
         }
