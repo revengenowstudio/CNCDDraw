@@ -25,6 +25,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 #define FIX_CHILDS_DISABLED 0
 #define FIX_CHILDS_DETECT 1
 #define FIX_CHILDS_DETECT_PAINT 2
+#define FIX_CHILDS_DETECT_HIDE 3
 
 #define RESLIST_NORMAL 0
 #define RESLIST_MINI 1

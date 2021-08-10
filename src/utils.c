@@ -1,5 +1,6 @@
 #include <windows.h>
 #include "ddraw.h"
+#include "debug.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "hook.h"
@@ -372,20 +373,44 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
     if (real_GetClientRect(hwnd, &size) && real_GetWindowRect(hwnd, &pos) && size.right > 1 && size.bottom > 1)
     {
-        g_ddraw->got_child_windows = g_ddraw->child_window_exists = TRUE;
+        //TRACE("     util_enum_child_proc right=%u, bottom=%u\n", size.right, size.bottom);
 
-        if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_PAINT)
+        if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_HIDE)
         {
-            HDC dst_dc = GetDC(hwnd);
-            HDC src_dc;
+            LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-            dds_GetDC(this, &src_dc);
+            if (!(style & WS_EX_TRANSPARENT))
+            {
+                real_SetWindowLongA(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
 
-            real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+                real_SetWindowPos(
+                    hwnd,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
+                );
+            }
+        }
+        else
+        {
+            g_ddraw->got_child_windows = g_ddraw->child_window_exists = TRUE;
 
-            BitBlt(dst_dc, 0, 0, size.right, size.bottom, src_dc, pos.left, pos.top, SRCCOPY);
+            if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_PAINT)
+            {
+                HDC dst_dc = GetDC(hwnd);
+                HDC src_dc;
 
-            ReleaseDC(hwnd, dst_dc);
+                dds_GetDC(this, &src_dc);
+
+                real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+
+                BitBlt(dst_dc, 0, 0, size.right, size.bottom, src_dc, pos.left, pos.top, SRCCOPY);
+
+                ReleaseDC(hwnd, dst_dc);
+            }
         }
     }
 
