@@ -21,7 +21,7 @@ CNCDDRAWCONFIG g_config =
 
 void cfg_load()
 {
-    /* set up settings ini */
+    /* set up settings ini .*/
     char cwd[MAX_PATH];
     char tmp[256];
     GetCurrentDirectoryA(sizeof(cwd), cwd);
