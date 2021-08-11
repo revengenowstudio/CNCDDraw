@@ -54,7 +54,6 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
-    g_hook_dinput = cfg_get_bool("dinputhook", FALSE);
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
@@ -68,6 +67,7 @@ void cfg_load()
     g_config.save_settings = cfg_get_int("savesettings", 1);
 
     g_hook_method = cfg_get_int("hook", 4);
+    g_hook_dinput = cfg_get_bool("dinputhook", FALSE);
 
     g_ddraw->render.maxfps = cfg_get_int("maxfps", -1);
     g_ddraw->render.minfps = cfg_get_int("minfps", 0);
