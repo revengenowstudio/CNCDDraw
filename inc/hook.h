@@ -74,6 +74,7 @@ extern LOADLIBRARYEXWPROC real_LoadLibraryExW;
 extern COCREATEINSTANCEPROC real_CoCreateInstance;
 
 extern int g_hook_method;
+extern BOOL g_hook_dinput;
 extern BOOL g_hook_active;
 
 void hook_init();

@@ -14,6 +14,7 @@
 #endif
 
 BOOL g_hook_active;
+BOOL g_hook_dinput;
 int g_hook_method = 1;
 
 GETCURSORPOSPROC real_GetCursorPos = GetCursorPos;
@@ -381,7 +382,7 @@ void hook_init()
         BOOL initial_hook = !g_hook_active;
 
 #ifdef _MSC_VER
-        if (initial_hook && g_ddraw->dinputhook)
+        if (initial_hook && g_hook_dinput)
         {
             real_DirectInputCreateA =
                 (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
@@ -460,7 +461,7 @@ void hook_exit()
         g_hook_active = FALSE;
 
 #ifdef _MSC_VER
-        if (g_ddraw->dinputhook)
+        if (g_hook_dinput)
         {
             if (real_DirectInputCreateA)
             {

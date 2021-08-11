@@ -127,7 +127,6 @@ typedef struct CNCDDRAW
     BOOL d3d9linear;
     BOOL gdilinear;
     int resolutions;
-    BOOL dinputhook;
     BOOL armadahack;
     BOOL tshack;
     BOOL cnchack;

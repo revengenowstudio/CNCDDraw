@@ -54,7 +54,7 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
-    g_ddraw->dinputhook = cfg_get_bool("dinputhook", FALSE);
+    g_hook_dinput = cfg_get_bool("dinputhook", FALSE);
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
