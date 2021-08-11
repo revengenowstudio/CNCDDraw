@@ -400,8 +400,6 @@ static void cfg_create_ini()
             "; Anno 1602\n"
             "[1602]\n"
             "adjmouse=true\n"
-            "renderer=gdi\n"
-            "hook=2\n"
             "\n"
             "; Alien Nations\n"
             "[AN]\n"
