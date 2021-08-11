@@ -381,7 +381,7 @@ void hook_init()
         BOOL initial_hook = !g_hook_active;
 
 #ifdef _MSC_VER
-        if (initial_hook && g_hook_method == 3)
+        if (initial_hook && g_ddraw->dinputhook)
         {
             real_DirectInputCreateA =
                 (DIRECTINPUTCREATEAPROC)GetProcAddress(LoadLibraryA("dinput.dll"), "DirectInputCreateA");
@@ -459,7 +459,7 @@ void hook_exit()
         g_hook_active = FALSE;
 
 #ifdef _MSC_VER
-        if (g_hook_method == 3)
+        if (g_ddraw->dinputhook)
         {
             if (real_DirectInputCreateA)
             {

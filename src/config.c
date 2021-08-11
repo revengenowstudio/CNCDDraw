@@ -54,6 +54,7 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
+    g_ddraw->dinputhook = cfg_get_bool("dinputhook", FALSE);
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
@@ -754,11 +755,11 @@ static void cfg_create_ini()
             "; Moorhuhn\n"
             "[Moorhuhn]\n"
             "renderer=opengl\n"
-            "hook=3\n"
+            "dinputhook=true\n"
             "\n"
             "; Moorhuhn 2\n"
             "[Moorhuhn2]\n"
-            "hook=3\n"
+            "dinputhook=true\n"
             "\n"
             "; Outlaws\n"
             "[olwin]\n"
