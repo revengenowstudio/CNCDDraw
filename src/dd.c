@@ -684,7 +684,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
         RECT dst = { x, y, g_ddraw->render.width + x, g_ddraw->render.height + y };
 
         AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), FALSE);
-        real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+        real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
         real_MoveWindow(g_ddraw->hwnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
         BOOL d3d9_active = FALSE;
@@ -749,7 +749,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
             0,
             g_ddraw->render.width,
             g_ddraw->render.height,
-            SWP_SHOWWINDOW);
+            SWP_SHOWWINDOW | SWP_FRAMECHANGED);
 
         g_ddraw->last_set_window_pos_tick = timeGetTime();
 
