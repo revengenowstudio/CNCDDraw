@@ -6,15 +6,6 @@
 #include "ddraw.h"
 
 
-DEFINE_GUID(IID_IDirectDraw4, 0x9c59509a, 0x39bd, 0x11d1, 0x8c, 0x4a, 0x00, 0xc0, 0x4f, 0xd9, 0x30, 0xc5);
-DEFINE_GUID(IID_IDirectDraw7, 0x15e65ec0, 0x3b9c, 0x11d2, 0xb9, 0x2f, 0x00, 0x60, 0x97, 0x97, 0xea, 0x5b);
-
-typedef BOOL(FAR PASCAL* LPDDENUMCALLBACKEXA)(GUID FAR*, LPSTR, LPSTR, LPVOID, HMONITOR);
-typedef BOOL(FAR PASCAL* LPDDENUMCALLBACKEXW)(GUID FAR*, LPWSTR, LPWSTR, LPVOID, HMONITOR);
-
-extern struct IDirectDrawImplVtbl g_dd_vtbl1;
-extern struct IDirectDrawImplVtbl g_dd_vtblx;
-
 struct IDirectDrawImpl;
 struct IDirectDrawImplVtbl;
 
@@ -28,47 +19,53 @@ typedef struct IDirectDrawImpl
 
 typedef struct IDirectDrawImplVtbl IDirectDrawImplVtbl;
 
+#undef INTERFACE
+#define INTERFACE IDirectDrawImpl
 struct IDirectDrawImplVtbl
 {
-    HRESULT(__stdcall* QueryInterface) (IDirectDrawImpl*, const IID* const riid, LPVOID* ppvObj);
-    ULONG(__stdcall* AddRef) (IDirectDrawImpl*);
-    ULONG(__stdcall* Release) (IDirectDrawImpl*);
-
-    HRESULT(__stdcall* Compact)(IDirectDrawImpl*);
-    HRESULT(__stdcall* CreateClipper)(IDirectDrawImpl*, DWORD, LPDIRECTDRAWCLIPPER*, IUnknown*);
-    HRESULT(__stdcall* CreatePalette)(IDirectDrawImpl*, DWORD, LPPALETTEENTRY, LPDIRECTDRAWPALETTE*, IUnknown*);
-    HRESULT(__stdcall* CreateSurface)(IDirectDrawImpl*, LPDDSURFACEDESC, LPDIRECTDRAWSURFACE*, IUnknown*);
-    HRESULT(__stdcall* DuplicateSurface)(IDirectDrawImpl*, LPDIRECTDRAWSURFACE, LPDIRECTDRAWSURFACE*);
-    HRESULT(__stdcall* EnumDisplayModes)(IDirectDrawImpl*, DWORD, LPDDSURFACEDESC, LPVOID, LPDDENUMMODESCALLBACK);
-    HRESULT(__stdcall* EnumSurfaces)(IDirectDrawImpl*, DWORD, LPDDSURFACEDESC, LPVOID, LPDDENUMSURFACESCALLBACK);
-    HRESULT(__stdcall* FlipToGDISurface)(IDirectDrawImpl*);
-    HRESULT(__stdcall* GetCaps)(IDirectDrawImpl*, LPDDCAPS, LPDDCAPS);
-    HRESULT(__stdcall* GetDisplayMode)(IDirectDrawImpl*, LPDDSURFACEDESC);
-    HRESULT(__stdcall* GetFourCCCodes)(IDirectDrawImpl*, LPDWORD, LPDWORD);
-    HRESULT(__stdcall* GetGDISurface)(IDirectDrawImpl*, LPDIRECTDRAWSURFACE*);
-    HRESULT(__stdcall* GetMonitorFrequency)(IDirectDrawImpl*, LPDWORD);
-    HRESULT(__stdcall* GetScanLine)(IDirectDrawImpl*, LPDWORD);
-    HRESULT(__stdcall* GetVerticalBlankStatus)(IDirectDrawImpl*, LPBOOL);
-    HRESULT(__stdcall* Initialize)(IDirectDrawImpl*, GUID*);
-    HRESULT(__stdcall* RestoreDisplayMode)(IDirectDrawImpl*);
-    HRESULT(__stdcall* SetCooperativeLevel)(IDirectDrawImpl*, HWND, DWORD);
+    /*** IUnknown methods ***/
+    STDMETHOD(QueryInterface) (THIS_ REFIID riid, LPVOID FAR* ppvObj) PURE;
+    STDMETHOD_(ULONG, AddRef) (THIS)  PURE;
+    STDMETHOD_(ULONG, Release) (THIS) PURE;
+    /*** IDirectDraw methods ***/
+    STDMETHOD(Compact)(THIS) PURE;
+    STDMETHOD(CreateClipper)(THIS_ DWORD, LPDIRECTDRAWCLIPPER FAR*, IUnknown FAR*) PURE;
+    STDMETHOD(CreatePalette)(THIS_ DWORD, LPPALETTEENTRY, LPDIRECTDRAWPALETTE FAR*, IUnknown FAR*) PURE;
+    STDMETHOD(CreateSurface)(THIS_  LPDDSURFACEDESC2, LPDIRECTDRAWSURFACE7 FAR*, IUnknown FAR*) PURE;
+    STDMETHOD(DuplicateSurface)(THIS_ LPDIRECTDRAWSURFACE7, LPDIRECTDRAWSURFACE7 FAR*) PURE;
+    STDMETHOD(EnumDisplayModes)(THIS_ DWORD, LPDDSURFACEDESC2, LPVOID, LPDDENUMMODESCALLBACK2) PURE;
+    STDMETHOD(EnumSurfaces)(THIS_ DWORD, LPDDSURFACEDESC2, LPVOID, LPDDENUMSURFACESCALLBACK7) PURE;
+    STDMETHOD(FlipToGDISurface)(THIS) PURE;
+    STDMETHOD(GetCaps)(THIS_ LPDDCAPS, LPDDCAPS) PURE;
+    STDMETHOD(GetDisplayMode)(THIS_ LPDDSURFACEDESC2) PURE;
+    STDMETHOD(GetFourCCCodes)(THIS_  LPDWORD, LPDWORD) PURE;
+    STDMETHOD(GetGDISurface)(THIS_ LPDIRECTDRAWSURFACE7 FAR*) PURE;
+    STDMETHOD(GetMonitorFrequency)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetScanLine)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetVerticalBlankStatus)(THIS_ LPBOOL) PURE;
+    STDMETHOD(Initialize)(THIS_ GUID FAR*) PURE;
+    STDMETHOD(RestoreDisplayMode)(THIS) PURE;
+    STDMETHOD(SetCooperativeLevel)(THIS_ HWND, DWORD) PURE;
     union
     {
         LPVOID d;
-        HRESULT(__stdcall* SetDisplayMode)(IDirectDrawImpl*, DWORD, DWORD, DWORD);
-        HRESULT(__stdcall* SetDisplayModeX)(IDirectDrawImpl*, DWORD, DWORD, DWORD, DWORD, DWORD);
+        STDMETHOD(SetDisplayMode)(THIS_ DWORD, DWORD, DWORD) PURE;
+        STDMETHOD(SetDisplayModeX)(THIS_ DWORD, DWORD, DWORD, DWORD, DWORD) PURE;
     };
-    HRESULT(__stdcall* WaitForVerticalBlank)(IDirectDrawImpl*, DWORD, HANDLE);
-    // v2
-    HRESULT(__stdcall* GetAvailableVidMem)(IDirectDrawImpl*, void*, LPDWORD, LPDWORD);
-    // v4
-    HRESULT(__stdcall* GetSurfaceFromDC)(IDirectDrawImpl*, HDC, void*);
-    HRESULT(__stdcall* RestoreAllSurfaces)(IDirectDrawImpl*);
-    HRESULT(__stdcall* TestCooperativeLevel)(IDirectDrawImpl*);
-    HRESULT(__stdcall* GetDeviceIdentifier)(IDirectDrawImpl*, void*, DWORD);
-    // v7
-    HRESULT(__stdcall* StartModeTest)(IDirectDrawImpl*, LPSIZE, DWORD, DWORD);
-    HRESULT(__stdcall* EvaluateMode)(IDirectDrawImpl*, DWORD, DWORD*);
+    STDMETHOD(WaitForVerticalBlank)(THIS_ DWORD, HANDLE) PURE;
+    /*** Added in the v2 interface ***/
+    STDMETHOD(GetAvailableVidMem)(THIS_ LPDDSCAPS2, LPDWORD, LPDWORD) PURE;
+    /*** Added in the V4 Interface ***/
+    STDMETHOD(GetSurfaceFromDC) (THIS_ HDC, LPDIRECTDRAWSURFACE7*) PURE;
+    STDMETHOD(RestoreAllSurfaces)(THIS) PURE;
+    STDMETHOD(TestCooperativeLevel)(THIS) PURE;
+    STDMETHOD(GetDeviceIdentifier)(THIS_ LPDDDEVICEIDENTIFIER2, DWORD) PURE;
+    /*** Added in the V7 Interface ***/
+    STDMETHOD(StartModeTest)(THIS_ LPSIZE, DWORD, DWORD) PURE;
+    STDMETHOD(EvaluateMode)(THIS_ DWORD, DWORD*) PURE;
 };
+
+extern struct IDirectDrawImplVtbl g_dd_vtbl1;
+extern struct IDirectDrawImplVtbl g_dd_vtblx;
 
 #endif

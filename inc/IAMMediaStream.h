@@ -28,14 +28,14 @@ struct IAMMediaStreamImplVtbl
     HRESULT(__stdcall* QueryInterface) (IAMMediaStreamImpl*, const IID* const riid, LPVOID* ppvObj);
     ULONG(__stdcall* AddRef) (IAMMediaStreamImpl*);
     ULONG(__stdcall* Release) (IAMMediaStreamImpl*);
-    // IMediaStream
+    /* IMediaStream */
     HRESULT(__stdcall* GetMultiMediaStream)(IAMMediaStreamImpl* This, int a);
     HRESULT(__stdcall* GetInformation)(IAMMediaStreamImpl* This, int a, int b);
     HRESULT(__stdcall* SetSameFormat)(IAMMediaStreamImpl* This, int a, int b);
     HRESULT(__stdcall* AllocateSample)(IAMMediaStreamImpl* This, int a, int b);
     HRESULT(__stdcall* CreateSharedSample)(IAMMediaStreamImpl* This, int a, int b, int c);
     HRESULT(__stdcall* SendEndOfStream)(IAMMediaStreamImpl* This, int a);
-    // IAMMediaStream
+    /* IAMMediaStream */
     HRESULT(__stdcall* Initialize)(IAMMediaStreamImpl* This, int a, int b, int c, int d);
     HRESULT(__stdcall* SetState)(IAMMediaStreamImpl* This, int a);
     HRESULT(__stdcall* JoinAMMultiMediaStream)(IAMMediaStreamImpl* This, int a);

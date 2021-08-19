@@ -16,25 +16,26 @@ typedef struct IDirectDrawPaletteImpl
     ULONG ref;
 
     int data_bgr[256];
-    RGBQUAD* data_rgb;
+    RGBQUAD data_rgb[256];
+    DWORD flags;
 
 } IDirectDrawPaletteImpl;
 
 typedef struct IDirectDrawPaletteImplVtbl IDirectDrawPaletteImplVtbl;
 
+#undef INTERFACE
+#define INTERFACE IDirectDrawPaletteImpl
 struct IDirectDrawPaletteImplVtbl
 {
-    /* IUnknown */
-    HRESULT(__stdcall* QueryInterface)(IDirectDrawPaletteImpl*, REFIID, void**);
-    ULONG(__stdcall* AddRef)(IDirectDrawPaletteImpl*);
-    ULONG(__stdcall* Release)(IDirectDrawPaletteImpl*);
-
-    /* IDirectDrawPalette */
-    HRESULT(__stdcall* GetCaps)(IDirectDrawPaletteImpl*, LPDWORD);
-    HRESULT(__stdcall* GetEntries)(IDirectDrawPaletteImpl*, DWORD, DWORD, DWORD, LPPALETTEENTRY);
-    HRESULT(__stdcall* Initialize)(IDirectDrawPaletteImpl*, LPDIRECTDRAW, DWORD, LPPALETTEENTRY);
-    HRESULT(__stdcall* SetEntries)(IDirectDrawPaletteImpl*, DWORD, DWORD, DWORD, LPPALETTEENTRY);
-
+    /*** IUnknown methods ***/
+    STDMETHOD(QueryInterface) (THIS_ REFIID riid, LPVOID FAR* ppvObj) PURE;
+    STDMETHOD_(ULONG, AddRef) (THIS)  PURE;
+    STDMETHOD_(ULONG, Release) (THIS) PURE;
+    /*** IDirectDrawPalette methods ***/
+    STDMETHOD(GetCaps)(THIS_ LPDWORD) PURE;
+    STDMETHOD(GetEntries)(THIS_ DWORD, DWORD, DWORD, LPPALETTEENTRY) PURE;
+    STDMETHOD(Initialize)(THIS_ LPDIRECTDRAW, DWORD, LPPALETTEENTRY) PURE;
+    STDMETHOD(SetEntries)(THIS_ DWORD, DWORD, DWORD, LPPALETTEENTRY) PURE;
 };
 
 extern struct IDirectDrawPaletteImplVtbl g_ddp_vtbl;

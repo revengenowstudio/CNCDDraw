@@ -22,7 +22,7 @@ static void ogl_delete_context(HGLRC context);
 static BOOL ogl_texture_upload_test();
 static BOOL ogl_shader_test();
 
-static ogl_renderer g_ogl;
+static OGLRENDERER g_ogl;
 
 DWORD WINAPI ogl_render_main(void)
 {
@@ -48,7 +48,7 @@ DWORD WINAPI ogl_render_main(void)
         g_ogl.got_error = g_ogl.got_error || !ogl_texture_upload_test();
         g_ogl.got_error = g_ogl.got_error || !ogl_shader_test();
         g_ogl.got_error = g_ogl.got_error || glGetError() != GL_NO_ERROR;
-        g_ogl.use_opengl = (g_ogl.main_program || g_ddraw->bpp == 16) && !g_ogl.got_error;
+        g_ogl.use_opengl = (g_ogl.main_program || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !g_ogl.got_error;
 
         ogl_render();
 
@@ -70,7 +70,7 @@ static HGLRC ogl_create_core_context(HDC hdc)
     if (!wglCreateContextAttribsARB)
         return g_ogl.context;
 
-    int attribs[] = { 
+    int attribs[] = {
         WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
         WGL_CONTEXT_MINOR_VERSION_ARB, 2,
         WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
@@ -79,7 +79,7 @@ static HGLRC ogl_create_core_context(HDC hdc)
 
     HGLRC context = wglCreateContextAttribsARB(hdc, 0, attribs);
     BOOL made_current = context && xwglMakeCurrent(hdc, context);
-    
+
     if (made_current)
     {
         xwglDeleteContext(g_ogl.context);
@@ -128,7 +128,7 @@ static void ogl_build_programs()
                 g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_CORE, PALETTE_FRAG_SHADER_CORE);
             }
         }
-        else if (g_ddraw->bpp == 16)
+        else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER, PASSTHROUGH_FRAG_SHADER);
 
@@ -156,7 +156,7 @@ static void ogl_build_programs()
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_110, PALETTE_FRAG_SHADER_110);
         }
-        else if (g_ddraw->bpp == 16)
+        else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
         {
             g_ogl.main_program = oglu_build_program(PASSTHROUGH_VERT_SHADER_110, PASSTHROUGH_FRAG_SHADER_110);
         }
@@ -171,7 +171,7 @@ static void ogl_create_textures(int width, int height)
     g_ogl.surface_tex_height =
         height <= 512 ? 512 : height <= 1024 ? 1024 : height <= 2048 ? 2048 : height <= 4096 ? 4096 : height;
 
-    g_ogl.surface_tex = 
+    g_ogl.surface_tex =
         HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, g_ogl.surface_tex_width * g_ogl.surface_tex_height * sizeof(int));
 
     g_ogl.adjust_alignment = (width % 4) != 0;
@@ -181,8 +181,7 @@ static void ogl_create_textures(int width, int height)
 
     glGenTextures(TEXTURE_COUNT, g_ogl.surface_tex_ids);
 
-    int i;
-    for (i = 0; i < TEXTURE_COUNT; i++)
+    for (int i = 0; i < TEXTURE_COUNT; i++)
     {
         glBindTexture(GL_TEXTURE_2D, g_ogl.surface_tex_ids[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -192,7 +191,20 @@ static void ogl_create_textures(int width, int height)
 
         while (glGetError() != GL_NO_ERROR);
 
-        if (g_ddraw->bpp == 16)
+        if (g_ddraw->bpp == 32)
+        {
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA8,
+                g_ogl.surface_tex_width,
+                g_ogl.surface_tex_height,
+                0,
+                g_ogl.surface_format = GL_BGRA,
+                g_ogl.surface_type = GL_UNSIGNED_BYTE,
+                0);
+        }
+        else if (g_ddraw->bpp == 16)
         {
             glTexImage2D(
                 GL_TEXTURE_2D,
@@ -268,7 +280,7 @@ static void ogl_create_textures(int width, int height)
     {
         glGenTextures(TEXTURE_COUNT, g_ogl.palette_tex_ids);
 
-        for (i = 0; i < TEXTURE_COUNT; i++)
+        for (int i = 0; i < TEXTURE_COUNT; i++)
         {
             glBindTexture(GL_TEXTURE_2D, g_ogl.palette_tex_ids[i]);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -288,7 +300,7 @@ static void ogl_init_main_program()
     glUseProgram(g_ogl.main_program);
 
     glUniform1i(glGetUniformLocation(g_ogl.main_program, "SurfaceTex"), 0);
-    
+
     if (g_ddraw->bpp == 8)
         glUniform1i(glGetUniformLocation(g_ogl.main_program, "PaletteTex"), 1);
 
@@ -386,7 +398,7 @@ static void ogl_init_scale_program()
     glUseProgram(g_ogl.scale_program);
 
     GLint vertex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "VertexCoord");
-    GLint tex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "TexCoord");
+    g_ogl.scale_tex_coord_attr_loc = glGetAttribLocation(g_ogl.scale_program, "TexCoord");
     g_ogl.frame_count_uni_loc = glGetUniformLocation(g_ogl.scale_program, "FrameCount");
 
     glGenBuffers(3, g_ogl.scale_vbos);
@@ -420,8 +432,8 @@ static void ogl_init_scale_program()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ARRAY_BUFFER, g_ogl.scale_vbos[1]);
-    glVertexAttribPointer(tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(tex_coord_attr_loc);
+    glVertexAttribPointer(g_ogl.scale_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(g_ogl.scale_tex_coord_attr_loc);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, g_ogl.scale_vbos[2]);
@@ -436,12 +448,12 @@ static void ogl_init_scale_program()
 
     float input_size[2], output_size[2], texture_size[2];
 
-    input_size[0] = g_ddraw->width;
-    input_size[1] = g_ddraw->height;
-    texture_size[0] = g_ogl.surface_tex_width;
-    texture_size[1] = g_ogl.surface_tex_height;
-    output_size[0] = g_ddraw->render.viewport.width;
-    output_size[1] = g_ddraw->render.viewport.height;
+    input_size[0] = (float)g_ddraw->width;
+    input_size[1] = (float)g_ddraw->height;
+    texture_size[0] = (float)g_ogl.surface_tex_width;
+    texture_size[1] = (float)g_ogl.surface_tex_height;
+    output_size[0] = (float)g_ddraw->render.viewport.width;
+    output_size[1] = (float)g_ddraw->render.viewport.height;
 
     glUniform2fv(glGetUniformLocation(g_ogl.scale_program, "OutputSize"), 1, output_size);
     glUniform2fv(glGetUniformLocation(g_ogl.scale_program, "TextureSize"), 1, texture_size);
@@ -464,7 +476,16 @@ static void ogl_init_scale_program()
     glBindTexture(GL_TEXTURE_2D, g_ogl.frame_buffer_tex_id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, g_ogl.filter_bilinear ? GL_LINEAR : GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, g_ogl.filter_bilinear ? GL_LINEAR : GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, g_ogl.surface_tex_width, g_ogl.surface_tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RGBA8,
+        g_ogl.surface_tex_width,
+        g_ogl.surface_tex_height,
+        0,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        0);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, g_ogl.frame_buffer_tex_id, 0);
 
@@ -527,6 +548,7 @@ static void ogl_init_scale_program()
 static void ogl_render()
 {
     BOOL needs_update = FALSE;
+    LONG clear_count = 0;
 
     glViewport(
         g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
@@ -536,7 +558,7 @@ static void ogl_render()
     {
         glUseProgram(g_ogl.main_program);
     }
-    else if (g_ddraw->bpp == 16)
+    else if (g_ddraw->bpp == 16 || g_ddraw->bpp == 32)
     {
         glEnable(GL_TEXTURE_2D);
     }
@@ -557,30 +579,36 @@ static void ogl_render()
 
         BOOL scale_changed = FALSE;
 
+        if (InterlockedExchange(&g_ddraw->render.clear_screen, FALSE))
+            clear_count = 10;
+
         fpsl_frame_start();
 
         EnterCriticalSection(&g_ddraw->cs);
 
-        if (g_ddraw->primary && (g_ddraw->bpp == 16 || g_ddraw->primary->palette))
+        if (g_ddraw->primary && 
+            g_ddraw->primary->bpp == g_ddraw->bpp &&
+            (g_ddraw->bpp == 16 || g_ddraw->bpp == 32 || g_ddraw->primary->palette))
         {
             if (g_ddraw->vhack)
             {
-                if (util_detect_cutscene())
+                if (util_detect_low_res_screen())
                 {
-                    g_ogl.scale_w *= (float)CUTSCENE_WIDTH / g_ddraw->width;
-                    g_ogl.scale_h *= (float)CUTSCENE_HEIGHT / g_ddraw->height;
+                    g_ogl.scale_w *= (float)g_ddraw->upscale_hack_width / g_ddraw->width;
+                    g_ogl.scale_h *= (float)g_ddraw->upscale_hack_height / g_ddraw->height;
 
-                    if (!InterlockedExchange(&g_ddraw->incutscene, TRUE))
+                    if (!InterlockedExchange(&g_ddraw->upscale_hack_active, TRUE))
                         scale_changed = TRUE;
                 }
                 else
                 {
-                    if (InterlockedExchange(&g_ddraw->incutscene, FALSE))
+                    if (InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE))
                         scale_changed = TRUE;
                 }
             }
 
-            if (g_ddraw->bpp == 8 && InterlockedExchange(&g_ddraw->render.palette_updated, FALSE))
+            if (g_ddraw->bpp == 8 &&
+                (InterlockedExchange(&g_ddraw->render.palette_updated, FALSE) || g_ddraw->render.minfps == -2))
             {
                 if (++pal_index >= TEXTURE_COUNT)
                     pal_index = 0;
@@ -599,7 +627,7 @@ static void ogl_render()
                     g_ddraw->primary->palette->data_bgr);
             }
 
-            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE))
+            if (InterlockedExchange(&g_ddraw->render.surface_updated, FALSE) || g_ddraw->render.minfps == -2)
             {
                 if (++tex_index >= TEXTURE_COUNT)
                     tex_index = 0;
@@ -626,25 +654,21 @@ static void ogl_render()
 
             static int error_check_count = 0;
 
-            if (error_check_count < 20)
+            if (error_check_count < 10)
             {
-                glClear(GL_COLOR_BUFFER_BIT);
-
                 error_check_count++;
 
-                if (glGetError() != GL_NO_ERROR)
+                GLenum err = glGetError();
+
+                if (err != GL_NO_ERROR && err != GL_INVALID_FRAMEBUFFER_OPERATION)
                     g_ogl.use_opengl = FALSE;
             }
-            else if (g_ddraw->wine)
-            {
-                glClear(GL_COLOR_BUFFER_BIT);
-            }
 
-            if (!g_ddraw->handlemouse)
+            if (g_ddraw->fixchilds)
             {
                 g_ddraw->child_window_exists = FALSE;
                 EnumChildWindows(g_ddraw->hwnd, util_enum_child_proc, (LPARAM)g_ddraw->primary);
-                
+
                 if (g_ddraw->render.width != g_ddraw->width || g_ddraw->render.height != g_ddraw->height)
                 {
                     if (g_ddraw->child_window_exists)
@@ -671,21 +695,31 @@ static void ogl_render()
 
         LeaveCriticalSection(&g_ddraw->cs);
 
+        if (g_ddraw->wine)
+        {
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+        else if (clear_count > 0)
+        {
+            clear_count--;
+            glClear(GL_COLOR_BUFFER_BIT);
+        }
+
         if (scale_changed)
         {
             if (g_ogl.scale_program && g_ogl.main_program)
             {
-                glBindVertexArray(g_ogl.main_vao);
-                glBindBuffer(GL_ARRAY_BUFFER, g_ogl.main_vbos[1]);
+                glBindVertexArray(g_ogl.scale_vao);
+                glBindBuffer(GL_ARRAY_BUFFER, g_ogl.scale_vbos[1]);
                 GLfloat texCoord[] = {
-                    0.0f,          0.0f,
-                    0.0f,          g_ogl.scale_h,
-                    g_ogl.scale_w, g_ogl.scale_h,
-                    g_ogl.scale_w, 0.0f,
+                    0.0f,           0.0f,
+                    g_ogl.scale_w,  0.0f,
+                    g_ogl.scale_w,  g_ogl.scale_h,
+                    0.0f,           g_ogl.scale_h,
                 };
                 glBufferData(GL_ARRAY_BUFFER, sizeof(texCoord), texCoord, GL_STATIC_DRAW);
-                glVertexAttribPointer(g_ogl.main_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-                glEnableVertexAttribArray(g_ogl.main_tex_coord_attr_loc);
+                glVertexAttribPointer(g_ogl.scale_tex_coord_attr_loc, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+                glEnableVertexAttribArray(g_ogl.scale_tex_coord_attr_loc);
                 glBindBuffer(GL_ARRAY_BUFFER, 0);
                 glBindVertexArray(0);
             }
@@ -720,7 +754,7 @@ static void ogl_render()
 
         if (g_ogl.scale_program && g_ogl.main_program)
         {
-            // draw surface into framebuffer
+            /* draw surface into framebuffer */
             glUseProgram(g_ogl.main_program);
 
             glViewport(0, 0, g_ddraw->width, g_ddraw->height);
@@ -743,11 +777,13 @@ static void ogl_render()
             else
             {
                 glViewport(
-                    g_ddraw->render.viewport.x, g_ddraw->render.viewport.y,
-                    g_ddraw->render.viewport.width, g_ddraw->render.viewport.height);
+                    g_ddraw->render.viewport.x, 
+                    g_ddraw->render.viewport.y,
+                    g_ddraw->render.viewport.width, 
+                    g_ddraw->render.viewport.height);
             }
 
-            // apply filter
+            /* apply filter */
 
             glUseProgram(g_ogl.scale_program);
             glActiveTexture(GL_TEXTURE0);
@@ -770,10 +806,10 @@ static void ogl_render()
         else
         {
             glBegin(GL_TRIANGLE_FAN);
-            glTexCoord2f(0,             0);              glVertex2f(-1,  1);
-            glTexCoord2f(g_ogl.scale_w, 0);              glVertex2f( 1,  1);
-            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);  glVertex2f( 1, -1);
-            glTexCoord2f(0,             g_ogl.scale_h);  glVertex2f(-1, -1);
+            glTexCoord2f(0, 0);                          glVertex2f(-1, 1);
+            glTexCoord2f(g_ogl.scale_w, 0);              glVertex2f(1, 1);
+            glTexCoord2f(g_ogl.scale_w, g_ogl.scale_h);  glVertex2f(1, -1);
+            glTexCoord2f(0, g_ogl.scale_h);              glVertex2f(-1, -1);
             glEnd();
         }
 
@@ -788,6 +824,9 @@ static void ogl_render()
 
         fpsl_frame_end();
     }
+
+    if (g_ddraw->vhack)
+        InterlockedExchange(&g_ddraw->upscale_hack_active, FALSE);
 }
 
 static void ogl_delete_context(HGLRC context)
@@ -919,7 +958,16 @@ static BOOL ogl_shader_test()
         glBindTexture(GL_TEXTURE_2D, fbo_tex_id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, g_ogl.surface_tex_width, g_ogl.surface_tex_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, g_ogl.surface_tex);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA8,
+            g_ogl.surface_tex_width,
+            g_ogl.surface_tex_height,
+            0,
+            GL_RGBA,
+            GL_UNSIGNED_BYTE,
+            g_ogl.surface_tex);
 
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_tex_id, 0);
 
@@ -982,7 +1030,7 @@ static BOOL ogl_shader_test()
                 {
                     result = FALSE;
                     break;
-                }  
+                }
             }
         }
 

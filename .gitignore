@@ -1,6 +1,40 @@
 
-ddraw.dll 
+# C++ Builder
 
+__astcache/
+__history/
+__recovery/
+Win32/
+modules/
+*.local
+*.res
+*.il?
+*.map
+*.pdi
+*.tds
+*.exe
+*.dll
+*.bpl
+*.bpi
+*.dcp
+*.so
+*.apk
+*.drc
+*.dres
+*.rsm
+*.dcu
+*.lib
+*.a
+*.o
+*.ocx
+*.cfg
+*Resource.rc
+*.identcache
+*.projdata
+*.tvsconfig
+*.dsk
+*.~*
+*.stat
 
 # Compiled source #
 ###################

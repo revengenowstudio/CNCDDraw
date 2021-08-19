@@ -131,7 +131,6 @@ BOOL oglu_load_dll()
 
 void oglu_init()
 {
-    // Program
     glCreateProgram = (PFNGLCREATEPROGRAMPROC)xwglGetProcAddress("glCreateProgram");
     glDeleteProgram = (PFNGLDELETEPROGRAMPROC)xwglGetProcAddress("glDeleteProgram");
     glUseProgram = (PFNGLUSEPROGRAMPROC)xwglGetProcAddress("glUseProgram");
@@ -190,10 +189,10 @@ void oglu_init()
 
     glTexBuffer = (PFNGLTEXBUFFERPROC)xwglGetProcAddress("glTexBuffer");
 
-    char *glversion = (char *)glGetString(GL_VERSION);
+    char* glversion = (char*)glGetString(GL_VERSION);
     if (glversion)
     {
-        strncpy(g_oglu_version, glversion, sizeof(g_oglu_version)-1);
+        strncpy(g_oglu_version, glversion, sizeof(g_oglu_version) - 1);
         const char deli[2] = " ";
         strtok(g_oglu_version, deli);
     }
@@ -217,9 +216,9 @@ void oglu_init()
     }
 }
 
-BOOL oglu_ext_exists(char *ext, HDC hdc)
+BOOL oglu_ext_exists(char* ext, HDC hdc)
 {
-    char *glext = (char *)glGetString(GL_EXTENSIONS);
+    char* glext = (char*)glGetString(GL_EXTENSIONS);
 
     if (glext)
     {
@@ -229,7 +228,7 @@ BOOL oglu_ext_exists(char *ext, HDC hdc)
 
     if (wglGetExtensionsStringARB)
     {
-        char *wglext = (char *)wglGetExtensionsStringARB(hdc);
+        char* wglext = (char*)wglGetExtensionsStringARB(hdc);
 
         if (wglext)
         {
@@ -241,7 +240,7 @@ BOOL oglu_ext_exists(char *ext, HDC hdc)
     return FALSE;
 }
 
-GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source)
+GLuint oglu_build_program(const GLchar* vert_source, const GLchar* frag_source)
 {
     if (!glCreateShader || !glShaderSource || !glCompileShader || !glCreateProgram ||
         !glAttachShader || !glLinkProgram || !glUseProgram || !glDetachShader)
@@ -317,44 +316,44 @@ GLuint oglu_build_program(const GLchar *vert_source, const GLchar *frag_source)
     return program;
 }
 
-GLuint oglu_build_program_from_file(const char *file_path, BOOL core_profile)
+GLuint oglu_build_program_from_file(const char* file_path, BOOL core_profile)
 {
     GLuint program = 0;
 
-    FILE *file = fopen(file_path, "rb");
+    FILE* file = fopen(file_path, "rb");
     if (file)
     {
         fseek(file, 0, SEEK_END);
         long file_size = ftell(file);
         fseek(file, 0, SEEK_SET);
 
-        char *source = file_size > 0 ? calloc(file_size + 1, 1) : NULL;
+        char* source = file_size > 0 ? calloc(file_size + 1, 1) : NULL;
 
         if (source)
         {
             fread(source, file_size, 1, file);
             fclose(file);
 
-            char *vert_source = calloc(file_size + 50, 1);
-            char *frag_source = calloc(file_size + 50, 1);
+            char* vert_source = calloc(file_size + 50, 1);
+            char* frag_source = calloc(file_size + 50, 1);
 
             if (frag_source && vert_source)
             {
-                char *version_start = strstr(source, "#version");
+                char* version_start = strstr(source, "#version");
 
                 if (version_start)
                 {
                     if (core_profile)
                     {
-                        if (strnicmp(version_start, "#version 130", 12) == 0 || 
-                            strnicmp(version_start, "#version 140", 12) == 0)
+                        if (_strnicmp(version_start, "#version 130", 12) == 0 ||
+                            _strnicmp(version_start, "#version 140", 12) == 0)
                         {
                             memcpy(version_start, "#version 150", 12);
                         }
                     }
 
                     const char deli[2] = "\n";
-                    char *version = strtok(version_start, deli);
+                    char* version = strtok(version_start, deli);
 
                     strcpy(vert_source, source);
                     strcpy(frag_source, source);

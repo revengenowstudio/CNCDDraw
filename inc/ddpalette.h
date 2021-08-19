@@ -9,6 +9,6 @@
 
 HRESULT ddp_GetEntries(IDirectDrawPaletteImpl* This, DWORD dwFlags, DWORD dwBase, DWORD dwNumEntries, LPPALETTEENTRY lpEntries);
 HRESULT ddp_SetEntries(IDirectDrawPaletteImpl* This, DWORD dwFlags, DWORD dwStartingEntry, DWORD dwCount, LPPALETTEENTRY lpEntries);
-HRESULT dd_CreatePalette(DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, LPDIRECTDRAWPALETTE FAR* lpDDPalette, IUnknown FAR* unkOuter);
+HRESULT dd_CreatePalette(DWORD dwFlags, LPPALETTEENTRY lpDDColorArray, IDirectDrawPaletteImpl** lpDDPalette, IUnknown FAR* unkOuter);
 
 #endif

@@ -1,42 +1,66 @@
 # cnc-ddraw
 cnc-ddraw can fix compatibility issues in older games, such as black screen, bad performance, crashes or defective Alt+Tab.
 
+&nbsp;
+
 ### Features
 
  - Supports Windows XP, Vista, 7, 8, 10 and Wine
  - GDI / OpenGL / Direct3D 9 renderer (With automatic renderer selection)
  - Upscaling via glsl shaders - https://imgur.com/a/kxsM1oY | https://imgur.com/a/wjrhpFV
- - Windowed Mode / Fullscreen Exclusive Mode / Windowed-Fullscreen Mode / Fullscreen-Stretched Exclusive Mode
+ - Windowed Mode / Fullscreen Exclusive Mode / Borderless Mode
  - Alt+Enter support to switch quickly between Fullscreen and Windowed mode
  - Automatically saves and restores window position/size/state
  - FPS Limiter
  - VSync
- - Automatic mouse sensitivity scaling
+ - Optional mouse sensitivity scaling
  - Preliminary libretro shader support - https://github.com/libretro/glsl-shaders
  - ...
  
+&nbsp;
+
 ### Instructions
 
 1. Download [cnc-ddraw.zip](https://github.com/CnCNet/cnc-ddraw/releases/latest/download/cnc-ddraw.zip) and extract it into your game folder
-2. Disable all compatibility modes for all of the game executables
-3. Start the game
+2. Start the game
 
-Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first. If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or modify ddraw.ini without using Alt+Enter).
 
-**If the game starts but it doesn't work perfectly** then open ddraw.ini and search for **Compatibility settings**, one of the settings will usually fix the problem.
+Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first.
 
-Most common compatibility settings are the following 3:
+If you want to play in windowed mode then start the game once in fullscreen and then press Alt+Enter to enable the cnc-ddraw windowed mode (Or enable windowed mode in the config program without using Alt+Enter).
 
-- noactivateapp - Set this to true if there are issues on Alt+Tab.
-- handlemouse - Set this to false if your cursor is invisible at some places in the game.
-- maxgameticks - Set this to 60 if the game is running too fast or if it's flickering. If it still doesn't work, try a lower value.
+&nbsp;
+
+**If the game starts but it doesn't work perfectly** then open the config program and check the **Compatibility settings**. Alternatively you can also open ddraw.ini with notepad and modify the **Compatibility settings** in there.
+
+&nbsp;
+
+**Compatibility settings in ddraw.ini**
+
+- If there are **problems on Alt+Tab** then try to set `noactivateapp=true` - If it still doesn't work also try `renderer=opengl` or `renderer=gdi`.
+
+- If the **game is running too fast** then try to set `maxgameticks=60` - If it's still too fast, try a lower value.
+
+- If **windowed mode or upscaling are not working properly** then try to set `hook=2` and `renderer=gdi`. 
+
+- If **videos or other UI elements are invisible** then try to set `nonexclusive=true`.
+
+- If some parts of the screen are **being displayed diagonally** then try to set `fixpitch=true`.
+
+- If the game is **stuttering on a Freesync/G-Sync monitor** then try to set `minfps=-1`.
+
+&nbsp;
 
 **If the game doesn't start at all or it's crashing**, [then please generate a debug log file and upload it.](https://github.com/CnCNet/cnc-ddraw/issues/44)  
+
+&nbsp;
 
 ### Hotkeys
 * [Alt] + [Enter]                  = Switch between windowed and fullscreen mode
 * [Ctrl] + [Tab]                    = Unlock cursor
 * [Right Alt] + [Right Ctrl]  = Unlock cursor
+
+&nbsp;
 
 ### Supported Games
 

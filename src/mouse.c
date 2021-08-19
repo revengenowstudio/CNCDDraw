@@ -1,78 +1,64 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include "debug.h"
 #include "dd.h"
 #include "hook.h"
 
 
 void mouse_lock()
 {
-    RECT rc;
-
-    if (g_ddraw->bnet_active)
+    if (g_ddraw->devmode || g_ddraw->bnet_active)
         return;
-
-    if (g_ddraw->devmode)
-    {
-        if (g_ddraw->handlemouse)
-            while(real_ShowCursor(FALSE) > 0);
-
-        return;
-    }
 
     if (g_hook_active && !g_ddraw->locked)
     {
-        // Get the window client area.
-        real_GetClientRect(g_ddraw->hwnd, &rc);
-        
-        if(g_ddraw->adjmouse)
+        RECT rc = {
+            g_ddraw->render.viewport.x,
+            g_ddraw->render.viewport.y,
+            g_ddraw->width + g_ddraw->render.viewport.x,
+            g_ddraw->height + g_ddraw->render.viewport.y,
+        };
+
+        if (g_ddraw->adjmouse)
         {
-            rc.right = g_ddraw->render.viewport.width;
-            rc.bottom = g_ddraw->render.viewport.height;
-        }
-        else
-        {
-            rc.right = g_ddraw->width;
-            rc.bottom = g_ddraw->height;
+            rc.right = g_ddraw->render.viewport.width + g_ddraw->render.viewport.x;
+            rc.bottom = g_ddraw->render.viewport.height + g_ddraw->render.viewport.y;
         }
 
-        // Convert the client area to screen coordinates.
-        POINT pt = { rc.left, rc.top };
-        POINT pt2 = { rc.right, rc.bottom };
+        real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&rc, 2);
 
-        real_ClientToScreen(g_ddraw->hwnd, &pt);
-        real_ClientToScreen(g_ddraw->hwnd, &pt2);
-        
-        SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
-        
-        rc.bottom -= (g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h;
+        rc.bottom -= (LONG)((g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h);
 
-        if(g_ddraw->adjmouse)
+        int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
+        int cur_y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
+
+        if (g_ddraw->adjmouse)
         {
             real_SetCursorPos(
-                rc.left + (g_ddraw->cursor.x * g_ddraw->render.scale_w), 
-                rc.top + ((g_ddraw->cursor.y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h));
+                (int)(rc.left + (cur_x * g_ddraw->render.scale_w)),
+                (int)(rc.top + ((cur_y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
         }
         else
         {
-            real_SetCursorPos(rc.left + g_ddraw->cursor.x, rc.top + g_ddraw->cursor.y - g_ddraw->mouse_y_adjust);
+            real_SetCursorPos(rc.left + cur_x, rc.top + cur_y - g_ddraw->mouse_y_adjust);
         }
 
-        if (g_ddraw->handlemouse)
-        {
-            SetCapture(g_ddraw->hwnd);
-            real_ClipCursor(&rc);
-            while (real_ShowCursor(FALSE) > 0);
-        }
-        else
-        {
-            if (g_ddraw->hidecursor)
-            {
-                g_ddraw->hidecursor = FALSE;
-                real_ShowCursor(FALSE);
-            }
+        int game_count = InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
+        int cur_count = real_ShowCursor(TRUE) - 1;
+        real_ShowCursor(FALSE);
 
-            real_ClipCursor(&rc);
+        if (cur_count > game_count)
+        {
+            while (real_ShowCursor(FALSE) > game_count);
         }
+        else if (cur_count < game_count)
+        {
+            while (real_ShowCursor(TRUE) < game_count);
+        }
+
+        real_SetCursor((HCURSOR)InterlockedExchangeAdd((LONG*)&g_ddraw->old_cursor, 0));
+
+        real_ClipCursor(&rc);
 
         g_ddraw->locked = TRUE;
     }
@@ -80,57 +66,30 @@ void mouse_lock()
 
 void mouse_unlock()
 {
-    RECT rc;
-
-    if (g_ddraw->devmode)
-    {
-        if (g_ddraw->handlemouse)
-            while(real_ShowCursor(TRUE) < 0);
-
+    if (g_ddraw->devmode || !g_hook_active)
         return;
-    }
-
-    if (!g_hook_active)
-    {
-        return;
-    }
 
     if (g_ddraw->locked)
     {
         g_ddraw->locked = FALSE;
 
-        // Get the window client area.
+        RECT rc;
         real_GetClientRect(g_ddraw->hwnd, &rc);
-        
-        // Convert the client area to screen coordinates.
-        POINT pt = { rc.left, rc.top };
-        POINT pt2 = { rc.right, rc.bottom };
+        real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&rc, 2);
 
-        real_ClientToScreen(g_ddraw->hwnd, &pt);
-        real_ClientToScreen(g_ddraw->hwnd, &pt2);
-
-        SetRect(&rc, pt.x, pt.y, pt2.x, pt2.y);
-       
-        if (g_ddraw->handlemouse)
+        CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
+        if (real_GetCursorInfo(&ci) && ci.flags == 0)
         {
             while (real_ShowCursor(TRUE) < 0);
-            real_SetCursor(LoadCursor(NULL, IDC_ARROW));
-        }
-        else
-        {
-            CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
-            if (real_GetCursorInfo(&ci) && ci.flags == 0)
-            {
-                g_ddraw->hidecursor = TRUE;
-                while (real_ShowCursor(TRUE) < 0);
-            }
         }
 
         real_ClipCursor(NULL);
-        ReleaseCapture();
-        
+
+        int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
+        int cur_y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
+
         real_SetCursorPos(
-            rc.left + g_ddraw->render.viewport.x + (g_ddraw->cursor.x * g_ddraw->render.scale_w), 
-            rc.top + g_ddraw->render.viewport.y + ((g_ddraw->cursor.y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h));
+            (int)(rc.left + g_ddraw->render.viewport.x + (cur_x * g_ddraw->render.scale_w)),
+            (int)(rc.top + g_ddraw->render.viewport.y + ((cur_y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
     }
 }

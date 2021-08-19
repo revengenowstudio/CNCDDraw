@@ -5,19 +5,20 @@
 #include "debug.h"
 
 
-HRESULT dd_CreateClipper(DWORD dwFlags, LPDIRECTDRAWCLIPPER FAR *lplpDDClipper, IUnknown FAR *pUnkOuter )
+HRESULT dd_CreateClipper(DWORD dwFlags, IDirectDrawClipperImpl** lplpDDClipper, IUnknown FAR* pUnkOuter)
 {
     if (!lplpDDClipper)
         return DDERR_INVALIDPARAMS;
 
-    IDirectDrawClipperImpl *c = (IDirectDrawClipperImpl *)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawClipperImpl));
-    
-    dprintf("     Clipper = %p\n", c);
+    IDirectDrawClipperImpl* c =
+        (IDirectDrawClipperImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawClipperImpl));
+
+    TRACE("     clipper = %p\n", c);
 
     c->lpVtbl = &g_ddc_vtbl;
     IDirectDrawClipper_AddRef(c);
 
-    *lplpDDClipper = (LPDIRECTDRAWCLIPPER)c;
+    *lplpDDClipper = c;
 
     return DD_OK;
 }

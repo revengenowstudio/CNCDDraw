@@ -6,7 +6,7 @@
 
 
 BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint);
-BOOL WINAPI fake_ClipCursor(const RECT *lpRect);
+BOOL WINAPI fake_ClipCursor(const RECT* lpRect);
 int WINAPI fake_ShowCursor(BOOL bShow);
 HCURSOR WINAPI fake_SetCursor(HCURSOR hCursor);
 BOOL WINAPI fake_GetWindowRect(HWND hWnd, LPRECT lpRect);
@@ -22,8 +22,12 @@ BOOL WINAPI fake_SetWindowPos(HWND hWnd, HWND hWndInsertAfter, int X, int Y, int
 BOOL WINAPI fake_MoveWindow(HWND hWnd, int X, int Y, int nWidth, int nHeight, BOOL bRepaint);
 LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam);
 LONG WINAPI fake_SetWindowLongA(HWND hWnd, int nIndex, LONG dwNewLong);
+LONG WINAPI fake_GetWindowLongA(HWND hWnd, int nIndex);
 BOOL WINAPI fake_EnableWindow(HWND hWnd, BOOL bEnable);
 BOOL WINAPI fake_DestroyWindow(HWND hWnd);
+int WINAPI fake_MapWindowPoints(HWND hWndFrom, HWND hWndTo, LPPOINT lpPoints, UINT cPoints);
+BOOL WINAPI fake_ShowWindow(HWND hWnd, int nCmdShow);
+HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, DWORD dwThreadId);
 int WINAPI fake_GetDeviceCaps(HDC hdc, int index);
 HMODULE WINAPI fake_LoadLibraryA(LPCSTR lpLibFileName);
 HMODULE WINAPI fake_LoadLibraryW(LPCWSTR lpLibFileName);
@@ -32,5 +36,7 @@ HMODULE WINAPI fake_LoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dw
 HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam);
+HRESULT WINAPI fake_CoCreateInstance(
+    REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext, REFIID riid, LPVOID* ppv);
 
 #endif

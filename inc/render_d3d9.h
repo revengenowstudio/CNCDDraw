@@ -9,7 +9,7 @@
 
 typedef struct CUSTOMVERTEX { float x, y, z, rhw, u, v; } CUSTOMVERTEX;
 
-typedef struct d3d9_renderer
+typedef struct D3D9RENDERER
 {
     HMODULE hmodule;
     D3DPRESENT_PARAMETERS params;
@@ -19,10 +19,13 @@ typedef struct d3d9_renderer
     IDirect3DTexture9* surface_tex[D3D9_TEXTURE_COUNT];
     IDirect3DTexture9* palette_tex[D3D9_TEXTURE_COUNT];
     IDirect3DPixelShader9* pixel_shader;
+    IDirect3DPixelShader9* pixel_shader_bilinear;
     float scale_w;
     float scale_h;
     int bits_per_pixel;
-} d3d9_renderer;
+    int tex_width;
+    int tex_height;
+} D3D9RENDERER;
 
 BOOL d3d9_is_available();
 DWORD WINAPI d3d9_render_main(void);

@@ -2,94 +2,98 @@
 #include "ddclipper.h"
 #include "debug.h"
 
-HRESULT __stdcall IDirectDrawClipper__QueryInterface(IDirectDrawClipperImpl *This, REFIID riid, void **obj)
+HRESULT __stdcall IDirectDrawClipper__QueryInterface(IDirectDrawClipperImpl* This, REFIID riid, LPVOID FAR* ppvObj)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, obj=%p)\n", __FUNCTION__, This, (unsigned int)riid, obj);
-    HRESULT ret = S_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, riid=%08X, ppvObj=%p)\n", __FUNCTION__, This, (unsigned int)riid, ppvObj);
+    HRESULT ret = E_NOINTERFACE;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-ULONG __stdcall IDirectDrawClipper__AddRef(IDirectDrawClipperImpl *This)
+ULONG __stdcall IDirectDrawClipper__AddRef(IDirectDrawClipperImpl* This)
 {
-    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("-> %s(This=%p)\n", __FUNCTION__, This);
     ULONG ret = ++This->ref;
-    dprintf("<- %s(This ref=%u)\n", __FUNCTION__, ret);
+    TRACE("<- %s(This ref=%u)\n", __FUNCTION__, ret);
     return ret;
 }
 
-ULONG __stdcall IDirectDrawClipper__Release(IDirectDrawClipperImpl *This)
+ULONG __stdcall IDirectDrawClipper__Release(IDirectDrawClipperImpl* This)
 {
-    dprintf("-> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("-> %s(This=%p)\n", __FUNCTION__, This);
 
     ULONG ret = --This->ref;
 
     if (This->ref == 0)
     {
-        dprintf("     Released (%p)\n", This);
+        TRACE("     Released (%p)\n", This);
 
         HeapFree(GetProcessHeap(), 0, This);
     }
 
-    dprintf("<- %s(This ref=%u)\n", __FUNCTION__, ret);
+    TRACE("<- %s(This ref=%u)\n", __FUNCTION__, ret);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__GetClipList(IDirectDrawClipperImpl *This, LPRECT a, LPRGNDATA b, LPDWORD c)
+HRESULT __stdcall IDirectDrawClipper__GetClipList(
+    IDirectDrawClipperImpl* This,
+    LPRECT lpRect,
+    LPRGNDATA lpClipList,
+    LPDWORD lpdwSiz)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_NOCLIPLIST;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__GetHWnd(IDirectDrawClipperImpl *This, HWND FAR *a)
+HRESULT __stdcall IDirectDrawClipper__GetHWnd(IDirectDrawClipperImpl* This, HWND FAR* lphWnd)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__Initialize(IDirectDrawClipperImpl *This, LPDIRECTDRAW a, DWORD b)
+HRESULT __stdcall IDirectDrawClipper__Initialize(IDirectDrawClipperImpl* This, LPDIRECTDRAW lpDD, DWORD dwFlags)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__IsClipListChanged(IDirectDrawClipperImpl *This, BOOL FAR *a)
+HRESULT __stdcall IDirectDrawClipper__IsClipListChanged(IDirectDrawClipperImpl* This, BOOL FAR* lpbChanged)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    HRESULT ret = DDERR_INVALIDOBJECT;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__SetClipList(IDirectDrawClipperImpl *This, LPRGNDATA a, DWORD b)
+HRESULT __stdcall IDirectDrawClipper__SetClipList(IDirectDrawClipperImpl* This, LPRGNDATA lpClipList, DWORD dwFlags)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
-HRESULT __stdcall IDirectDrawClipper__SetHWnd(IDirectDrawClipperImpl *This, DWORD a, HWND b)
+HRESULT __stdcall IDirectDrawClipper__SetHWnd(IDirectDrawClipperImpl* This, DWORD dwFlags, HWND hWnd)
 {
-    dprintf("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
     HRESULT ret = DD_OK;
-    dprintf("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }
 
 struct IDirectDrawClipperImplVtbl g_ddc_vtbl =
 {
-    /* IUnknown */
+    /*** IUnknown methods ***/
     IDirectDrawClipper__QueryInterface,
     IDirectDrawClipper__AddRef,
     IDirectDrawClipper__Release,
-    /* IDirectDrawClipper */
+    /*** IDirectDrawClipper methods ***/
     IDirectDrawClipper__GetClipList,
     IDirectDrawClipper__GetHWnd,
     IDirectDrawClipper__Initialize,

@@ -3,7 +3,7 @@
 WINDRES  ?= windres
 LDFLAGS   = -Iinc -Wall -Wl,--enable-stdcall-fixup -s
 CFLAGS    = -std=c99
-LIBS      = -lgdi32 -lwinmm
+LIBS      = -lgdi32 -lwinmm -lpsapi -ldbghelp -lole32
 
 FILES = src/IDirect3D/IDirect3D.c \
         src/IDirect3D/IDirect3D2.c \

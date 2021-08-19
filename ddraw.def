@@ -1,6 +1,10 @@
 LIBRARY     ddraw.dll
 
 EXPORTS
+    AcquireDDThreadLock                       @1
+    D3DParseUnknownCommand                    @3
+    DDInternalLock                            @5
+    DDInternalUnlock                          @6
     DirectDrawCreate                          @8
     DirectDrawCreateClipper                   @9
     DirectDrawCreateEx                        @10
@@ -8,7 +12,10 @@ EXPORTS
     DirectDrawEnumerateExA                    @12
     DirectDrawEnumerateExW                    @13
     DirectDrawEnumerateW                      @14
+    ReleaseDDThreadLock                       @21
+    DirectInputCreateA = fake_DirectInputCreateA
+    DirectInputCreateW = fake_DirectInputCreateW
+    DirectInputCreateEx = fake_DirectInputCreateEx
+    DirectInput8Create = fake_DirectInput8Create
     GameHandlesClose                          DATA
-    NvOptimusEnablement                       DATA
-    AmdPowerXpressRequestHighPerformance      DATA
     pvBmpBits = FakePrimarySurface            DATA

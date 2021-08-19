@@ -1,8 +1,8 @@
 #include <windows.h>
 #include <dbghelp.h>
 #include <stdio.h>
-#include "dd.h"
 #include "ddraw.h"
+#include "dd.h"
 #include "ddsurface.h"
 #include "debug.h"
 
@@ -75,6 +75,12 @@ void dbg_init()
             RegQueryValueExA(hkey, "BuildLab", NULL, NULL, (PVOID)&build, &build_size);
 
             dbg_printf("%s (%s)\n", name, build);
+
+            const char* (CDECL * wine_get_version)() =
+                (void*)GetProcAddress(GetModuleHandleA("ntdll.dll"), "wine_get_version");
+
+            if (wine_get_version)
+                dbg_printf("Wine version = %s\n", wine_get_version());
         }
     }
 }
@@ -95,7 +101,7 @@ double dbg_counter_stop()
     return (double)(li.QuadPart - g_dbg_counter_start_time) / g_dbg_counter_freq;
 }
 
-void dbg_debug_string(const char *format, ...)
+void dbg_debug_string(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -104,7 +110,7 @@ void dbg_debug_string(const char *format, ...)
     OutputDebugStringA(buffer);
 }
 
-int dbg_printf(const char *fmt, ...)
+int dbg_printf(const char* fmt, ...)
 {
     static CRITICAL_SECTION cs;
     static BOOL initialized;
@@ -116,14 +122,21 @@ int dbg_printf(const char *fmt, ...)
     }
 
     EnterCriticalSection(&cs);
-    
+
     va_list args;
     int ret;
 
     SYSTEMTIME st;
     GetLocalTime(&st);
 
-    fprintf(stdout, "[%lu] %02d:%02d:%02d.%03d ", GetCurrentThreadId(), st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+    fprintf(
+        stdout,
+        "[%lu] %02d:%02d:%02d.%03d ",
+        GetCurrentThreadId(),
+        st.wHour,
+        st.wMinute,
+        st.wSecond,
+        st.wMilliseconds);
 
     va_start(args, fmt);
     ret = vfprintf(stdout, fmt, args);
@@ -145,18 +158,18 @@ void dbg_draw_frame_info_start()
 
     if (g_ddraw->primary)
     {
-        if (g_ddraw->primary->palette && g_ddraw->primary->palette->data_rgb)
-            SetDIBColorTable(g_ddraw->primary->hdc, 0, 256, g_ddraw->primary->palette->data_rgb);
+        HDC primary_dc;
+        dds_GetDC(g_ddraw->primary, &primary_dc);
 
-        DrawText(g_ddraw->primary->hdc, debug_text, -1, &debugrc, DT_NOCLIP);
+        DrawText(primary_dc, debug_text, -1, &debugrc, DT_NOCLIP);
     }
-        
+
     DWORD tick_start = timeGetTime();
     if (tick_start >= tick_fps)
     {
         _snprintf(
             debug_text,
-            sizeof(debug_text)-1,
+            sizeof(debug_text) - 1,
             "FPS: %lu | Time: %2.2f ms  ",
             g_dbg_frame_count,
             g_dbg_frame_time);
@@ -172,7 +185,7 @@ void dbg_draw_frame_info_start()
 
 void dbg_draw_frame_info_end()
 {
-    if (g_dbg_frame_count == 1) 
+    if (g_dbg_frame_count == 1)
         g_dbg_frame_time = dbg_counter_stop();
 }
 
@@ -180,82 +193,130 @@ void dbg_dump_dds_blt_flags(DWORD flags)
 {
 #ifdef _DEBUG_X
     if (flags & DDBLT_ALPHADEST) {
-        dprintf("     DDBLT_ALPHADEST\n");
+        TRACE("     DDBLT_ALPHADEST\n");
     }
     if (flags & DDBLT_ALPHADESTCONSTOVERRIDE) {
-        dprintf("     DDBLT_ALPHADESTCONSTOVERRIDE\n");
+        TRACE("     DDBLT_ALPHADESTCONSTOVERRIDE\n");
     }
     if (flags & DDBLT_ALPHADESTNEG) {
-        dprintf("     DDBLT_ALPHADESTNEG\n");
+        TRACE("     DDBLT_ALPHADESTNEG\n");
     }
     if (flags & DDBLT_ALPHADESTSURFACEOVERRIDE) {
-        dprintf("     DDBLT_ALPHADESTSURFACEOVERRIDE\n");
+        TRACE("     DDBLT_ALPHADESTSURFACEOVERRIDE\n");
     }
     if (flags & DDBLT_ALPHAEDGEBLEND) {
-        dprintf("     DDBLT_ALPHAEDGEBLEND\n");
+        TRACE("     DDBLT_ALPHAEDGEBLEND\n");
     }
     if (flags & DDBLT_ALPHASRC) {
-        dprintf("     DDBLT_ALPHASRC\n");
+        TRACE("     DDBLT_ALPHASRC\n");
     }
     if (flags & DDBLT_ALPHASRCCONSTOVERRIDE) {
-        dprintf("     DDBLT_ALPHASRCCONSTOVERRIDE\n");
+        TRACE("     DDBLT_ALPHASRCCONSTOVERRIDE\n");
     }
     if (flags & DDBLT_ALPHASRCNEG) {
-        dprintf("     DDBLT_ALPHASRCNEG\n");
+        TRACE("     DDBLT_ALPHASRCNEG\n");
     }
     if (flags & DDBLT_ALPHASRCSURFACEOVERRIDE) {
-        dprintf("     DDBLT_ALPHASRCSURFACEOVERRIDE\n");
+        TRACE("     DDBLT_ALPHASRCSURFACEOVERRIDE\n");
     }
     if (flags & DDBLT_ASYNC) {
-        dprintf("     DDBLT_ASYNC\n");
+        TRACE("     DDBLT_ASYNC\n");
     }
     if (flags & DDBLT_COLORFILL) {
-        dprintf("     DDBLT_COLORFILL\n");
+        TRACE("     DDBLT_COLORFILL\n");
     }
     if (flags & DDBLT_DDFX) {
-        dprintf("     DDBLT_DDFX\n");
+        TRACE("     DDBLT_DDFX\n");
     }
     if (flags & DDBLT_DDROPS) {
-        dprintf("     DDBLT_DDROPS\n");
+        TRACE("     DDBLT_DDROPS\n");
     }
     if (flags & DDBLT_KEYDEST) {
-        dprintf("     DDBLT_KEYDEST\n");
+        TRACE("     DDBLT_KEYDEST\n");
     }
     if (flags & DDBLT_KEYDESTOVERRIDE) {
-        dprintf("     DDBLT_KEYDESTOVERRIDE\n");
+        TRACE("     DDBLT_KEYDESTOVERRIDE\n");
     }
     if (flags & DDBLT_KEYSRC) {
-        dprintf("     DDBLT_KEYSRC\n");
+        TRACE("     DDBLT_KEYSRC\n");
     }
     if (flags & DDBLT_KEYSRCOVERRIDE) {
-        dprintf("     DDBLT_KEYSRCOVERRIDE\n");
+        TRACE("     DDBLT_KEYSRCOVERRIDE\n");
     }
     if (flags & DDBLT_ROP) {
-        dprintf("     DDBLT_ROP\n");
+        TRACE("     DDBLT_ROP\n");
     }
     if (flags & DDBLT_ROTATIONANGLE) {
-        dprintf("     DDBLT_ROTATIONANGLE\n");
+        TRACE("     DDBLT_ROTATIONANGLE\n");
     }
     if (flags & DDBLT_ZBUFFER) {
-        dprintf("     DDBLT_ZBUFFER\n");
+        TRACE("     DDBLT_ZBUFFER\n");
     }
     if (flags & DDBLT_ZBUFFERDESTCONSTOVERRIDE) {
-        dprintf("     DDBLT_ZBUFFERDESTCONSTOVERRIDE\n");
+        TRACE("     DDBLT_ZBUFFERDESTCONSTOVERRIDE\n");
     }
     if (flags & DDBLT_ZBUFFERDESTOVERRIDE) {
-        dprintf("     DDBLT_ZBUFFERDESTOVERRIDE\n");
+        TRACE("     DDBLT_ZBUFFERDESTOVERRIDE\n");
     }
     if (flags & DDBLT_ZBUFFERSRCCONSTOVERRIDE) {
-        dprintf("     DDBLT_ZBUFFERSRCCONSTOVERRIDE\n");
+        TRACE("     DDBLT_ZBUFFERSRCCONSTOVERRIDE\n");
     }
     if (flags & DDBLT_ZBUFFERSRCOVERRIDE) {
-        dprintf("     DDBLT_ZBUFFERSRCOVERRIDE\n");
+        TRACE("     DDBLT_ZBUFFERSRCOVERRIDE\n");
     }
     if (flags & DDBLT_WAIT) {
-        dprintf("     DDBLT_WAIT\n");
+        TRACE("     DDBLT_WAIT\n");
     }
     if (flags & DDBLT_DEPTHFILL) {
-        dprintf("     DDBLT_DEPTHFILL\n");
+        TRACE("     DDBLT_DEPTHFILL\n");
+    }
+    if (flags & DDBLT_DONOTWAIT) {
+        TRACE("     DDBLT_DONOTWAIT\n");
+    }
+    if (flags & DDBLT_PRESENTATION) {
+        TRACE("     DDBLT_PRESENTATION\n");
+    }
+    if (flags & DDBLT_LAST_PRESENTATION) {
+        TRACE("     DDBLT_LAST_PRESENTATION\n");
+    }
+    if (flags & DDBLT_EXTENDED_FLAGS) {
+        TRACE("     DDBLT_EXTENDED_FLAGS\n");
+    }
+    if (flags & DDBLT_EXTENDED_LINEAR_CONTENT) {
+        TRACE("     DDBLT_EXTENDED_LINEAR_CONTENT\n");
+    }
+#endif
+}
+
+void dbg_dump_dds_blt_fx_flags(DWORD flags)
+{
+#ifdef _DEBUG_X
+    if (flags & DDBLTFX_ARITHSTRETCHY) {
+        TRACE("     DDBLTFX_ARITHSTRETCHY\n");
+    }
+    if (flags & DDBLTFX_MIRRORLEFTRIGHT) {
+        TRACE("     DDBLTFX_MIRRORLEFTRIGHT\n");
+    }
+    if (flags & DDBLTFX_MIRRORUPDOWN) {
+        TRACE("     DDBLTFX_MIRRORUPDOWN\n");
+    }
+    if (flags & DDBLTFX_NOTEARING) {
+        TRACE("     DDBLTFX_NOTEARING\n");
+    }
+    if (flags & DDBLTFX_ROTATE180) {
+        TRACE("     DDBLTFX_ROTATE180\n");
+    }
+    if (flags & DDBLTFX_ROTATE270) {
+        TRACE("     DDBLTFX_ROTATE270\n");
+    }
+    if (flags & DDBLTFX_ROTATE90) {
+        TRACE("     DDBLTFX_ROTATE90\n");
+    }
+    if (flags & DDBLTFX_ZBUFFERRANGE) {
+        TRACE("     DDBLTFX_ZBUFFERRANGE\n");
+    }
+    if (flags & DDBLTFX_ZBUFFERBASEDEST) {
+        TRACE("     DDBLTFX_ZBUFFERBASEDEST\n");
     }
 #endif
 }
@@ -263,45 +324,95 @@ void dbg_dump_dds_blt_flags(DWORD flags)
 void dbg_dump_dds_caps(DWORD caps)
 {
 #ifdef _DEBUG_X
-    if (caps & DDSCAPS_ALPHA)
-    {
-        dprintf("     DDSCAPS_ALPHA\n");
+    if (caps & DDSCAPS_RESERVED1) {
+        TRACE("     DDSCAPS_RESERVED1\n");
     }
-    if (caps & DDSCAPS_BACKBUFFER)
-    {
-        dprintf("     DDSCAPS_BACKBUFFER\n");
+    if (caps & DDSCAPS_ALPHA) {
+        TRACE("     DDSCAPS_ALPHA\n");
     }
-    if (caps & DDSCAPS_FLIP)
-    {
-        dprintf("     DDSCAPS_FLIP\n");
+    if (caps & DDSCAPS_BACKBUFFER) {
+        TRACE("     DDSCAPS_BACKBUFFER\n");
     }
-    if (caps & DDSCAPS_FRONTBUFFER)
-    {
-        dprintf("     DDSCAPS_FRONTBUFFER\n");
+    if (caps & DDSCAPS_COMPLEX) {
+        TRACE("     DDSCAPS_COMPLEX\n");
     }
-    if (caps & DDSCAPS_PALETTE)
-    {
-        dprintf("     DDSCAPS_PALETTE\n");
+    if (caps & DDSCAPS_FLIP) {
+        TRACE("     DDSCAPS_FLIP\n");
     }
-    if (caps & DDSCAPS_TEXTURE)
-    {
-        dprintf("     DDSCAPS_TEXTURE\n");
+    if (caps & DDSCAPS_FRONTBUFFER) {
+        TRACE("     DDSCAPS_FRONTBUFFER\n");
     }
-    if (caps & DDSCAPS_PRIMARYSURFACE)
-    {
-        dprintf("     DDSCAPS_PRIMARYSURFACE\n");
+    if (caps & DDSCAPS_OFFSCREENPLAIN) {
+        TRACE("     DDSCAPS_OFFSCREENPLAIN\n");
     }
-    if (caps & DDSCAPS_OFFSCREENPLAIN)
-    {
-        dprintf("     DDSCAPS_OFFSCREENPLAIN\n");
+    if (caps & DDSCAPS_OVERLAY) {
+        TRACE("     DDSCAPS_OVERLAY\n");
     }
-    if (caps & DDSCAPS_VIDEOMEMORY)
-    {
-        dprintf("     DDSCAPS_VIDEOMEMORY\n");
+    if (caps & DDSCAPS_PALETTE) {
+        TRACE("     DDSCAPS_PALETTE\n");
     }
-    if (caps & DDSCAPS_LOCALVIDMEM)
-    {
-        dprintf("     DDSCAPS_LOCALVIDMEM\n");
+    if (caps & DDSCAPS_PRIMARYSURFACE) {
+        TRACE("     DDSCAPS_PRIMARYSURFACE\n");
+    }
+    if (caps & DDSCAPS_RESERVED3) {
+        TRACE("     DDSCAPS_RESERVED3\n");
+    }
+    if (caps & DDSCAPS_PRIMARYSURFACELEFT) {
+        TRACE("     DDSCAPS_PRIMARYSURFACELEFT\n");
+    }
+    if (caps & DDSCAPS_SYSTEMMEMORY) {
+        TRACE("     DDSCAPS_SYSTEMMEMORY\n");
+    }
+    if (caps & DDSCAPS_TEXTURE) {
+        TRACE("     DDSCAPS_TEXTURE\n");
+    }
+    if (caps & DDSCAPS_3DDEVICE) {
+        TRACE("     DDSCAPS_3DDEVICE\n");
+    }
+    if (caps & DDSCAPS_VIDEOMEMORY) {
+        TRACE("     DDSCAPS_VIDEOMEMORY\n");
+    }
+    if (caps & DDSCAPS_VISIBLE) {
+        TRACE("     DDSCAPS_VISIBLE\n");
+    }
+    if (caps & DDSCAPS_ZBUFFER) {
+        TRACE("     DDSCAPS_ZBUFFER\n");
+    }
+    if (caps & DDSCAPS_OWNDC) {
+        TRACE("     DDSCAPS_OWNDC\n");
+    }
+    if (caps & DDSCAPS_LIVEVIDEO) {
+        TRACE("     DDSCAPS_LIVEVIDEO\n");
+    }
+    if (caps & DDSCAPS_HWCODEC) {
+        TRACE("     DDSCAPS_HWCODEC\n");
+    }
+    if (caps & DDSCAPS_MODEX) {
+        TRACE("     DDSCAPS_MODEX\n");
+    }
+    if (caps & DDSCAPS_MIPMAP) {
+        TRACE("     DDSCAPS_MIPMAP\n");
+    }
+    if (caps & DDSCAPS_RESERVED2) {
+        TRACE("     DDSCAPS_RESERVED2\n");
+    }
+    if (caps & DDSCAPS_ALLOCONLOAD) {
+        TRACE("     DDSCAPS_ALLOCONLOAD\n");
+    }
+    if (caps & DDSCAPS_VIDEOPORT) {
+        TRACE("     DDSCAPS_VIDEOPORT\n");
+    }
+    if (caps & DDSCAPS_LOCALVIDMEM) {
+        TRACE("     DDSCAPS_LOCALVIDMEM\n");
+    }
+    if (caps & DDSCAPS_NONLOCALVIDMEM) {
+        TRACE("     DDSCAPS_NONLOCALVIDMEM\n");
+    }
+    if (caps & DDSCAPS_STANDARDVGAMODE) {
+        TRACE("     DDSCAPS_STANDARDVGAMODE\n");
+    }
+    if (caps & DDSCAPS_OPTIMIZED) {
+        TRACE("     DDSCAPS_OPTIMIZED\n");
     }
 #endif
 }
@@ -309,73 +420,68 @@ void dbg_dump_dds_caps(DWORD caps)
 void dbg_dump_dds_flags(DWORD flags)
 {
 #ifdef _DEBUG_X
-    if (flags & DDSD_CAPS)
-    {
-        dprintf("     DDSD_CAPS\n");
+    if (flags & DDSD_CAPS) {
+        TRACE("     DDSD_CAPS\n");
     }
-    if (flags & DDSD_HEIGHT)
-    {
-        dprintf("     DDSD_HEIGHT\n");
+    if (flags & DDSD_HEIGHT) {
+        TRACE("     DDSD_HEIGHT\n");
     }
-    if (flags & DDSD_WIDTH)
-    {
-        dprintf("     DDSD_WIDTH\n");
+    if (flags & DDSD_WIDTH) {
+        TRACE("     DDSD_WIDTH\n");
     }
-    if (flags & DDSD_PITCH)
-    {
-        dprintf("     DDSD_PITCH\n");
+    if (flags & DDSD_PITCH) {
+        TRACE("     DDSD_PITCH\n");
     }
-    if (flags & DDSD_BACKBUFFERCOUNT)
-    {
-        dprintf("     DDSD_BACKBUFFERCOUNT\n");
+    if (flags & DDSD_BACKBUFFERCOUNT) {
+        TRACE("     DDSD_BACKBUFFERCOUNT\n");
     }
-    if (flags & DDSD_ZBUFFERBITDEPTH)
-    {
-        dprintf("     DDSD_ZBUFFERBITDEPTH\n");
+    if (flags & DDSD_ZBUFFERBITDEPTH) {
+        TRACE("     DDSD_ZBUFFERBITDEPTH\n");
     }
-    if (flags & DDSD_ALPHABITDEPTH)
-    {
-        dprintf("     DDSD_ALPHABITDEPTH\n");
+    if (flags & DDSD_ALPHABITDEPTH) {
+        TRACE("     DDSD_ALPHABITDEPTH\n");
     }
-    if (flags & DDSD_LPSURFACE)
-    {
-        dprintf("     DDSD_LPSURFACE\n");
+    if (flags & DDSD_LPSURFACE) {
+        TRACE("     DDSD_LPSURFACE\n");
     }
-    if (flags & DDSD_PIXELFORMAT)
-    {
-        dprintf("     DDSD_PIXELFORMAT\n");
+    if (flags & DDSD_PIXELFORMAT) {
+        TRACE("     DDSD_PIXELFORMAT\n");
     }
-    if (flags & DDSD_CKDESTOVERLAY)
-    {
-        dprintf("     DDSD_CKDESTOVERLAY\n");
+    if (flags & DDSD_CKDESTOVERLAY) {
+        TRACE("     DDSD_CKDESTOVERLAY\n");
     }
-    if (flags & DDSD_CKDESTBLT)
-    {
-        dprintf("     DDSD_CKDESTBLT\n");
+    if (flags & DDSD_CKDESTBLT) {
+        TRACE("     DDSD_CKDESTBLT\n");
     }
-    if (flags & DDSD_CKSRCOVERLAY)
-    {
-        dprintf("     DDSD_CKSRCOVERLAY\n");
+    if (flags & DDSD_CKSRCOVERLAY) {
+        TRACE("     DDSD_CKSRCOVERLAY\n");
     }
-    if (flags & DDSD_CKSRCBLT)
-    {
-        dprintf("     DDSD_CKSRCBLT\n");
+    if (flags & DDSD_CKSRCBLT) {
+        TRACE("     DDSD_CKSRCBLT\n");
     }
-    if (flags & DDSD_MIPMAPCOUNT)
-    {
-        dprintf("     DDSD_MIPMAPCOUNT\n");
+    if (flags & DDSD_MIPMAPCOUNT) {
+        TRACE("     DDSD_MIPMAPCOUNT\n");
     }
-    if (flags & DDSD_REFRESHRATE)
-    {
-        dprintf("     DDSD_REFRESHRATE\n");
+    if (flags & DDSD_REFRESHRATE) {
+        TRACE("     DDSD_REFRESHRATE\n");
     }
-    if (flags & DDSD_LINEARSIZE)
-    {
-        dprintf("     DDSD_LINEARSIZE\n");
+    if (flags & DDSD_LINEARSIZE) {
+        TRACE("     DDSD_LINEARSIZE\n");
     }
-    if (flags & DDSD_ALL)
-    {
-        dprintf("     DDSD_ALL\n");
+    if (flags & DDSD_TEXTURESTAGE) {
+        TRACE("     DDSD_TEXTURESTAGE\n");
+    }
+    if (flags & DDSD_FVF) {
+        TRACE("     DDSD_FVF\n");
+    }
+    if (flags & DDSD_SRCVBHANDLE) {
+        TRACE("     DDSD_SRCVBHANDLE\n");
+    }
+    if (flags & DDSD_DEPTH) {
+        TRACE("     DDSD_DEPTH\n");
+    }
+    if (flags & DDSD_ALL) {
+        TRACE("     DDSD_ALL\n");
     }
 #endif
 }
@@ -383,19 +489,20 @@ void dbg_dump_dds_flags(DWORD flags)
 void dbg_dump_dds_blt_fast_flags(DWORD flags)
 {
 #ifdef _DEBUG_X
-    if (flags & DDBLTFAST_NOCOLORKEY)
-    {
-        dprintf("     DDBLTFAST_NOCOLORKEY\n");
+    if (flags & DDBLTFAST_NOCOLORKEY) {
+        TRACE("     DDBLTFAST_NOCOLORKEY\n");
     }
-
-    if (flags & DDBLTFAST_SRCCOLORKEY)
-    {
-        dprintf("     DDBLTFAST_SRCCOLORKEY\n");
+    if (flags & DDBLTFAST_SRCCOLORKEY) {
+        TRACE("     DDBLTFAST_SRCCOLORKEY\n");
     }
-
-    if (flags & DDBLTFAST_DESTCOLORKEY)
-    {
-        dprintf("     DDBLTFAST_DESTCOLORKEY\n");
+    if (flags & DDBLTFAST_DESTCOLORKEY) {
+        TRACE("     DDBLTFAST_DESTCOLORKEY\n");
+    }
+    if (flags & DDBLTFAST_WAIT) {
+        TRACE("     DDBLTFAST_WAIT\n");
+    }
+    if (flags & DDBLTFAST_DONOTWAIT) {
+        TRACE("     DDBLTFAST_DONOTWAIT\n");
     }
 #endif
 }
@@ -403,25 +510,41 @@ void dbg_dump_dds_blt_fast_flags(DWORD flags)
 void dbg_dump_dds_lock_flags(DWORD flags)
 {
 #ifdef _DEBUG_X
-    if (flags & DDLOCK_SURFACEMEMORYPTR)
-    {
-        dprintf("     dwFlags: DDLOCK_SURFACEMEMORYPTR\n");
+    if (flags & DDLOCK_SURFACEMEMORYPTR) {
+        TRACE("     DDLOCK_SURFACEMEMORYPTR\n");
     }
-    if (flags & DDLOCK_WAIT)
-    {
-        dprintf("     dwFlags: DDLOCK_WAIT\n");
+    if (flags & DDLOCK_WAIT) {
+        TRACE("     DDLOCK_WAIT\n");
     }
-    if (flags & DDLOCK_EVENT)
-    {
-        dprintf("     dwFlags: DDLOCK_EVENT\n");
+    if (flags & DDLOCK_EVENT) {
+        TRACE("     DDLOCK_EVENT\n");
     }
-    if (flags & DDLOCK_READONLY)
-    {
-        dprintf("     dwFlags: DDLOCK_READONLY\n");
+    if (flags & DDLOCK_READONLY) {
+        TRACE("     DDLOCK_READONLY\n");
     }
-    if (flags & DDLOCK_WRITEONLY)
-    {
-        dprintf("     dwFlags: DDLOCK_WRITEONLY\n");
+    if (flags & DDLOCK_WRITEONLY) {
+        TRACE("     DDLOCK_WRITEONLY\n");
+    }
+    if (flags & DDLOCK_NOSYSLOCK) {
+        TRACE("     DDLOCK_NOSYSLOCK\n");
+    }
+    if (flags & DDLOCK_NOOVERWRITE) {
+        TRACE("     DDLOCK_NOOVERWRITE\n");
+    }
+    if (flags & DDLOCK_DISCARDCONTENTS) {
+        TRACE("     DDLOCK_DISCARDCONTENTS\n");
+    }
+    if (flags & DDLOCK_OKTOSWAP) {
+        TRACE("     DDLOCK_OKTOSWAP\n");
+    }
+    if (flags & DDLOCK_DONOTWAIT) {
+        TRACE("     DDLOCK_DONOTWAIT\n");
+    }
+    if (flags & DDLOCK_HASVOLUMETEXTUREBOXRECT) {
+        TRACE("     DDLOCK_HASVOLUMETEXTUREBOXRECT\n");
+    }
+    if (flags & DDLOCK_NODIRTYUPDATE) {
+        TRACE("     DDLOCK_NODIRTYUPDATE\n");
     }
 #endif
 }

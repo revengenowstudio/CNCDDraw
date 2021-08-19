@@ -1,5 +1,6 @@
 #include <windows.h>
 #include "ddraw.h"
+#include "debug.h"
 #include "dd.h"
 #include "ddsurface.h"
 #include "hook.h"
@@ -16,7 +17,7 @@ void util_limit_game_ticks()
         FILETIME ft = { 0 };
         GetSystemTimeAsFileTime(&ft);
 
-        if (CompareFileTime((FILETIME *)&g_ddraw->ticks_limiter.due_time, &ft) == -1)
+        if (CompareFileTime((FILETIME*)&g_ddraw->ticks_limiter.due_time, &ft) == -1)
         {
             memcpy(&g_ddraw->ticks_limiter.due_time, &ft, sizeof(LARGE_INTEGER));
         }
@@ -119,7 +120,7 @@ void util_update_bnet_pos(int new_x, int new_y)
 
         hwnd = FindWindowEx(HWND_DESKTOP, hwnd, "SDlgDialog", NULL);
     }
-    
+
     if (adj_x || adj_y)
     {
         HWND hwnd = FindWindowEx(HWND_DESKTOP, NULL, "SDlgDialog", NULL);
@@ -148,7 +149,13 @@ void util_update_bnet_pos(int new_x, int new_y)
     old_y = new_y;
 }
 
-BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWORD min_height, DWORD max_width, DWORD max_height)
+BOOL util_get_lowest_resolution(
+    float ratio,
+    SIZE* out_res,
+    DWORD min_width,
+    DWORD min_height,
+    DWORD max_width,
+    DWORD max_height)
 {
     BOOL result = FALSE;
     int org_ratio = (int)((ratio + 0.005f) * 100);
@@ -160,7 +167,7 @@ BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWO
 
     while (EnumDisplaySettings(NULL, i, &m))
     {
-        if  (m.dmPelsWidth >= min_width &&
+        if (m.dmPelsWidth >= min_width &&
             m.dmPelsHeight >= min_height &&
             m.dmPelsWidth <= max_width &&
             m.dmPelsHeight <= max_height &&
@@ -187,35 +194,83 @@ BOOL util_get_lowest_resolution(float ratio, SIZE *out_res, DWORD min_width, DWO
 
 void util_toggle_maximize()
 {
-    RECT work_rc;
     RECT client_rc;
+    RECT dst_rc;
 
-    if (real_GetClientRect(g_ddraw->hwnd, &client_rc) &&
-        SystemParametersInfo(SPI_GETWORKAREA, 0, &work_rc, 0))
+    LONG style = GetWindowLong(g_ddraw->hwnd, GWL_STYLE);
+    LONG exstyle = GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE);
+
+    if (real_GetClientRect(g_ddraw->hwnd, &client_rc) && SystemParametersInfo(SPI_GETWORKAREA, 0, &dst_rc, 0))
     {
+        int width = (dst_rc.right - dst_rc.left);
+        int height = (dst_rc.bottom - dst_rc.top);
+        int x = dst_rc.left;
+        int y = dst_rc.top;
+
         if (client_rc.right != g_ddraw->width || client_rc.bottom != g_ddraw->height)
         {
-            util_set_window_rect(
-                (work_rc.right / 2) - (g_ddraw->width / 2),
-                (work_rc.bottom / 2) - (g_ddraw->height / 2),
-                g_ddraw->width,
-                g_ddraw->height,
-                0);
+            dst_rc.left = 0;
+            dst_rc.top = 0;
+            dst_rc.right = g_ddraw->width;
+            dst_rc.bottom = g_ddraw->height;
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
         }
-        else if (
-            util_unadjust_window_rect(
-                &work_rc,
-                GetWindowLong(g_ddraw->hwnd, GWL_STYLE),
-                FALSE,
-                GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE)))
+        else if (g_ddraw->boxing)
         {
-            util_set_window_rect(
-                work_rc.left,
-                work_rc.top,
-                work_rc.right - work_rc.left,
-                work_rc.bottom - work_rc.top,
-                0);
+            dst_rc.left = 0;
+            dst_rc.top = 0;
+            dst_rc.right = g_ddraw->width;
+            dst_rc.bottom = g_ddraw->height;
+
+            for (int i = 20; i-- > 1;)
+            {
+                if (width >= g_ddraw->width * i && height - 20 >= g_ddraw->height * i)
+                {
+                    dst_rc.right = g_ddraw->width * i;
+                    dst_rc.bottom = g_ddraw->height * i;
+                    break;
+                }
+            }
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
         }
+        else if (g_ddraw->maintas)
+        {
+            util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+
+            int w = dst_rc.right - dst_rc.left;
+            int h = dst_rc.bottom - dst_rc.top;
+
+            dst_rc.top = 0;
+            dst_rc.left = 0;
+            dst_rc.right = w;
+            dst_rc.bottom = (LONG)(((float)g_ddraw->height / g_ddraw->width) * w);
+
+            if (dst_rc.bottom > h)
+            {
+                dst_rc.right = (LONG)(((float)dst_rc.right / dst_rc.bottom) * h);
+                dst_rc.bottom = h;
+            }
+
+            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
+        }
+
+        RECT pos_rc;
+        pos_rc.left = (width / 2) - ((dst_rc.right - dst_rc.left) / 2) + x;
+        pos_rc.top = (height / 2) - ((dst_rc.bottom - dst_rc.top) / 2) + y;
+        pos_rc.right = (dst_rc.right - dst_rc.left);
+        pos_rc.bottom = (dst_rc.bottom - dst_rc.top);
+
+        util_unadjust_window_rect(&pos_rc, style, FALSE, exstyle);
+        util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+
+        util_set_window_rect(
+            pos_rc.left,
+            pos_rc.top,
+            dst_rc.right - dst_rc.left,
+            dst_rc.bottom - dst_rc.top,
+            0);
     }
 }
 
@@ -229,9 +284,14 @@ void util_toggle_fullscreen()
         mouse_unlock();
 
         g_config.window_state = g_ddraw->windowed = FALSE;
-        real_SetWindowLongA(g_ddraw->hwnd, GWL_STYLE, GetWindowLong(g_ddraw->hwnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
-        g_ddraw->altenter = TRUE;
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+        LONG style = GetWindowLong(g_ddraw->hwnd, GWL_STYLE);
+
+        real_SetWindowLongA(
+            g_ddraw->hwnd,
+            GWL_STYLE,
+            style & ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU));
+
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, SDM_LEAVE_WINDOWED);
         util_update_bnet_pos(0, 0);
 
         mouse_lock();
@@ -250,8 +310,8 @@ void util_toggle_fullscreen()
             ChangeDisplaySettings(NULL, g_ddraw->bnet_active ? CDS_FULLSCREEN : 0);
         }
 
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
-        mouse_lock();
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, SDM_LEAVE_FULLSCREEN);
+        //mouse_lock();
     }
 }
 
@@ -300,7 +360,7 @@ void util_set_window_rect(int x, int y, int width, int height, UINT flags)
             g_config.window_rect.right = width;
         }
 
-        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp);
+        dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, 0);
     }
 }
 
@@ -313,17 +373,44 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
     if (real_GetClientRect(hwnd, &size) && real_GetWindowRect(hwnd, &pos) && size.right > 1 && size.bottom > 1)
     {
-        g_ddraw->child_window_exists = TRUE;
+        //TRACE("     util_enum_child_proc right=%u, bottom=%u\n", size.right, size.bottom);
 
-        if (g_ddraw->fixchildwindows)
+        if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_HIDE)
         {
-            HDC hdc = GetDC(hwnd);
+            LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
 
-            MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+            if (!(style & WS_EX_TRANSPARENT))
+            {
+                real_SetWindowLongA(hwnd, GWL_EXSTYLE, style | WS_EX_TRANSPARENT);
 
-            BitBlt(hdc, 0, 0, size.right, size.bottom, this->hdc, pos.left, pos.top, SRCCOPY);
+                real_SetWindowPos(
+                    hwnd,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER
+                );
+            }
+        }
+        else
+        {
+            g_ddraw->got_child_windows = g_ddraw->child_window_exists = TRUE;
 
-            ReleaseDC(hwnd, hdc);
+            if (g_ddraw->fixchilds == FIX_CHILDS_DETECT_PAINT)
+            {
+                HDC dst_dc = GetDC(hwnd);
+                HDC src_dc;
+
+                dds_GetDC(this, &src_dc);
+
+                real_MapWindowPoints(HWND_DESKTOP, g_ddraw->hwnd, (LPPOINT)&pos, 2);
+
+                BitBlt(dst_dc, 0, 0, size.right, size.bottom, src_dc, pos.left, pos.top, SRCCOPY);
+
+                ReleaseDC(hwnd, dst_dc);
+            }
         }
     }
 
@@ -332,16 +419,17 @@ BOOL CALLBACK util_enum_child_proc(HWND hwnd, LPARAM lparam)
 
 static unsigned char util_get_pixel(int x, int y)
 {
-    return ((unsigned char*)g_ddraw->primary->surface)[y * g_ddraw->primary->l_pitch + x * g_ddraw->primary->lx_pitch];
+    return ((unsigned char*)dds_GetBuffer(
+        g_ddraw->primary))[y * g_ddraw->primary->l_pitch + x * g_ddraw->primary->lx_pitch];
 }
 
-BOOL util_detect_cutscene()
+BOOL util_detect_low_res_screen()
 {
     static int* in_movie = (int*)0x00665F58;
     static int* is_vqa_640 = (int*)0x0065D7BC;
     static BYTE* should_stretch = (BYTE*)0x00607D78;
 
-    if (g_ddraw->width <= CUTSCENE_WIDTH || g_ddraw->height <= CUTSCENE_HEIGHT)
+    if (g_ddraw->width <= g_ddraw->upscale_hack_width || g_ddraw->height <= g_ddraw->upscale_hack_height)
     {
         return FALSE;
     }
@@ -357,7 +445,13 @@ BOOL util_detect_cutscene()
     }
     else if (g_ddraw->iscnc1)
     {
-        return util_get_pixel(CUTSCENE_WIDTH + 1, 0) == 0 || util_get_pixel(CUTSCENE_WIDTH + 5, 1) == 0 ? TRUE : FALSE;
+        return
+            util_get_pixel(g_ddraw->upscale_hack_width + 1, 0) == 0 ||
+            util_get_pixel(g_ddraw->upscale_hack_width + 5, 1) == 0;
+    }
+    else if (g_ddraw->iskkndx)
+    {
+        return util_get_pixel(g_ddraw->width - 3, 3) == 0;
     }
 
     return FALSE;
