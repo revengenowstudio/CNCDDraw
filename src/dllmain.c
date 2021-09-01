@@ -185,6 +185,14 @@ HRESULT WINAPI DirectDrawEnumerateW(LPDDENUMCALLBACKW lpCallback, LPVOID lpConte
     return DD_OK;
 }
 
+DWORD WINAPI CompleteCreateSysmemSurface(DWORD a)
+{
+    TRACE("NOT_IMPLEMENTED -> %s()\n", __FUNCTION__);
+    DWORD ret = 0;
+    TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
+    return ret;
+}
+
 HRESULT WINAPI D3DParseUnknownCommand(LPVOID lpCmd, LPVOID* lpRetCmd)
 {
     TRACE("NOT_IMPLEMENTED -> %s(lpCmd=%p, lpRetCmd=%p)\n", __FUNCTION__, lpCmd, lpRetCmd);

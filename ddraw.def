@@ -2,6 +2,7 @@ LIBRARY     ddraw.dll
 
 EXPORTS
     AcquireDDThreadLock                       @1
+    CompleteCreateSysmemSurface               @2
     D3DParseUnknownCommand                    @3
     DDInternalLock                            @5
     DDInternalUnlock                          @6
