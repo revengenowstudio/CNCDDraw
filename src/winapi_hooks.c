@@ -654,7 +654,7 @@ HRESULT WINAPI fake_CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWORD
             IsEqualGUID(&IID_IDirectDraw4, riid) || 
             IsEqualGUID(&IID_IDirectDraw7, riid))
         {
-            return dd_CreateEx(NULL, ppv, NULL, NULL);
+            return dd_CreateEx(NULL, ppv, riid, NULL);
         }
         else
         {

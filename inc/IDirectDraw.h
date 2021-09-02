@@ -14,6 +14,7 @@ typedef struct IDirectDrawImpl
     struct IDirectDrawImplVtbl* lpVtbl;
 
     ULONG ref;
+    GUID guid;
 
 } IDirectDrawImpl;
 

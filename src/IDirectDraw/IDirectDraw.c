@@ -26,6 +26,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             TRACE("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", ((GUID*)riid)->Data1, dd);
 
+            memcpy(&dd->guid, riid, sizeof(dd->guid));
             dd->lpVtbl = &g_dd_vtblx;
             IDirectDraw_AddRef(dd);
 
@@ -40,6 +41,7 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
 
             TRACE("     GUID = %08X (IID_IDirectDraw), ddraw = %p\n", ((GUID*)riid)->Data1, dd);
 
+            memcpy(&dd->guid, riid, sizeof(dd->guid));
             dd->lpVtbl = &g_dd_vtbl1;
             IDirectDraw_AddRef(dd);
 
@@ -138,9 +140,9 @@ HRESULT __stdcall IDirectDraw__QueryInterface(IDirectDrawImpl* This, REFIID riid
                 g_ddraw->DirectDrawCreate(NULL, &g_ddraw->real_dd, NULL);
 
             if (g_ddraw->real_dd)
-                return IDirectDraw_QueryInterface(g_ddraw->real_dd, riid, ppvObj);
-
-            ret = E_NOINTERFACE;
+                ret = IDirectDraw_QueryInterface(g_ddraw->real_dd, riid, ppvObj);
+            else
+                ret = E_NOINTERFACE;
         }
     }
 
@@ -477,8 +479,8 @@ HRESULT __stdcall IDirectDraw__TestCooperativeLevel(IDirectDrawImpl* This)
 
 HRESULT __stdcall IDirectDraw__GetDeviceIdentifier(IDirectDrawImpl* This, LPDDDEVICEIDENTIFIER2 pDDDI, DWORD dwFlags)
 {
-    TRACE("NOT_IMPLEMENTED -> %s(This=%p)\n", __FUNCTION__, This);
-    HRESULT ret = DDERR_INVALIDPARAMS;
+    TRACE("NOT_IMPLEMENTED -> %s(This=%p, pDDDI=%p, dwFlags=%08X)\n", __FUNCTION__, This, pDDDI, dwFlags);
+    HRESULT ret = dd_GetDeviceIdentifier((LPDDDEVICEIDENTIFIER)pDDDI, dwFlags, &This->guid);
     TRACE("NOT_IMPLEMENTED <- %s\n", __FUNCTION__);
     return ret;
 }

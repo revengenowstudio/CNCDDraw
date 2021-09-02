@@ -1016,7 +1016,26 @@ HRESULT dd_GetAvailableVidMem(LPDDSCAPS lpDDCaps, LPDWORD lpdwTotal, LPDWORD lpd
 
 HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB)
 {
-    *lpbIsInVB = TRUE;
+    if (lpbIsInVB)
+        *lpbIsInVB = TRUE;
+
+    return DD_OK;
+}
+
+HRESULT dd_GetDeviceIdentifier(LPDDDEVICEIDENTIFIER pDDDI, DWORD dwFlags, REFIID riid)
+{
+    if (!pDDDI)
+        return DDERR_INVALIDPARAMS;
+
+    if (IsEqualGUID(&IID_IDirectDraw7, riid))
+    {
+        memset(pDDDI, 0, sizeof(DDDEVICEIDENTIFIER2));
+    }
+    else
+    {
+        memset(pDDDI, 0, sizeof(DDDEVICEIDENTIFIER));
+    }
+    
     return DD_OK;
 }
 
@@ -1037,8 +1056,9 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     }
 
     IDirectDrawImpl* dd = (IDirectDrawImpl*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, sizeof(IDirectDrawImpl));
+    memcpy(&dd->guid, iid, sizeof(dd->guid));
 
-    if (iid && IsEqualGUID(&IID_IDirectDraw, iid))
+    if (IsEqualGUID(&IID_IDirectDraw, iid))
     {
         TRACE("     GUID = %08X (IID_IDirectDraw), ddraw = %p\n", ((GUID*)iid)->Data1, dd);
 
@@ -1046,7 +1066,7 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
     }
     else
     {
-        TRACE("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", iid ? ((GUID*)iid)->Data1 : 0, dd);
+        TRACE("     GUID = %08X (IID_IDirectDrawX), ddraw = %p\n", ((GUID*)iid)->Data1, dd);
 
         dd->lpVtbl = &g_dd_vtblx;
     }
