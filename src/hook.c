@@ -163,7 +163,7 @@ void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                                     GetModuleHandle(hooks[i].module_name),
                                     hooks[i].data[x].function_name);
 
-                            if ((!unhook && !hooks[i].data[x].new_function) || !org_function)
+                            if (!hooks[i].data[x].new_function || !org_function)
                                 continue;
 
                             if (unhook)
