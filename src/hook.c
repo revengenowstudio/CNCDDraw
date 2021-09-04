@@ -117,8 +117,117 @@ void hook_patch_iat(HMODULE hmod, BOOL unhook, char* module_name, char* function
     hook_patch_iat_list(hmod, unhook, (HOOKLIST*)&hooks);
 }
 
+void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
+{
+    if (!hmod || hmod == INVALID_HANDLE_VALUE || !hooks)
+        return;
+
+#ifdef _MSC_VER
+    __try
+    {
+#endif
+        PIMAGE_DOS_HEADER dos_header = (PIMAGE_DOS_HEADER)hmod;
+        if (dos_header->e_magic != IMAGE_DOS_SIGNATURE)
+            return;
+
+        PIMAGE_NT_HEADERS nt_headers = (PIMAGE_NT_HEADERS)((DWORD)dos_header + (DWORD)dos_header->e_lfanew);
+        if (nt_headers->Signature != IMAGE_NT_SIGNATURE)
+            return;
+
+        PIMAGE_IMPORT_DESCRIPTOR import_desc = (PIMAGE_IMPORT_DESCRIPTOR)((DWORD)dos_header +
+            (DWORD)(nt_headers->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress));
+
+        if (import_desc == (PIMAGE_IMPORT_DESCRIPTOR)nt_headers)
+            return;
+
+        while (import_desc->FirstThunk)
+        {
+            for (int i = 0; hooks[i].module_name[0]; i++)
+            {
+                char* imp_module_name = (char*)((DWORD)dos_header + (DWORD)(import_desc->Name));
+
+                if (_stricmp(imp_module_name, hooks[i].module_name) == 0)
+                {
+                    PIMAGE_THUNK_DATA first_thunk =
+                        (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->FirstThunk);
+
+                    PIMAGE_THUNK_DATA original_first_thunk =
+                        (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->OriginalFirstThunk);
+
+                    while (first_thunk->u1.Function)
+                    {
+                        for (int x = 0; hooks[i].data[x].function_name[0]; x++)
+                        {
+                            DWORD org_function =
+                                (DWORD)GetProcAddress(
+                                    GetModuleHandle(hooks[i].module_name),
+                                    hooks[i].data[x].function_name);
+
+                            if ((!unhook && !hooks[i].data[x].new_function) || !org_function)
+                                continue;
+
+                            if (unhook)
+                            {
+                                if (first_thunk->u1.Function == (DWORD)hooks[i].data[x].new_function)
+                                {
+                                    DWORD op;
+
+                                    if (VirtualProtect(
+                                        &first_thunk->u1.Function, 
+                                        sizeof(DWORD), 
+                                        PAGE_READWRITE, 
+                                        &op))
+                                    {
+                                        first_thunk->u1.Function = org_function;
+
+                                        VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), op, &op);
+                                    }
+
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                if (first_thunk->u1.Function == org_function)
+                                {
+                                    DWORD op;
+
+                                    if (VirtualProtect(
+                                        &first_thunk->u1.Function, 
+                                        sizeof(DWORD), 
+                                        PAGE_READWRITE, 
+                                        &op))
+                                    {
+                                        first_thunk->u1.Function = (DWORD)hooks[i].data[x].new_function;
+
+                                        VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), op, &op);
+                                    }
+
+                                    break;
+                                }
+                            }
+                        }
+
+                        first_thunk++;
+                        original_first_thunk++;
+                    }
+                }
+            }
+
+            import_desc++;
+        }
+#ifdef _MSC_VER
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+    }
+#endif
+}
+
 void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
 {
+    hook_patch_obfuscated_iat_list(hmod, unhook, hooks);
+
     if (!hmod || hmod == INVALID_HANDLE_VALUE || !hooks)
         return;
 
@@ -168,10 +277,13 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
 
                                 if (_stricmp((const char*)import->Name, hooks[i].data[x].function_name) == 0)
                                 {
-                                    DWORD old_protect;
+                                    DWORD op;
 
                                     if (VirtualProtect(
-                                        &first_thunk->u1.Function, sizeof(DWORD), PAGE_READWRITE, &old_protect))
+                                        &first_thunk->u1.Function, 
+                                        sizeof(DWORD), 
+                                        PAGE_READWRITE, 
+                                        &op))
                                     {
                                         if (unhook)
                                         {
@@ -190,8 +302,7 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                                             first_thunk->u1.Function = (DWORD)hooks[i].data[x].new_function;
                                         }
 
-                                        VirtualProtect(
-                                            &first_thunk->u1.Function, sizeof(DWORD), old_protect, &old_protect);
+                                        VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), op, &op);
                                     }
 
                                     break;
