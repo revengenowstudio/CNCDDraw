@@ -148,6 +148,8 @@ void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
 
                 if (_stricmp(imp_module_name, hooks[i].module_name) == 0)
                 {
+                    HMODULE cur_mod = GetModuleHandle(hooks[i].module_name);
+
                     PIMAGE_THUNK_DATA first_thunk =
                         (PIMAGE_THUNK_DATA)((DWORD)dos_header + (DWORD)import_desc->FirstThunk);
 
@@ -160,7 +162,7 @@ void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                         {
                             DWORD org_function =
                                 (DWORD)GetProcAddress(
-                                    GetModuleHandle(hooks[i].module_name),
+                                    cur_mod,
                                     hooks[i].data[x].function_name);
 
                             if (!hooks[i].data[x].new_function || !org_function)
@@ -188,6 +190,12 @@ void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                             }
                             else
                             {
+                                if (first_thunk->u1.Function == (DWORD)hooks[i].data[x].new_function)
+                                {
+                                    /* module already hooked -> return */
+                                    return;
+                                }
+
                                 if (first_thunk->u1.Function == org_function)
                                 {
                                     DWORD op;
@@ -292,14 +300,15 @@ void hook_patch_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                                                     GetModuleHandle(hooks[i].module_name),
                                                     hooks[i].data[x].function_name);
 
-                                            if (org)
+                                            if (org && first_thunk->u1.Function != org)
                                             {
                                                 first_thunk->u1.Function = org;
                                             }
                                         }
                                         else
                                         {
-                                            first_thunk->u1.Function = (DWORD)hooks[i].data[x].new_function;
+                                            if (first_thunk->u1.Function != (DWORD)hooks[i].data[x].new_function)
+                                                first_thunk->u1.Function = (DWORD)hooks[i].data[x].new_function;
                                         }
 
                                         VirtualProtect(&first_thunk->u1.Function, sizeof(DWORD), op, &op);
