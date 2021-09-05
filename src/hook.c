@@ -190,12 +190,6 @@ void hook_patch_obfuscated_iat_list(HMODULE hmod, BOOL unhook, HOOKLIST* hooks)
                             }
                             else
                             {
-                                if (first_thunk->u1.Function == (DWORD)hooks[i].data[x].new_function)
-                                {
-                                    /* module already hooked -> return */
-                                    return;
-                                }
-
                                 if (first_thunk->u1.Function == org_function)
                                 {
                                     DWORD op;
