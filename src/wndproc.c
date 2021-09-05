@@ -574,6 +574,12 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             return 0;
         }
 
+        if (wParam == VK_NEXT && g_ddraw->resizable && !g_ddraw->border && g_ddraw->windowed && !g_ddraw->fullscreen)
+        {
+            util_toggle_maximize();
+            return 0;
+        }
+
         if (wParam == VK_MENU)
         {
             g_ddraw->alt_key_down = TRUE;
