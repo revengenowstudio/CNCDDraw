@@ -198,6 +198,10 @@ HRESULT dds_Blt(
 
     if (src_surface && src_w > 0 && src_h > 0 && dst_w > 0 && dst_h > 0)
     {
+        BOOL got_fx = (dwFlags & DDBLT_DDFX) && lpDDBltFx;
+        BOOL mirror_left_right = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORLEFTRIGHT);
+        BOOL mirror_up_down = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORUPDOWN);
+
         if (This->bpp != src_surface->bpp)
         {
             TRACE_EXT("     NOT_IMPLEMENTED This->bpp=%u, src_surface->bpp=%u\n", This->bpp, src_surface->bpp);
@@ -210,21 +214,24 @@ HRESULT dds_Blt(
 
             StretchBlt(dst_dc, dst_x, dst_y, dst_w, dst_h, src_dc, src_x, src_y, src_w, src_h, SRCCOPY);
         }
-        else if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
+        else if (
+            (dwFlags & DDBLT_KEYSRC) || 
+            (dwFlags & DDBLT_KEYSRCOVERRIDE) || 
+            mirror_left_right ||
+            mirror_up_down)
         {
-            DDCOLORKEY color_key;
+            DDCOLORKEY color_key = { 0xFFFFFFFF, 0 };
 
-            color_key.dwColorSpaceLowValue =
-                (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
-                lpDDBltFx->ddckSrcColorkey.dwColorSpaceLowValue : src_surface->color_key.dwColorSpaceLowValue;
+            if ((dwFlags & DDBLT_KEYSRC) || (dwFlags & DDBLT_KEYSRCOVERRIDE))
+            {
+                color_key.dwColorSpaceLowValue =
+                    (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
+                    lpDDBltFx->ddckSrcColorkey.dwColorSpaceLowValue : src_surface->color_key.dwColorSpaceLowValue;
 
-            color_key.dwColorSpaceHighValue =
-                (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
-                lpDDBltFx->ddckSrcColorkey.dwColorSpaceHighValue : src_surface->color_key.dwColorSpaceHighValue;
-
-            BOOL got_fx = (dwFlags & DDBLT_DDFX) && lpDDBltFx;
-            BOOL mirror_left_right = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORLEFTRIGHT);
-            BOOL mirror_up_down = got_fx && (lpDDBltFx->dwDDFX & DDBLTFX_MIRRORUPDOWN);
+                color_key.dwColorSpaceHighValue =
+                    (dwFlags & DDBLT_KEYSRCOVERRIDE) ?
+                    lpDDBltFx->ddckSrcColorkey.dwColorSpaceHighValue : src_surface->color_key.dwColorSpaceHighValue;
+            }
 
             float scale_w = (float)src_w / dst_w;
             float scale_h = (float)src_h / dst_h;
