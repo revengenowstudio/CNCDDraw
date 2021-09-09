@@ -21,19 +21,30 @@ CNCDDRAWCONFIG g_config =
 
 void cfg_load()
 {
-    /* set up settings ini */
-    char cwd[MAX_PATH];
     char tmp[256];
-    GetCurrentDirectoryA(sizeof(cwd), cwd);
-    _snprintf(g_config.ini_path, sizeof(g_config.ini_path), "%s\\ddraw.ini", cwd);
+
+    /* get process filename and directory */
+    if (GetModuleFileNameA(NULL, g_config.game_path, sizeof(g_config.game_path) - 1) > 0)
+    {
+        _splitpath(g_config.game_path, NULL, NULL, g_config.process_file_name, NULL);
+
+        char* end = strstr(g_config.game_path, g_config.process_file_name);
+
+        if (end)
+        {
+            *end = 0;
+        }
+        else
+        {
+            g_config.game_path[0] = 0;
+        }
+    }
+
+    /* set up settings ini */
+    strncpy(g_config.ini_path, ".\\ddraw.ini", sizeof(g_config.ini_path) - 1);
 
     if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
         cfg_create_ini();
-
-    /* get process filename */
-    char process_file_path[MAX_PATH] = { 0 };
-    GetModuleFileNameA(NULL, process_file_path, MAX_PATH);
-    _splitpath(process_file_path, NULL, NULL, g_config.process_file_name, NULL);
 
     /* load settings from ini */
     g_ddraw->windowed = cfg_get_bool("windowed", FALSE);

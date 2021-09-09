@@ -10,7 +10,8 @@ typedef struct CNCDDRAWCONFIG
     RECT window_rect;
     int window_state;
     char ini_path[MAX_PATH];
-    char process_file_name[96];
+    char game_path[MAX_PATH];
+    char process_file_name[MAX_PATH];
     int save_settings;
 
 } CNCDDRAWCONFIG;

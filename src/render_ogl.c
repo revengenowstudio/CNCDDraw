@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include "config.h"
 #include "fps_limiter.h"
 #include "opengl_utils.h"
 #include "dd.h"
@@ -140,7 +141,16 @@ static void ogl_build_programs()
 
         if (g_ogl.main_program)
         {
-            g_ogl.scale_program = oglu_build_program_from_file(g_ddraw->shader, wglCreateContextAttribsARB != NULL);
+            char shader_path[MAX_PATH] = { 0 };
+
+            strncpy(shader_path, g_ddraw->shader, sizeof(shader_path) - 1);
+
+            if (GetFileAttributes(shader_path) == INVALID_FILE_ATTRIBUTES)
+            {
+                _snprintf(shader_path, sizeof(shader_path) - 1, "%s%s", g_config.game_path, g_ddraw->shader);
+            }
+
+            g_ogl.scale_program = oglu_build_program_from_file(shader_path, wglCreateContextAttribsARB != NULL);
         }
         else
         {
