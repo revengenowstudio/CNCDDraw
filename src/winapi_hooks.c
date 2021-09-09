@@ -492,6 +492,12 @@ HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, D
         return NULL;
     }
 
+    if (idHook == WH_MOUSE && lpfn && !g_mouse_hook)
+    {
+        g_mouse_proc = lpfn;
+        return g_mouse_hook = real_SetWindowsHookExA(idHook, mouse_hook_proc, hmod, dwThreadId);
+    }
+
     return real_SetWindowsHookExA(idHook, lpfn, hmod, dwThreadId);
 }
 
@@ -589,6 +595,12 @@ HWND WINAPI fake_CreateWindowExA(
     DWORD dwExStyle, LPCSTR lpClassName, LPCSTR lpWindowName, DWORD dwStyle, int X, int Y,
     int nWidth, int nHeight, HWND hWndParent, HMENU hMenu, HINSTANCE hInstance, LPVOID lpParam)
 {
+    /* Fix for SMACKW32.DLL creating another window that steals the focus */
+    if (HIWORD(lpClassName) && _strcmpi(lpClassName, "MouseTypeWind") == 0 && g_ddraw)
+    {
+        dwStyle &= ~WS_VISIBLE;
+    }
+
     if (HIWORD(lpClassName) && _strcmpi(lpClassName, "SDlgDialog") == 0 && g_ddraw)
     {
         if (!g_ddraw->bnet_active)

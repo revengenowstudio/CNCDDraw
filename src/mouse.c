@@ -1,9 +1,12 @@
-#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include "debug.h"
+#include "winapi_hooks.h"
 #include "dd.h"
 #include "hook.h"
 
+
+HHOOK g_mouse_hook;
+HOOKPROC g_mouse_proc;
 
 void mouse_lock()
 {
@@ -92,4 +95,52 @@ void mouse_unlock()
             (int)(rc.left + g_ddraw->render.viewport.x + (cur_x * g_ddraw->render.scale_w)),
             (int)(rc.top + g_ddraw->render.viewport.y + ((cur_y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
     }
+}
+
+LRESULT CALLBACK mouse_hook_proc(int Code, WPARAM wParam, LPARAM lParam)
+{
+    if (!g_ddraw || !g_ddraw->fixmousehook)
+        return g_mouse_proc(Code, wParam, lParam);
+
+    if (Code < 0)
+        return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
+
+    switch (wParam)
+    {
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP:
+    {
+        if (!g_ddraw->devmode && !g_ddraw->locked)
+        {
+            mouse_lock();
+            return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
+        }
+        break;
+    }
+    /* down messages are ignored if we have no cursor lock */
+    case WM_XBUTTONDBLCLK:
+    case WM_XBUTTONDOWN:
+    case WM_XBUTTONUP:
+    case WM_MOUSEWHEEL:
+    case WM_MOUSEHOVER:
+    case WM_LBUTTONDBLCLK:
+    case WM_MBUTTONDBLCLK:
+    case WM_RBUTTONDBLCLK:
+    case WM_LBUTTONDOWN:
+    case WM_RBUTTONDOWN:
+    case WM_MBUTTONDOWN:
+    case WM_MOUSEMOVE:
+    {
+        if (!g_ddraw->devmode && !g_ddraw->locked)
+        {
+            return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
+        }
+        break;
+    }
+    }
+
+    fake_GetCursorPos(&((MOUSEHOOKSTRUCT*)lParam)->pt);
+
+    return g_mouse_proc(Code, wParam, lParam);
 }
