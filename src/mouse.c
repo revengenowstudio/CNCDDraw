@@ -80,11 +80,7 @@ void mouse_unlock()
         real_GetClientRect(g_ddraw->hwnd, &rc);
         real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&rc, 2);
 
-        CURSORINFO ci = { .cbSize = sizeof(CURSORINFO) };
-        if (real_GetCursorInfo(&ci) && ci.flags == 0)
-        {
-            while (real_ShowCursor(TRUE) < 0);
-        }
+        while (real_ShowCursor(TRUE) < 0);
 
         real_ClipCursor(NULL);
 
