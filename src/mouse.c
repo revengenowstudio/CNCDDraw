@@ -118,26 +118,11 @@ LRESULT CALLBACK mouse_hook_proc(int Code, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
-    /* down messages are ignored if we have no cursor lock */
-    case WM_XBUTTONDBLCLK:
-    case WM_XBUTTONDOWN:
-    case WM_XBUTTONUP:
-    case WM_MOUSEWHEEL:
-    case WM_MOUSEHOVER:
-    case WM_LBUTTONDBLCLK:
-    case WM_MBUTTONDBLCLK:
-    case WM_RBUTTONDBLCLK:
-    case WM_LBUTTONDOWN:
-    case WM_RBUTTONDOWN:
-    case WM_MBUTTONDOWN:
-    case WM_MOUSEMOVE:
-    {
-        if (!g_ddraw->devmode && !g_ddraw->locked)
-        {
-            return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
-        }
-        break;
     }
+
+    if (!g_ddraw->devmode && !g_ddraw->locked)
+    {
+        return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
     }
 
     fake_GetCursorPos(&((MOUSEHOOKSTRUCT*)lParam)->pt);
