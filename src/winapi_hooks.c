@@ -480,6 +480,9 @@ BOOL WINAPI fake_ShowWindow(HWND hWnd, int nCmdShow)
 
         if (nCmdShow == SW_MAXIMIZE)
             nCmdShow = SW_NORMAL;
+
+        if (nCmdShow == SW_MINIMIZE)
+            return TRUE;
     }
 
     return real_ShowWindow(hWnd, nCmdShow);
