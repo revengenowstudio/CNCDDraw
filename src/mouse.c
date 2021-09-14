@@ -102,28 +102,8 @@ LRESULT CALLBACK mouse_hook_proc(int Code, WPARAM wParam, LPARAM lParam)
     if (!g_ddraw || !g_ddraw->fixmousehook)
         return g_mouse_proc(Code, wParam, lParam);
 
-    if (Code < 0)
+    if (Code < 0 || (!g_ddraw->devmode && !g_ddraw->locked))
         return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
-
-    switch (wParam)
-    {
-    case WM_LBUTTONUP:
-    case WM_RBUTTONUP:
-    case WM_MBUTTONUP:
-    {
-        if (!g_ddraw->devmode && !g_ddraw->locked)
-        {
-            mouse_lock();
-            return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
-        }
-        break;
-    }
-    }
-
-    if (!g_ddraw->devmode && !g_ddraw->locked)
-    {
-        return CallNextHookEx(g_mouse_hook, Code, wParam, lParam);
-    }
 
     fake_GetCursorPos(&((MOUSEHOOKSTRUCT*)lParam)->pt);
 
