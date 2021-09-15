@@ -64,6 +64,7 @@ void cfg_load()
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
     g_ddraw->fixmousehook = cfg_get_bool("fixmousehook", FALSE);
     g_ddraw->fixnotresponding = cfg_get_bool("fixnotresponding", FALSE);
+    g_ddraw->releasealt = cfg_get_bool("releasealt", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
@@ -725,16 +726,19 @@ static void cfg_create_ini()
             "[ja2]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
+            "releasealt=true\n"
             "\n"
             "; Jagged Alliance 2: Wildfire\n"
             "[WF6]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
+            "releasealt=true\n"
             "\n"
             "; Jagged Alliance 2 - UC mod\n"
             "[JA2_UC]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
+            "releasealt=true\n"
             "\n"
             "; Kings Quest 8\n"
             "[Mask]\n"
@@ -920,7 +924,8 @@ static void cfg_create_ini()
             "[Wiz8]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
-             "\n"
+            "releasealt=true\n"
+            "\n"
             "; Worms Armageddon\n"
             "[WA]\n"
             "adjmouse=true\n"
