@@ -10,7 +10,7 @@
 #include "hook.h"
 #include "debug.h"
 
-static void cfg_init_paths();
+static void cfg_init();
 static void cfg_create_ini();
 
 CNCDDRAWCONFIG g_config =
@@ -20,10 +20,7 @@ void cfg_load()
 {
     char tmp[256];
 
-    cfg_init_paths();
-
-    if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
-        cfg_create_ini();
+    cfg_init();
 
     /* load settings from ini */
     g_ddraw->windowed = cfg_get_bool("windowed", FALSE);
@@ -930,7 +927,7 @@ static void cfg_create_ini()
     }
 }
 
-static void cfg_init_paths()
+static void cfg_init()
 {
     /* get process filename and directory */
     if (GetModuleFileNameA(NULL, g_config.game_path, sizeof(g_config.game_path) - 1) > 0)
@@ -951,12 +948,15 @@ static void cfg_init_paths()
 
     /* set up settings ini */
     strncpy(g_config.ini_path, ".\\ddraw.ini", sizeof(g_config.ini_path) - 1);
+
+    if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
+        cfg_create_ini();
 }
 
 DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size)
 {
     if (!g_config.ini_path[0])
-        cfg_init_paths();
+        cfg_init();
 
     DWORD s = GetPrivateProfileStringA(
         g_config.process_file_name, key, "", out_string, out_size, g_config.ini_path);
