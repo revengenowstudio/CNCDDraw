@@ -95,7 +95,7 @@ void mouse_unlock()
 
 LRESULT CALLBACK mouse_hook_proc(int Code, WPARAM wParam, LPARAM lParam)
 {
-    if (!g_ddraw || !g_ddraw->fixmousehook)
+    if (!g_ddraw)
         return g_mouse_proc(Code, wParam, lParam);
 
     if (Code < 0 || (!g_ddraw->devmode && !g_ddraw->locked))

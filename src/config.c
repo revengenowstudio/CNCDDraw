@@ -10,10 +10,7 @@
 #include "hook.h"
 #include "debug.h"
 
-
-static BOOL cfg_get_bool(LPCSTR key, BOOL default_value);
-static int cfg_get_int(LPCSTR key, int default_value);
-static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size);
+static void cfg_init_paths();
 static void cfg_create_ini();
 
 CNCDDRAWCONFIG g_config =
@@ -23,25 +20,7 @@ void cfg_load()
 {
     char tmp[256];
 
-    /* get process filename and directory */
-    if (GetModuleFileNameA(NULL, g_config.game_path, sizeof(g_config.game_path) - 1) > 0)
-    {
-        _splitpath(g_config.game_path, NULL, NULL, g_config.process_file_name, NULL);
-
-        char* end = strstr(g_config.game_path, g_config.process_file_name);
-
-        if (end)
-        {
-            *end = 0;
-        }
-        else
-        {
-            g_config.game_path[0] = 0;
-        }
-    }
-
-    /* set up settings ini */
-    strncpy(g_config.ini_path, ".\\ddraw.ini", sizeof(g_config.ini_path) - 1);
+    cfg_init_paths();
 
     if (GetFileAttributes(g_config.ini_path) == INVALID_FILE_ATTRIBUTES)
         cfg_create_ini();
@@ -62,7 +41,6 @@ void cfg_load()
     g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
     g_ddraw->fixchilds = cfg_get_int("fixchilds", FIX_CHILDS_DETECT_PAINT);
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
-    g_ddraw->fixmousehook = cfg_get_bool("fixmousehook", FALSE);
     g_ddraw->fixnotresponding = cfg_get_bool("fixnotresponding", FALSE);
     g_ddraw->releasealt = cfg_get_bool("releasealt", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
@@ -952,8 +930,34 @@ static void cfg_create_ini()
     }
 }
 
-static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size)
+static void cfg_init_paths()
 {
+    /* get process filename and directory */
+    if (GetModuleFileNameA(NULL, g_config.game_path, sizeof(g_config.game_path) - 1) > 0)
+    {
+        _splitpath(g_config.game_path, NULL, NULL, g_config.process_file_name, NULL);
+
+        char* end = strstr(g_config.game_path, g_config.process_file_name);
+
+        if (end)
+        {
+            *end = 0;
+        }
+        else
+        {
+            g_config.game_path[0] = 0;
+        }
+    }
+
+    /* set up settings ini */
+    strncpy(g_config.ini_path, ".\\ddraw.ini", sizeof(g_config.ini_path) - 1);
+}
+
+DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, DWORD out_size)
+{
+    if (!g_config.ini_path[0])
+        cfg_init_paths();
+
     DWORD s = GetPrivateProfileStringA(
         g_config.process_file_name, key, "", out_string, out_size, g_config.ini_path);
 
@@ -974,7 +978,7 @@ static DWORD cfg_get_string(LPCSTR key, LPCSTR default_value, LPSTR out_string, 
     return GetPrivateProfileStringA("ddraw", key, default_value, out_string, out_size, g_config.ini_path);
 }
 
-static BOOL cfg_get_bool(LPCSTR key, BOOL default_value)
+BOOL cfg_get_bool(LPCSTR key, BOOL default_value)
 {
     char value[8];
     cfg_get_string(key, default_value ? "Yes" : "No", value, sizeof(value));
@@ -982,7 +986,7 @@ static BOOL cfg_get_bool(LPCSTR key, BOOL default_value)
     return (_stricmp(value, "yes") == 0 || _stricmp(value, "true") == 0 || _stricmp(value, "1") == 0);
 }
 
-static int cfg_get_int(LPCSTR key, int default_value)
+int cfg_get_int(LPCSTR key, int default_value)
 {
     char def_value[16];
     _snprintf(def_value, sizeof(def_value), "%d", default_value);

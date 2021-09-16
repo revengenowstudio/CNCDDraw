@@ -2,6 +2,7 @@
 #include <windowsx.h>
 #include <math.h>
 #include "debug.h"
+#include "config.h"
 #include "dd.h"
 #include "ddraw.h"
 #include "hook.h"
@@ -495,7 +496,7 @@ HHOOK WINAPI fake_SetWindowsHookExA(int idHook, HOOKPROC lpfn, HINSTANCE hmod, D
         return NULL;
     }
 
-    if (idHook == WH_MOUSE && lpfn && !g_mouse_hook)
+    if (idHook == WH_MOUSE && lpfn && !hmod && !g_mouse_hook && cfg_get_bool("fixmousehook", FALSE))
     {
         g_mouse_proc = lpfn;
         return g_mouse_hook = real_SetWindowsHookExA(idHook, mouse_hook_proc, hmod, dwThreadId);
