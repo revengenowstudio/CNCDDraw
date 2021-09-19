@@ -133,6 +133,7 @@ typedef struct CNCDDRAW
     int fixchilds;
     BOOL fixwndprochook;
     BOOL fixnotresponding;
+    BOOL locktopleft;
     BOOL d3d9linear;
     BOOL gdilinear;
     int resolutions;

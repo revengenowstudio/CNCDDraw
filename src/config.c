@@ -39,10 +39,14 @@ void cfg_load()
     g_ddraw->fixchilds = cfg_get_int("fixchilds", FIX_CHILDS_DETECT_PAINT);
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
     g_ddraw->fixnotresponding = cfg_get_bool("fixnotresponding", FALSE);
+    g_ddraw->locktopleft = cfg_get_bool("locktopleft", FALSE);
     g_ddraw->releasealt = cfg_get_bool("releasealt", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
+
+    if (g_ddraw->locktopleft)
+        g_ddraw->adjmouse = FALSE;
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
@@ -818,6 +822,10 @@ static void cfg_create_ini()
             "; Stronghold Crusader HD\n"
             "[Stronghold Crusader]\n"
             "adjmouse=true\n"
+            "\n"
+            "; Space Rangers\n"
+            "[Rangers]\n"
+            "locktopleft=true\n"
             "\n"
             "; Stronghold Crusader Extreme HD\n"
             "[Stronghold_Crusader_Extreme]\n"
