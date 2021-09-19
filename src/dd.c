@@ -641,6 +641,20 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
     g_ddraw->render.unscale_w = ((float)g_ddraw->width / g_ddraw->render.viewport.width);
     g_ddraw->render.unscale_h = ((float)g_ddraw->height / g_ddraw->render.viewport.height);
 
+    g_ddraw->mouse.x_adjust = g_ddraw->render.viewport.x;
+    g_ddraw->mouse.y_adjust = g_ddraw->render.viewport.y;
+
+    g_ddraw->mouse.rc.left = g_ddraw->render.viewport.x;
+    g_ddraw->mouse.rc.top = g_ddraw->render.viewport.y;
+    g_ddraw->mouse.rc.right = g_ddraw->width + g_ddraw->render.viewport.x;
+    g_ddraw->mouse.rc.bottom = g_ddraw->height + g_ddraw->render.viewport.y;
+
+    if (g_ddraw->adjmouse)
+    {
+        g_ddraw->mouse.rc.right = g_ddraw->render.viewport.width + g_ddraw->render.viewport.x;
+        g_ddraw->mouse.rc.bottom = g_ddraw->render.viewport.height + g_ddraw->render.viewport.y;
+    }
+
     if (nonexclusive || (g_ddraw->nonexclusive && !g_ddraw->windowed && g_ddraw->renderer == ogl_render_main))
     {
         g_ddraw->render.height++;

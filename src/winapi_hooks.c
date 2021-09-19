@@ -31,8 +31,8 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
         int max_width = g_ddraw->adjmouse ? g_ddraw->render.viewport.width : g_ddraw->width;
         int max_height = g_ddraw->adjmouse ? g_ddraw->render.viewport.height : g_ddraw->height;
 
-        pt.x -= g_ddraw->render.viewport.x;
-        pt.y -= g_ddraw->render.viewport.y;
+        pt.x -= g_ddraw->mouse.x_adjust;
+        pt.y -= g_ddraw->mouse.y_adjust;
 
         if (pt.x < 0)
         {
@@ -119,20 +119,47 @@ BOOL WINAPI fake_GetCursorPos(LPPOINT lpPoint)
 
 BOOL WINAPI fake_ClipCursor(const RECT* lpRect)
 {
-    if (lpRect)
+    if (g_ddraw)
     {
-        /* hack for 640x480 mode */
-        if (lpRect->bottom == 400 && g_ddraw && g_ddraw->height == 480 && g_ddraw->cnchack)
-        {
-            g_ddraw->mouse_y_adjust = 40;
+        RECT dst_rc = {
+            0,
+            0,
+            g_ddraw->width,
+            g_ddraw->height
+        };
 
-            if (g_ddraw->locked)
-            {
-                mouse_unlock();
-                mouse_lock();
-            }
+        if (lpRect)
+            CopyRect(&dst_rc, lpRect);
+
+        if (g_ddraw->adjmouse)
+        {
+            dst_rc.left = (LONG)(roundf(dst_rc.left * g_ddraw->render.scale_w));
+            dst_rc.top = (LONG)(roundf(dst_rc.top * g_ddraw->render.scale_h));
+            dst_rc.bottom = (LONG)(roundf(dst_rc.bottom * g_ddraw->render.scale_h));
+            dst_rc.right = (LONG)(roundf(dst_rc.right * g_ddraw->render.scale_w));
+        }
+
+        int max_width = g_ddraw->adjmouse ? g_ddraw->render.viewport.width : g_ddraw->width;
+        int max_height = g_ddraw->adjmouse ? g_ddraw->render.viewport.height : g_ddraw->height;
+
+        dst_rc.bottom = min(dst_rc.bottom, max_height);
+        dst_rc.right = min(dst_rc.right, max_width);
+
+        OffsetRect(
+            &dst_rc,
+            g_ddraw->mouse.x_adjust, 
+            g_ddraw->mouse.y_adjust);
+
+        CopyRect(&g_ddraw->mouse.rc, &dst_rc);
+
+        if (g_ddraw->locked)
+        {
+            real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&dst_rc, 2);
+
+            return real_ClipCursor(&dst_rc);
         }
     }
+
     return TRUE;
 }
 
@@ -251,8 +278,8 @@ BOOL WINAPI fake_SetCursorPos(int X, int Y)
             pt.y = (LONG)(roundf(pt.y * g_ddraw->render.scale_h));
         }
 
-        pt.x += g_ddraw->render.viewport.x;
-        pt.y += g_ddraw->render.viewport.y;
+        pt.x += g_ddraw->mouse.x_adjust;
+        pt.y += g_ddraw->mouse.y_adjust;
     }
 
     return g_ddraw && real_ClientToScreen(g_ddraw->hwnd, &pt) && real_SetCursorPos(pt.x, pt.y);
@@ -358,7 +385,7 @@ LRESULT WINAPI fake_SendMessageA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lPar
             y = (int)(roundf(y * g_ddraw->render.scale_h));
         }
 
-        lParam = MAKELPARAM(x + g_ddraw->render.viewport.x, y + g_ddraw->render.viewport.y);
+        lParam = MAKELPARAM(x + g_ddraw->mouse.x_adjust, y + g_ddraw->mouse.y_adjust);
     }
 
     if (g_ddraw && g_ddraw->hwnd == hWnd && Msg == WM_SIZE && (g_hook_method != 2 && g_hook_method != 3))

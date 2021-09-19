@@ -692,8 +692,8 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             return 0;
         }
 
-        int x = max(GET_X_LPARAM(lParam) - g_ddraw->render.viewport.x, 0);
-        int y = max(GET_Y_LPARAM(lParam) - g_ddraw->render.viewport.y, 0);
+        int x = max(GET_X_LPARAM(lParam) - g_ddraw->mouse.x_adjust, 0);
+        int y = max(GET_Y_LPARAM(lParam) - g_ddraw->mouse.y_adjust, 0);
 
         if (g_ddraw->adjmouse)
         {

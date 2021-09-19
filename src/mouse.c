@@ -15,22 +15,10 @@ void mouse_lock()
 
     if (g_hook_active && !g_ddraw->locked)
     {
-        RECT rc = {
-            g_ddraw->render.viewport.x,
-            g_ddraw->render.viewport.y,
-            g_ddraw->width + g_ddraw->render.viewport.x,
-            g_ddraw->height + g_ddraw->render.viewport.y,
-        };
-
-        if (g_ddraw->adjmouse)
-        {
-            rc.right = g_ddraw->render.viewport.width + g_ddraw->render.viewport.x;
-            rc.bottom = g_ddraw->render.viewport.height + g_ddraw->render.viewport.y;
-        }
+        RECT rc = { 0 };
+        CopyRect(&rc, &g_ddraw->mouse.rc);
 
         real_MapWindowPoints(g_ddraw->hwnd, HWND_DESKTOP, (LPPOINT)&rc, 2);
-
-        rc.bottom -= (LONG)((g_ddraw->mouse_y_adjust * 2) * g_ddraw->render.scale_h);
 
         int cur_x = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.x, 0);
         int cur_y = InterlockedExchangeAdd((LONG*)&g_ddraw->cursor.y, 0);
@@ -39,11 +27,11 @@ void mouse_lock()
         {
             real_SetCursorPos(
                 (int)(rc.left + (cur_x * g_ddraw->render.scale_w)),
-                (int)(rc.top + ((cur_y - g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
+                (int)(rc.top + (cur_y * g_ddraw->render.scale_h)));
         }
         else
         {
-            real_SetCursorPos(rc.left + cur_x, rc.top + cur_y - g_ddraw->mouse_y_adjust);
+            real_SetCursorPos(rc.left + cur_x, rc.top + cur_y);
         }
 
         int game_count = InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
@@ -89,7 +77,7 @@ void mouse_unlock()
 
         real_SetCursorPos(
             (int)(rc.left + g_ddraw->render.viewport.x + (cur_x * g_ddraw->render.scale_w)),
-            (int)(rc.top + g_ddraw->render.viewport.y + ((cur_y + g_ddraw->mouse_y_adjust) * g_ddraw->render.scale_h)));
+            (int)(rc.top + g_ddraw->render.viewport.y + (cur_y * g_ddraw->render.scale_h)));
     }
 }
 

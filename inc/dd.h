@@ -97,6 +97,13 @@ typedef struct CNCDDRAW
         float unscale_h;
     } render;
 
+    struct
+    {
+        int y_adjust;
+        int x_adjust;
+        RECT rc;
+    } mouse;
+
     HWND hwnd;
     WNDPROC wndproc;
     struct { DWORD x; DWORD y; } cursor;
@@ -131,7 +138,6 @@ typedef struct CNCDDRAW
     int resolutions;
     BOOL armadahack;
     BOOL tshack;
-    BOOL cnchack;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL releasealt;
@@ -140,7 +146,6 @@ typedef struct CNCDDRAW
     BOOL bnet_was_upscaled;
     RECT bnet_win_rect;
     POINT bnet_pos;
-    int mouse_y_adjust;
     void* last_freed_palette; /* Dungeon Keeper hack */
     BOOL child_window_exists;
     BOOL got_child_windows;

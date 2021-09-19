@@ -46,7 +46,6 @@ void cfg_load()
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
-    g_ddraw->cnchack = cfg_get_bool("cnchack", FALSE);
 
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
@@ -445,7 +444,6 @@ static void cfg_create_ini()
             "maxgameticks=120\n"
             "maxfps=60\n"
             "minfps=-1\n"
-            "cnchack=true\n"
             "\n"
             "; Command & Conquer: Red Alert - CnCNet\n"
             "[ra95-spawn]\n"
@@ -456,14 +454,12 @@ static void cfg_create_ini()
             "maxgameticks=120\n"
             "maxfps=60\n"
             "minfps=-1\n"
-            "cnchack=true\n"
             "\n"
             "; Command & Conquer: Red Alert\n"
             "[ra95_Mod-Launcher]\n"
             "maxgameticks=120\n"
             "maxfps=60\n"
             "minfps=-1\n"
-            "cnchack=true\n"
             "\n"
             "; Command & Conquer: Red Alert\n"
             "[ra95p]\n"
