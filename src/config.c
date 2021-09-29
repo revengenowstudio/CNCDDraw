@@ -51,6 +51,12 @@ void cfg_load()
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
 
+    g_ddraw->hotkeys.toggle_fullscreen = cfg_get_int("keytogglefullscreen", VK_RETURN);
+    g_ddraw->hotkeys.toggle_maximize = cfg_get_int("keytogglemaximize", VK_NEXT);
+    g_ddraw->hotkeys.unlock_cursor1 = cfg_get_int("keyunlockcursor1", VK_TAB);
+    g_ddraw->hotkeys.unlock_cursor2 = cfg_get_int("keyunlockcursor2", VK_RCONTROL);
+    g_ddraw->hotkeys.screenshot = cfg_get_int("keyscreenshot", VK_SNAPSHOT);
+
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
     g_config.window_rect.left = cfg_get_int("posX", -32000);
@@ -325,6 +331,28 @@ static void cfg_create_ini()
             "; Child window handling, possible values: 0 = Disabled, 1 = Display top left, 2 = Display top left + repaint, 3 = Hide\n"
             "; Note: Disables upscaling if a child window was detected\n"
             "fixchilds=2\n"
+            "\n"
+            "\n"
+            "\n"
+            "; ### Hotkeys ###\n"
+            "; Use the following settings to configure your hotkeys, 0x00 = disabled\n"
+            "; Virtual-Key Codes: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes\n"
+            "\n"
+            "\n"
+            "; Toggle fullscreen - Alt + ???\n"
+            "keytogglefullscreen=0x0D\n"
+            "\n"
+            "; Toggle maximize - Alt + ???\n"
+            "keytogglemaximize=0x22\n"
+            "\n"
+            "; Unlock Cursor 1 - Ctrl + ???\n"
+            "keyunlockcursor1=0x09\n"
+            "\n"
+            "; Unlock Cursor 2 - RightAlt + ???\n"
+            "keyunlockcursor2=0xA3\n"
+            "\n"
+            "; Screenshot\n"
+            "keyscreenshot=0x2C\n"
             "\n"
             "\n"
             "\n"
@@ -996,11 +1024,18 @@ BOOL cfg_get_bool(LPCSTR key, BOOL default_value)
 
 int cfg_get_int(LPCSTR key, int default_value)
 {
-    char def_value[16];
+    char def_value[20];
     _snprintf(def_value, sizeof(def_value), "%d", default_value);
 
-    char value[16];
+    char value[20];
     cfg_get_string(key, def_value, value, sizeof(value));
 
-    return atoi(value);
+    if (strstr(value, "0x"))
+    {
+        return (int)strtol(value, NULL, 0);
+    }
+    else
+    {
+        return atoi(value);
+    }
 }

@@ -104,6 +104,15 @@ typedef struct CNCDDRAW
         RECT rc;
     } mouse;
 
+    struct
+    {
+        int toggle_fullscreen;
+        int toggle_maximize;
+        int unlock_cursor1;
+        int unlock_cursor2;
+        int screenshot;
+    } hotkeys;
+
     HWND hwnd;
     WNDPROC wndproc;
     struct { DWORD x; DWORD y; } cursor;

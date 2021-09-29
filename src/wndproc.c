@@ -579,13 +579,22 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
         BOOL context_code = (lParam & (1 << 29)) != 0;
         BOOL key_state = (lParam & (1 << 30)) != 0;
 
-        if (wParam == VK_RETURN && !g_ddraw->fullscreen && context_code && !key_state)
+        if (g_ddraw->hotkeys.toggle_fullscreen &&
+            wParam == g_ddraw->hotkeys.toggle_fullscreen &&
+            !g_ddraw->fullscreen && 
+            context_code && 
+            !key_state)
         {
             util_toggle_fullscreen();
             return 0;
         }
 
-        if (wParam == VK_NEXT && g_ddraw->resizable && !g_ddraw->border && g_ddraw->windowed && !g_ddraw->fullscreen)
+        if (g_ddraw->hotkeys.toggle_maximize &&
+            wParam == g_ddraw->hotkeys.toggle_maximize &&
+            g_ddraw->resizable && 
+            !g_ddraw->border && 
+            g_ddraw->windowed && 
+            !g_ddraw->fullscreen)
         {
             util_toggle_maximize();
             return 0;
@@ -605,7 +614,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
             g_ddraw->alt_key_down = FALSE;
         }
 
-        if (wParam == VK_TAB || wParam == VK_RETURN)
+        if (wParam == VK_TAB || (g_ddraw->hotkeys.toggle_fullscreen && wParam == g_ddraw->hotkeys.toggle_fullscreen))
         {
             return DefWindowProc(hWnd, uMsg, wParam, lParam);
         }
@@ -614,18 +623,20 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     case WM_KEYDOWN:
     {
-        if (wParam == VK_CONTROL || wParam == VK_TAB)
+        if (g_ddraw->hotkeys.unlock_cursor1 && 
+            (wParam == VK_CONTROL || wParam == g_ddraw->hotkeys.unlock_cursor1))
         {
-            if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(VK_TAB) & 0x8000)
+            if (GetAsyncKeyState(VK_CONTROL) & 0x8000 && GetAsyncKeyState(g_ddraw->hotkeys.unlock_cursor1) & 0x8000)
             {
                 mouse_unlock();
                 return 0;
             }
         }
 
-        if (wParam == VK_CONTROL || wParam == VK_MENU)
+        if (g_ddraw->hotkeys.unlock_cursor2 && 
+            (wParam == g_ddraw->hotkeys.unlock_cursor2 || wParam == VK_MENU || wParam == VK_CONTROL))
         {
-            if ((GetAsyncKeyState(VK_RMENU) & 0x8000) && GetAsyncKeyState(VK_RCONTROL) & 0x8000)
+            if ((GetAsyncKeyState(VK_RMENU) & 0x8000) && GetAsyncKeyState(g_ddraw->hotkeys.unlock_cursor2) & 0x8000)
             {
                 mouse_unlock();
                 return 0;
@@ -636,7 +647,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     }
     case WM_KEYUP:
     {
-        if (wParam == VK_SNAPSHOT)
+        if (g_ddraw->hotkeys.screenshot && wParam == g_ddraw->hotkeys.screenshot)
             ss_take_screenshot(g_ddraw->primary);
 
         break;
