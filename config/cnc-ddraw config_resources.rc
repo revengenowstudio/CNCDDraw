@@ -1,5 +1,7 @@
 PngImage_CN RCDATA "Resources\\CN.png"
 PngImage_DE RCDATA "Resources\\DE.png"
 PngImage_ES RCDATA "Resources\\ES.png"
+PngImage_FR RCDATA "Resources\\fr.png"
+PngImage_HU RCDATA "Resources\\hu.png"
 PngImage_RU RCDATA "Resources\\RU.png"
 PngImage_US RCDATA "Resources\\US.png"

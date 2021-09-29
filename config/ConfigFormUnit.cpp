@@ -253,6 +253,106 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 		MaxgameticksCbx->AddItem(L"25 тиков в секунду", NULL);
 		MaxgameticksCbx->AddItem(L"15 тиков в секунду", NULL);
 	}
+	else if (lang == "hungarian" || (lang == "auto" && priID == LANG_HUNGARIAN)) {
+		LanguageImg->Visible = true;
+
+		/* -Hungarian - made by cyberdyne-sys @ github */
+
+		ConfigForm->Caption = L"cnc-ddraw Beállító";
+		DisplayBtn->Caption = L"Képbeállítások";
+		AdvancedBtn->Caption = L"Haladó Beállítások";
+		CompatibilityBtn->Caption = L"Kompatibilitás Beállítások";
+		PresentationLbl->Caption = L"Bemutató";
+		MaintasLbl->Caption = L"Képarány megtartása";
+		VsyncLbl->Caption = L"VSync bekapcsolása";
+		AdjmouseLbl->Caption = L"Egérérzékenység beállítás";
+		DevmodeLbl->Caption = L"Kurzor bezárása az ablakba / képbe";
+		RendererLbl->Caption = L"Renderelő";
+		BorderLbl->Caption = L"Szegélyek megjelenítése ablakos módban";
+		SavesettingsLbl->Caption = L"Ablakhelyzet és méret megjegyzése";
+		ShaderLbl->Caption = L"OpenGL árnyaló";
+		MaxfpsLbl->Caption = L"Képkockaszám korlátozás";
+		BoxingLbl->Caption = L"Ablakos mód / felskálázás bekapcsolása";
+		MaxgameticksLbl->Caption = L"Játéksebesség korlátozás";
+		NoactivateappLbl->Caption = L"Alt+Tab hiba kiküszöbölése";
+		HookLbl->Caption = L"Hibás ablakos mód, vagy felskálázás javítása";
+		MinfpsLbl->Caption = L"Magas FPS kényszerítés / Akadozásjavítás Freesync/G-Sync esetén";
+		FixpitchLbl->Caption = L"Átlós rajzolási gondok kiküszöbölése";
+		NonexclusiveLbl->Caption = L"Láthatatlan videók / kezelőfelületi elemek javítása";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem(L"Automatikus", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem(L"Teljes képernyő", NULL);
+		PresentationCbx->AddItem(L"Teljes képernyő felskálázva", NULL);
+		PresentationCbx->AddItem(L"Keret nélkül", NULL);
+		PresentationCbx->AddItem(L"Ablakban", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem(L"Korlátlan", NULL);
+		MaxgameticksCbx->AddItem(L"Hangolás a kijelző képfrissítéséhez", NULL);
+		MaxgameticksCbx->AddItem(L"60hz képfrissítésű kijelző emulálása", NULL);
+		MaxgameticksCbx->AddItem(L"1000 tick másodpercenként", NULL);
+		MaxgameticksCbx->AddItem(L"500 tick másodpercenként", NULL);
+		MaxgameticksCbx->AddItem(L"60 tick másodpercenként", NULL);
+		MaxgameticksCbx->AddItem(L"30 tick másodpercenként", NULL);
+		MaxgameticksCbx->AddItem(L"25 tick másodpercenként", NULL);
+		MaxgameticksCbx->AddItem(L"15 tick másodpercenként", NULL);
+	}
+	else if (lang == "french" || (lang == "auto" && priID == LANG_FRENCH)) {
+		LanguageImg->Visible = true;
+
+		/* -French - made by Toshiba-3 @ github */
+
+		ConfigForm->Caption = L"Configuration cnc-ddraw";
+		DisplayBtn->Caption = L"Paramètres d'Affichage";
+		AdvancedBtn->Caption = L"Paramètres Avancés";
+		CompatibilityBtn->Caption = L"Paramètres de Compatibilité";
+		PresentationLbl->Caption = L"Présentation";
+		MaintasLbl->Caption = L"Conserver les proportions de l'image";
+		VsyncLbl->Caption = L"Activer la synchro verticale (VSync)";
+		AdjmouseLbl->Caption = L"Ajuster la sensibilité souris";
+		DevmodeLbl->Caption = L"Capturer le curseur dans la fenêtre / l'écran";
+		RendererLbl->Caption = L"Moteur de rendu";
+		BorderLbl->Caption = L"Afficher les bordures en mode fenêtré";
+		SavesettingsLbl->Caption = L"Retenir position/dimensions de la fenêtre";
+		ShaderLbl->Caption = L"Shader OpenGL";
+		MaxfpsLbl->Caption = L"Limiter les images par seconde (FPS)";
+		BoxingLbl->Caption = L"Activer windowboxing / mise à l'échelle par nombres entiers";
+		MaxgameticksLbl->Caption = L"Limiter la vitesse du jeu";
+		NoactivateappLbl->Caption = L"Corriger Alt+Tab défaillant";
+		HookLbl->Caption = L"Corriger mode fenêtré ou mise à l'échelle défaillant";
+		MinfpsLbl->Caption = L"Forcer FPS élevé / Corriger saccades en Freesync/G-Sync";
+		FixpitchLbl->Caption = L"Corriger défauts d'affichage diagonaux";
+		NonexclusiveLbl->Caption = L"Corriger vidéos et éléments d'interface invisibles";
+
+		RendererCbx->Items->Clear();
+		RendererCbx->AddItem(L"Automatique", NULL);
+		RendererCbx->AddItem(L"Direct3D 9", NULL);
+		RendererCbx->AddItem(L"OpenGL", NULL);
+		RendererCbx->AddItem(L"GDI", NULL);
+
+		PresentationCbx->Items->Clear();
+		PresentationCbx->AddItem(L"Plein Écran", NULL);
+		PresentationCbx->AddItem(L"Plein Écran Mis à l'Échelle", NULL);
+		PresentationCbx->AddItem(L"Sans Bordure", NULL);
+		PresentationCbx->AddItem(L"Fenêtré", NULL);
+
+		MaxgameticksCbx->Items->Clear();
+		MaxgameticksCbx->AddItem(L"Pas de limite", NULL);
+		MaxgameticksCbx->AddItem(L"Sync avec la fréquence de l'écran", NULL);
+		MaxgameticksCbx->AddItem(L"Émuler un écran à 60Hz", NULL);
+		MaxgameticksCbx->AddItem(L"1000 tics par seconde", NULL);
+		MaxgameticksCbx->AddItem(L"500 tics par seconde", NULL);
+		MaxgameticksCbx->AddItem(L"60 tics par seconde", NULL);
+		MaxgameticksCbx->AddItem(L"30 tics par seconde", NULL);
+		MaxgameticksCbx->AddItem(L"25 tics par seconde", NULL);
+		MaxgameticksCbx->AddItem(L"15 tics par seconde", NULL);
+	}
 	else {
 		IsEnglish = true;
 
@@ -278,6 +378,18 @@ void TConfigForm::ApplyTranslation(TIniFile *ini)
 			else if (priID == LANG_RUSSIAN) {
 				TPngImage *png = new TPngImage();
 				png->LoadFromResourceName((int)HInstance, "PngImage_RU");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
+			else if (priID == LANG_HUNGARIAN) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_HU");
+				LanguageImg->Picture->Graphic = png;
+				LanguageImg->Visible = true;
+			}
+			else if (priID == LANG_FRENCH) {
+				TPngImage *png = new TPngImage();
+				png->LoadFromResourceName((int)HInstance, "PngImage_FR");
 				LanguageImg->Picture->Graphic = png;
 				LanguageImg->Visible = true;
 			}
@@ -692,7 +804,7 @@ void __fastcall TConfigForm::RendererCbxChange(TObject *Sender)
 
 void __fastcall TConfigForm::ShaderCbxChange(TObject *Sender)
 {
-    RendererCbx->ItemIndex = 2;
+	RendererCbx->ItemIndex = 2;
 	SaveSettings();
 }
 
