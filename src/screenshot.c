@@ -75,6 +75,39 @@ static BOOL ss_screenshot_16bit(char* filename, IDirectDrawSurfaceImpl* src)
     return !error;
 }
 
+static BOOL ss_screenshot_32bit(char* filename, IDirectDrawSurfaceImpl* src)
+{
+    unsigned int error = TRUE;
+    unsigned int* dst_buf = malloc(src->width * src->height * 4);
+
+    if (dst_buf)
+    {
+        unsigned int* src_buf = (unsigned int*)dds_GetBuffer(src);
+
+        for (int y = 0; y < src->height; y++)
+        {
+            int dst_row = y * src->width;
+
+            for (int x = 0; x < src->width; x++)
+            {
+                unsigned int pixel = src_buf[dst_row + x];
+
+                BYTE red =   (pixel >> 16) & 0xFF;
+                BYTE green = (pixel >> 8) & 0xFF;
+                BYTE blue =   pixel & 0xFF;
+
+                dst_buf[dst_row + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+            }
+        }
+
+        error = lodepng_encode32_file(filename, (unsigned char*)dst_buf, src->width, src->height);
+
+        free(dst_buf);
+    }
+
+    return !error;
+}
+
 BOOL ss_take_screenshot(IDirectDrawSurfaceImpl* src)
 {
     if (!src || !dds_GetBuffer(src))
@@ -109,6 +142,10 @@ BOOL ss_take_screenshot(IDirectDrawSurfaceImpl* src)
     else if (src->bpp == 16)
     {
         return ss_screenshot_16bit(filename, src);
+    }
+    else if (src->bpp == 32)
+    {
+        return ss_screenshot_32bit(filename, src);
     }
 
     return FALSE;
