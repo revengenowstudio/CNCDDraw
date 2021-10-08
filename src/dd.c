@@ -500,8 +500,18 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
             if (g_ddraw->render.width > g_ddraw->mode.dmPelsWidth ||
                 g_ddraw->render.height > g_ddraw->mode.dmPelsHeight)
             {
-                /* chosen game resolution higher than current resolution, use windowed mode for this case */
-                g_ddraw->windowed = TRUE;
+                /* Try without upscaling */
+                g_ddraw->render.width = g_ddraw->width;
+                g_ddraw->render.height = g_ddraw->height;
+
+                g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
+                g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
+
+                if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                {
+                    /* chosen game resolution higher than current resolution, use windowed mode for this case */
+                    g_ddraw->windowed = TRUE;
+                }
             }
             else
             {
