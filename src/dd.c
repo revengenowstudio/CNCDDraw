@@ -419,32 +419,8 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
         }
     }
 
-    if (dwFlags & SDM_LEAVE_WINDOWED)
-    {
-        memset(&g_ddraw->render.mode, 0, sizeof(DEVMODE));
-
-        g_ddraw->render.mode.dmSize = sizeof(DEVMODE);
-        g_ddraw->render.mode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-        g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
-        g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
-
-        if (g_ddraw->render.bpp)
-        {
-            g_ddraw->render.mode.dmFields |= DM_BITSPERPEL;
-            g_ddraw->render.mode.dmBitsPerPel = g_ddraw->render.bpp;
-        }
-
-        if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
-        {
-            g_ddraw->render.width = g_ddraw->width;
-            g_ddraw->render.height = g_ddraw->height;
-        }
-    }
-    else
-    {
-        g_ddraw->render.width = g_config.window_rect.right;
-        g_ddraw->render.height = g_config.window_rect.bottom;
-    }
+    g_ddraw->render.width = g_config.window_rect.right;
+    g_ddraw->render.height = g_config.window_rect.bottom;
 
     /* temporary fix: center window for games that keep changing their resolution */
     if (g_ddraw->width &&
@@ -529,65 +505,76 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
             }
             else
             {
-                /* Try 2x scaling */
-                g_ddraw->render.width *= 2;
-                g_ddraw->render.height *= 2;
+                /* Try without upscaling */
+                g_ddraw->render.width = g_ddraw->width;
+                g_ddraw->render.height = g_ddraw->height;
 
                 g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                 g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-                if ((g_ddraw->render.width > g_ddraw->mode.dmPelsWidth ||
-                    g_ddraw->render.height > g_ddraw->mode.dmPelsHeight) ||
-                    ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                 {
-                    SIZE res = { 0 };
-
-                    /* try to get a resolution with the same aspect ratio as the requested resolution */
-                    BOOL found_res = util_get_lowest_resolution(
-                        (float)old_width / old_height,
-                        &res,
-                        old_width + 1, /* don't return the original resolution since we tested that one already */
-                        old_height + 1,
-                        g_ddraw->mode.dmPelsWidth,
-                        g_ddraw->mode.dmPelsHeight);
-
-                    if (!found_res)
-                    {
-                        /* try to get a resolution with the same aspect ratio as the current display mode */
-                        found_res = util_get_lowest_resolution(
-                            (float)g_ddraw->mode.dmPelsWidth / g_ddraw->mode.dmPelsHeight,
-                            &res,
-                            old_width,
-                            old_height,
-                            g_ddraw->mode.dmPelsWidth,
-                            g_ddraw->mode.dmPelsHeight);
-                    }
-
-                    g_ddraw->render.width = res.cx;
-                    g_ddraw->render.height = res.cy;
+                    /* Try 2x scaling */
+                    g_ddraw->render.width *= 2;
+                    g_ddraw->render.height *= 2;
 
                     g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                     g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-                    if (!found_res || ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                    if ((g_ddraw->render.width > g_ddraw->mode.dmPelsWidth ||
+                        g_ddraw->render.height > g_ddraw->mode.dmPelsHeight) ||
+                        ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                     {
-                        /* try current display settings */
-                        g_ddraw->render.width = g_ddraw->mode.dmPelsWidth;
-                        g_ddraw->render.height = g_ddraw->mode.dmPelsHeight;
+                        SIZE res = { 0 };
+
+                        /* try to get a resolution with the same aspect ratio as the requested resolution */
+                        BOOL found_res = util_get_lowest_resolution(
+                            (float)old_width / old_height,
+                            &res,
+                            old_width + 1, /* don't return the original resolution since we tested that one already */
+                            old_height + 1,
+                            g_ddraw->mode.dmPelsWidth,
+                            g_ddraw->mode.dmPelsHeight);
+
+                        if (!found_res)
+                        {
+                            /* try to get a resolution with the same aspect ratio as the current display mode */
+                            found_res = util_get_lowest_resolution(
+                                (float)g_ddraw->mode.dmPelsWidth / g_ddraw->mode.dmPelsHeight,
+                                &res,
+                                old_width,
+                                old_height,
+                                g_ddraw->mode.dmPelsWidth,
+                                g_ddraw->mode.dmPelsHeight);
+                        }
+
+                        g_ddraw->render.width = res.cx;
+                        g_ddraw->render.height = res.cy;
 
                         g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                         g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-                        if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                        if (!found_res || 
+                            ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
                         {
-                            /* everything failed, use windowed mode instead */
-                            g_ddraw->render.width = old_width;
-                            g_ddraw->render.height = old_height;
+                            /* try current display settings */
+                            g_ddraw->render.width = g_ddraw->mode.dmPelsWidth;
+                            g_ddraw->render.height = g_ddraw->mode.dmPelsHeight;
 
                             g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
                             g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
 
-                            g_ddraw->windowed = TRUE;
+                            if (ChangeDisplaySettings(&g_ddraw->render.mode, CDS_TEST) != DISP_CHANGE_SUCCESSFUL)
+                            {
+                                /* everything failed, use windowed mode instead */
+                                g_ddraw->render.width = old_width;
+                                g_ddraw->render.height = old_height;
+
+                                g_ddraw->render.mode.dmPelsWidth = g_ddraw->render.width;
+                                g_ddraw->render.mode.dmPelsHeight = g_ddraw->render.height;
+
+                                g_ddraw->windowed = TRUE;
+                            }
                         }
                     }
                 }
