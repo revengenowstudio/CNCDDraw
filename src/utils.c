@@ -71,7 +71,7 @@ void util_update_bnet_pos(int new_x, int new_y)
     real_ClientToScreen(g_ddraw->hwnd, &pt);
 
     RECT mainrc;
-    SetRect(&mainrc, pt.x, pt.y, pt.x + g_ddraw->width, pt.y + g_ddraw->height);
+    SetRect(&mainrc, pt.x, pt.y, pt.x + 640, pt.y + 480);
 
     int adj_y = 0;
     int adj_x = 0;
@@ -94,7 +94,7 @@ void util_update_bnet_pos(int new_x, int new_y)
             0,
             SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
-        if (rc.bottom - rc.top <= g_ddraw->height)
+        if (rc.bottom - rc.top <= 480)
         {
             if (rc.bottom > mainrc.bottom && abs(mainrc.bottom - rc.bottom) > abs(adj_y))
             {
@@ -106,7 +106,7 @@ void util_update_bnet_pos(int new_x, int new_y)
             }
         }
 
-        if (rc.right - rc.left <= g_ddraw->width)
+        if (rc.right - rc.left <= 640)
         {
             if (rc.right > mainrc.right && abs(mainrc.right - rc.right) > abs(adj_x))
             {
