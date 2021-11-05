@@ -679,8 +679,13 @@ HWND WINAPI fake_CreateWindowExA(
         POINT pt = { 0, 0 };
         real_ClientToScreen(g_ddraw->hwnd, &pt);
 
-        X += pt.x;
-        Y += pt.y;
+        int added_height = g_ddraw->height - 480;
+        int added_width = g_ddraw->width - 640;
+        int align_y = added_height > 0 ? added_height / 2 : 0;
+        int align_x = added_width > 0 ? added_width / 2 : 0;
+
+        X += pt.x + align_x;
+        Y += pt.y + align_y;
 
         dwStyle |= WS_CLIPCHILDREN;
     }
