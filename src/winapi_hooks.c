@@ -607,7 +607,15 @@ BOOL WINAPI fake_DestroyWindow(HWND hWnd)
 
                     UINT flags = width != g_ddraw->width || height != g_ddraw->height ? 0 : SWP_NOMOVE;
 
-                    util_set_window_rect(g_ddraw->bnet_win_rect.left, g_ddraw->bnet_win_rect.top, width, height, flags);
+                    int dst_width = width == g_ddraw->width ? 0 : width;
+                    int dst_height = height == g_ddraw->height ? 0 : height;
+
+                    util_set_window_rect(
+                        g_ddraw->bnet_win_rect.left, 
+                        g_ddraw->bnet_win_rect.top, 
+                        dst_width, 
+                        dst_height, 
+                        flags);
                 }
 
                 g_ddraw->fullscreen = g_ddraw->bnet_was_upscaled;
@@ -658,7 +666,10 @@ HWND WINAPI fake_CreateWindowExA(
 
             UINT flags = width != g_ddraw->width || height != g_ddraw->height ? 0 : SWP_NOMOVE;
 
-            util_set_window_rect(x, y, g_ddraw->width, g_ddraw->height, flags);
+            int dst_width = g_config.window_rect.right ? g_ddraw->width : 0;
+            int dst_height = g_config.window_rect.bottom ? g_ddraw->height : 0;
+
+            util_set_window_rect(x, y, dst_width, dst_height, flags);
             g_ddraw->resizable = FALSE;
 
             g_ddraw->bnet_active = TRUE;
