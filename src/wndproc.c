@@ -500,6 +500,7 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 if (g_ddraw->renderer != d3d9_render_main)
                 {
                     ChangeDisplaySettings(&g_ddraw->render.mode, CDS_FULLSCREEN);
+                    real_ShowWindow(g_ddraw->hwnd, SW_RESTORE);
                     mouse_lock();
                 }
             }
