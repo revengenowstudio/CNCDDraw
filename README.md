@@ -22,7 +22,8 @@ cnc-ddraw can fix compatibility issues in older games, such as black screen, bad
 ### Instructions
 
 1. Download [cnc-ddraw.zip](https://github.com/CnCNet/cnc-ddraw/releases/latest/download/cnc-ddraw.zip) and extract it into your game folder
-2. Start the game
+2. Wine only: override `ddraw` in [winecfg](https://wiki.winehq.org/Winecfg#Libraries)
+3. Start the game
 
 
 Note: If you use cnc-ddraw with a game that got its own windowed mode built in then **make sure you disable the games own windowed mode** first.
