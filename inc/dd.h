@@ -62,6 +62,7 @@ typedef struct CNCDDRAW
     DEVMODE mode;
     struct IDirectDrawSurfaceImpl* primary;
     char title[128];
+    char screenshot_dir[MAX_PATH];
     CRITICAL_SECTION cs;
 
     /* real export from system32\ddraw.dll */

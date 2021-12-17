@@ -132,8 +132,10 @@ BOOL ss_take_screenshot(IDirectDrawSurfaceImpl* src)
         }
     }
 
+    CreateDirectoryA(g_ddraw->screenshot_dir, NULL);
+
     strftime(str_time, sizeof(str_time), "%Y-%m-%d-%H_%M_%S", localtime(&t));
-    _snprintf(filename, sizeof(filename), "%s-%s.png", title, str_time);
+    _snprintf(filename, sizeof(filename), "%s%s-%s.png", g_ddraw->screenshot_dir, title, str_time);
 
     if (src->bpp == 8 && src->palette)
     {

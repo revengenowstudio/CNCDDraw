@@ -45,6 +45,7 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
+    cfg_get_string("screenshotdir", ".\\Screenshots\\", g_ddraw->screenshot_dir, sizeof(g_ddraw->screenshot_dir));
 
     if (g_ddraw->locktopleft)
         g_ddraw->adjmouse = FALSE;
@@ -290,6 +291,9 @@ static void cfg_create_ini()
             "\n"
             "; cnc-ddraw config program language, possible values: auto, english, chinese, german, spanish, russian, hungarian, french\n"
             "configlang=auto\n"
+            "\n"
+            "; Where should screenshots be saved\n"
+            "screenshotdir=.\\Screenshots\\\n"
             "\n"
             "\n"
             "\n"
