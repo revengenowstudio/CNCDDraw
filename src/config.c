@@ -38,6 +38,7 @@ void cfg_load()
     g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
     g_ddraw->fixchilds = cfg_get_int("fixchilds", FIX_CHILDS_DETECT_PAINT);
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
+    g_ddraw->novidmem = cfg_get_bool("novidmem", FALSE);
     g_ddraw->fixnotresponding = cfg_get_bool("fixnotresponding", FALSE);
     g_ddraw->locktopleft = cfg_get_bool("locktopleft", FALSE);
     g_ddraw->releasealt = cfg_get_bool("releasealt", FALSE);
@@ -730,18 +731,21 @@ static void cfg_create_ini()
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Jagged Alliance 2: Wildfire\n"
             "[WF6]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Jagged Alliance 2 - UC mod\n"
             "[JA2_UC]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Kings Quest 8\n"
             "[Mask]\n"
@@ -936,6 +940,7 @@ static void cfg_create_ini()
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Worms Armageddon\n"
             "[WA]\n"

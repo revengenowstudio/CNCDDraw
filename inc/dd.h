@@ -135,6 +135,7 @@ typedef struct CNCDDRAW
     BOOL wine;
     HCURSOR old_cursor;
     int show_cursor_count;
+    BOOL novidmem;
     BOOL accurate_timers;
     BOOL resizable;
     BOOL nonexclusive;
