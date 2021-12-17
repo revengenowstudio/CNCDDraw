@@ -45,31 +45,30 @@ static BOOL ss_screenshot_8bit(char* filename, IDirectDrawSurfaceImpl* src)
 static BOOL ss_screenshot_16bit(char* filename, IDirectDrawSurfaceImpl* src)
 {
     unsigned int error = TRUE;
-    unsigned int* dst_buf = malloc(src->width * src->height * 4);
+    unsigned int* buf = malloc(src->width * src->height * 4);
 
-    if (dst_buf)
+    if (buf)
     {
         unsigned short* src_buf = (unsigned short*)dds_GetBuffer(src);
+        unsigned int* dst_buf = buf;
 
         for (int y = 0; y < src->height; y++)
         {
-            int dst_row = y * src->width;
-
             for (int x = 0; x < src->width; x++)
             {
-                unsigned short pixel = src_buf[dst_row + x];
+                unsigned short pixel = *src_buf++;
 
                 BYTE red = ((pixel & 0xF800) >> 11) << 3;
                 BYTE green = ((pixel & 0x07E0) >> 5) << 2;
                 BYTE blue = ((pixel & 0x001F)) << 3;
 
-                dst_buf[dst_row + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+                *dst_buf++ = (0xFF << 24) | (blue << 16) | (green << 8) | red;
             }
         }
 
-        error = lodepng_encode32_file(filename, (unsigned char*)dst_buf, src->width, src->height);
+        error = lodepng_encode32_file(filename, (unsigned char*)buf, src->width, src->height);
 
-        free(dst_buf);
+        free(buf);
     }
 
     return !error;
@@ -78,31 +77,30 @@ static BOOL ss_screenshot_16bit(char* filename, IDirectDrawSurfaceImpl* src)
 static BOOL ss_screenshot_32bit(char* filename, IDirectDrawSurfaceImpl* src)
 {
     unsigned int error = TRUE;
-    unsigned int* dst_buf = malloc(src->width * src->height * 4);
+    unsigned int* buf = malloc(src->width * src->height * 4);
 
-    if (dst_buf)
+    if (buf)
     {
         unsigned int* src_buf = (unsigned int*)dds_GetBuffer(src);
+        unsigned int* dst_buf = buf;
 
         for (int y = 0; y < src->height; y++)
         {
-            int dst_row = y * src->width;
-
             for (int x = 0; x < src->width; x++)
             {
-                unsigned int pixel = src_buf[dst_row + x];
+                unsigned int pixel = *src_buf++;
 
-                BYTE red =   (pixel >> 16) & 0xFF;
+                BYTE red = (pixel >> 16) & 0xFF;
                 BYTE green = (pixel >> 8) & 0xFF;
-                BYTE blue =   pixel & 0xFF;
+                BYTE blue = pixel & 0xFF;
 
-                dst_buf[dst_row + x] = (0xFF << 24) | (blue << 16) | (green << 8) | red;
+                *dst_buf++ = (0xFF << 24) | (blue << 16) | (green << 8) | red;
             }
         }
 
-        error = lodepng_encode32_file(filename, (unsigned char*)dst_buf, src->width, src->height);
+        error = lodepng_encode32_file(filename, (unsigned char*)buf, src->width, src->height);
 
-        free(dst_buf);
+        free(buf);
     }
 
     return !error;
