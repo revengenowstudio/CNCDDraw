@@ -45,6 +45,7 @@ void cfg_load()
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
+    g_ddraw->fpupreserve = cfg_get_bool("fpupreserve", FALSE);
     cfg_get_string("screenshotdir", ".\\Screenshots\\", g_ddraw->screenshot_dir, sizeof(g_ddraw->screenshot_dir));
 
     if (g_ddraw->locktopleft)
@@ -336,6 +337,10 @@ static void cfg_create_ini()
             "; Child window handling, possible values: 0 = Disabled, 1 = Display top left, 2 = Display top left + repaint, 3 = Hide\n"
             "; Note: Disables upscaling if a child window was detected\n"
             "fixchilds=2\n"
+            "\n"
+            "; Set the precision for Direct3D9 floating-point calculations to the precision used by the calling thread\n"
+            "; Note: Enable this if there are desyncs in online games\n"
+            "fpupreserve=false\n"
             "\n"
             "\n"
             "\n"
@@ -647,6 +652,14 @@ static void cfg_create_ini()
             "adjmouse=true\n"
             "renderer=gdi\n"
             "hook=2\n"
+            "\n"
+            "; Dune 2000\n"
+            "[dune2000]\n"
+            "fpupreserve=false\n"
+            "\n"
+            "; Dune 2000 - CnCNet\n"
+            "[dune2000-spawn]\n"
+            "fpupreserve=false\n"
             "\n"
             "; Dragon Throne: Battle of Red Cliffs\n"
             "[AdSanguo]\n"

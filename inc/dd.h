@@ -137,6 +137,7 @@ typedef struct CNCDDRAW
     HCURSOR old_cursor;
     int show_cursor_count;
     BOOL novidmem;
+    BOOL fpupreserve;
     BOOL accurate_timers;
     BOOL resizable;
     BOOL nonexclusive;
