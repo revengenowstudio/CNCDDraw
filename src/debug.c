@@ -26,7 +26,7 @@ int dbg_exception_handler(EXCEPTION_POINTERS* exception)
             0,
             0);
 
-    if (dmp)
+    if (dmp != INVALID_HANDLE_VALUE)
     {
         MINIDUMP_EXCEPTION_INFORMATION info;
         info.ThreadId = GetCurrentThreadId();
