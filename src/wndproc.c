@@ -252,7 +252,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
                 /* maintain aspect ratio */
                 if (g_ddraw->maintas &&
                     CopyRect(&clientrc, windowrc) &&
-                    util_unadjust_window_rect(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
+                    util_unadjust_window_rect(
+                        &clientrc, 
+                        GetWindowLong(hWnd, GWL_STYLE), 
+                        GetMenu(hWnd) != NULL,
+                        GetWindowLong(hWnd, GWL_EXSTYLE)) &&
                     SetRect(&clientrc, 0, 0, clientrc.right - clientrc.left, clientrc.bottom - clientrc.top))
                 {
                     float scaleH = (float)g_ddraw->height / g_ddraw->width;
@@ -285,7 +289,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                 /* enforce minimum window size */
                 if (CopyRect(&clientrc, windowrc) &&
-                    util_unadjust_window_rect(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)) &&
+                    util_unadjust_window_rect(
+                        &clientrc, 
+                        GetWindowLong(hWnd, GWL_STYLE), 
+                        GetMenu(hWnd) != NULL,
+                        GetWindowLong(hWnd, GWL_EXSTYLE)) &&
                     SetRect(&clientrc, 0, 0, clientrc.right - clientrc.left, clientrc.bottom - clientrc.top))
                 {
                     if (clientrc.right < g_ddraw->width)
@@ -337,7 +345,11 @@ LRESULT CALLBACK fake_WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
                 /* save new window position */
                 if (CopyRect(&clientrc, windowrc) &&
-                    util_unadjust_window_rect(&clientrc, GetWindowLong(hWnd, GWL_STYLE), FALSE, GetWindowLong(hWnd, GWL_EXSTYLE)))
+                    util_unadjust_window_rect(
+                        &clientrc, 
+                        GetWindowLong(hWnd, GWL_STYLE), 
+                        GetMenu(hWnd) != NULL,
+                        GetWindowLong(hWnd, GWL_EXSTYLE)))
                 {
                     g_config.window_rect.left = clientrc.left;
                     g_config.window_rect.top = clientrc.top;

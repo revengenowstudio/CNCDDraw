@@ -199,6 +199,7 @@ void util_toggle_maximize()
 
     LONG style = GetWindowLong(g_ddraw->hwnd, GWL_STYLE);
     LONG exstyle = GetWindowLong(g_ddraw->hwnd, GWL_EXSTYLE);
+    BOOL got_menu = GetMenu(g_ddraw->hwnd) != NULL;
 
     if (real_GetClientRect(g_ddraw->hwnd, &client_rc) && SystemParametersInfo(SPI_GETWORKAREA, 0, &dst_rc, 0))
     {
@@ -214,7 +215,7 @@ void util_toggle_maximize()
             dst_rc.right = g_ddraw->width;
             dst_rc.bottom = g_ddraw->height;
 
-            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
+            AdjustWindowRectEx(&dst_rc, style, got_menu, exstyle);
         }
         else if (g_ddraw->boxing)
         {
@@ -233,11 +234,11 @@ void util_toggle_maximize()
                 }
             }
 
-            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
+            AdjustWindowRectEx(&dst_rc, style, got_menu, exstyle);
         }
         else if (g_ddraw->maintas)
         {
-            util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+            util_unadjust_window_rect(&dst_rc, style, got_menu, exstyle);
 
             int w = dst_rc.right - dst_rc.left;
             int h = dst_rc.bottom - dst_rc.top;
@@ -253,7 +254,7 @@ void util_toggle_maximize()
                 dst_rc.bottom = h;
             }
 
-            AdjustWindowRectEx(&dst_rc, style, FALSE, exstyle);
+            AdjustWindowRectEx(&dst_rc, style, got_menu, exstyle);
         }
 
         RECT pos_rc;
@@ -262,8 +263,8 @@ void util_toggle_maximize()
         pos_rc.right = (dst_rc.right - dst_rc.left);
         pos_rc.bottom = (dst_rc.bottom - dst_rc.top);
 
-        util_unadjust_window_rect(&pos_rc, style, FALSE, exstyle);
-        util_unadjust_window_rect(&dst_rc, style, FALSE, exstyle);
+        util_unadjust_window_rect(&pos_rc, style, got_menu, exstyle);
+        util_unadjust_window_rect(&dst_rc, style, got_menu, exstyle);
 
         util_set_window_rect(
             pos_rc.left,

@@ -674,7 +674,7 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
 
         RECT dst = { x, y, g_ddraw->render.width + x, g_ddraw->render.height + y };
 
-        AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), FALSE);
+        AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), GetMenu(g_ddraw->hwnd) != NULL);
         real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
         real_MoveWindow(g_ddraw->hwnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
