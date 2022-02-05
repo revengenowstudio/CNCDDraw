@@ -53,6 +53,7 @@ void cfg_load()
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
+    g_ddraw->infantryhack = cfg_get_bool("infantryhack", FALSE);
 
     g_ddraw->hotkeys.toggle_fullscreen = cfg_get_int("keytogglefullscreen", VK_RETURN);
     g_ddraw->hotkeys.toggle_maximize = cfg_get_int("keytogglemaximize", VK_NEXT);
@@ -746,6 +747,12 @@ static void cfg_create_ini()
             "[i76]\n"
             "adjmouse=true\n"
             "renderer=opengl\n"
+            "\n"
+            "; Infantry Online\n"
+            "[infantry]\n"
+            "devmode=true\n"
+            "resolutions=2\n"
+            "infantryhack=true\n"
             "\n"
             "; Jagged Alliance 2\n"
             "[ja2]\n"
