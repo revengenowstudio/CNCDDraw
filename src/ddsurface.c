@@ -647,6 +647,12 @@ HRESULT dds_BltFast(
     int dst_x = dwX;
     int dst_y = dwY;
 
+    if (dst_x < 0)
+        dst_x = 0;
+
+    if (dst_y < 0)
+        dst_y = 0;
+
     RECT dst_rect = { dst_x, dst_y, (src_rect.right - src_rect.left) + dst_x, (src_rect.bottom - src_rect.top) + dst_y };
 
     if (dst_rect.left < 0)
