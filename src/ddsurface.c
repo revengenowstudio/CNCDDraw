@@ -642,16 +642,31 @@ HRESULT dds_BltFast(
             src_rect.top = src_rect.bottom;
     }
 
-    int src_x = src_rect.left;
-    int src_y = src_rect.top;
     int dst_x = dwX;
     int dst_y = dwY;
 
     if (dst_x < 0)
+    {
+        src_rect.left += abs(dst_x);
+
+        if (src_rect.left > src_rect.right)
+            src_rect.left = src_rect.right;
+
         dst_x = 0;
+    }
 
     if (dst_y < 0)
+    {
+        src_rect.top += abs(dst_y);
+
+        if (src_rect.top > src_rect.bottom)
+            src_rect.top = src_rect.bottom;
+
         dst_y = 0;
+    }
+
+    int src_x = src_rect.left;
+    int src_y = src_rect.top;
 
     RECT dst_rect = { dst_x, dst_y, (src_rect.right - src_rect.left) + dst_x, (src_rect.bottom - src_rect.top) + dst_y };
 
