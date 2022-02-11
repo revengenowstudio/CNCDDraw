@@ -387,9 +387,12 @@ void hook_create(HOOKLIST* hooks, BOOL initial_hook)
 
                     _splitpath(mod_path, NULL, mod_dir, mod_filename, NULL);
 
-                    /* Don't hook reshade/swiftshader/mesa3d */
+                    // Don't hook reshade
+                    if (!g_ddraw->enable_reshade && _strcmpi(mod_filename, "d3d9") == 0)
+                        continue;
+
+                    // Don't hook swiftshader/mesa3d
                     if (_strcmpi(mod_filename, "opengl32") == 0 ||
-                        //_strcmpi(mod_filename, "d3d9") == 0 ||
                         _strcmpi(mod_filename, "Shw32") == 0)
                         continue;
 

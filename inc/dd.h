@@ -132,6 +132,7 @@ typedef struct CNCDDRAW
     BOOL fullscreen;
     BOOL maintas;
     BOOL noactivateapp;
+    BOOL enable_reshade;
     char shader[MAX_PATH];
     BOOL wine;
     HCURSOR old_cursor;

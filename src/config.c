@@ -31,6 +31,7 @@ void cfg_load()
     g_ddraw->devmode = cfg_get_bool("devmode", FALSE);
     g_ddraw->vsync = cfg_get_bool("vsync", FALSE);
     g_ddraw->noactivateapp = cfg_get_bool("noactivateapp", FALSE);
+    g_ddraw->enable_reshade = cfg_get_bool("enable_reshade", TRUE);
     g_ddraw->vhack = cfg_get_bool("vhack", FALSE);
     g_ddraw->accurate_timers = cfg_get_bool("accuratetimers", FALSE);
     g_ddraw->resizable = cfg_get_bool("resizable", TRUE);
