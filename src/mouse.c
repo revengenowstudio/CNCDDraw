@@ -13,7 +13,7 @@ void mouse_lock()
     if (g_ddraw->devmode || g_ddraw->bnet_active)
         return;
 
-    if (g_hook_active && !g_ddraw->locked)
+    if (g_hook_active && !g_ddraw->locked && !IsIconic(g_ddraw->hwnd))
     {
         int game_count = InterlockedExchangeAdd((LONG*)&g_ddraw->show_cursor_count, 0);
         int cur_count = real_ShowCursor(TRUE) - 1;

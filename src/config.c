@@ -38,18 +38,22 @@ void cfg_load()
     g_ddraw->fixpitch = cfg_get_bool("fixpitch", FALSE);
     g_ddraw->fixchilds = cfg_get_int("fixchilds", FIX_CHILDS_DETECT_PAINT);
     g_ddraw->fixwndprochook = cfg_get_bool("fixwndprochook", FALSE);
+    g_ddraw->novidmem = cfg_get_bool("novidmem", FALSE);
     g_ddraw->fixnotresponding = cfg_get_bool("fixnotresponding", FALSE);
     g_ddraw->locktopleft = cfg_get_bool("locktopleft", FALSE);
     g_ddraw->releasealt = cfg_get_bool("releasealt", FALSE);
     g_ddraw->d3d9linear = cfg_get_bool("d3d9linear", TRUE);
     g_ddraw->gdilinear = cfg_get_bool("gdilinear", FALSE);
     g_ddraw->resolutions = cfg_get_int("resolutions", RESLIST_NORMAL);
+    g_ddraw->fpupreserve = cfg_get_bool("fpupreserve", FALSE);
+    cfg_get_string("screenshotdir", ".\\Screenshots\\", g_ddraw->screenshot_dir, sizeof(g_ddraw->screenshot_dir));
 
     if (g_ddraw->locktopleft)
         g_ddraw->adjmouse = FALSE;
 
     g_ddraw->armadahack = cfg_get_bool("armadahack", FALSE);
     g_ddraw->tshack = cfg_get_bool("tshack", FALSE);
+    g_ddraw->infantryhack = cfg_get_bool("infantryhack", FALSE);
 
     g_ddraw->hotkeys.toggle_fullscreen = cfg_get_int("keytogglefullscreen", VK_RETURN);
     g_ddraw->hotkeys.toggle_maximize = cfg_get_int("keytogglemaximize", VK_NEXT);
@@ -290,6 +294,9 @@ static void cfg_create_ini()
             "; cnc-ddraw config program language, possible values: auto, english, chinese, german, spanish, russian, hungarian, french\n"
             "configlang=auto\n"
             "\n"
+            "; Where should screenshots be saved\n"
+            "screenshotdir=.\\Screenshots\\\n"
+            "\n"
             "\n"
             "\n"
             "; ### Compatibility settings ###\n"
@@ -331,6 +338,10 @@ static void cfg_create_ini()
             "; Child window handling, possible values: 0 = Disabled, 1 = Display top left, 2 = Display top left + repaint, 3 = Hide\n"
             "; Note: Disables upscaling if a child window was detected\n"
             "fixchilds=2\n"
+            "\n"
+            "; Set the precision for Direct3D9 floating-point calculations to the precision used by the calling thread\n"
+            "; Note: Enable this if there are desyncs in online games\n"
+            "fpupreserve=false\n"
             "\n"
             "\n"
             "\n"
@@ -433,6 +444,10 @@ static void cfg_create_ini()
             "[ATLANTIS]\n"
             "renderer=opengl\n"
             "maxgameticks=60\n"
+            "\n"
+            "; Airline Tycoon Deluxe\n"
+            "[AT]\n"
+            "fixchilds=0\n"
             "\n"
             "; Blade & Sword\n"
             "[comeon]\n"
@@ -643,6 +658,14 @@ static void cfg_create_ini()
             "renderer=gdi\n"
             "hook=2\n"
             "\n"
+            "; Dune 2000\n"
+            "[dune2000]\n"
+            "fpupreserve=true\n"
+            "\n"
+            "; Dune 2000 - CnCNet\n"
+            "[dune2000-spawn]\n"
+            "fpupreserve=true\n"
+            "\n"
             "; Dragon Throne: Battle of Red Cliffs\n"
             "[AdSanguo]\n"
             "maxgameticks=60\n"
@@ -725,23 +748,39 @@ static void cfg_create_ini()
             "adjmouse=true\n"
             "renderer=opengl\n"
             "\n"
+            "; Infantry Online\n"
+            "[infantry]\n"
+            "devmode=true\n"
+            "resolutions=2\n"
+            "infantryhack=true\n"
+            "\n"
             "; Jagged Alliance 2\n"
             "[ja2]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Jagged Alliance 2: Wildfire\n"
             "[WF6]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Jagged Alliance 2 - UC mod\n"
             "[JA2_UC]\n"
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
+            "\n"
+            "; Jagged Alliance 2 - Vengeance Reloaded mod\n"
+            "[JA2_Vengeance]\n"
+            "fixmousehook=true\n"
+            "noactivateapp=true\n"
+            "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Kings Quest 8\n"
             "[Mask]\n"
@@ -936,6 +975,7 @@ static void cfg_create_ini()
             "fixmousehook=true\n"
             "noactivateapp=true\n"
             "releasealt=true\n"
+            "novidmem=true\n"
             "\n"
             "; Worms Armageddon\n"
             "[WA]\n"

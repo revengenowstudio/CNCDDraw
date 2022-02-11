@@ -674,8 +674,8 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
 
         RECT dst = { x, y, g_ddraw->render.width + x, g_ddraw->render.height + y };
 
-        AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), FALSE);
-        real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+        AdjustWindowRect(&dst, GetWindowLong(g_ddraw->hwnd, GWL_STYLE), GetMenu(g_ddraw->hwnd) != NULL);
+        real_SetWindowPos(g_ddraw->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_SHOWWINDOW | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
         real_MoveWindow(g_ddraw->hwnd, dst.left, dst.top, (dst.right - dst.left), (dst.bottom - dst.top), TRUE);
 
         BOOL d3d9_active = FALSE;
@@ -846,6 +846,24 @@ HRESULT dd_SetCooperativeLevel(HWND hwnd, DWORD dwFlags)
         if (g_ddraw->vhack && !g_ddraw->isredalert && !g_ddraw->iscnc1 && !g_ddraw->iskkndx)
         {
             g_ddraw->vhack = 0;
+        }
+    }
+
+    /* Infantry Online Zone List Window */
+    if (g_ddraw->infantryhack)
+    {
+        static BOOL windowed;
+
+        if (!(dwFlags & DDSCL_FULLSCREEN))
+        {
+            windowed = g_ddraw->windowed;
+
+            g_ddraw->windowed = TRUE;
+            dd_SetDisplayMode(640, 480, 8, SDM_MODE_SET_BY_GAME);
+        }
+        else
+        {
+            g_ddraw->windowed = windowed;
         }
     }
 

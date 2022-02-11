@@ -62,6 +62,7 @@ typedef struct CNCDDRAW
     DEVMODE mode;
     struct IDirectDrawSurfaceImpl* primary;
     char title[128];
+    char screenshot_dir[MAX_PATH];
     CRITICAL_SECTION cs;
 
     /* real export from system32\ddraw.dll */
@@ -135,6 +136,8 @@ typedef struct CNCDDRAW
     BOOL wine;
     HCURSOR old_cursor;
     int show_cursor_count;
+    BOOL novidmem;
+    BOOL fpupreserve;
     BOOL accurate_timers;
     BOOL resizable;
     BOOL nonexclusive;
@@ -148,6 +151,7 @@ typedef struct CNCDDRAW
     int resolutions;
     BOOL armadahack;
     BOOL tshack;
+    BOOL infantryhack;
     int maxgameticks;
     BOOL alt_key_down;
     BOOL releasealt;

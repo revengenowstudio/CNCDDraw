@@ -71,11 +71,11 @@ BOOL d3d9_create()
             g_d3d9.params.BackBufferCount = 1;
 
             DWORD behavior_flags[] = {
-                D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
-                D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
-                D3DCREATE_HARDWARE_VERTEXPROCESSING,
-                D3DCREATE_MIXED_VERTEXPROCESSING,
-                D3DCREATE_SOFTWARE_VERTEXPROCESSING,
+                D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
+                D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_PUREDEVICE,
+                D3DCREATE_MULTITHREADED | D3DCREATE_HARDWARE_VERTEXPROCESSING,
+                D3DCREATE_MULTITHREADED | D3DCREATE_MIXED_VERTEXPROCESSING,
+                D3DCREATE_MULTITHREADED | D3DCREATE_SOFTWARE_VERTEXPROCESSING,
             };
 
             for (int i = 0; i < sizeof(behavior_flags) / sizeof(behavior_flags[0]); i++)
@@ -86,7 +86,7 @@ BOOL d3d9_create()
                         D3DADAPTER_DEFAULT,
                         D3DDEVTYPE_HAL,
                         g_ddraw->hwnd,
-                        D3DCREATE_MULTITHREADED | behavior_flags[i],
+                        behavior_flags[i] | (g_ddraw->fpupreserve ? D3DCREATE_FPU_PRESERVE : 0),
                         &g_d3d9.params,
                         &g_d3d9.device)))
                     return g_d3d9.device && d3d9_create_resouces() && d3d9_set_states();
