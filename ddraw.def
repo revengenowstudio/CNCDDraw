@@ -20,3 +20,5 @@ EXPORTS
     DirectInput8Create = fake_DirectInput8Create
     GameHandlesClose                          DATA
     pvBmpBits = FakePrimarySurface            DATA
+    GeneralDDrawProxy = g_ddraw               DATA
+    LockOffset = offset_calculator            DATA

@@ -13,8 +13,9 @@
 #include "debug.h"
 #include "utils.h"
 
-
 CNCDDRAW* g_ddraw = NULL;
+
+int offset_calculator = offsetof(CNCDDRAW, cs);
 
 HRESULT dd_EnumDisplayModes(
     DWORD dwFlags,
