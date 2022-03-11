@@ -12,6 +12,7 @@
 
 
 static BOOL d3d9_create_resouces();
+static BOOL d3d9_clear_resources();
 static BOOL d3d9_set_states();
 static BOOL d3d9_update_vertices(BOOL upscale_hack, BOOL stretch);
 
@@ -101,11 +102,16 @@ BOOL d3d9_on_device_lost()
 {
     if (g_d3d9.device && IDirect3DDevice9_TestCooperativeLevel(g_d3d9.device) == D3DERR_DEVICENOTRESET)
     {
-        //return d3d9_reset();
-        return d3d9_create();
+        return d3d9_reset();
+        //return d3d9_create();
     }
 
     return FALSE;
+}
+
+BOOL d3d9_device_initialized()
+{
+    return g_d3d9.device != NULL;
 }
 
 BOOL d3d9_reset()
@@ -117,7 +123,8 @@ BOOL d3d9_reset()
 
     if (g_d3d9.device && SUCCEEDED(IDirect3DDevice9_Reset(g_d3d9.device, &g_d3d9.params)))
     {
-        return d3d9_set_states();
+        d3d9_clear_resources();
+        return d3d9_create_resouces() && d3d9_set_states();
     }
 
     return FALSE;
@@ -248,6 +255,21 @@ static BOOL d3d9_create_resouces()
     }
 
     return g_d3d9.vertex_buf && (g_d3d9.pixel_shader || g_ddraw->bpp == 16 || g_ddraw->bpp == 32) && !err;
+}
+
+BOOL d3d9_clear_resources()
+{
+    if (g_d3d9.vertex_buf)
+        IDirect3DVertexBuffer9_Release(g_d3d9.vertex_buf), g_d3d9.vertex_buf = NULL;
+    for (int i = 0; i < D3D9_TEXTURE_COUNT; i++)
+    {
+        IDirect3DTexture9_Release(g_d3d9.surface_tex[i]), g_d3d9.surface_tex[i] = NULL;
+
+        if (g_ddraw->bpp == 8)
+            IDirect3DTexture9_Release(g_d3d9.palette_tex[i]), g_d3d9.palette_tex[i] = NULL;
+    }
+
+    return TRUE;
 }
 
 static BOOL d3d9_set_states()

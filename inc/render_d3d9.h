@@ -33,6 +33,7 @@ BOOL d3d9_create();
 BOOL d3d9_reset();
 BOOL d3d9_release();
 BOOL d3d9_on_device_lost();
+BOOL d3d9_device_initialized();
 
 
 #endif
