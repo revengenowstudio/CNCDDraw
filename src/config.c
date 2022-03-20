@@ -62,8 +62,14 @@ void cfg_load()
     g_ddraw->hotkeys.unlock_cursor2 = cfg_get_int("keyunlockcursor2", VK_RCONTROL);
     g_ddraw->hotkeys.screenshot = cfg_get_int("keyscreenshot", VK_SNAPSHOT);
 
+    #if RN_FIX
+    g_config.window_rect.right = 0;
+    g_config.window_rect.bottom = 0;
+    #else
     g_config.window_rect.right = cfg_get_int("width", 0);
     g_config.window_rect.bottom = cfg_get_int("height", 0);
+    #endif
+
     g_config.window_rect.left = cfg_get_int("posX", -32000);
     g_config.window_rect.top = cfg_get_int("posY", -32000);
 
