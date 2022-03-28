@@ -123,6 +123,7 @@ void cfg_load()
         g_config.window_rect.left = g_config.window_rect.top = -32000;
     }
 
+#if !defined(RN_FIX)
     if (cfg_get_bool("singlecpu", TRUE))
     {
         SetProcessAffinityMask(GetCurrentProcess(), 1);
@@ -136,6 +137,7 @@ void cfg_load()
         if (GetProcessAffinityMask(proc, &proc_affinity, &system_affinity))
             SetProcessAffinityMask(proc, system_affinity);
     }
+#endif
 
     g_ddraw->render.bpp = cfg_get_int("bpp", 0);
 
