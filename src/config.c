@@ -147,7 +147,15 @@ void cfg_load()
     /* to do: read .glslp config file instead of the shader and apply the correct settings  */
     cfg_get_string("shader", "", g_ddraw->shader, sizeof(g_ddraw->shader));
 
-    cfg_get_string("renderer", "auto", tmp, sizeof(tmp));
+    auto const rDef =
+    #if defined(RN_FIX)
+        "direct3d9";
+    #elif DEVELOP
+        "opengl";
+    #else
+        "auto";
+    #endif
+    cfg_get_string("renderer", rDef, tmp, sizeof(tmp));
     TRACE("     Using %s renderer\n", tmp);
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') /* gdi */
