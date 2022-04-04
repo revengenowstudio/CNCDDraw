@@ -157,7 +157,7 @@ void cfg_load()
     #else
         "auto";
     #endif
-    cfg_get_string("renderer", rDef, tmp, sizeof(tmp));
+    //cfg_get_string("renderer", rDef, tmp, sizeof(tmp));
     TRACE("     Using %s renderer\n", tmp);
 
     if (tolower(tmp[0]) == 's' || tolower(tmp[0]) == 'g') /* gdi */
