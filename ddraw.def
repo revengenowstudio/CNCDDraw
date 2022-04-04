@@ -18,6 +18,8 @@ EXPORTS
     DirectInputCreateW = fake_DirectInputCreateW
     DirectInputCreateEx = fake_DirectInputCreateEx
     DirectInput8Create = fake_DirectInput8Create
+    DDrawGlobalLockAcquire = dd_GlobalLockAcquire
+    DDrawGlobalLockRelease = dd_GlobalLockRelease
     GameHandlesClose                          DATA
     pvBmpBits = FakePrimarySurface            DATA
     GeneralDDrawProxy = g_ddraw               DATA

@@ -23,6 +23,9 @@ HRESULT dd_GetVerticalBlankStatus(LPBOOL lpbIsInVB);
 HRESULT dd_GetDeviceIdentifier(LPDDDEVICEIDENTIFIER pDDDI, DWORD dwFlags, REFIID riid);
 HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOuter);
 
+void __cdecl dd_GlobalLockAcquire();
+void __cdecl dd_GlobalLockRelease();
+
 #define FIX_CHILDS_DISABLED 0
 #define FIX_CHILDS_DETECT 1
 #define FIX_CHILDS_DETECT_PAINT 2

@@ -105,7 +105,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <RootNamespace>cnc_ddraw</RootNamespace>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectGuid>{96094551-5D52-4EBD-BE4C-5291A03507FC}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />

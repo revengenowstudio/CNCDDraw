@@ -1093,3 +1093,13 @@ HRESULT dd_CreateEx(GUID* lpGuid, LPVOID* lplpDD, REFIID iid, IUnknown* pUnkOute
 
     return DD_OK;
 }
+
+void __cdecl dd_GlobalLockAcquire()
+{
+    EnterCriticalSection(&g_ddraw->cs);
+}
+
+void __cdecl dd_GlobalLockRelease()
+{
+    LeaveCriticalSection(&g_ddraw->cs);
+}
