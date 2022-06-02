@@ -24,6 +24,8 @@ void cfg_load()
 
     /* load settings from ini */
     g_ddraw->windowed = cfg_get_bool("windowed", FALSE);
+    g_ddraw->toggling = FALSE;
+    g_ddraw->switchingFullScreen = FALSE;
     g_ddraw->border = cfg_get_bool("border", TRUE);
     g_ddraw->boxing = cfg_get_bool("boxing", FALSE);
     g_ddraw->maintas = cfg_get_bool("maintas", FALSE);
@@ -118,10 +120,12 @@ void cfg_load()
         g_ddraw->flip_limiter.tick_length = (DWORD)(flip_len + 0.5f);
     }
 
+#if !defined(RN_FIX)
     if ((g_ddraw->fullscreen = cfg_get_bool("fullscreen", FALSE)))
     {
         g_config.window_rect.left = g_config.window_rect.top = -32000;
     }
+#endif
 
 #if !defined(RN_FIX)
     if (cfg_get_bool("singlecpu", TRUE))

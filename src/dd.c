@@ -15,6 +15,8 @@
 
 CNCDDRAW* g_ddraw = NULL;
 
+BOOL fullScreenHack = FALSE;
+
 int offset_calculator = offsetof(CNCDDRAW, cs);
 
 HRESULT dd_EnumDisplayModes(
@@ -385,6 +387,11 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
 {
     if (dwBPP != 8 && dwBPP != 16 && dwBPP != 32)
         return DDERR_INVALIDMODE;
+
+    if (!g_ddraw->toggling && g_ddraw->fullscreen && !g_ddraw->switchingFullScreen && !fullScreenHack) {
+        g_ddraw->fullscreen = FALSE;
+        fullScreenHack = TRUE;
+    }
 
     if (g_ddraw->render.thread)
     {
@@ -774,6 +781,13 @@ HRESULT dd_SetDisplayMode(DWORD dwWidth, DWORD dwHeight, DWORD dwBPP, DWORD dwFl
         real_SendMessageA(g_ddraw->hwnd, WM_SIZE_DDRAW, 0, MAKELPARAM(g_ddraw->width, g_ddraw->height));
         real_SendMessageA(g_ddraw->hwnd, WM_MOVE_DDRAW, 0, MAKELPARAM(0, 0));
         real_SendMessageA(g_ddraw->hwnd, WM_DISPLAYCHANGE_DDRAW, g_ddraw->bpp, MAKELPARAM(g_ddraw->width, g_ddraw->height));
+    }
+
+    if (fullScreenHack && !g_ddraw->switchingFullScreen) {
+        g_ddraw->switchingFullScreen = TRUE;
+        dd_SetDisplayMode(dwWidth, dwHeight,dwBPP,dwFlags);
+        g_ddraw->switchingFullScreen = FALSE;
+        fullScreenHack = FALSE;
     }
 
     return DD_OK;

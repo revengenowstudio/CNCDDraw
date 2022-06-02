@@ -57,6 +57,8 @@ typedef struct CNCDDRAW
     DWORD height;
     DWORD bpp;
     BOOL windowed;
+    BOOL toggling;
+    BOOL switchingFullScreen;
     BOOL border;
     BOOL boxing;
     DEVMODE mode;

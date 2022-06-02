@@ -280,6 +280,7 @@ void util_toggle_fullscreen()
     if (g_ddraw->bnet_active)
         return;
 
+    g_ddraw->toggling = TRUE;
     if (g_ddraw->windowed)
     {
         mouse_unlock();
@@ -314,6 +315,7 @@ void util_toggle_fullscreen()
         dd_SetDisplayMode(g_ddraw->width, g_ddraw->height, g_ddraw->bpp, SDM_LEAVE_FULLSCREEN);
         //mouse_lock();
     }
+    g_ddraw->toggling = FALSE;
 }
 
 BOOL util_unadjust_window_rect(LPRECT prc, DWORD dwStyle, BOOL fMenu, DWORD dwExStyle)
